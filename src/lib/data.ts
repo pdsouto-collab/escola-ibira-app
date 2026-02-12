@@ -463,3 +463,98 @@ export const mockBNCCData: BNCCSubject[] = [
 ];
 
 
+
+export interface DailyLog {
+    id: string;
+    studentId: string;
+    date: string;
+    mood: "happy" | "neutral" | "sad" | "tired" | "excited";
+    meals: {
+        breakfast: "all" | "most" | "some" | "none";
+        lunch: "all" | "most" | "some" | "none";
+        snack: "all" | "most" | "some" | "none";
+    };
+    nap: {
+        start: string;
+        end: string;
+    };
+    activities: string[];
+    notes: string;
+}
+
+export const mockDailyLogs: DailyLog[] = [
+    {
+        id: "log-1",
+        studentId: "1",
+        date: "2024-02-12",
+        mood: "happy",
+        meals: {
+            breakfast: "all",
+            lunch: "most",
+            snack: "all"
+        },
+        nap: {
+            start: "13:00",
+            end: "14:30"
+        },
+        activities: ["Roda de música", "Pintura com dedos", "Parquinho"],
+        notes: "Alice estava muito participativa hoje, especialmente na aula de música."
+    },
+    {
+        id: "log-2",
+        studentId: "2",
+        date: "2024-02-12",
+        mood: "excited",
+        meals: {
+            breakfast: "most",
+            lunch: "all",
+            snack: "most"
+        },
+        nap: {
+            start: "13:15",
+            end: "14:15"
+        },
+        activities: ["Blocos de montar", "História dos 3 porquinhos", "Jardinagem"],
+        notes: "Bernardo ajudou os colegas a organizar os brinquedos."
+    }
+];
+
+export interface PortfolioEntry {
+    id: string;
+    studentId: string;
+    date: string;
+    title: string;
+    description: string;
+    imageUrl?: string;
+    tags: string[];
+}
+
+export const mockPortfolio: PortfolioEntry[] = [
+    {
+        id: "port-1",
+        studentId: "1",
+        date: "2024-02-10",
+        title: "Explorando Texturas",
+        description: "Atividade sensorial com areia, água e folhas secas. Alice demonstrou muita curiosidade.",
+        imageUrl: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80&w=300&h=200",
+        tags: ["Natureza", "Sensorial", "Artes"]
+    },
+    {
+        id: "port-2",
+        studentId: "1",
+        date: "2024-02-05",
+        title: "Primeira Letra do Nome",
+        description: "Alice identificou a letra 'A' em cartazes pela sala e tentou traçá-la na areia.",
+        imageUrl: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80&w=300&h=200", // Placeholder
+        tags: ["Linguagem", "Escrita"]
+    },
+    {
+        id: "port-3",
+        studentId: "2",
+        date: "2024-02-11",
+        title: "Construção Coletiva",
+        description: "Bernardo liderou o grupo na construção de um castelo com blocos de madeira.",
+        imageUrl: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80&w=300&h=200", // Placeholder
+        tags: ["Matemática", "Socialização"]
+    }
+];
