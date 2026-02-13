@@ -558,3 +558,66 @@ export const mockPortfolio: PortfolioEntry[] = [
         tags: ["Matemática", "Socialização"]
     }
 ];
+
+export interface Contact {
+    id: string;
+    name: string;
+    role: "Mãe" | "Pai" | "Responsável";
+    studentName: string;
+    studentId: string;
+    avatarUrl?: string;
+    unreadCount: number;
+    lastMessage: string;
+    lastMessageTime: string;
+}
+
+export const mockContacts: Contact[] = [
+    {
+        id: "c1",
+        name: "Mariana Silva",
+        role: "Mãe",
+        studentName: "Alice Silva",
+        studentId: "1",
+        unreadCount: 2,
+        lastMessage: "Olá, a Alice esqueceu o casaco?",
+        lastMessageTime: "10:30"
+    },
+    {
+        id: "c2",
+        name: "Carlos Souza",
+        role: "Pai",
+        studentName: "Bernardo Souza",
+        studentId: "2",
+        unreadCount: 0,
+        lastMessage: "Obrigado pelas fotos!",
+        lastMessageTime: "Ontem"
+    },
+    {
+        id: "c3",
+        name: "Fernanda Lima",
+        role: "Mãe",
+        studentName: "Clara Lima",
+        studentId: "3",
+        unreadCount: 0,
+        lastMessage: "Ela vai chegar um pouco atrasada amanhã.",
+        lastMessageTime: "Ontem"
+    }
+];
+
+export interface Message {
+    id: string;
+    contactId: string;
+    sender: "me" | "them";
+    content: string;
+    timestamp: string;
+}
+
+export const mockMessages: Message[] = [
+    { id: "m1", contactId: "c1", sender: "them", content: "Bom dia, professor!", timestamp: "08:00" },
+    { id: "m2", contactId: "c1", sender: "me", content: "Bom dia, Mariana! Tudo bem?", timestamp: "08:05" },
+    { id: "m3", contactId: "c1", sender: "them", content: "Tudo ótimo. A Alice esqueceu o casaco rosa dela aí?", timestamp: "10:30" },
+
+    { id: "m4", contactId: "c2", sender: "me", content: "Olá Carlos, segue o registro da atividade de hoje.", timestamp: "14:00" },
+    { id: "m5", contactId: "c2", sender: "them", content: "Obrigado pelas fotos! Ele adorou.", timestamp: "14:15" }
+];
+
