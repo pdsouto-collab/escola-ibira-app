@@ -48,7 +48,7 @@ export function PracticesTree({ data, onSelectNode, editMode }: PracticesTreePro
 
                 {/* 1. Base Image */}
                 <img
-                    src="/mosaico/tree-structure.png"
+                    src="/escola-ibira-app/mosaico/tree-structure.png"
                     alt="Árvore de Práticas"
                     className="absolute inset-0 w-full h-full object-contain pointer-events-none"
                 />
