@@ -1,7 +1,12 @@
 self.__BUILD_MANIFEST = {
   "__rewrites": {
     "afterFiles": [],
-    "beforeFiles": [],
+    "beforeFiles": [
+      {
+        "source": "/escola-ibira-app//_next/:path+",
+        "destination": "/escola-ibira-app/_next/:path+"
+      }
+    ],
     "fallback": []
   },
   "sortedPages": [
