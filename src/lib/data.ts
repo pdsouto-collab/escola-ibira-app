@@ -225,7 +225,7 @@ export function getStudentCurriculum(studentId: string): Theme[] {
     }));
 }
 
-export type NodeType = "area" | "component" | "unit" | "skill";
+export type NodeType = "area" | "component" | "unit" | "skill" | "trunk" | "root";
 
 export interface MosaicNode {
     id: string;
@@ -244,7 +244,7 @@ export const mockRecursiveDataSkills: MosaicNode[] = [
         label: "Artes",
         type: "area",
         status: "in-progress",
-        color: "#3b82f6", // Blue
+        color: "#2980B9", // Vivid Blue
         children: [
             {
                 id: "artes-visuais",
@@ -265,141 +265,86 @@ export const mockRecursiveDataSkills: MosaicNode[] = [
                     {
                         id: "apreciacao",
                         label: "Apreciação Estética",
-                        type: "unit",
+                        type: "component",
+                        status: "achieved",
+                        children: [
+                            { id: "ident-1", label: "Conta histórias", type: "skill", status: "achieved" },
+                            { id: "ident-2", label: "Expressa sentimentos", type: "skill", status: "achieved" },
+                            { id: "artes-3", label: "Explora materiais", type: "skill", status: "in-progress" }
+                        ]
+                    },
+                    {
+                        id: "musica",
+                        label: "Música",
+                        type: "component",
                         status: "in-progress",
                         children: [
-                            { id: "av-3", label: "Observa obras de arte", type: "skill", status: "in-progress", evidenceCount: 1 },
-                            { id: "av-4", label: "Descreve sentimentos ao ver arte", type: "skill", status: "not-started" }
+                            { id: "musica-1", label: "Acompanha o ritmo", type: "skill", status: "achieved" },
+                            { id: "musica-2", label: "Dança livremente", type: "skill", status: "in-progress" }
                         ]
                     }
                 ]
             },
             {
-                id: "musica",
-                label: "Música",
-                type: "component",
+                id: "natureza",
+                label: "Natureza e Sociedade",
+                type: "area",
                 status: "in-progress",
+                color: "#48BB78", // Green (Reference: Center-Left branch)
                 children: [
                     {
-                        id: "ritmo",
-                        label: "Ritmo e Movimento",
-                        type: "unit",
+                        id: "meio-ambiente",
+                        label: "Meio Ambiente",
+                        type: "component",
                         status: "in-progress",
                         children: [
-                            { id: "mus-1", label: "Acompanha o ritmo com palmas", type: "skill", status: "achieved", evidenceCount: 4 },
-                            { id: "mus-2", label: "Dança livremente", type: "skill", status: "in-progress", evidenceCount: 2 }
+                            { id: "nat-1", label: "Cuida das plantas", type: "skill", status: "achieved" },
+                            { id: "nat-2", label: "Separa o lixo", type: "skill", status: "not-started" }
+                        ]
+                    },
+                    {
+                        id: "seres-vivos",
+                        label: "Seres Vivos",
+                        type: "component",
+                        status: "not-started",
+                        children: [
+                            { id: "nat-3", label: "Identifica animais", type: "skill", status: "not-started" }
                         ]
                     }
                 ]
-            }
-        ]
-    },
-    {
-        id: "natureza",
-        label: "Natureza e Sociedade",
-        type: "area",
-        status: "in-progress",
-        color: "#10b981", // Emerald
-        children: [
+            },
             {
-                id: "ser-vivo",
-                label: "Seres Vivos",
-                type: "component",
+                id: "linguagem",
+                label: "Linguagem",
+                type: "area",
                 status: "in-progress",
+                color: "#805AD5", // Purple (Reference: Center-Right branch)
                 children: [
-                    { id: "nat-1", label: "Identifica animais domésticos", type: "skill", status: "achieved", evidenceCount: 2 },
-                    { id: "nat-2", label: "Cuida das plantas", type: "skill", status: "in-progress", evidenceCount: 1 }
+                    {
+                        id: "escrita",
+                        label: "Escrita",
+                        type: "component",
+                        status: "in-progress",
+                        children: [
+                            { id: "ling-1", label: "Escreve o próprio nome", type: "skill", status: "achieved" },
+                            { id: "ling-2", label: "Reconhece letras", type: "skill", status: "in-progress" }
+                        ]
+                    }
                 ]
             },
             {
-                id: "ambiente",
-                label: "Meio Ambiente",
-                type: "component",
-                status: "not-started",
-                children: [
-                    { id: "nat-3", label: "Separa o lixo (reciclagem)", type: "skill", status: "not-started" }
-                ]
-            }
-        ]
-    },
-    {
-        id: "linguagem",
-        label: "Linguagem",
-        type: "area",
-        status: "in-progress",
-        color: "#f43f5e", // Rose
-        children: [
-            {
-                id: "oralidade",
-                label: "Oralidade",
-                type: "component",
-                status: "achieved",
-                children: [
-                    { id: "lin-1", label: "Conta histórias conhecidas", type: "skill", status: "achieved", evidenceCount: 6 }
-                ]
-            },
-            {
-                id: "escrita",
-                label: "Escrita",
-                type: "component",
+                id: "identidade",
+                label: "Identidade",
+                type: "area",
                 status: "in-progress",
-                children: [
-                    { id: "lin-2", label: "Escreve o próprio nome", type: "skill", status: "achieved", evidenceCount: 3 },
-                    { id: "lin-3", label: "Reconhece letras do alfabeto", type: "skill", status: "in-progress", evidenceCount: 2 }
-                ]
+                color: "#E67E22", // Vivid Orange to match "Anexo 1" vibe as 4th color
             }
         ]
     }
 ];
 
 export const mockRecursiveDataContent: MosaicNode[] = [
-    {
-        id: "portugues",
-        label: "Português",
-        type: "area",
-        status: "in-progress",
-        color: "#ec4899", // Pink
-        children: [
-            {
-                id: "alfabetizacao",
-                label: "Alfabetização",
-                type: "component",
-                status: "in-progress",
-                children: [
-                    { id: "vogais", label: "Vogais", type: "unit", status: "achieved", children: [] },
-                    { id: "consoantes", label: "Consoantes Simples", type: "unit", status: "in-progress", children: [] }
-                ]
-            }
-        ]
-    },
-    {
-        id: "matematica",
-        label: "Matemática",
-        type: "area",
-        status: "in-progress",
-        color: "#a855f7", // Purple
-        children: [
-            {
-                id: "numeros",
-                label: "Números e Operações",
-                type: "component",
-                status: "in-progress",
-                children: [
-                    { id: "contagem", label: "Contagem 0-20", type: "unit", status: "achieved", children: [] },
-                    { id: "soma", label: "Adição Simples", type: "unit", status: "not-started", children: [] }
-                ]
-            },
-            {
-                id: "geom",
-                label: "Geometria",
-                type: "component",
-                status: "in-progress",
-                children: [
-                    { id: "formas", label: "Formas Planas", type: "unit", status: "achieved", children: [] }
-                ]
-            }
-        ]
-    }
+    // ... Content data would go here
 ];
 
 export interface BNCCSkill {

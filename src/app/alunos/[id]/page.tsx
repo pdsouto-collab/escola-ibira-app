@@ -13,6 +13,12 @@ interface StudentProfilePageProps {
     params: Promise<{ id: string }>;
 }
 
+export async function generateStaticParams() {
+    return mockStudents.map((student) => ({
+        id: student.id,
+    }));
+}
+
 export default async function StudentProfilePage({ params }: StudentProfilePageProps) {
     // Await params in Next.js 15+
     const { id } = await params;

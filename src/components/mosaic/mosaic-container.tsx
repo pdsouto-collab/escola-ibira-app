@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { MosaicNode, mockRecursiveDataSkills, mockRecursiveDataContent } from "@/lib/data";
 import { MosaicSunburst } from "./mosaic-sunburst";
+import { MonalMosaic } from "./monal-mosaic"; // Keeping for reference/fallback
+// import { TreeMosaic } from "./tree-mosaic";
+import { PracticesTree } from "./practices-tree";
 import { MosaicDetailPanel } from "./mosaic-detail-panel";
 import { Switch } from "../ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
@@ -143,6 +146,7 @@ export function MosaicContainer() {
                             </span>
                             <Switch checked={editMode} onCheckedChange={setEditMode} />
                         </div>
+                        <div className="text-[10px] text-slate-300 font-mono">v6.0 Watercolor Edition</div>
 
                         <div className="relative">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
@@ -187,7 +191,7 @@ export function MosaicContainer() {
 
                 {/* Chart Area */}
                 <div className="flex-1 overflow-auto bg-slate-50 flex items-center justify-center p-8">
-                    <MosaicSunburst
+                    <PracticesTree
                         data={currentData}
                         onSelectNode={setSelectedNode}
                         editMode={editMode}

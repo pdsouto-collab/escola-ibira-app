@@ -14,7 +14,8 @@ import {
     FolderOpen,
     BarChart3,
     MessageCircle,
-    LogOut
+    LogOut,
+    PartyPopper
 } from "lucide-react";
 import { SchoolLogo } from "@/components/ui/school-logo";
 
@@ -22,9 +23,9 @@ const navigation = [
     { name: "Início", href: "/", icon: LayoutDashboard },
     { name: "Práticas", href: "/mosaico", icon: Grid2X2 },
     { name: "Estudantes", href: "/alunos", icon: Users },
-    { name: "Pendências", href: "/pendencias", icon: CheckCircle2 }, // Using CheckCircle2 as placeholder
+    { name: "Pendências", href: "/pendencias", icon: CheckCircle2 },
     { name: "Rotinas", href: "/agenda", icon: CalendarDays },
-    { name: "Chamadas de vídeo", href: "/video", icon: Video },
+    { name: "Mural de Eventos", href: "/mural", icon: PartyPopper },
     { name: "Banco de projetos", href: "/projetos", icon: FolderOpen },
     { name: "Relatórios", href: "/relatorios", icon: BarChart3 },
     { name: "Conversas", href: "/conversas", icon: MessageCircle },
@@ -49,7 +50,7 @@ export function Sidebar() {
                                 className={cn(
                                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                                     isActive
-                                        ? "bg-primary/10 text-primary"
+                                        ? "bg-primary/10 text-primary z-10"
                                         : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                                 )}
                             >

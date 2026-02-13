@@ -59,9 +59,9 @@ const STATUS_OPACITY: Record<Status, number> = {
 
 export function MosaicSunburst({ data, onSelectNode, editMode }: MosaicSunburstProps) {
     // Configurações do gráfico
-    const size = 800; // Tamanho maior para comportar mais níveis
+    const size = 800;
     const center = size / 2;
-    const centerHoleRadius = 80;
+    const centerHoleRadius = 100; // Larger clean center
     const maxRadius = size / 2 - 20;
 
     // Calcula a profundidade máxima da árvore para distribuir a largura dos anéis
@@ -78,7 +78,7 @@ export function MosaicSunburst({ data, onSelectNode, editMode }: MosaicSunburstP
 
     // Largura de cada anel com base no espaço disponível
     const ringWidth = (maxRadius - centerHoleRadius) / maxDepth;
-    const gap = 1.5; // Espaço visual entre fatias
+    const gap = 3; // Wider gap for separation
 
     // Estado total de folhas para dividir os 360 graus
     const totalLeaves = useMemo(() => data.reduce((acc, node) => acc + countLeaves(node), 0), [data]);
@@ -101,19 +101,25 @@ export function MosaicSunburst({ data, onSelectNode, editMode }: MosaicSunburstP
             const innerR = centerHoleRadius + (depth * ringWidth);
             const outerR = innerR + ringWidth;
 
-            // Define cor: Se tiver cor própria usa, senão herda. 
-            // Níveis internos são mais claros, níveis externos (folhas) mostram status.
+            // Define cor: Se tiver cor própria usa, senão herda.
+            // Gradient Logic: Inner = Light/Transparent, Outer = Solid
             let fillColor = node.color || parentColor;
             let opacity = 1.0;
 
-            const isLeaf = !node.children || node.children.length === 0;
-
-            if (isLeaf) {
-                // Se é folha, usa opacidade baseada no status
-                opacity = STATUS_OPACITY[node.status];
+            if (depth === 0) {
+                opacity = 0.4; // Inner ring - light/transparent
+            } else if (depth === 1) {
+                opacity = 0.7; // Middle ring - semi-transparent
             } else {
-                // Se é nó intermediário, clareia a cor para dar efeito de camadas
-                opacity = 0.2 + (0.15 * depth); // Fica mais forte conforme vai para fora
+                opacity = 1.0; // Outer rings - solid
+            }
+
+            // Exceptions: "not-started" leaves should be white to match the "gap" look
+            if (!node.children || node.children.length === 0) {
+                if (node.status === 'not-started') {
+                    fillColor = "#ffffff";
+                    opacity = 1.0;
+                }
             }
 
             const pathData = describeArc(center, center, innerR, outerR, currentStartAngle + gap / 2, endAngle - gap / 2);
@@ -125,33 +131,31 @@ export function MosaicSunburst({ data, onSelectNode, editMode }: MosaicSunburstP
                         fill={fillColor}
                         fillOpacity={opacity}
                         stroke="white"
-                        strokeWidth="1.5"
-                        className="cursor-pointer hover:opacity-80 transition-opacity"
+                        strokeWidth="2"
+                        className="cursor-pointer hover:opacity-90 transition-opacity"
                         onClick={(e) => {
                             e.stopPropagation();
                             onSelectNode(node);
                         }}
                     >
-                        <title>{node.label} ({node.status})</title>
+                        <title>{node.label}</title>
                     </path>
 
                     {/* Render Label if slice is big enough */}
-                    {angleSpan > 12 && (
+                    {angleSpan > 8 && (
                         <text
                             x={polarToCartesian(center, center, innerR + (ringWidth / 2), currentStartAngle + angleSpan / 2).x}
                             y={polarToCartesian(center, center, innerR + (ringWidth / 2), currentStartAngle + angleSpan / 2).y}
                             textAnchor="middle"
                             dominantBaseline="middle"
-                            fill={isLeaf ? (node.status === 'not-started' ? '#64748b' : 'white') : '#1e293b'}
+                            fill={node.status === 'not-started' && (!node.children || node.children.length === 0) ? '#64748b' : ((depth === 0 || depth === 1) ? '#1e293b' : 'white')}
                             className="text-[10px] font-medium pointer-events-none select-none"
                             style={{
-                                textShadow: isLeaf && node.status !== 'not-started' ? '0px 1px 2px rgba(0,0,0,0.3)' : 'none',
                                 transformBox: 'fill-box',
                                 transformOrigin: 'center',
-                                // Rotate text to match angle if needed, simpler to keep horizontal for readability in concentric
                             }}
                         >
-                            {leaves > 1 || angleSpan > 20 ? (node.label.length > 15 ? node.label.slice(0, 15) + '...' : node.label) : ''}
+                            {leaves >= 1 || angleSpan > 15 ? (node.label.length > 18 ? node.label.slice(0, 18) + '...' : node.label) : ''}
                         </text>
                     )}
 
@@ -160,8 +164,7 @@ export function MosaicSunburst({ data, onSelectNode, editMode }: MosaicSunburstP
                 </g>
             );
 
-            // Se for editável e tiver espaço suficiente, mostra um botão de "add" ou "break" (mock visual)
-            if (editMode && angleSpan > 15 && isLeaf) {
+            if (editMode && angleSpan > 15 && (!node.children || node.children.length === 0)) {
                 const midAngle = currentStartAngle + angleSpan / 2;
                 const btnPos = polarToCartesian(center, center, outerR - 15, midAngle);
                 elements.push(
@@ -171,7 +174,7 @@ export function MosaicSunburst({ data, onSelectNode, editMode }: MosaicSunburstP
                         cy={btnPos.y}
                         r="4"
                         fill="white"
-                        fillOpacity="0.5"
+                        fillOpacity="0.8"
                         className="pointer-events-none"
                     />
                 );
@@ -186,10 +189,17 @@ export function MosaicSunburst({ data, onSelectNode, editMode }: MosaicSunburstP
     return (
         <div className="relative flex justify-center items-center py-4 select-none">
             <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="max-w-full h-auto">
-                {/* Center Decoration */}
-                <circle cx={center} cy={center} r={centerHoleRadius - 5} fill="var(--background)" stroke="var(--border)" strokeWidth="1" />
-                <text x={center} y={center} textAnchor="middle" dy="0.3em" className="font-bold text-xs uppercase fill-slate-400">
-                    Mandala
+                {/* Center - Mandala Label */}
+                <circle cx={center} cy={center} r={centerHoleRadius - 5} fill="black" />
+                <text
+                    x={center}
+                    y={center}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    className="text-sm font-bold tracking-widest fill-white"
+                    style={{ fontSize: '14px' }}
+                >
+                    MANDALA
                 </text>
 
                 {/* Recursive Arcs */}
