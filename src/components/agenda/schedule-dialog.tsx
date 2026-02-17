@@ -75,6 +75,18 @@ export function ScheduleDialog({ open, onOpenChange, item, onSave }: ScheduleDia
                             />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="endTime" className="text-right">
+                                Fim
+                            </Label>
+                            <Input
+                                id="endTime"
+                                type="time"
+                                value={formData.endTime || ""}
+                                onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                                className="col-span-3"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="title" className="text-right">
                                 Título
                             </Label>

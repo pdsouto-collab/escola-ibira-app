@@ -51,6 +51,7 @@ export function DailySchedule({ items, onEdit, onDelete }: DailyScheduleProps) {
                         <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4 group/card">
                             <div className="min-w-[4rem] text-sm font-bold text-slate-500 pt-0.5">
                                 {item.time}
+                                {item.endTime && <span className="text-slate-400 block text-xs">- {item.endTime}</span>}
                             </div>
 
                             <div className="flex-1 bg-white rounded-lg border border-slate-100 p-4 shadow-sm transition-all hover:shadow-md hover:border-slate-200 relative">

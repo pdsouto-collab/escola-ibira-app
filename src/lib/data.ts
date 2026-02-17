@@ -88,6 +88,7 @@ export const mockContent: Theme[] = [
 export interface ScheduleItem {
     id: string;
     time: string;
+    endTime?: string;
     title: string;
     type: "activity" | "meal" | "care";
     description?: string;
@@ -99,6 +100,7 @@ export const mockSchedule: ScheduleItem[] = [
     {
         id: "1",
         time: "08:00",
+        endTime: "09:00",
         title: "Chegada e Acolhimento",
         type: "care",
         description: "Recepção das crianças e brincadeira livre.",
@@ -106,6 +108,7 @@ export const mockSchedule: ScheduleItem[] = [
     {
         id: "2",
         time: "09:00",
+        endTime: "09:30",
         title: "Roda de Conversa",
         type: "activity",
         description: "Momento de compartilhar novidades e planejar o dia.",
@@ -113,6 +116,7 @@ export const mockSchedule: ScheduleItem[] = [
     {
         id: "3",
         time: "09:30",
+        endTime: "10:00",
         title: "Lanche da Manhã",
         type: "meal",
         description: "Frutas da estação e suco natural.",
@@ -120,6 +124,7 @@ export const mockSchedule: ScheduleItem[] = [
     {
         id: "4",
         time: "10:00",
+        endTime: "11:30",
         title: "Atividade de Pátio",
         type: "activity",
         description: "Brincadeiras dirigidas e exploração do espaço externo.",
@@ -127,6 +132,7 @@ export const mockSchedule: ScheduleItem[] = [
     {
         id: "5",
         time: "11:30",
+        endTime: "13:00",
         title: "Almoço",
         type: "meal",
         description: "Arroz, feijão, legumes e proteína.",
@@ -134,6 +140,7 @@ export const mockSchedule: ScheduleItem[] = [
     {
         id: "6",
         time: "13:00",
+        endTime: "15:00",
         title: "Descanso / Sono",
         type: "care",
         description: "Momento de repouso.",
