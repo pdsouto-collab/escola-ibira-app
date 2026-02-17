@@ -58,12 +58,12 @@ export function BulkRoutineDialog({ open, onOpenChange }: BulkRoutineDialogProps
     const [endDate, setEndDate] = useState<Date>();
     const [selectedWeekdays, setSelectedWeekdays] = useState<number[]>([1, 2, 3, 4, 5]); // Mon-Fri default
     const [templateItems, setTemplateItems] = useState<Omit<ScheduleItem, "id" | "date" | "classId">[]>([
-        { time: "08:00", title: "Chegada", type: "care", description: "" }
+        { time: "08:00", endTime: "09:00", title: "Chegada", type: "care", description: "" }
     ]);
     const [isGenerating, setIsGenerating] = useState(false);
 
     const handleAddTemplateItem = () => {
-        setTemplateItems([...templateItems, { time: "09:00", title: "", type: "activity", description: "" }]);
+        setTemplateItems([...templateItems, { time: "09:00", endTime: "10:00", title: "", type: "activity", description: "" }]);
     };
 
     const handleRemoveTemplateItem = (index: number) => {
@@ -215,6 +215,12 @@ export function BulkRoutineDialog({ open, onOpenChange }: BulkRoutineDialogProps
                                                 type="time"
                                                 value={item.time}
                                                 onChange={(e) => handleUpdateTemplateItem(index, 'time', e.target.value)}
+                                                className="w-24"
+                                            />
+                                            <Input
+                                                type="time"
+                                                value={item.endTime || ""}
+                                                onChange={(e) => handleUpdateTemplateItem(index, 'endTime', e.target.value)}
                                                 className="w-24"
                                             />
                                             <Select
