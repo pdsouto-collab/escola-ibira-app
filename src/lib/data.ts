@@ -614,6 +614,7 @@ export interface MuralEvent {
     type: "event" | "notice" | "activity";
     location?: string;
     image?: string;
+    classId?: string; // Optional: if null/undefined, it's for all classes
     comments: { id: string; author: string; text: string; date: string }[];
     likes: number;
 }

@@ -3,15 +3,25 @@
 
 
 import { useState } from "react";
-import { Plus, Calendar, MapPin, MessageCircle, User, Edit2, Check, X } from "lucide-react";
+import { Plus, Calendar, MapPin, MessageCircle, User, Edit2, Check, X, Users } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useAppStore } from "@/lib/store";
 import { MuralEvent } from "@/lib/data";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 export default function MuralPage() {
-    const { muralEvents, addMuralEvent, addCommentToEvent, currentUser } = useAppStore();
+    const { muralEvents, addMuralEvent, addCommentToEvent, currentUser, classes } = useAppStore();
     const [showNewEventForm, setShowNewEventForm] = useState(false);
+
+    // Filter State
+    const [selectedClassId, setSelectedClassId] = useState<string>("all");
 
     // New Event Form State
     const [newEvent, setNewEvent] = useState({
@@ -21,10 +31,19 @@ export default function MuralPage() {
         time: "",
         location: "",
         image: "",
+        classId: "all" // Default to all classes
     });
 
     // Comment Form State
     const [newCommentText, setNewCommentText] = useState<{ [key: string]: string }>({});
+
+    const filteredEvents = muralEvents.filter(event => {
+        if (selectedClassId === "all") return true;
+        // Show events for specific class OR global events (if applicable, but user requirement implies specific view)
+        // Let's assume strict filtering for now, or show global events AND class specific events? 
+        // Usually, a class view shows class specific + global.
+        return event.classId === selectedClassId || !event.classId || event.classId === "all";
+    });
 
     const handleCreateEvent = () => {
         if (!newEvent.title || !newEvent.date) return;
@@ -40,13 +59,14 @@ export default function MuralPage() {
             type: "event",
             location: newEvent.location,
             image: newEvent.image,
+            classId: newEvent.classId === "all" ? undefined : newEvent.classId,
             comments: [],
             likes: 0
         };
 
         addMuralEvent(event);
         setShowNewEventForm(false);
-        setNewEvent({ title: "", description: "", date: "", time: "", location: "", image: "" });
+        setNewEvent({ title: "", description: "", date: "", time: "", location: "", image: "", classId: "all" });
     };
 
     const handleAddComment = (eventId: string) => {
@@ -58,7 +78,7 @@ export default function MuralPage() {
 
     return (
         <div className="space-y-6 max-w-5xl mx-auto">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-slate-900">
                         Mural de Eventos
@@ -67,13 +87,28 @@ export default function MuralPage() {
                         Fique por dentro das novidades e celebrações da escola.
                     </p>
                 </div>
-                <button
-                    onClick={() => setShowNewEventForm(!showNewEventForm)}
-                    className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 transition-colors"
-                >
-                    {showNewEventForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                    {showNewEventForm ? "Cancelar" : "Novo Evento"}
-                </button>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <Select value={selectedClassId} onValueChange={setSelectedClassId}>
+                        <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Filtrar por turma" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todas as Turmas</SelectItem>
+                            {classes.map((c) => (
+                                <SelectItem key={c.id} value={c.id}>
+                                    {c.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <button
+                        onClick={() => setShowNewEventForm(!showNewEventForm)}
+                        className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 transition-colors whitespace-nowrap"
+                    >
+                        {showNewEventForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                        {showNewEventForm ? "Cancelar" : "Novo Evento"}
+                    </button>
+                </div>
             </div>
 
             {showNewEventForm && (
@@ -89,6 +124,27 @@ export default function MuralPage() {
                                 placeholder="Ex: Festa Junina"
                             />
                         </div>
+
+                        <div className="grid gap-2">
+                            <label className="text-sm font-medium">Turma</label>
+                            <Select
+                                value={newEvent.classId}
+                                onValueChange={(value) => setNewEvent({ ...newEvent, classId: value })}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecione a turma (ou Todas)" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Todas as Turmas</SelectItem>
+                                    {classes.map((c) => (
+                                        <SelectItem key={c.id} value={c.id}>
+                                            {c.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
                         <div className="grid gap-2">
                             <label className="text-sm font-medium">Descrição</label>
                             <textarea
@@ -183,7 +239,7 @@ export default function MuralPage() {
             )}
 
             <div className="grid gap-6">
-                {muralEvents.map((event) => (
+                {filteredEvents.map((event) => (
                     <div key={event.id} className="rounded-xl border bg-white shadow-sm overflow-hidden">
                         {event.image && (
                             <div className="h-48 w-full overflow-hidden bg-slate-100">
