@@ -104,6 +104,7 @@ export const mockSchedule: ScheduleItem[] = [
         title: "Chegada e Acolhimento",
         type: "care",
         description: "Recepção das crianças e brincadeira livre.",
+        classId: "jardim-i"
     },
     {
         id: "2",
@@ -112,6 +113,7 @@ export const mockSchedule: ScheduleItem[] = [
         title: "Roda de Conversa",
         type: "activity",
         description: "Momento de compartilhar novidades e planejar o dia.",
+        classId: "jardim-i"
     },
     {
         id: "3",
@@ -120,6 +122,7 @@ export const mockSchedule: ScheduleItem[] = [
         title: "Lanche da Manhã",
         type: "meal",
         description: "Frutas da estação e suco natural.",
+        classId: "jardim-i"
     },
     {
         id: "4",
@@ -128,6 +131,7 @@ export const mockSchedule: ScheduleItem[] = [
         title: "Atividade de Pátio",
         type: "activity",
         description: "Brincadeiras dirigidas e exploração do espaço externo.",
+        classId: "jardim-i"
     },
     {
         id: "5",
@@ -136,6 +140,7 @@ export const mockSchedule: ScheduleItem[] = [
         title: "Almoço",
         type: "meal",
         description: "Arroz, feijão, legumes e proteína.",
+        classId: "jardim-i"
     },
     {
         id: "6",
@@ -144,6 +149,7 @@ export const mockSchedule: ScheduleItem[] = [
         title: "Descanso / Sono",
         type: "care",
         description: "Momento de repouso.",
+        classId: "jardim-i"
     },
 ];
 

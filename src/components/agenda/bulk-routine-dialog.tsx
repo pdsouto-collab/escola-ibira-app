@@ -32,6 +32,7 @@ import { useAppStore } from "@/lib/store";
 interface BulkRoutineDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    defaultClassId?: string;
 }
 
 const WEEKDAYS = [
@@ -50,10 +51,10 @@ const ITEM_TYPES = [
     { value: "care", label: "Cuidado/Sono" },
 ];
 
-export function BulkRoutineDialog({ open, onOpenChange }: BulkRoutineDialogProps) {
+export function BulkRoutineDialog({ open, onOpenChange, defaultClassId }: BulkRoutineDialogProps) {
     const { schedule, updateSchedule } = useAppStore();
 
-    const [classId, setClassId] = useState<string>("");
+    const [classId, setClassId] = useState<string>(defaultClassId || "");
     const [startDate, setStartDate] = useState<Date>();
     const [endDate, setEndDate] = useState<Date>();
     const [selectedWeekdays, setSelectedWeekdays] = useState<number[]>([1, 2, 3, 4, 5]); // Mon-Fri default

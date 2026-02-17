@@ -26,10 +26,14 @@ export default function AgendaPage() {
     const [selectedClassId, setSelectedClassId] = useState<string>("jardim-i");
 
     const filteredSchedule = schedule.filter(item => {
-        const classMatch = !item.classId || item.classId === selectedClassId;
+        const classMatch = item.classId === selectedClassId; // Strict filtering
         const dateMatch = !item.date || isSameDay(new Date(item.date), selectedDate);
         return classMatch && dateMatch;
     });
+
+    // ... (rest of the component)
+
+
 
     const handleAdd = () => {
         setEditingItem(null);
@@ -169,6 +173,7 @@ export default function AgendaPage() {
             <BulkRoutineDialog
                 open={isBulkDialogOpen}
                 onOpenChange={setIsBulkDialogOpen}
+                defaultClassId={selectedClassId}
             />
         </div>
     );
