@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { mockStudents } from "@/lib/data";
+import { useState, useEffect } from "react";
+import { useAppStore } from "@/lib/store";
 import { MilestoneReport } from "@/components/reports/milestone-report";
 import { DailyLogReport } from "@/components/reports/daily-log-report";
 import { PortfolioReport } from "@/components/reports/portfolio-report";
@@ -16,13 +16,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function ReportsPage() {
+    const { students } = useAppStore();
     // Default to the first student if available
-    const [selectedStudentId, setSelectedStudentId] = useState<string>(mockStudents[0]?.id || "");
+    const [manualSelection, setManualSelection] = useState<string>("");
 
-    const selectedStudent = mockStudents.find(s => s.id === selectedStudentId);
+    // Use manual selection or default to first student
+    const selectedStudentId = manualSelection || (students.length > 0 ? students[0].id : "");
+
+    // No useEffect needed for selection logic
+
+    const selectedStudent = students.find(s => s.id === selectedStudentId);
 
     if (!selectedStudent) {
-        return <div className="p-8 text-center text-slate-500">Nenhum aluno encontrado.</div>;
+        return <div className="p-8 text-center text-slate-500">Nenhum aluno encontrado. Cadastre alunos na aba &apos;Estudantes&apos;.</div>;
     }
 
     return (
@@ -38,12 +44,12 @@ export default function ReportsPage() {
                         <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedStudent.name}`} />
                         <AvatarFallback>{selectedStudent.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                     </Avatar>
-                    <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
+                    <Select value={selectedStudentId} onValueChange={setManualSelection}>
                         <SelectTrigger className="w-[200px] border-none shadow-none focus:ring-0">
                             <SelectValue placeholder="Selecione um aluno" />
                         </SelectTrigger>
                         <SelectContent>
-                            {mockStudents.map((student) => (
+                            {students.map((student) => (
                                 <SelectItem key={student.id} value={student.id}>
                                     {student.name}
                                 </SelectItem>

@@ -21,9 +21,14 @@ const statusOptions: { value: Status; label: string; icon: React.ElementType; co
 ];
 
 export function IndicatorModal({ indicator, open, onOpenChange, onUpdateStatus }: IndicatorModalProps) {
-    if (!indicator) return null;
+    const [selectedStatus, setSelectedStatus] = useState<Status>(indicator?.status || "not-started");
 
-    const [selectedStatus, setSelectedStatus] = useState<Status>(indicator.status);
+    // Sync state when indicator changes
+    if (indicator && selectedStatus !== indicator.status) {
+        // We might need an effect or just rely on the key prop in parent to reset this component
+    }
+
+    if (!indicator) return null;
 
     // Reset status when modal opens/changes indicator
     if (open && selectedStatus !== indicator.status) {

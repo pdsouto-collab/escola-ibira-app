@@ -1,65 +1,16 @@
 "use client";
 
+
+
 import { useState } from "react";
 import { Plus, Calendar, MapPin, MessageCircle, User, Edit2, Check, X } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-
-interface Comment {
-    id: string;
-    author: string;
-    role: "Professor" | "Responsável" | "Coordenação";
-    text: string;
-    date: Date;
-}
-
-interface Event {
-    id: string;
-    title: string;
-    description: string;
-    date: Date;
-    location: string;
-    image?: string;
-    comments: Comment[];
-}
+import { useAppStore } from "@/lib/store";
+import { MuralEvent } from "@/lib/data";
 
 export default function MuralPage() {
-    const [events, setEvents] = useState<Event[]>([
-        {
-            id: "1",
-            title: "Festa da Primavera",
-            description: "Celebração da chegada da primavera com apresentações dos alunos e comidas típicas.",
-            date: new Date(2024, 8, 22, 14, 0),
-            location: "Pátio Central",
-            image: "/escola-ibira-app/images/festa-primavera.svg",
-            comments: [
-                {
-                    id: "c1",
-                    author: "Maria S.",
-                    role: "Responsável",
-                    text: "Estamos ansiosos! Precisa levar algo?",
-                    date: new Date(2024, 8, 20, 10, 30),
-                },
-                {
-                    id: "c2",
-                    author: "Prof. Ana",
-                    role: "Professor",
-                    text: "Apenas alegria e disposição, Maria!",
-                    date: new Date(2024, 8, 20, 11, 15),
-                },
-            ],
-        },
-        {
-            id: "2",
-            title: "Reunião Pedagógica",
-            description: "Encontro para discutir o desenvolvimento das crianças no semestre.",
-            date: new Date(2024, 9, 10, 19, 0),
-            location: "Auditório",
-            comments: [],
-        },
-    ]);
-
-    const [isEditing, setIsEditing] = useState<string | null>(null);
+    const { muralEvents, addMuralEvent, addCommentToEvent, currentUser } = useAppStore();
     const [showNewEventForm, setShowNewEventForm] = useState(false);
 
     // New Event Form State
@@ -77,18 +28,21 @@ export default function MuralPage() {
     const handleCreateEvent = () => {
         if (!newEvent.title || !newEvent.date) return;
 
-        const eventDate = new Date(`${newEvent.date}T${newEvent.time || "00:00"}`);
+        const eventDate = `${newEvent.date}T${newEvent.time || "00:00"}`;
 
-        const event: Event = {
+        const event: MuralEvent = {
             id: Math.random().toString(36).substr(2, 9),
             title: newEvent.title,
             description: newEvent.description,
             date: eventDate,
+            author: currentUser.name,
+            type: "event",
             location: newEvent.location,
             comments: [],
+            likes: 0
         };
 
-        setEvents([event, ...events]);
+        addMuralEvent(event);
         setShowNewEventForm(false);
         setNewEvent({ title: "", description: "", date: "", time: "", location: "" });
     };
@@ -96,22 +50,7 @@ export default function MuralPage() {
     const handleAddComment = (eventId: string) => {
         const text = newCommentText[eventId];
         if (!text?.trim()) return;
-
-        const comment: Comment = {
-            id: Math.random().toString(36).substr(2, 9),
-            author: "Eu (Admin)", // Mock user
-            role: "Coordenação",
-            text: text,
-            date: new Date(),
-        };
-
-        setEvents(events.map(e => {
-            if (e.id === eventId) {
-                return { ...e, comments: [...e.comments, comment] };
-            }
-            return e;
-        }));
-
+        addCommentToEvent(eventId, text);
         setNewCommentText({ ...newCommentText, [eventId]: "" });
     };
 
@@ -198,10 +137,11 @@ export default function MuralPage() {
             )}
 
             <div className="grid gap-6">
-                {events.map((event) => (
+                {muralEvents.map((event) => (
                     <div key={event.id} className="rounded-xl border bg-white shadow-sm overflow-hidden">
                         {event.image && (
                             <div className="h-48 w-full overflow-hidden bg-slate-100">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img src={event.image} alt={event.title} className="h-full w-full object-cover" />
                             </div>
                         )}
@@ -212,12 +152,14 @@ export default function MuralPage() {
                                     <div className="flex items-center gap-4 text-sm text-slate-500 mt-2">
                                         <span className="flex items-center gap-1">
                                             <Calendar className="h-4 w-4" />
-                                            {format(event.date, "dd 'de' MMMM 'às' HH:mm", { locale: ptBR })}
+                                            {format(new Date(event.date), "dd 'de' MMMM 'às' HH:mm", { locale: ptBR })}
                                         </span>
-                                        <span className="flex items-center gap-1">
-                                            <MapPin className="h-4 w-4" />
-                                            {event.location}
-                                        </span>
+                                        {event.location && (
+                                            <span className="flex items-center gap-1">
+                                                <MapPin className="h-4 w-4" />
+                                                {event.location}
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -237,12 +179,9 @@ export default function MuralPage() {
                                                 <span className="font-semibold text-slate-900 flex items-center gap-2">
                                                     <User className="h-3 w-3" />
                                                     {comment.author}
-                                                    <span className="text-xs font-normal px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">
-                                                        {comment.role}
-                                                    </span>
                                                 </span>
                                                 <span className="text-slate-400 text-xs">
-                                                    {format(comment.date, "dd/MM HH:mm")}
+                                                    {format(new Date(comment.date), "dd/MM HH:mm")}
                                                 </span>
                                             </div>
                                             <p className="text-slate-700">{comment.text}</p>

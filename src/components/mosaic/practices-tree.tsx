@@ -47,6 +47,7 @@ export function PracticesTree({ data, onSelectNode, editMode }: PracticesTreePro
             <div className="relative w-[800px] h-[1000px] max-w-full">
 
                 {/* 1. Base Image */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                     src="/escola-ibira-app/mosaico/tree-structure.png"
                     alt="Árvore de Práticas"
@@ -69,12 +70,14 @@ export function PracticesTree({ data, onSelectNode, editMode }: PracticesTreePro
                         d="M260 850 C 260 850, 150 900, 100 950 L 200 980 C 250 950, 350 900, 380 850 Z"
                         fill={editMode ? "rgba(66, 153, 225, 0.5)" : "transparent"}
                         className="cursor-pointer transition-opacity hover:fill-blue-500/20 pointer-events-auto"
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         onClick={() => onSelectNode({ id: "root-social", label: "Social", type: "root", status: "achieved" } as any)}
                     />
                     <path
                         d="M400 850 C 400 850, 380 920, 350 980 L 450 980 C 420 920, 420 850, 420 850 Z"
                         fill={editMode ? "rgba(230, 126, 34, 0.5)" : "transparent"}
                         className="cursor-pointer transition-opacity hover:fill-orange-500/20 pointer-events-auto"
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         onClick={() => onSelectNode({ id: "root-cog", label: "Cognitivo", type: "root", status: "achieved" } as any)}
                     />
 
@@ -83,6 +86,7 @@ export function PracticesTree({ data, onSelectNode, editMode }: PracticesTreePro
                         d="M360 850 L 360 650 Q 350 600 300 550 L 500 550 Q 450 600 440 650 L 440 850 Z"
                         fill={editMode ? "rgba(100, 100, 100, 0.5)" : "transparent"}
                         className="cursor-pointer transition-opacity hover:fill-white/10 pointer-events-auto"
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         onClick={() => onSelectNode({ id: "trunk-main", label: "Tronco Principal", type: "trunk", status: "in-progress" } as any)}
                     />
 
@@ -92,7 +96,10 @@ export function PracticesTree({ data, onSelectNode, editMode }: PracticesTreePro
                         d="M300 550 Q 150 500 100 350 L 150 320 Q 200 450 340 520 Z"
                         fill={editMode ? "rgba(72, 187, 120, 0.5)" : "transparent"}
                         className="cursor-pointer transition-opacity hover:fill-green-500/20 pointer-events-auto"
-                        onClick={() => onSelectNode({ id: "natureza", label: "Natureza e Sociedade", type: "area", status: "in-progress" } as any)}
+                        onClick={() => {
+                            const node = findNode("natureza");
+                            if (node) onSelectNode(node);
+                        }}
                     />
 
                     {/* Right Branch - Linguagem */}
@@ -100,7 +107,10 @@ export function PracticesTree({ data, onSelectNode, editMode }: PracticesTreePro
                         d="M500 550 Q 650 500 700 350 L 650 320 Q 600 450 460 520 Z"
                         fill={editMode ? "rgba(128, 90, 213, 0.5)" : "transparent"}
                         className="cursor-pointer transition-opacity hover:fill-purple-500/20 pointer-events-auto"
-                        onClick={() => onSelectNode({ id: "linguagem", label: "Linguagem", type: "area", status: "in-progress" } as any)}
+                        onClick={() => {
+                            const node = findNode("linguagem");
+                            if (node) onSelectNode(node);
+                        }}
                     />
 
                     {/* Top Branch - Artes */}
@@ -108,7 +118,10 @@ export function PracticesTree({ data, onSelectNode, editMode }: PracticesTreePro
                         d="M380 500 L 380 300 L 420 300 L 420 500 Z"
                         fill={editMode ? "rgba(41, 128, 185, 0.5)" : "transparent"}
                         className="cursor-pointer transition-opacity hover:fill-blue-500/20 pointer-events-auto"
-                        onClick={() => onSelectNode({ id: "artes", label: "Artes", type: "area", status: "in-progress" } as any)}
+                        onClick={() => {
+                            const node = findNode("artes");
+                            if (node) onSelectNode(node);
+                        }}
                     />
 
                 </svg>

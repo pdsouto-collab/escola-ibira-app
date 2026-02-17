@@ -7,10 +7,26 @@ import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { cn } from "@/lib/utils";
 
-export function BNCCSelector() {
+interface BNCCSelectorProps {
+    selected?: string[];
+    onSelect?: (skills: string[]) => void;
+}
+
+export function BNCCSelector({ selected = [], onSelect }: BNCCSelectorProps) {
     const [searchTerm, setSearchTerm] = useState("");
     const [expandedSubjects, setExpandedSubjects] = useState<string[]>(["ciencias"]);
-    const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+    // Remove local state if controlled, or keep sync
+    const [itemState, setItemState] = useState<string[]>([]);
+
+    const selectedSkills = onSelect ? selected : itemState;
+
+    const handleSelect = (newSelection: string[]) => {
+        if (onSelect) {
+            onSelect(newSelection);
+        } else {
+            setItemState(newSelection);
+        }
+    };
 
     const filteredData = mockBNCCData.map(subject => ({
         ...subject,
@@ -28,9 +44,10 @@ export function BNCCSelector() {
     };
 
     const toggleSkill = (code: string) => {
-        setSelectedSkills(prev =>
-            prev.includes(code) ? prev.filter(s => s !== code) : [...prev, code]
-        );
+        const newSelection = selectedSkills.includes(code)
+            ? selectedSkills.filter(s => s !== code)
+            : [...selectedSkills, code];
+        handleSelect(newSelection);
     };
 
     return (
@@ -119,7 +136,7 @@ export function BNCCSelector() {
 
                 {filteredData.length === 0 && (
                     <div className="text-center py-12 text-slate-500">
-                        Nenhuma habilidade encontrada para "{searchTerm}".
+                        Nenhuma habilidade encontrada para &quot;{searchTerm}&quot;.
                     </div>
                 )}
             </div>

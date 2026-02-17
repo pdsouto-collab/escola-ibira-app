@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAppStore } from "@/lib/store";
 import { MosaicNode, mockRecursiveDataSkills, mockRecursiveDataContent } from "@/lib/data";
 import { MosaicSunburst } from "./mosaic-sunburst";
 import { MonalMosaic } from "./monal-mosaic"; // Keeping for reference/fallback
@@ -14,16 +15,29 @@ import { Bell, Edit3, Search } from "lucide-react";
 import { Button } from "../ui/button";
 
 export function MosaicContainer() {
+    const { mosaicData, replaceMosaicData, updateMosaicNode } = useAppStore();
     const [selectedNode, setSelectedNode] = useState<MosaicNode | null>(null);
     const [editMode, setEditMode] = useState(false);
     const [activeTab, setActiveTab] = useState<"skills" | "content">("skills");
 
-    // Local state for the trees to allow editing
-    const [skillsData, setSkillsData] = useState(mockRecursiveDataSkills);
+    // Local state for content (still local as it's not in store yet)
     const [contentData, setContentData] = useState(mockRecursiveDataContent);
 
-    const currentData = activeTab === "skills" ? skillsData : contentData;
-    const setCurrentData = activeTab === "skills" ? setSkillsData : setContentData;
+    // Derived state for display
+    const currentData = activeTab === "skills" ? mosaicData : contentData;
+
+    // unified setter that routes to store or local state
+    const setCurrentData = (updater: (prev: MosaicNode[]) => MosaicNode[]) => {
+        if (activeTab === "skills") {
+            // wrapper to handle functional updates for store
+            // Since we can't easily pass functional update to store action if it doesn't support it,
+            // we calculate new state here.
+            const newData = updater(mosaicData);
+            replaceMosaicData(newData);
+        } else {
+            setContentData(updater);
+        }
+    };
 
     // --- Editing Logic ---
 
@@ -50,7 +64,7 @@ export function MosaicContainer() {
             });
         };
 
-        setCurrentData(prev => splitRecursive(prev));
+        setCurrentData(splitRecursive);
     };
 
     const handleRemoveNode = (nodeId: string) => {
@@ -65,7 +79,7 @@ export function MosaicContainer() {
             });
         };
 
-        setCurrentData(prev => removeRecursive(prev));
+        setCurrentData(removeRecursive);
         if (selectedNode?.id === nodeId) setSelectedNode(null);
     };
 
@@ -84,7 +98,7 @@ export function MosaicContainer() {
             });
         };
 
-        setCurrentData(prev => renameRecursive(prev));
+        setCurrentData(renameRecursive);
 
         // Update selected node locally if it's the one being renamed
         if (selectedNode?.id === nodeId) {
@@ -104,6 +118,13 @@ export function MosaicContainer() {
                     onSplit={(parts) => selectedNode && handleSplitNode(selectedNode.id, parts)}
                     onRemove={() => selectedNode && handleRemoveNode(selectedNode.id)}
                     onRename={(newLabel) => selectedNode && handleRenameNode(selectedNode.id, newLabel)}
+                    onStatusChange={(status) => {
+                        if (selectedNode) {
+                            updateMosaicNode(selectedNode.id, status);
+                            // Update local selection to reflect change immediately
+                            setSelectedNode(prev => prev ? { ...prev, status } : null);
+                        }
+                    }}
                 />
             </div>
 

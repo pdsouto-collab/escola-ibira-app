@@ -1,6 +1,11 @@
 "use client";
 
+
+
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAppStore } from "@/lib/store";
+import { Project } from "@/lib/data";
 
 import { BNCCSelector } from "@/components/bncc/bncc-selector";
 import { Button } from "@/components/ui/button";
@@ -12,6 +17,8 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 export default function NewProjectWizard() {
+    const router = useRouter();
+    const { addProject } = useAppStore();
     const [currentStep, setCurrentStep] = useState(1);
 
     // Mock State for Form Data
@@ -22,6 +29,20 @@ export default function NewProjectWizard() {
         bnccSkills: [] as string[],
         schedule: ""
     });
+
+    const handleSave = () => {
+        const newProject: Project = {
+            id: Math.random().toString(36).substr(2, 9),
+            title: formData.title || "Novo Projeto",
+            description: formData.description,
+            status: "planning",
+            startDate: new Date().toISOString(),
+            students: [], // Could map classes here
+            tags: formData.bnccSkills.length > 0 ? formData.bnccSkills.slice(0, 3) : ["Pedagógico"]
+        };
+        addProject(newProject);
+        router.push("/projetos");
+    };
 
     const steps = [
         { id: 1, label: "Detalhes" },
@@ -119,8 +140,10 @@ export default function NewProjectWizard() {
                     {/* Step 3: BNCC (Integrated) */}
                     {currentStep === 3 && (
                         <div className="animate-in fade-in slide-in-from-right-4 duration-300 h-full">
-                            {/* Reuse the BNCCSelector component here */}
-                            <BNCCSelector />
+                            <BNCCSelector
+                                selected={formData.bnccSkills}
+                                onSelect={(skills) => setFormData({ ...formData, bnccSkills: skills })}
+                            />
                         </div>
                     )}
 
@@ -161,18 +184,17 @@ export default function NewProjectWizard() {
                         <ChevronRight className="w-4 h-4" />
                     </Button>
                 ) : (
-                    <Link href="/projetos">
-                        <Button className="gap-2 px-8 bg-green-600 hover:bg-green-700">
-                            <Save className="w-4 h-4" />
-                            Finalizar Projeto
-                        </Button>
-                    </Link>
+                    <Button onClick={handleSave} className="gap-2 px-8 bg-green-600 hover:bg-green-700">
+                        <Save className="w-4 h-4" />
+                        Finalizar Projeto
+                    </Button>
                 )}
             </div>
         </div>
     );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function Calendar(props: any) {
     return (
         <svg

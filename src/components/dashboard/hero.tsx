@@ -3,7 +3,11 @@
 import { Bell, Search } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
+import { useAppStore } from "@/lib/store";
+
 export function DashboardHero() {
+    const { currentUser } = useAppStore();
+
     return (
         <div className="relative w-full rounded-3xl overflow-hidden bg-gradient-to-br from-[#2E798A] to-[#4A6C58] text-white p-8 md:p-12 mb-8 shadow-lg">
             {/* Background Decorations (Organic Shapes) */}
@@ -16,8 +20,8 @@ export function DashboardHero() {
                     <Bell className="w-5 h-5 text-white" />
                 </button>
                 <Avatar className="border-2 border-white/50 cursor-pointer">
-                    <AvatarImage src="https://github.com/shadcn.png" />
-                    <AvatarFallback>JD</AvatarFallback>
+                    <AvatarImage src={currentUser?.avatar || "https://github.com/shadcn.png"} />
+                    <AvatarFallback>{currentUser?.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
             </div>
 
@@ -25,16 +29,16 @@ export function DashboardHero() {
             <div className="relative z-10 mt-4 flex flex-col md:flex-row items-center justify-between">
                 <div className="max-w-lg">
                     <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                        Olá, <span className="underline decoration-wavy decoration-[#E89F67]">Ana Pereira</span>
+                        Olá, <span className="underline decoration-wavy decoration-[#E89F67]">{currentUser?.name}</span>
                     </h1>
                     <p className="text-lg md:text-xl text-white/90 leading-relaxed">
                         Bem-vinda de volta! Aqui está o resumo das suas atividades e pendências escolares.
                     </p>
                 </div>
-                
+
                 {/* Tree Illustration */}
                 <div className="hidden md:block absolute right-0 bottom-0 opacity-20 md:opacity-100 md:relative md:w-48 md:h-48 text-white/90 translate-y-6 md:translate-y-0">
-                     <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full drop-shadow-lg">
+                    <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full drop-shadow-lg">
                         {/* Trunk */}
                         <path d="M95 180V120C95 120 85 140 75 120C65 100 95 80 95 80V120H105V80C105 80 135 100 125 120C115 140 105 120 105 120V180H95Z" fill="#5D4037" />
                         {/* Leaves - Bottom Layer */}

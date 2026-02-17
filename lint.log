@@ -1,0 +1,158 @@
+
+> education-mosaic@0.1.0 lint
+> eslint
+
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\app\agenda\page.tsx
+  27:9  warning  Unused eslint-disable directive (no problems were reported from 'no-restricted-globals')
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\app\alunos\[id]\page.tsx
+  3:46  warning  'Student' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\app\alunos\page.tsx
+  25:9  warning  Unused eslint-disable directive (no problems were reported from 'no-restricted-globals')
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\app\conversas\page.tsx
+  27:11  warning  The 'activeMessages' conditional could make the dependencies of useEffect Hook (at line 35) change on every render. To fix this, wrap the initialization of 'activeMessages' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\app\layout.tsx
+  5:10  warning  'Header' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\app\mural\page.tsx
+  4:55  warning  'Edit2' is defined but never used  @typescript-eslint/no-unused-vars
+  4:62  warning  'Check' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\app\projetos\novo\page.tsx
+  65:39  warning  'index' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\app\projetos\page.tsx
+  14:10  warning  'ptBR' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\app\relatorios\page.tsx
+  25:13   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\app\relatorios\page.tsx:25:13
+  23 |     useEffect(() => {
+  24 |         if (students.length > 0 && !selectedStudentId) {
+> 25 |             setSelectedStudentId(students[0].id);
+     |             ^^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  26 |         }
+  27 |     }, [students, selectedStudentId]);
+  28 |  react-hooks/set-state-in-effect
+  32:112  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          react/no-unescaped-entities
+  32:123  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          react/no-unescaped-entities
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\components\agenda\daily-schedule.tsx
+   5:10  warning  'Coffee' is defined but never used  @typescript-eslint/no-unused-vars
+   5:34  warning  'Sun' is defined but never used     @typescript-eslint/no-unused-vars
+  29:31  warning  'index' is defined but never used   @typescript-eslint/no-unused-vars
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\components\agenda\schedule-dialog.tsx
+  44:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\components\agenda\schedule-dialog.tsx:44:13
+  42 |     useEffect(() => {
+  43 |         if (item) {
+> 44 |             setFormData(item);
+     |             ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  45 |         } else {
+  46 |             setFormData(emptyItem);
+  47 |         }  react-hooks/set-state-in-effect
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\components\bncc\bncc-selector.tsx
+    4:24  warning  'BNCCSkill' is defined but never used                            @typescript-eslint/no-unused-vars
+  139:60  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  139:73  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\components\dashboard\daily-highlights.tsx
+  3:10  warning  'ArrowRight' is defined but never used    @typescript-eslint/no-unused-vars
+  3:32  warning  'Calendar' is defined but never used      @typescript-eslint/no-unused-vars
+  3:68  warning  'CheckCircle2' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\components\dashboard\hero.tsx
+  3:16  warning  'Search' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\components\layout\sidebar.tsx
+  11:5  warning  'Settings' is defined but never used  @typescript-eslint/no-unused-vars
+  13:5  warning  'Video' is defined but never used     @typescript-eslint/no-unused-vars
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\components\mosaic\indicator-modal.tsx
+  26:49  error  React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\components\mosaic\mosaic-container.tsx
+   5:22  warning  'mockRecursiveDataSkills' is defined but never used  @typescript-eslint/no-unused-vars
+   6:10  warning  'MosaicSunburst' is defined but never used           @typescript-eslint/no-unused-vars
+   7:10  warning  'MonalMosaic' is defined but never used              @typescript-eslint/no-unused-vars
+  14:10  warning  'Bell' is defined but never used                     @typescript-eslint/no-unused-vars
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\components\mosaic\mosaic-detail-panel.tsx
+  71:77  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\components\mosaic\mosaic-sunburst.tsx
+  50:7   warning  'STATUS_OPACITY' is assigned a value but never used                                                           @typescript-eslint/no-unused-vars
+  77:55  warning  React Hook useMemo has a missing dependency: 'getMaxDepth'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\components\mosaic\practices-tree.tsx
+   5:10   warning  'motion' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+  15:7    warning  'ZONES' is assigned a value but never used                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+  32:12   warning  'hoveredZone' is assigned a value but never used                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+  32:25   warning  'setHoveredZone' is assigned a value but never used                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+  50:17   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  72:129  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  78:129  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  86:142  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\components\reports\daily-log-report.tsx
+  81:25  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  81:37  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  91:20  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  96:20  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\components\reports\milestone-report.tsx
+  3:32  warning  'Theme' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\components\students\student-dialog.tsx
+  45:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\components\students\student-dialog.tsx:45:13
+  43 |     useEffect(() => {
+  44 |         if (student) {
+> 45 |             setFormData(student);
+     |             ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  46 |         } else {
+  47 |             setFormData(emptyStudent);
+  48 |         }  react-hooks/set-state-in-effect
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\components\ui\input.tsx
+  6:18  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\components\ui\textarea.tsx
+  5:18  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+
+C:\Users\silvi\.gemini\antigravity\scratch\education-mosaic\src\lib\store.tsx
+  125:80  error    Unexpected any. Specify a different type                                                        @typescript-eslint/no-explicit-any
+  125:99  error    Unexpected any. Specify a different type                                                        @typescript-eslint/no-explicit-any
+  149:9   warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+  219:9   warning  Unused eslint-disable directive (no problems were reported from 'no-restricted-globals')
+
+✖ 53 problems (20 errors, 33 warnings)
+  0 errors and 4 warnings potentially fixable with the `--fix` option.
+

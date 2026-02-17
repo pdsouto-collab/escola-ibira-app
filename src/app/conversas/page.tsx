@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { mockContacts, mockMessages, Contact, Message } from "@/lib/data";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { mockContacts, Contact, ChatMessage } from "@/lib/data";
+import { useAppStore } from "@/lib/store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,8 +11,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, Send, MoveLeft } from "lucide-react";
 
 export default function ChatPage() {
+    const { messages, sendMessage } = useAppStore();
     const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
-    const [messages, setMessages] = useState<Message[]>(mockMessages);
     const [inputText, setInputText] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -23,7 +24,10 @@ export default function ChatPage() {
     );
 
     // Filter messages for selected contact
-    const activeMessages = messages.filter(m => m.contactId === selectedContact?.id);
+    const activeMessages = useMemo(() => selectedContact ? messages.filter(m =>
+        (m.senderId === selectedContact.id && m.receiverId === "me") ||
+        (m.senderId === "me" && m.receiverId === selectedContact.id)
+    ) : [], [selectedContact, messages]);
 
     // Auto-scroll to bottom of messages
     useEffect(() => {
@@ -33,15 +37,16 @@ export default function ChatPage() {
     const handleSendMessage = () => {
         if (!inputText.trim() || !selectedContact) return;
 
-        const newMessage: Message = {
-            id: `new-${Date.now()}`,
-            contactId: selectedContact.id,
-            sender: "me",
+        const newMessage: ChatMessage = {
+            id: `msg-${Date.now()}`,
+            senderId: "me",
+            receiverId: selectedContact.id,
             content: inputText,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            read: true
         };
 
-        setMessages([...messages, newMessage]);
+        sendMessage(newMessage);
         setInputText("");
     };
 
@@ -129,10 +134,10 @@ export default function ChatPage() {
                                 {activeMessages.map(msg => (
                                     <div
                                         key={msg.id}
-                                        className={`flex flex-col max-w-[80%] ${msg.sender === 'me' ? 'self-end items-end' : 'self-start items-start'}`}
+                                        className={`flex flex-col max-w-[80%] ${msg.senderId === 'me' ? 'self-end items-end' : 'self-start items-start'}`}
                                     >
                                         <div
-                                            className={`px-4 py-2 rounded-2xl shadow-sm text-sm ${msg.sender === 'me'
+                                            className={`px-4 py-2 rounded-2xl shadow-sm text-sm ${msg.senderId === 'me'
                                                 ? 'bg-primary text-white rounded-tr-none'
                                                 : 'bg-white text-slate-800 rounded-tl-none border'
                                                 }`}

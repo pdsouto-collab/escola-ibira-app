@@ -2,10 +2,13 @@
 
 import { ScheduleItem } from "@/lib/data";
 import { cn } from "@/lib/utils";
-import { Coffee, Utensils, Moon, Sun, BookOpen, Clock } from "lucide-react";
+import { Coffee, Utensils, Moon, Sun, BookOpen, Clock, Pencil, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface DailyScheduleProps {
     items: ScheduleItem[];
+    onEdit?: (item: ScheduleItem) => void;
+    onDelete?: (item: ScheduleItem) => void;
 }
 
 const typeIcons = {
@@ -20,7 +23,7 @@ const typeColors = {
     care: "bg-amber-100 text-amber-600 border-amber-200",
 };
 
-export function DailySchedule({ items }: DailyScheduleProps) {
+export function DailySchedule({ items, onEdit, onDelete }: DailyScheduleProps) {
     return (
         <div className="relative border-l border-slate-200 ml-3 space-y-8 py-2">
             {items.map((item, index) => {
@@ -45,12 +48,12 @@ export function DailySchedule({ items }: DailyScheduleProps) {
                             )} />
                         </div>
 
-                        <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+                        <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4 group/card">
                             <div className="min-w-[4rem] text-sm font-bold text-slate-500 pt-0.5">
                                 {item.time}
                             </div>
 
-                            <div className="flex-1 bg-white rounded-lg border border-slate-100 p-4 shadow-sm transition-all hover:shadow-md hover:border-slate-200">
+                            <div className="flex-1 bg-white rounded-lg border border-slate-100 p-4 shadow-sm transition-all hover:shadow-md hover:border-slate-200 relative">
                                 <div className="flex items-start justify-between gap-4">
                                     <div>
                                         <h3 className="font-semibold text-slate-800">{item.title}</h3>
@@ -62,6 +65,17 @@ export function DailySchedule({ items }: DailyScheduleProps) {
                                         <Icon className="h-4 w-4" />
                                     </div>
                                 </div>
+
+                                {onEdit && (
+                                    <div className="absolute top-2 right-2 opacity-0 group-hover/card:opacity-100 transition-opacity flex gap-1 bg-white/80 p-1 rounded-md">
+                                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => onEdit(item)}>
+                                            <Pencil className="h-3 w-3 text-slate-500" />
+                                        </Button>
+                                        <Button variant="ghost" size="icon" className="h-6 w-6 hover:text-red-500" onClick={() => onDelete?.(item)}>
+                                            <Trash2 className="h-3 w-3" />
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

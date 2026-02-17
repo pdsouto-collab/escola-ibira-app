@@ -566,3 +566,50 @@ export const mockMessages: Message[] = [
     { id: "m5", contactId: "c2", sender: "them", content: "Obrigado pelas fotos! Ele adorou.", timestamp: "14:15" }
 ];
 
+export interface Task {
+    id: string;
+    title: string;
+    completed: boolean;
+    dueDate?: string;
+    assignee?: string;
+    priority: "low" | "medium" | "high";
+}
+
+export interface MuralEvent {
+    id: string;
+    title: string;
+    description: string;
+    date: string;
+    author: string;
+    type: "event" | "notice" | "activity";
+    location?: string;
+    image?: string;
+    comments: { id: string; author: string; text: string; date: string }[];
+    likes: number;
+}
+
+export interface Project {
+    id: string;
+    title: string;
+    description: string;
+    status: "planning" | "active" | "completed";
+    startDate: string;
+    students: string[]; // IDs
+    tags: string[];
+}
+
+export interface ChatMessage {
+    id: string;
+    senderId: string;
+    receiverId: string;
+    content: string;
+    timestamp: string;
+    read: boolean;
+}
+
+export const mockTasks: Task[] = [
+    { id: "1", title: "Enviar documentação de matrícula", completed: false, priority: "high" },
+    { id: "2", title: "Assinar autorização de passeio", completed: true, priority: "medium" },
+    { id: "3", title: "Atualizar ficha médica", completed: false, priority: "low" },
+];
+

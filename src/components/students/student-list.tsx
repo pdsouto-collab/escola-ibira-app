@@ -8,9 +8,11 @@ import { Search } from "lucide-react";
 
 interface StudentListProps {
     students: Student[];
+    onEdit?: (student: Student) => void;
+    onDelete?: (student: Student) => void;
 }
 
-export function StudentList({ students }: StudentListProps) {
+export function StudentList({ students, onEdit, onDelete }: StudentListProps) {
     const [searchTerm, setSearchTerm] = useState("");
 
     const filteredStudents = students.filter(student =>
@@ -32,7 +34,12 @@ export function StudentList({ students }: StudentListProps) {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {filteredStudents.map((student) => (
-                    <StudentCard key={student.id} student={student} />
+                    <StudentCard
+                        key={student.id}
+                        student={student}
+                        onEdit={onEdit}
+                        onDelete={onDelete}
+                    />
                 ))}
             </div>
 

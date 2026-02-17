@@ -1,6 +1,6 @@
 "use client";
 
-import { mockDailyLogs } from "@/lib/data";
+import { useAppStore } from "@/lib/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarDays, Utensils, Moon, Smile, Meh, Frown, Sparkles } from "lucide-react";
 
@@ -9,8 +9,9 @@ interface DailyLogReportProps {
 }
 
 export function DailyLogReport({ studentId }: DailyLogReportProps) {
+    const { dailyLogs } = useAppStore();
     // Determine today's date or filter by available log. For mock purposes, we get the first log for the student or null.
-    const log = mockDailyLogs.find(l => l.studentId === studentId);
+    const log = dailyLogs.find(l => l.studentId === studentId);
 
     if (!log) {
         return (
@@ -77,7 +78,7 @@ export function DailyLogReport({ studentId }: DailyLogReportProps) {
 
                     {/* Notes */}
                     <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100 text-yellow-900 italic">
-                        "{log.notes}"
+                        &quot;{log.notes}&quot;
                     </div>
                 </CardContent>
             </Card>
@@ -87,12 +88,12 @@ export function DailyLogReport({ studentId }: DailyLogReportProps) {
 
 function MealCard({ title, status }: { title: string, status: string }) {
     const getStatusText = (s: string) => {
-        const map: any = { "all": "Tudo", "most": "Maioria", "some": "Pouco", "none": "Nada" };
+        const map: Record<string, string> = { "all": "Tudo", "most": "Maioria", "some": "Pouco", "none": "Nada" };
         return map[s] || s;
     };
 
     const getStatusColor = (s: string) => {
-        const map: any = { "all": "bg-green-100 text-green-700", "most": "bg-blue-100 text-blue-700", "some": "bg-orange-100 text-orange-700", "none": "bg-red-100 text-red-700" };
+        const map: Record<string, string> = { "all": "bg-green-100 text-green-700", "most": "bg-blue-100 text-blue-700", "some": "bg-orange-100 text-orange-700", "none": "bg-red-100 text-red-700" };
         return map[s] || "bg-slate-100 text-slate-700";
     };
 

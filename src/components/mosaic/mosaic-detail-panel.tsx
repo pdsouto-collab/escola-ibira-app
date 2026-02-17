@@ -11,9 +11,10 @@ interface MosaicDetailPanelProps {
     onSplit?: (parts: number) => void;
     onRemove?: () => void;
     onRename?: (newLabel: string) => void;
+    onStatusChange?: (newStatus: "not-started" | "in-progress" | "achieved") => void;
 }
 
-export function MosaicDetailPanel({ node, editMode, onSplit, onRemove, onRename }: MosaicDetailPanelProps) {
+export function MosaicDetailPanel({ node, editMode, onSplit, onRemove, onRename, onStatusChange }: MosaicDetailPanelProps) {
     if (!node) {
         return (
             <div className="h-full flex flex-col items-center justify-center p-8 text-center bg-slate-50 border-r border-slate-200">
@@ -64,9 +65,17 @@ export function MosaicDetailPanel({ node, editMode, onSplit, onRemove, onRename 
                     <span>Detalhes</span>
                 </div>
 
-                <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusMap[node.status]?.color || "bg-slate-100"}`}>
-                    {statusMap[node.status]?.text || "Indefinido"}
-                    {node.evidenceCount ? ` (${node.evidenceCount} ev.)` : ""}
+                <div className="flex items-center gap-2">
+                    <select
+                        value={node.status as string}
+                        onChange={(e) => onStatusChange?.(e.target.value as "not-started" | "in-progress" | "achieved")}
+                        className={`px-3 py-1 rounded-full text-xs font-medium border-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 cursor-pointer appearance-none ${statusMap[node.status]?.color || "bg-slate-100"}`}
+                    >
+                        <option value="not-started">Não Iniciado</option>
+                        <option value="in-progress">Em Desenvolvimento</option>
+                        <option value="achieved">Desenvolvido</option>
+                    </select>
+                    {node.evidenceCount ? <span className="text-xs text-slate-400">({node.evidenceCount} ev.)</span> : null}
                 </div>
             </div>
 

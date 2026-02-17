@@ -1,0 +1,23 @@
+[33m[1m⚠[22m[39m `eslint` configuration in next.config.js is no longer supported. See more info here: https://nextjs.org/docs/app/api-reference/cli/next#next-lint-options
+[33m[1m⚠[22m[39m Invalid next.config.js options detected: 
+[33m[1m⚠[22m[39m     Unrecognized key(s) in object: 'eslint'
+[33m[1m⚠[22m[39m See more info here: https://nextjs.org/docs/messages/invalid-next-config
+
+> Build error occurred
+Error: Turbopack build failed with 1 errors:
+./src/app/alunos/page.tsx:1:10
+Ecmascript file had an error
+[0m[31m[1m>[22m[39m[90m 1 |[39m [36mimport[39m { useState } [36mfrom[39m [32m"react"[39m[33m;[39m
+ [90m   |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 2 |[39m [36mimport[39m { [33mStudentList[39m } [36mfrom[39m [32m"@/components/students/student-list"[39m[33m;[39m
+ [90m 3 |[39m [36mimport[39m { useAppStore } [36mfrom[39m [32m"@/lib/store"[39m[33m;[39m
+ [90m 4 |[39m [36mimport[39m { [33mButton[39m } [36mfrom[39m [32m"@/components/ui/button"[39m[33m;[39m[0m
+
+You're importing a component that needs `useState`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
+
+ Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+
+
+
+
+    at <unknown> (./src/app/alunos/page.tsx:1:10)

@@ -7,35 +7,27 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Folder, Calendar, MoreVertical } from "lucide-react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
-const mockProjects = [
-    {
-        id: 1,
-        title: "Explorando os Sentidos",
-        description: "Projeto interdisciplinar para explorar os cinco sentidos através de atividades práticas e artísticas.",
-        tags: ["Ciências", "Artes"],
-        date: "12/02/2026",
-        status: "Em andamento"
-    },
-    {
-        id: 2,
-        title: "Minha Comunidade",
-        description: "Investigação sobre o bairro e a comunidade escolar, focando em história e geografia local.",
-        tags: ["Geografia", "História"],
-        date: "10/02/2026",
-        status: "Planejamento"
-    },
-    {
-        id: 3,
-        title: "Matemática na Cozinha",
-        description: "Aprendendo unidades de medida e quantidades através de receitas simples.",
-        tags: ["Matemática", "Vida Prática"],
-        date: "05/02/2026",
-        status: "Concluído"
-    }
-];
+import { useAppStore } from "@/lib/store";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+
+const statusMap = {
+    planning: "Planejamento",
+    active: "Em andamento",
+    completed: "Concluído"
+};
+
+const statusColors = {
+    planning: "bg-slate-100 text-slate-600",
+    active: "bg-green-100 text-green-600",
+    completed: "bg-blue-100 text-blue-600"
+};
 
 export default function ProjectsPage() {
+    const { projects } = useAppStore();
+
     return (
         <div className="max-w-6xl mx-auto">
             {/* Header */}
@@ -65,16 +57,21 @@ export default function ProjectsPage() {
 
             {/* Projects Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {mockProjects.map((project) => (
+                {projects.map((project) => (
                     <Card key={project.id} className="hover:shadow-md transition-shadow group cursor-pointer border-slate-200">
                         <CardHeader className="pb-3">
                             <div className="flex justify-between items-start">
                                 <div className="p-2 bg-primary/10 rounded-lg text-primary mb-2">
                                     <Folder className="w-6 h-6" />
                                 </div>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <MoreVertical className="w-4 h-4" />
-                                </Button>
+                                <div className="flex flex-col items-end gap-1">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <MoreVertical className="w-4 h-4" />
+                                    </Button>
+                                    <Badge className={cn("font-normal", statusColors[project.status])}>
+                                        {statusMap[project.status]}
+                                    </Badge>
+                                </div>
                             </div>
                             <CardTitle className="text-lg font-bold text-slate-900 leading-tight">
                                 {project.title}
@@ -94,7 +91,7 @@ export default function ProjectsPage() {
                         </CardContent>
                         <CardFooter className="pt-0 text-xs text-slate-400 flex items-center gap-2">
                             <Calendar className="w-3 h-3" />
-                            Atualizado em {project.date}
+                            Início em {format(new Date(project.startDate), "dd/MM/yyyy")}
                         </CardFooter>
                     </Card>
                 ))}

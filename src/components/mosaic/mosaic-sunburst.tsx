@@ -46,12 +46,16 @@ function countLeaves(node: MosaicNode): number {
     return node.children.reduce((acc, child) => acc + countLeaves(child), 0);
 }
 
-// Pega a cor base para um status
-const STATUS_OPACITY: Record<Status, number> = {
-    "achieved": 1.0,
-    "in-progress": 0.6,
-    "not-started": 0.2
-};
+// Calcula a profundidade máxima da árvore para distribuir a largura dos anéis
+function getMaxDepth(nodes: MosaicNode[], currentDepth = 1): number {
+    let max = currentDepth;
+    for (const node of nodes) {
+        if (node.children) {
+            max = Math.max(max, getMaxDepth(node.children, currentDepth + 1));
+        }
+    }
+    return max;
+}
 
 // ----------------------------------------------------------------------
 // Componente Recursivo de Setores
@@ -64,16 +68,6 @@ export function MosaicSunburst({ data, onSelectNode, editMode }: MosaicSunburstP
     const centerHoleRadius = 100; // Larger clean center
     const maxRadius = size / 2 - 20;
 
-    // Calcula a profundidade máxima da árvore para distribuir a largura dos anéis
-    const getMaxDepth = (nodes: MosaicNode[], currentDepth = 1): number => {
-        let max = currentDepth;
-        for (const node of nodes) {
-            if (node.children) {
-                max = Math.max(max, getMaxDepth(node.children, currentDepth + 1));
-            }
-        }
-        return max;
-    };
     const maxDepth = useMemo(() => getMaxDepth(data), [data]);
 
     // Largura de cada anel com base no espaço disponível

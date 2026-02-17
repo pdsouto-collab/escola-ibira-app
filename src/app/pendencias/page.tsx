@@ -1,43 +1,26 @@
 "use client";
 
+
+
 import { useState } from "react";
 import { Plus, Trash2, CheckCircle2, Circle } from "lucide-react";
-
-interface Pendencia {
-    id: string;
-    text: string;
-    completed: boolean;
-}
+import { useAppStore } from "@/lib/store";
+import { Task } from "@/lib/data";
 
 export default function PendenciasPage() {
-    const [pendencias, setPendencias] = useState<Pendencia[]>([
-        { id: "1", text: "Enviar documentação de matrícula", completed: false },
-        { id: "2", text: "Assinar autorização de passeio", completed: true },
-        { id: "3", text: "Atualizar ficha médica", completed: false },
-    ]);
+    const { tasks, addTask, toggleTask, removeTask } = useAppStore();
     const [newText, setNewText] = useState("");
 
     const addPendencia = () => {
         if (!newText.trim()) return;
-        const newPendencia: Pendencia = {
+        const newTask: Task = {
             id: Math.random().toString(36).substr(2, 9),
-            text: newText,
+            title: newText,
             completed: false,
+            priority: "medium"
         };
-        setPendencias([...pendencias, newPendencia]);
+        addTask(newTask);
         setNewText("");
-    };
-
-    const togglePendencia = (id: string) => {
-        setPendencias(
-            pendencias.map((p) =>
-                p.id === id ? { ...p, completed: !p.completed } : p
-            )
-        );
-    };
-
-    const removePendencia = (id: string) => {
-        setPendencias(pendencias.filter((p) => p.id !== id));
     };
 
     return (
@@ -75,19 +58,19 @@ export default function PendenciasPage() {
                 </div>
 
                 <div className="divide-y">
-                    {pendencias.length === 0 ? (
+                    {tasks.length === 0 ? (
                         <div className="p-8 text-center text-slate-500">
                             Nenhuma pendência encontrada.
                         </div>
                     ) : (
-                        pendencias.map((item) => (
+                        tasks.map((item) => (
                             <div
                                 key={item.id}
                                 className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors group"
                             >
                                 <div className="flex items-center gap-3">
                                     <button
-                                        onClick={() => togglePendencia(item.id)}
+                                        onClick={() => toggleTask(item.id)}
                                         className="text-slate-400 hover:text-primary transition-colors focus:outline-none"
                                     >
                                         {item.completed ? (
@@ -98,15 +81,15 @@ export default function PendenciasPage() {
                                     </button>
                                     <span
                                         className={`text-sm ${item.completed
-                                                ? "text-slate-400 line-through"
-                                                : "text-slate-700 font-medium"
+                                            ? "text-slate-400 line-through"
+                                            : "text-slate-700 font-medium"
                                             }`}
                                     >
-                                        {item.text}
+                                        {item.title}
                                     </span>
                                 </div>
                                 <button
-                                    onClick={() => removePendencia(item.id)}
+                                    onClick={() => removeTask(item.id)}
                                     className="rounded-md p-2 text-slate-400 opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-500 transition-all"
                                     aria-label="Excluir"
                                 >

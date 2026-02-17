@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Bell, Moon, User } from "lucide-react";
+
+
 import { useState } from "react";
 
 export default function SettingsPage() {
