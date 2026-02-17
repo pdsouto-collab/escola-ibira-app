@@ -42,29 +42,101 @@ export function StudentDialog({ open, onOpenChange, student, onSave }: StudentDi
     const { classes } = useAppStore();
     const [formData, setFormData] = useState<Partial<Student>>(student ? { ...student } : emptyStudent);
 
-    // useEffect removed - we rely on the parent changing the 'key' prop to reset state
+    // Add image preview state
+    const [imagePreview, setImagePreview] = useState<string>(student?.photo || "");
+
+    useEffect(() => {
+        if (student) {
+            setFormData({ ...student });
+            setImagePreview(student.photo || "");
+        } else {
+            setFormData(emptyStudent);
+            setImagePreview("");
+        }
+    }, [student, open]);
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64String = reader.result as string;
+                setImagePreview(base64String);
+                setFormData(prev => ({ ...prev, photo: base64String }));
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleImageUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const url = e.target.value;
+        setImagePreview(url);
+        setFormData(prev => ({ ...prev, photo: url }));
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Validation could go here
         onSave({
             id: student?.id || crypto.randomUUID(),
-            ...formData
+            ...formData,
+            photo: imagePreview // Ensure photo is saved from preview state if set
         } as Student);
         onOpenChange(false);
     };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[550px]">
                 <DialogHeader>
                     <DialogTitle>{student ? "Editar Aluno" : "Adicionar Novo Aluno"}</DialogTitle>
                     <DialogDescription>
-                        Preencha as informações do aluno abaixo. Clique em salvar quando terminar.
+                        Preencha as informações do aluno abaixo.
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit}>
                     <div className="grid gap-4 py-4">
+                        {/* Image Upload Section */}
+                        <div className="grid grid-cols-4 items-start gap-4">
+                            <Label className="text-right pt-2">
+                                Foto
+                            </Label>
+                            <div className="col-span-3 space-y-4">
+                                <div className="flex items-center gap-4">
+                                    {imagePreview ? (
+                                        <div className="relative h-20 w-20 rounded-full overflow-hidden border-2 border-slate-200">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img
+                                                src={imagePreview}
+                                                alt="Preview"
+                                                className="h-full w-full object-cover"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="h-20 w-20 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 border-2 border-dashed border-slate-300">
+                                            Sem foto
+                                        </div>
+                                    )}
+                                    <div className="flex-1 space-y-2">
+                                        <Input
+                                            type="text"
+                                            placeholder="URL da imagem (opcional)"
+                                            value={formData.photo || ""}
+                                            onChange={handleImageUrlChange}
+                                        />
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs text-slate-500">ou</span>
+                                            <Input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleImageChange}
+                                                className="text-sm file:mr-4 file:py-1 file:px-2 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="name" className="text-right">
                                 Nome
