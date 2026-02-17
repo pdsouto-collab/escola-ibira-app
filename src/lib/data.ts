@@ -153,6 +153,21 @@ export const mockSchedule: ScheduleItem[] = [
     },
 ];
 
+export interface SchoolClass {
+    id: string;
+    name: string;
+    description?: string;
+}
+
+export const mockClasses: SchoolClass[] = [
+    { id: "bercario-i", name: "Berçário I", description: "0 a 1 ano" },
+    { id: "bercario-ii", name: "Berçário II", description: "1 a 2 anos" },
+    { id: "maternal-i", name: "Maternal I", description: "2 a 3 anos" },
+    { id: "maternal-ii", name: "Maternal II", description: "3 a 4 anos" },
+    { id: "jardim-i", name: "Jardim I", description: "4 a 5 anos" },
+    { id: "jardim-ii", name: "Jardim II", description: "5 a 6 anos" },
+];
+
 export interface Student {
     id: string;
     name: string;
@@ -160,7 +175,7 @@ export interface Student {
     photo?: string;
     status: "presente" | "ausente";
     parentName: string;
-    class: string;
+    classId: string; // Changed from 'class' to 'classId' to link with SchoolClass
 }
 
 export const mockStudents: Student[] = [
@@ -170,7 +185,7 @@ export const mockStudents: Student[] = [
         age: 4,
         status: "presente",
         parentName: "Mariana Souza",
-        class: "Jardim I",
+        classId: "jardim-i",
     },
     {
         id: "2",
@@ -178,7 +193,7 @@ export const mockStudents: Student[] = [
         age: 5,
         status: "presente",
         parentName: "Carlos Silva",
-        class: "Jardim II",
+        classId: "jardim-ii",
     },
     {
         id: "3",
@@ -186,7 +201,7 @@ export const mockStudents: Student[] = [
         age: 3,
         status: "ausente",
         parentName: "Fernanda Oliveira",
-        class: "Maternal II",
+        classId: "maternal-ii",
     },
     {
         id: "4",
@@ -194,7 +209,7 @@ export const mockStudents: Student[] = [
         age: 4,
         status: "presente",
         parentName: "Roberto Santos",
-        class: "Jardim I",
+        classId: "jardim-i",
     },
     {
         id: "5",
@@ -202,7 +217,7 @@ export const mockStudents: Student[] = [
         age: 5,
         status: "presente",
         parentName: "Juliana Pereira",
-        class: "Jardim II",
+        classId: "jardim-ii",
     },
     {
         id: "6",
@@ -210,7 +225,7 @@ export const mockStudents: Student[] = [
         age: 3,
         status: "presente",
         parentName: "Amanda Costa",
-        class: "Maternal II",
+        classId: "maternal-ii",
     },
 ];
 

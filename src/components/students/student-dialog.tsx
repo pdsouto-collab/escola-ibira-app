@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Student } from "@/lib/data";
+import { useAppStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -33,11 +34,12 @@ const emptyStudent: Omit<Student, "id"> = {
     age: 0,
     status: "presente",
     parentName: "",
-    class: "",
+    classId: "",
     photo: ""
 };
 
 export function StudentDialog({ open, onOpenChange, student, onSave }: StudentDialogProps) {
+    const { classes } = useAppStore();
     const [formData, setFormData] = useState<Partial<Student>>(student ? { ...student } : emptyStudent);
 
     // useEffect removed - we rely on the parent changing the 'key' prop to reset state
@@ -92,13 +94,21 @@ export function StudentDialog({ open, onOpenChange, student, onSave }: StudentDi
                             <Label htmlFor="class" className="text-right">
                                 Turma
                             </Label>
-                            <Input
-                                id="class"
-                                value={formData.class || ""}
-                                onChange={(e) => setFormData({ ...formData, class: e.target.value })}
-                                className="col-span-3"
-                                required
-                            />
+                            <Select
+                                value={formData.classId}
+                                onValueChange={(value) => setFormData({ ...formData, classId: value })}
+                            >
+                                <SelectTrigger className="col-span-3">
+                                    <SelectValue placeholder="Selecione a turma" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {classes.map((c) => (
+                                        <SelectItem key={c.id} value={c.id}>
+                                            {c.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="parent" className="text-right">

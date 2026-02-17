@@ -7,11 +7,13 @@ import {
     mockDailyLogs, DailyLog,
     mockRecursiveDataSkills, MosaicNode,
     Task, MuralEvent, Project, ChatMessage,
-    mockMessages // Import mockMessages
+    mockMessages,
+    mockClasses, SchoolClass // Import mockClasses
 } from "@/lib/data";
 
 interface AppState {
     students: Student[];
+    classes: SchoolClass[];
     schedule: ScheduleItem[];
     dailyLogs: DailyLog[];
     tasks: Task[];
@@ -27,6 +29,10 @@ interface AppContextType extends AppState {
     addStudent: (student: Student) => void;
     updateStudent: (id: string, updates: Partial<Student>) => void;
     removeStudent: (id: string) => void;
+
+    addClass: (schoolClass: SchoolClass) => void;
+    updateClass: (id: string, updates: Partial<SchoolClass>) => void;
+    removeClass: (id: string) => void;
 
     toggleTask: (id: string) => void;
     addTask: (task: Task) => void;
@@ -108,6 +114,7 @@ const initialMessages: ChatMessage[] = mockMessages.map(m => ({
 export function AppProvider({ children }: { children: React.ReactNode }) {
     // Initialize state from LocalStorage or Default
     const [students, setStudents] = useState<Student[]>(mockStudents);
+    const [classes, setClasses] = useState<SchoolClass[]>(mockClasses);
     const [schedule, setSchedule] = useState<ScheduleItem[]>(mockSchedule);
     const [dailyLogs, setDailyLogs] = useState<DailyLog[]>(mockDailyLogs);
     const [tasks, setTasks] = useState<Task[]>(initialTasks);
@@ -138,6 +145,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         };
 
         load("students", setStudents, mockStudents);
+        load("classes", setClasses, mockClasses);
         load("schedule", setSchedule, mockSchedule);
         load("dailyLogs", setDailyLogs, mockDailyLogs);
         load("tasks", setTasks, initialTasks);
@@ -154,6 +162,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (!isLoaded) return;
         localStorage.setItem("app_students", JSON.stringify(students));
+        localStorage.setItem("app_classes", JSON.stringify(classes));
         localStorage.setItem("app_schedule", JSON.stringify(schedule));
         localStorage.setItem("app_dailyLogs", JSON.stringify(dailyLogs));
         localStorage.setItem("app_tasks", JSON.stringify(tasks));
@@ -161,7 +170,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem("app_projects", JSON.stringify(projects));
         localStorage.setItem("app_messages", JSON.stringify(messages));
         localStorage.setItem("app_mosaicData", JSON.stringify(mosaicData));
-    }, [students, schedule, dailyLogs, tasks, muralEvents, projects, messages, mosaicData, isLoaded]);
+    }, [students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, mosaicData, isLoaded]);
 
     // Actions
     const addStudent = (student: Student) => setStudents(prev => [...prev, student]);
@@ -169,6 +178,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setStudents(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
     };
     const removeStudent = (id: string) => setStudents(prev => prev.filter(s => s.id !== id));
+
+    const addClass = (schoolClass: SchoolClass) => setClasses(prev => [...prev, schoolClass]);
+    const updateClass = (id: string, updates: Partial<SchoolClass>) => {
+        setClasses(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
+    };
+    const removeClass = (id: string) => setClasses(prev => prev.filter(c => c.id !== id));
 
     const toggleTask = (id: string) => {
         setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
@@ -228,8 +243,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <AppContext.Provider value={{
-            students, schedule, dailyLogs, tasks, muralEvents, projects, messages, currentUser,
-            addStudent, updateStudent, removeStudent, toggleTask, addTask, removeTask, addMuralEvent, addCommentToEvent,
+            students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, currentUser,
+            addStudent, updateStudent, removeStudent, addClass, updateClass, removeClass, toggleTask, addTask, removeTask, addMuralEvent, addCommentToEvent,
             updateSchedule, addProject, updateProject, sendMessage, resetData,
             mosaicData, updateMosaicNode, replaceMosaicData
         }}>
