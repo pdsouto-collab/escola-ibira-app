@@ -27,7 +27,7 @@ export default function AgendaPage() {
 
     const filteredSchedule = schedule.filter(item => {
         const classMatch = item.classId === selectedClassId; // Strict filtering
-        const dateMatch = !item.date || isSameDay(new Date(item.date), selectedDate);
+        const dateMatch = !item.date || item.date === format(selectedDate, "yyyy-MM-dd");
         return classMatch && dateMatch;
     });
 
