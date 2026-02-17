@@ -91,6 +91,8 @@ export interface ScheduleItem {
     title: string;
     type: "activity" | "meal" | "care";
     description?: string;
+    date?: string; // YYYY-MM-DD
+    classId?: string;
 }
 
 export const mockSchedule: ScheduleItem[] = [
