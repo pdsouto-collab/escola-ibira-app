@@ -20,6 +20,7 @@ export default function MuralPage() {
         date: "",
         time: "",
         location: "",
+        image: "",
     });
 
     // Comment Form State
@@ -38,13 +39,14 @@ export default function MuralPage() {
             author: currentUser.name,
             type: "event",
             location: newEvent.location,
+            image: newEvent.image,
             comments: [],
             likes: 0
         };
 
         addMuralEvent(event);
         setShowNewEventForm(false);
-        setNewEvent({ title: "", description: "", date: "", time: "", location: "" });
+        setNewEvent({ title: "", description: "", date: "", time: "", location: "", image: "" });
     };
 
     const handleAddComment = (eventId: string) => {
@@ -125,6 +127,50 @@ export default function MuralPage() {
                                 className="rounded-md border p-2 text-sm"
                                 placeholder="Ex: Quadra Poliesportiva"
                             />
+                        </div>
+                        <div className="grid gap-2">
+                            <label className="text-sm font-medium">Imagem (Opcional)</label>
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={newEvent.image}
+                                    onChange={(e) => setNewEvent({ ...newEvent, image: e.target.value })}
+                                    className="flex-1 rounded-md border p-2 text-sm"
+                                    placeholder="Cole a URL da imagem aqui..."
+                                />
+                                <div className="relative">
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) {
+                                                const reader = new FileReader();
+                                                reader.onloadend = () => {
+                                                    setNewEvent({ ...newEvent, image: reader.result as string });
+                                                };
+                                                reader.readAsDataURL(file);
+                                            }
+                                        }}
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                    />
+                                    <button className="h-full px-3 py-2 bg-slate-100 border rounded-md text-sm hover:bg-slate-200">
+                                        Upload
+                                    </button>
+                                </div>
+                            </div>
+                            {newEvent.image && (
+                                <div className="mt-2 relative h-32 w-full rounded-md overflow-hidden bg-slate-50 border">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={newEvent.image} alt="Preview" className="h-full w-full object-cover" />
+                                    <button
+                                        onClick={() => setNewEvent({ ...newEvent, image: "" })}
+                                        className="absolute top-2 right-2 p-1 bg-black/50 text-white rounded-full hover:bg-black/70"
+                                    >
+                                        <X className="h-3 w-3" />
+                                    </button>
+                                </div>
+                            )}
                         </div>
                         <button
                             onClick={handleCreateEvent}
