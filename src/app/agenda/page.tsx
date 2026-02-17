@@ -16,14 +16,23 @@ import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 
 export default function AgendaPage() {
-    const { schedule, updateSchedule } = useAppStore();
+    const { schedule, updateSchedule, classes } = useAppStore();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<ScheduleItem | null>(null);
 
     // Filters
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-    const [selectedClassId, setSelectedClassId] = useState<string>("jardim-i");
+    // Default to the first class if available, otherwise empty string
+    const [selectedClassId, setSelectedClassId] = useState<string>(classes.length > 0 ? classes[0].id : "");
+
+    // Ensure selectedClassId is valid if classes change or on initial load with mock data
+    // (Optional: adding a useEffect or just relying on mapping)
+
+    // Fallback if selectedClassId is empty but classes exist (e.g. after hydration)
+    if (!selectedClassId && classes.length > 0) {
+        setSelectedClassId(classes[0].id);
+    }
 
     const filteredSchedule = schedule.filter(item => {
         const classMatch = item.classId === selectedClassId; // Strict filtering
@@ -108,10 +117,11 @@ export default function AgendaPage() {
                                 <SelectValue placeholder="Selecione a turma" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="jardim-i">Jardim I</SelectItem>
-                                <SelectItem value="jardim-ii">Jardim II</SelectItem>
-                                <SelectItem value="maternal-i">Maternal I</SelectItem>
-                                <SelectItem value="maternal-ii">Maternal II</SelectItem>
+                                {classes.map((c) => (
+                                    <SelectItem key={c.id} value={c.id}>
+                                        {c.name}
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                     </div>

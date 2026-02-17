@@ -47,7 +47,7 @@ const ITEM_TYPES = [
 ];
 
 export function BulkRoutineDialog({ open, onOpenChange, defaultClassId }: BulkRoutineDialogProps) {
-    const { schedule, updateSchedule } = useAppStore();
+    const { schedule, updateSchedule, classes } = useAppStore();
 
     const [activeTab, setActiveTab] = useState("create");
     const [classId, setClassId] = useState<string>(defaultClassId || "");
@@ -225,10 +225,11 @@ export function BulkRoutineDialog({ open, onOpenChange, defaultClassId }: BulkRo
                                         <SelectValue placeholder="Selecione a turma" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="jardim-i">Jardim I</SelectItem>
-                                        <SelectItem value="jardim-ii">Jardim II</SelectItem>
-                                        <SelectItem value="maternal-i">Maternal I</SelectItem>
-                                        <SelectItem value="maternal-ii">Maternal II</SelectItem>
+                                        {classes.map((c) => (
+                                            <SelectItem key={c.id} value={c.id}>
+                                                {c.name}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </div>
