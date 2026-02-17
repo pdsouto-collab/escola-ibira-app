@@ -1,67 +1,115 @@
+import { useState } from "react";
 import { useAppStore } from "@/lib/store";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, Users } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { startOfWeek, addDays, format, isSameDay } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 export function WeeklyView() {
-    const { schedule } = useAppStore();
+    const { schedule, classes } = useAppStore();
+    const [selectedClassId, setSelectedClassId] = useState<string>(classes.length > 0 ? classes[0].id : "");
 
-    // Mocking week days for the view (static for now, but could be dynamic)
-    const weekDays = [
-        { name: "Segunda", date: "15", active: true },
-        { name: "Terça", date: "16", active: false },
-        { name: "Quarta", date: "17", active: false },
-        { name: "Quinta", date: "18", active: false },
-    ];
+    // Fallback if selectedClassId becomes invalid
+    if (!selectedClassId && classes.length > 0) {
+        setSelectedClassId(classes[0].id);
+    }
+
+    // Generate days for the current week (Mon-Fri)
+    const today = new Date();
+    const weekStart = startOfWeek(today, { weekStartsOn: 1 }); // Monday
+    const weekDays = Array.from({ length: 5 }).map((_, i) => {
+        const date = addDays(weekStart, i);
+        return {
+            date: date,
+            label: format(date, "EEEE", { locale: ptBR }),
+            dayNumber: format(date, "d"),
+            fullDate: format(date, "yyyy-MM-dd"),
+            active: isSameDay(today, date)
+        };
+    });
 
     const getTypeStyles = (type: string) => {
         switch (type) {
-            case "activity": return "bg-white border text-slate-800";
-            case "meal": return "bg-emerald-100 text-emerald-800";
-            case "care": return "bg-slate-100 text-slate-600";
+            case "activity": return "bg-white border-l-4 border-l-blue-400 text-slate-700";
+            case "meal": return "bg-white border-l-4 border-l-emerald-400 text-slate-700";
+            case "care": return "bg-white border-l-4 border-l-amber-400 text-slate-700";
             default: return "bg-white border text-slate-800";
         }
     };
 
+    const getItemsForDay = (dateStr: string) => {
+        return schedule
+            .filter(item =>
+                (item.classId === selectedClassId) &&
+                (item.date === dateStr)
+            )
+            .sort((a, b) => a.time.localeCompare(b.time));
+    };
+
     return (
-        <section>
-            <div className="flex items-center gap-2 mb-6">
-                <CalendarDays className="w-5 h-5 text-slate-600" />
-                <h2 className="text-xl font-bold text-slate-800">Rotina Diária (Modelo)</h2>
+        <section className="space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-2">
+                    <CalendarDays className="w-5 h-5 text-slate-600" />
+                    <h2 className="text-xl font-bold text-slate-800">Rotina Semanal</h2>
+                </div>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <Users className="w-4 h-4 text-slate-500" />
+                    <Select value={selectedClassId} onValueChange={setSelectedClassId}>
+                        <SelectTrigger className="w-full sm:w-[200px] bg-white">
+                            <SelectValue placeholder="Selecione a turma" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {classes.map((c) => (
+                                <SelectItem key={c.id} value={c.id}>
+                                    {c.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                {/* Headers - Just showing one column mostly for mobile, but keeping grid for structure */}
-                {weekDays.map((day) => (
-                    <div key={day.date} className={`text-center mb-4 ${day.active ? 'block' : 'hidden md:block'}`}>
-                        <div className="text-sm text-slate-500 uppercase font-medium">{day.name}</div>
-                        <div className={`text-2xl font-bold mt-1 inline-flex items-center justify-center w-10 h-10 rounded-full ${day.active ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-700'}`}>
-                            {day.date}
-                        </div>
-                    </div>
-                ))}
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                {weekDays.map((day) => {
+                    const items = getItemsForDay(day.fullDate);
 
-                {/* Columns - Repeating the schedule for demonstration since we only have one daily schedule model */}
-                {weekDays.map((day) => (
-                    <div key={`col-${day.date}`} className={`space-y-4 ${day.active ? 'block' : 'hidden md:block opacity-60 grayscale'}`}>
-                        {schedule.map((item, idx) => (
-                            <div
-                                key={idx}
-                                className={`p-4 rounded-xl text-sm ${getTypeStyles(item.type)} shadow-sm transition-transform hover:scale-[1.02]`}
-                            >
-                                <div className="font-bold mb-1 line-clamp-2 leading-tight">
-                                    {item.title}
+                    return (
+                        <div key={day.fullDate} className={`flex flex-col gap-3 p-3 rounded-xl border ${day.active ? 'bg-slate-50 border-slate-200 shadow-sm ring-1 ring-slate-200' : 'bg-transparent border-transparent'}`}>
+                            <div className="text-center mb-1">
+                                <div className={`text-xs uppercase font-bold tracking-wider mb-1 ${day.active ? 'text-primary' : 'text-slate-400'}`}>
+                                    {day.label.split('-')[0]}
                                 </div>
-                                <div className="text-xs opacity-70 font-mono">
-                                    {item.time}
+                                <div className={`text-xl font-bold ${day.active ? 'text-slate-900' : 'text-slate-500'}`}>
+                                    {day.dayNumber}
                                 </div>
-                                {item.description && (
-                                    <div className="text-xs mt-2 opacity-80 border-t pt-2 border-current/10">
-                                        {item.description}
+                            </div>
+
+                            <div className="space-y-2">
+                                {items.length > 0 ? (
+                                    items.map((item) => (
+                                        <div
+                                            key={item.id}
+                                            className={`p-2 rounded-md shadow-sm text-xs ${getTypeStyles(item.type)}`}
+                                        >
+                                            <div className="flex justify-between items-start gap-1 mb-0.5">
+                                                <span className="font-semibold line-clamp-1">{item.title}</span>
+                                            </div>
+                                            <div className="text-[10px] text-slate-500 font-mono">
+                                                {item.time} {item.endTime ? `- ${item.endTime}` : ''}
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-center py-4 px-2 border-2 border-dashed border-slate-100 rounded-lg">
+                                        <span className="text-xs text-slate-300">Sem atividades</span>
                                     </div>
                                 )}
                             </div>
-                        ))}
-                    </div>
-                ))}
+                        </div>
+                    );
+                })}
             </div>
         </section>
     );
