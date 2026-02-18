@@ -678,7 +678,7 @@ export const mockUsers: User[] = [
         id: "u3",
         name: "Mariana Silva",
         role: "guardian",
-        email: "mariana.silva@email.com",
+        email: "mariana.responsavel@escolaibira.com.br", // Standardized email
         linkedStudentIds: ["1"], // Alice Souza
         avatar: "https://github.com/shadcn.png"
     },

@@ -78,7 +78,7 @@ export default function LoginPage() {
                     <p className="font-semibold">Credenciais de teste:</p>
                     <p>ana.diretora@escolaibira.com.br</p>
                     <p>claudia.prof@escolaibira.com.br</p>
-                    <p>mariana.silva@email.com</p>
+                    <p>mariana.responsavel@escolaibira.com.br</p>
                 </div>
             </div>
         </div>
