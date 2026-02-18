@@ -39,6 +39,8 @@ interface AppContextType extends AppState {
     removeTask: (id: string) => void;
 
     addMuralEvent: (event: MuralEvent) => void;
+    updateMuralEvent: (id: string, updates: Partial<MuralEvent>) => void;
+    removeMuralEvent: (id: string) => void;
     addCommentToEvent: (eventId: string, comment: string) => void;
 
     updateSchedule: (items: ScheduleItem[]) => void;
@@ -192,6 +194,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const removeTask = (id: string) => setTasks(prev => prev.filter(t => t.id !== id));
 
     const addMuralEvent = (event: MuralEvent) => setMuralEvents(prev => [event, ...prev]);
+    const updateMuralEvent = (id: string, updates: Partial<MuralEvent>) => {
+        setMuralEvents(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e));
+    };
+    const removeMuralEvent = (id: string) => setMuralEvents(prev => prev.filter(e => e.id !== id));
+
     const addCommentToEvent = (eventId: string, commentText: string) => {
         setMuralEvents(prev => prev.map(e => {
             if (e.id === eventId) {
@@ -244,7 +251,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return (
         <AppContext.Provider value={{
             students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, currentUser,
-            addStudent, updateStudent, removeStudent, addClass, updateClass, removeClass, toggleTask, addTask, removeTask, addMuralEvent, addCommentToEvent,
+            addStudent, updateStudent, removeStudent, addClass, updateClass, removeClass, toggleTask, addTask, removeTask,
+            addMuralEvent, updateMuralEvent, removeMuralEvent, addCommentToEvent,
             updateSchedule, addProject, updateProject, sendMessage, resetData,
             mosaicData, updateMosaicNode, replaceMosaicData
         }}>

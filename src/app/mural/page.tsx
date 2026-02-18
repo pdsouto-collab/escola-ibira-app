@@ -3,7 +3,7 @@
 
 
 import { useState } from "react";
-import { Plus, Calendar, MapPin, MessageCircle, User, Edit2, Check, X, Users } from "lucide-react";
+import { Plus, Calendar, MapPin, MessageCircle, User, Edit2, Check, X, Users, MoreVertical, Trash2, Pencil } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useAppStore } from "@/lib/store";
@@ -15,10 +15,17 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function MuralPage() {
-    const { muralEvents, addMuralEvent, addCommentToEvent, currentUser, classes } = useAppStore();
+    const { muralEvents, addMuralEvent, updateMuralEvent, removeMuralEvent, addCommentToEvent, currentUser, classes } = useAppStore();
     const [showNewEventForm, setShowNewEventForm] = useState(false);
+    const [editingEventId, setEditingEventId] = useState<string | null>(null);
 
     // Filter State
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
@@ -39,34 +46,68 @@ export default function MuralPage() {
 
     const filteredEvents = muralEvents.filter(event => {
         if (selectedClassId === "all") return true;
-        // Show events for specific class OR global events (if applicable, but user requirement implies specific view)
-        // Let's assume strict filtering for now, or show global events AND class specific events? 
-        // Usually, a class view shows class specific + global.
         return event.classId === selectedClassId || !event.classId || event.classId === "all";
     });
+
+    const resetForm = () => {
+        setNewEvent({ title: "", description: "", date: "", time: "", location: "", image: "", classId: "all" });
+        setEditingEventId(null);
+        setShowNewEventForm(false);
+    };
 
     const handleCreateEvent = () => {
         if (!newEvent.title || !newEvent.date) return;
 
         const eventDate = `${newEvent.date}T${newEvent.time || "00:00"}`;
 
-        const event: MuralEvent = {
-            id: Math.random().toString(36).substr(2, 9),
-            title: newEvent.title,
-            description: newEvent.description,
-            date: eventDate,
-            author: currentUser.name,
-            type: "event",
-            location: newEvent.location,
-            image: newEvent.image,
-            classId: newEvent.classId === "all" ? undefined : newEvent.classId,
-            comments: [],
-            likes: 0
-        };
+        if (editingEventId) {
+            updateMuralEvent(editingEventId, {
+                title: newEvent.title,
+                description: newEvent.description,
+                date: eventDate,
+                location: newEvent.location,
+                image: newEvent.image,
+                classId: newEvent.classId === "all" ? undefined : newEvent.classId,
+            });
+        } else {
+            const event: MuralEvent = {
+                id: Math.random().toString(36).substr(2, 9),
+                title: newEvent.title,
+                description: newEvent.description,
+                date: eventDate,
+                author: currentUser.name,
+                type: "event",
+                location: newEvent.location,
+                image: newEvent.image,
+                classId: newEvent.classId === "all" ? undefined : newEvent.classId,
+                comments: [],
+                likes: 0
+            };
+            addMuralEvent(event);
+        }
+        resetForm();
+    };
 
-        addMuralEvent(event);
-        setShowNewEventForm(false);
-        setNewEvent({ title: "", description: "", date: "", time: "", location: "", image: "", classId: "all" });
+    const handleEditClick = (event: MuralEvent) => {
+        const dateObj = new Date(event.date);
+        setNewEvent({
+            title: event.title,
+            description: event.description,
+            date: format(dateObj, "yyyy-MM-dd"),
+            time: format(dateObj, "HH:mm"),
+            location: event.location || "",
+            image: event.image || "",
+            classId: event.classId || "all"
+        });
+        setEditingEventId(event.id);
+        setShowNewEventForm(true);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleDeleteClick = (id: string) => {
+        if (confirm("Tem certeza que deseja excluir este evento?")) {
+            removeMuralEvent(id);
+        }
     };
 
     const handleAddComment = (eventId: string) => {
@@ -102,7 +143,13 @@ export default function MuralPage() {
                         </SelectContent>
                     </Select>
                     <button
-                        onClick={() => setShowNewEventForm(!showNewEventForm)}
+                        onClick={() => {
+                            if (showNewEventForm) {
+                                resetForm();
+                            } else {
+                                setShowNewEventForm(true);
+                            }
+                        }}
                         className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 transition-colors whitespace-nowrap"
                     >
                         {showNewEventForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
@@ -113,7 +160,7 @@ export default function MuralPage() {
 
             {showNewEventForm && (
                 <div className="rounded-xl border bg-white p-6 shadow-sm animate-in fade-in slide-in-from-top-4">
-                    <h3 className="font-semibold text-lg mb-4">Criar Novo Evento</h3>
+                    <h3 className="font-semibold text-lg mb-4">{editingEventId ? "Editar Evento" : "Criar Novo Evento"}</h3>
                     <div className="grid gap-4">
                         <div className="grid gap-2">
                             <label className="text-sm font-medium">Título</label>
@@ -228,19 +275,49 @@ export default function MuralPage() {
                                 </div>
                             )}
                         </div>
-                        <button
-                            onClick={handleCreateEvent}
-                            className="w-full bg-primary text-white p-2 rounded-md font-medium hover:bg-primary/90 mt-2"
-                        >
-                            Publicar Evento
-                        </button>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={handleCreateEvent}
+                                className="flex-1 bg-primary text-white p-2 rounded-md font-medium hover:bg-primary/90 mt-2"
+                            >
+                                {editingEventId ? "Salvar Alterações" : "Publicar Evento"}
+                            </button>
+                            {editingEventId && (
+                                <button
+                                    onClick={resetForm}
+                                    className="px-4 py-2 bg-slate-100 text-slate-700 rounded-md font-medium hover:bg-slate-200 mt-2"
+                                >
+                                    Cancelar
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
 
             <div className="grid gap-6">
                 {filteredEvents.map((event) => (
-                    <div key={event.id} className="rounded-xl border bg-white shadow-sm overflow-hidden">
+                    <div key={event.id} className="rounded-xl border bg-white shadow-sm overflow-hidden relative group">
+                        <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <button className="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm border hover:bg-white text-slate-600">
+                                        <MoreVertical className="h-4 w-4" />
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleEditClick(event)}>
+                                        <Pencil className="mr-2 h-4 w-4" />
+                                        Editar
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={() => handleDeleteClick(event.id)}>
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Excluir
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+
                         {event.image && (
                             <div className="h-48 w-full overflow-hidden bg-slate-100">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
