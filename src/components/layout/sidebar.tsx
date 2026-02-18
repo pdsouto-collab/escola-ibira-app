@@ -15,7 +15,8 @@ import {
     BarChart3,
     MessageCircle,
     LogOut,
-    PartyPopper
+    PartyPopper,
+    GraduationCap
 } from "lucide-react";
 import { SchoolLogo } from "@/components/ui/school-logo";
 
@@ -31,7 +32,7 @@ const navigation = [
 
     { name: "Conversas", href: "/conversas", icon: MessageCircle },
     // Restricted Route
-    { name: "Professores", href: "/professores", icon: Video, roles: ["director", "admin"] },
+    { name: "Professores", href: "/professores", icon: GraduationCap, roles: ["director", "admin"] },
 ];
 
 import { useAppStore } from "@/lib/store";
