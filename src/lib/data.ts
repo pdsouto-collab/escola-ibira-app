@@ -645,3 +645,48 @@ export const mockTasks: Task[] = [
     { id: "3", title: "Atualizar ficha médica", completed: false, priority: "low" },
 ];
 
+export type UserRole = "director" | "teacher" | "guardian" | "admin";
+
+export interface User {
+    id: string;
+    name: string;
+    role: UserRole;
+    avatar?: string;
+    email: string;
+    assignedClassIds?: string[]; // For teachers: IDs of classes they teach
+    linkedStudentIds?: string[]; // For guardians: IDs of students they are responsible for
+}
+
+export const mockUsers: User[] = [
+    {
+        id: "u1",
+        name: "Ana Pereira",
+        role: "director",
+        email: "ana.diretora@escolaibira.com.br",
+        avatar: "https://github.com/shadcn.png"
+    },
+    {
+        id: "u2",
+        name: "Cláudia Santos",
+        role: "teacher",
+        email: "claudia.prof@escolaibira.com.br",
+        assignedClassIds: ["jardim-i", "jardim-ii"],
+        avatar: "https://github.com/shadcn.png"
+    },
+    {
+        id: "u3",
+        name: "Mariana Silva",
+        role: "guardian",
+        email: "mariana.silva@email.com",
+        linkedStudentIds: ["1"], // Alice Souza
+        avatar: "https://github.com/shadcn.png"
+    },
+    {
+        id: "u4",
+        name: "Carlos Admin",
+        role: "admin",
+        email: "admin@escolaibira.com.br",
+        avatar: "https://github.com/shadcn.png"
+    }
+];
+

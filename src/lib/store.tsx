@@ -8,7 +8,8 @@ import {
     mockRecursiveDataSkills, MosaicNode,
     Task, MuralEvent, Project, ChatMessage,
     mockMessages,
-    mockClasses, SchoolClass // Import mockClasses
+    mockClasses, SchoolClass, // Import mockClasses
+    User, mockUsers // Import User types
 } from "@/lib/data";
 
 interface AppState {
@@ -21,7 +22,8 @@ interface AppState {
     projects: Project[];
     messages: ChatMessage[];
     mosaicData: MosaicNode[];
-    currentUser: { name: string; role: string; avatar: string };
+    currentUser: User | null;
+    users: User[];
 }
 
 interface AppContextType extends AppState {
@@ -54,6 +56,7 @@ interface AppContextType extends AppState {
     replaceMosaicData: (newData: MosaicNode[]) => void;
 
     resetData: () => void;
+    setCurrentUser: (user: User) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -124,8 +127,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [projects, setProjects] = useState<Project[]>(initialProjects);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [mosaicData, setMosaicData] = useState<MosaicNode[]>(mockRecursiveDataSkills);
-
-    const currentUser = { name: "Ana Pereira", role: "Professor", avatar: "https://github.com/shadcn.png" };
+    const [users, setUsers] = useState<User[]>(mockUsers);
+    const [currentUser, setCurrentUser] = useState<User | null>(mockUsers[1]); // Default to Teacher (Cláudia) for dev
 
     const [isLoaded, setIsLoaded] = useState(false);
 
@@ -204,7 +207,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             if (e.id === eventId) {
                 const newComment = {
                     id: Math.random().toString(36).substr(2, 9),
-                    author: currentUser.name,
+                    author: currentUser?.name || "Usuário",
                     text: commentText,
                     date: new Date().toISOString()
                 };
@@ -254,7 +257,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             addStudent, updateStudent, removeStudent, addClass, updateClass, removeClass, toggleTask, addTask, removeTask,
             addMuralEvent, updateMuralEvent, removeMuralEvent, addCommentToEvent,
             updateSchedule, addProject, updateProject, sendMessage, resetData,
-            mosaicData, updateMosaicNode, replaceMosaicData
+            mosaicData, updateMosaicNode, replaceMosaicData,
+            users, setCurrentUser
         }}>
             {children}
         </AppContext.Provider>
