@@ -9,17 +9,17 @@ export function DashboardHero() {
     const { currentUser } = useAppStore();
 
     return (
-        <div className="relative w-full rounded-3xl overflow-hidden bg-gradient-to-br from-[#2E798A] to-[#4A6C58] text-white p-8 md:p-12 mb-8 shadow-lg">
+        <div className="relative w-full rounded-3xl overflow-hidden bg-[#EDE3DA] text-slate-800 p-8 md:p-12 mb-8 shadow-sm">
             {/* Background Decorations (Organic Shapes) */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/4 blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-40 h-40 bg-[#E89F67]/20 rounded-full translate-y-1/3 -translate-x-1/4 blur-2xl" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/40 rounded-full -translate-y-1/2 translate-x-1/4 blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-40 h-40 bg-[#E89F67]/10 rounded-full translate-y-1/3 -translate-x-1/4 blur-2xl" />
 
             {/* Top Bar inside Hero */}
             <div className="absolute top-6 right-6 flex items-center gap-4 z-20">
-                <button className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors">
-                    <Bell className="w-5 h-5 text-white" />
+                <button className="p-2 rounded-full bg-slate-900/5 hover:bg-slate-900/10 transition-colors">
+                    <Bell className="w-5 h-5 text-slate-700" />
                 </button>
-                <Avatar className="border-2 border-white/50 cursor-pointer">
+                <Avatar className="border-2 border-white cursor-pointer">
                     <AvatarImage src={currentUser?.avatar || "https://github.com/shadcn.png"} />
                     <AvatarFallback>{currentUser?.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
@@ -28,21 +28,21 @@ export function DashboardHero() {
             {/* Content */}
             <div className="relative z-10 mt-4 flex flex-col md:flex-row items-center justify-between">
                 <div className="max-w-lg">
-                    <h1 className="text-4xl md:text-5xl font-bold mb-4">
+                    <h1 className="text-4xl md:text-5xl font-bold mb-4 text-[#2E798A]">
                         Olá, <span className="underline decoration-wavy decoration-[#E89F67]">{currentUser?.name}</span>
                     </h1>
-                    <p className="text-lg md:text-xl text-white/90 leading-relaxed">
+                    <p className="text-lg md:text-xl text-slate-600 leading-relaxed">
                         Bem-vinda de volta! Aqui está o resumo das suas atividades e pendências escolares.
                     </p>
                 </div>
 
-                {/* Tree Illustration */}
-                <div className="hidden md:block absolute right-0 bottom-0 opacity-20 md:opacity-100 md:relative md:w-64 md:h-64 translate-y-6 md:translate-y-0 text-white">
+                {/* Logo Illustration */}
+                <div className="hidden md:block absolute right-0 bottom-0 opacity-20 md:opacity-100 md:relative md:w-80 md:h-80 translate-y-16 translate-x-8 md:translate-y-12 md:translate-x-4">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                         src="/escola-ibira-app/images/logo-ibira-novo-colorido.png"
                         alt="Escola Ibirá"
-                        className="w-full h-full object-contain mix-blend-multiply opacity-90 scale-150 origin-bottom-right"
+                        className="w-full h-full object-contain mix-blend-multiply opacity-90 scale-125 origin-bottom-right"
                     />
                 </div>
             </div>
