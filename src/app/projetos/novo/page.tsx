@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 
 export default function NewProjectWizard() {
     const router = useRouter();
-    const { addProject } = useAppStore();
+    const { addProject, classes } = useAppStore();
     const [currentStep, setCurrentStep] = useState(1);
 
     // Mock State for Form Data
@@ -38,6 +38,7 @@ export default function NewProjectWizard() {
             status: "planning",
             startDate: new Date().toISOString(),
             students: [], // Could map classes here
+            classes: formData.classes,
             tags: formData.bnccSkills.length > 0 ? formData.bnccSkills.slice(0, 3) : ["Pedagógico"]
         };
         addProject(newProject);
@@ -121,19 +122,54 @@ export default function NewProjectWizard() {
                         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                             <h2 className="text-2xl font-bold text-slate-800">Aplicação do Projeto</h2>
                             <p className="text-slate-500">Selecione as turmas que participarão deste projeto.</p>
-                            <div className="grid grid-cols-2 gap-4">
-                                {["Turma A - Manhã", "Turma B - Tarde", "Turma C - Integral", "Berçário I"].map((turma) => (
-                                    <div key={turma} className="flex items-center space-x-2 border p-4 rounded-lg cursor-pointer hover:bg-slate-50">
-                                        <Checkbox id={turma} />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {classes.map((schoolClass) => (
+                                    <div
+                                        key={schoolClass.id}
+                                        className={cn(
+                                            "flex items-center space-x-2 border p-4 rounded-lg cursor-pointer transition-colors hover:bg-slate-50",
+                                            formData.classes.includes(schoolClass.id) ? "border-primary bg-primary/5" : "border-slate-200"
+                                        )}
+                                        onClick={() => {
+                                            const newClasses = formData.classes.includes(schoolClass.id)
+                                                ? formData.classes.filter(id => id !== schoolClass.id)
+                                                : [...formData.classes, schoolClass.id];
+                                            setFormData({ ...formData, classes: newClasses });
+                                        }}
+                                    >
+                                        <Checkbox
+                                            id={schoolClass.id}
+                                            checked={formData.classes.includes(schoolClass.id)}
+                                            onCheckedChange={(checked) => {
+                                                const newClasses = checked
+                                                    ? [...formData.classes, schoolClass.id]
+                                                    : formData.classes.filter(id => id !== schoolClass.id);
+                                                setFormData({ ...formData, classes: newClasses });
+                                            }}
+                                        />
                                         <label
-                                            htmlFor={turma}
-                                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer w-full"
+                                            htmlFor={schoolClass.id}
+                                            className="text-sm font-medium leading-none cursor-pointer w-full select-none"
+                                            onClick={(e) => e.stopPropagation()} // Prevent double toggle
                                         >
-                                            {turma}
+                                            {schoolClass.name}
+                                            {schoolClass.description && (
+                                                <span className="block text-xs text-slate-500 mt-1 font-normal">
+                                                    {schoolClass.description}
+                                                </span>
+                                            )}
                                         </label>
                                     </div>
                                 ))}
                             </div>
+                            {classes.length === 0 && (
+                                <div className="text-center p-8 border-2 border-dashed rounded-xl bg-slate-50">
+                                    <p className="text-slate-500">Nenhuma turma cadastrada no sistema.</p>
+                                    <Link href="/alunos">
+                                        <Button variant="link" className="mt-2">Gerenciar Turmas</Button>
+                                    </Link>
+                                </div>
+                            )}
                         </div>
                     )}
 

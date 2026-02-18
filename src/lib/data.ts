@@ -626,6 +626,7 @@ export interface Project {
     status: "planning" | "active" | "completed";
     startDate: string;
     students: string[]; // IDs
+    classes?: string[]; // IDs of SchoolClass
     tags: string[];
 }
 
