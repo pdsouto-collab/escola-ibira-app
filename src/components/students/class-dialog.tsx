@@ -26,7 +26,18 @@ const emptyClass: Omit<SchoolClass, "id"> = {
     description: "",
 };
 
+import { useAppStore } from "@/lib/store";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+
 export function ClassDialog({ open, onOpenChange, schoolClass, onSave }: ClassDialogProps) {
+    const { users } = useAppStore();
+    const teachers = users.filter(u => u.role === "teacher");
     const [formData, setFormData] = useState<Partial<SchoolClass>>(schoolClass ? { ...schoolClass } : emptyClass);
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -71,6 +82,29 @@ export function ClassDialog({ open, onOpenChange, schoolClass, onSave }: ClassDi
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 className="col-span-3"
                             />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="teacher" className="text-right">
+                                Professor(a)
+                            </Label>
+                            <div className="col-span-3">
+                                <Select
+                                    value={formData.teacherId || "none"}
+                                    onValueChange={(value) => setFormData({ ...formData, teacherId: value === "none" ? undefined : value })}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Selecione um professor..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="none">-- Sem Professor --</SelectItem>
+                                        {teachers.map(teacher => (
+                                            <SelectItem key={teacher.id} value={teacher.id}>
+                                                {teacher.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                     </div>
                     <DialogFooter>

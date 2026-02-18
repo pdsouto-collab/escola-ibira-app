@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export default function StudentsPage() {
-    const { students, classes, addStudent, updateStudent, removeStudent, addClass, updateClass, removeClass } = useAppStore();
+    const { students, classes, currentUser, addStudent, updateStudent, removeStudent, addClass, updateClass, removeClass } = useAppStore();
 
     // Dialog States
     const [isStudentDialogOpen, setIsStudentDialogOpen] = useState(false);
@@ -28,9 +28,18 @@ export default function StudentsPage() {
     const [editingStudent, setEditingStudent] = useState<Student | null>(null);
     const [editingClass, setEditingClass] = useState<SchoolClass | null>(null);
 
+    // Filter classes based on role
+    const visibleClasses = currentUser?.role === "teacher"
+        ? classes.filter(c => c.teacherId === currentUser.id)
+        : classes;
+
+    const canManageClasses = currentUser?.role === "director" || currentUser?.role === "admin";
+
     // Derived State
     const filteredStudents = selectedClassId === "all"
-        ? students
+        ? (currentUser?.role === "teacher"
+            ? students.filter(s => visibleClasses.some(c => c.id === s.classId))
+            : students)
         : students.filter(s => s.classId === selectedClassId);
 
     const selectedClass = classes.find(c => c.id === selectedClassId);
@@ -98,9 +107,11 @@ export default function StudentsPage() {
             <aside className="w-full md:w-64 flex-shrink-0 space-y-4">
                 <div className="flex items-center justify-between">
                     <h2 className="font-semibold text-slate-900">Turmas</h2>
-                    <Button variant="ghost" size="icon" onClick={handleAddClass} title="Nova Turma">
-                        <FolderPlus className="h-4 w-4 text-slate-500 hover:text-primary" />
-                    </Button>
+                    {canManageClasses && (
+                        <Button variant="ghost" size="icon" onClick={handleAddClass} title="Nova Turma">
+                            <FolderPlus className="h-4 w-4 text-slate-500 hover:text-primary" />
+                        </Button>
+                    )}
                 </div>
 
                 <nav className="space-y-1">
@@ -116,11 +127,11 @@ export default function StudentsPage() {
                         <Users className="h-4 w-4" />
                         Todos os Alunos
                         <span className="ml-auto text-xs text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">
-                            {students.length}
+                            {filteredStudents.length}
                         </span>
                     </button>
 
-                    {classes.map((schoolClass) => (
+                    {visibleClasses.map((schoolClass) => (
                         <div key={schoolClass.id} className="group relative">
                             <button
                                 onClick={() => setSelectedClassId(schoolClass.id)}
@@ -141,26 +152,28 @@ export default function StudentsPage() {
                                 </span>
                             </button>
 
-                            {/* Class Actions Dropdown */}
-                            <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="h-6 w-6">
-                                            <MoreVertical className="h-3 w-3" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuItem onClick={() => handleEditClass(schoolClass)}>
-                                            <Edit2 className="mr-2 h-3 w-3" />
-                                            Editar
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handleDeleteClass(schoolClass)} className="text-red-600">
-                                            <Trash2 className="mr-2 h-3 w-3" />
-                                            Excluir
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
+                            {/* Class Actions Dropdown - Only for Admins/Directors */}
+                            {canManageClasses && (
+                                <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-6 w-6">
+                                                <MoreVertical className="h-3 w-3" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={() => handleEditClass(schoolClass)}>
+                                                <Edit2 className="mr-2 h-3 w-3" />
+                                                Editar
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleDeleteClass(schoolClass)} className="text-red-600">
+                                                <Trash2 className="mr-2 h-3 w-3" />
+                                                Excluir
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                            )}
                         </div>
                     ))}
                 </nav>
