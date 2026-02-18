@@ -31,8 +31,20 @@ const navigation = [
     { name: "Conversas", href: "/conversas", icon: MessageCircle },
 ];
 
+import { useAppStore } from "@/lib/store";
+import { useRouter } from "next/navigation";
+
 export function Sidebar() {
     const pathname = usePathname();
+    const router = useRouter();
+    const { setCurrentUser } = useAppStore();
+
+    const handleLogout = () => {
+        // Clear current user
+        // @ts-ignore - allowing null for logout
+        setCurrentUser(null);
+        router.push("/login");
+    };
 
     return (
         <div className="flex h-full w-64 flex-col border-r bg-white text-slate-800 shadow-sm">
@@ -62,7 +74,10 @@ export function Sidebar() {
                 </nav>
             </div>
             <div className="border-t p-4">
-                <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors">
+                <button
+                    onClick={handleLogout}
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors"
+                >
                     <LogOut className="h-5 w-5" />
                     Sair
                 </button>
