@@ -40,7 +40,7 @@ export function DashboardHero() {
                 <div className="hidden md:block absolute right-0 bottom-0 opacity-20 md:opacity-100 md:relative md:w-64 md:h-64 translate-y-6 md:translate-y-0 text-white">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                        src="/escola-ibira-app/images/logo-ibira-new.png"
+                        src="/escola-ibira-app/images/logo%20ibir%C3%A1%20verotizado_novo.jpeg"
                         alt="Escola Ibirá"
                         className="w-full h-full object-contain mix-blend-multiply opacity-90 scale-150 origin-bottom-right"
                     />
