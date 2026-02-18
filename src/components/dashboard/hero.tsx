@@ -37,21 +37,13 @@ export function DashboardHero() {
                 </div>
 
                 {/* Tree Illustration */}
-                <div className="hidden md:block absolute right-0 bottom-0 opacity-20 md:opacity-100 md:relative md:w-48 md:h-48 text-white/90 translate-y-6 md:translate-y-0">
-                    <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full drop-shadow-lg">
-                        {/* Trunk */}
-                        <path d="M95 180V120C95 120 85 140 75 120C65 100 95 80 95 80V120H105V80C105 80 135 100 125 120C115 140 105 120 105 120V180H95Z" fill="#5D4037" />
-                        {/* Leaves - Bottom Layer */}
-                        <circle cx="60" cy="100" r="30" fill="#7FA075" />
-                        <circle cx="140" cy="100" r="30" fill="#7FA075" />
-                        <circle cx="100" cy="90" r="35" fill="#4A6C58" />
-                        {/* Leaves - Middle Layer */}
-                        <circle cx="80" cy="70" r="25" fill="#7FA075" />
-                        <circle cx="120" cy="70" r="25" fill="#7FA075" />
-                        <circle cx="100" cy="60" r="30" fill="#93C572" />
-                        {/* Leaves - Top Layer */}
-                        <circle cx="100" cy="40" r="20" fill="#A8E4A0" />
-                    </svg>
+                <div className="hidden md:block absolute right-0 bottom-0 opacity-20 md:opacity-100 md:relative md:w-64 md:h-64 text-white/90 translate-y-6 md:translate-y-0">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                        src="/images/logo-ibira.png"
+                        alt="Escola Ibirá"
+                        className="w-full h-full object-contain mix-blend-multiply opacity-90"
+                    />
                 </div>
             </div>
         </div>
