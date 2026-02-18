@@ -10,7 +10,7 @@ import { mockUsers } from "@/lib/data";
 
 export default function LoginPage() {
     const router = useRouter();
-    const { setCurrentUser } = useAppStore();
+    const { setCurrentUser, users } = useAppStore();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
@@ -18,8 +18,8 @@ export default function LoginPage() {
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Simulating auth: Find user by email (mock password check)
-        const user = mockUsers.find(u => u.email === email);
+        // Simulating auth: Find user by email in the GLOBAL STORE (mock password check)
+        const user = users.find(u => u.email === email);
 
         if (user) {
             setCurrentUser(user);

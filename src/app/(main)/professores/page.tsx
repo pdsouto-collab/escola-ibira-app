@@ -14,12 +14,21 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function TeachersPage() {
     const router = useRouter();
     const { users, currentUser, addUser, updateUser, removeUser } = useAppStore();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
+    const [createdCredentials, setCreatedCredentials] = useState<{ email: string; password: string } | null>(null);
 
     // RBAC: Redirect if not Director or Admin
     useEffect(() => {
@@ -53,6 +62,10 @@ export default function TeachersPage() {
             updateUser(teacher.id, teacher);
         } else {
             addUser(teacher);
+            setCreatedCredentials({
+                email: teacher.email,
+                password: "123456",
+            });
         }
     };
 
@@ -132,6 +145,30 @@ export default function TeachersPage() {
                 onSave={handleSaveTeacher}
                 fixedRole="teacher"
             />
+
+            <Dialog open={!!createdCredentials} onOpenChange={(open) => !open && setCreatedCredentials(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Professor Cadastrado!</DialogTitle>
+                        <DialogDescription>
+                            O professor foi cadastrado com sucesso. Compartilhe as credenciais abaixo:
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="bg-slate-100 p-4 rounded-md space-y-2 text-sm">
+                        <div className="flex justify-between items-center">
+                            <span className="font-semibold text-slate-700">Email:</span>
+                            <span className="text-slate-900 select-all">{createdCredentials?.email}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="font-semibold text-slate-700">Senha Provisória:</span>
+                            <span className="font-mono text-slate-900 select-all">{createdCredentials?.password}</span>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button onClick={() => setCreatedCredentials(null)}>Entendi</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
