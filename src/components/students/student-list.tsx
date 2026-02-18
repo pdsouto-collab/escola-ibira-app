@@ -17,7 +17,7 @@ export function StudentList({ students, onEdit, onDelete }: StudentListProps) {
 
     const filteredStudents = students.filter(student =>
         student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.class.toLowerCase().includes(searchTerm.toLowerCase())
+        student.classId.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (

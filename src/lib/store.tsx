@@ -57,6 +57,11 @@ interface AppContextType extends AppState {
 
     resetData: () => void;
     setCurrentUser: (user: User) => void;
+
+    // User Management
+    addUser: (user: User) => void;
+    updateUser: (id: string, updates: Partial<User>) => void;
+    removeUser: (id: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -258,7 +263,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             addMuralEvent, updateMuralEvent, removeMuralEvent, addCommentToEvent,
             updateSchedule, addProject, updateProject, sendMessage, resetData,
             mosaicData, updateMosaicNode, replaceMosaicData,
-            users, setCurrentUser
+            users, setCurrentUser,
+            addUser: (user) => setUsers(prev => [...prev, user]),
+            updateUser: (id, updates) => setUsers(prev => prev.map(u => u.id === id ? { ...u, ...updates } : u)),
+            removeUser: (id) => setUsers(prev => prev.filter(u => u.id !== id)),
         }}>
             {children}
         </AppContext.Provider>

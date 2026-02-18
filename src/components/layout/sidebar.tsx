@@ -28,7 +28,10 @@ const navigation = [
     { name: "Mural de Eventos", href: "/mural", icon: PartyPopper },
     { name: "Banco de projetos", href: "/projetos", icon: FolderOpen },
     { name: "Relatórios", href: "/relatorios", icon: BarChart3 },
+
     { name: "Conversas", href: "/conversas", icon: MessageCircle },
+    // Restricted Route
+    { name: "Professores", href: "/professores", icon: Video, roles: ["director", "admin"] },
 ];
 
 import { useAppStore } from "@/lib/store";
@@ -37,7 +40,7 @@ import { useRouter } from "next/navigation";
 export function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
-    const { setCurrentUser } = useAppStore();
+    const { currentUser, setCurrentUser } = useAppStore();
 
     const handleLogout = () => {
         // Clear current user
@@ -54,6 +57,12 @@ export function Sidebar() {
             <div className="flex-1 overflow-y-auto py-4">
                 <nav className="space-y-1 px-3">
                     {navigation.map((item) => {
+                        // RBAC Check
+                        // @ts-ignore - roles property might not exist on all items in original type inference
+                        if (item.roles && (!currentUser || !item.roles.includes(currentUser.role))) {
+                            return null;
+                        }
+
                         const isActive = pathname === item.href;
                         return (
                             <Link

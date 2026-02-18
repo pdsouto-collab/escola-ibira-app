@@ -2,10 +2,10 @@
 
 import * as React from "react"
 
-export type CalendarProps = React.HTMLAttributes<HTMLDivElement> & {
+export type CalendarProps = Omit<React.HTMLAttributes<HTMLDivElement>, "onSelect"> & {
     mode?: "single" | "range" | "multiple"
     selected?: any
-    onSelect?: any
+    onSelect?: (date: any) => void
     initialFocus?: boolean
 }
 
