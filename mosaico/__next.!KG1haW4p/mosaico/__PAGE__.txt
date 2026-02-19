@@ -1,9 +1,9 @@
 1:"$Sreact.fragment"
 2:I[47257,["/escola-ibira-app/_next/static/chunks/ff1a16fafef87110.js","/escola-ibira-app/_next/static/chunks/d2be314c3ece3fbe.js"],"ClientPageRoot"]
-3:I[40918,["/escola-ibira-app/_next/static/chunks/f14e1e3078ab0bb9.js","/escola-ibira-app/_next/static/chunks/13874255c7fb4e1c.js","/escola-ibira-app/_next/static/chunks/195c216f52dae3f8.js","/escola-ibira-app/_next/static/chunks/7b403e6795e66bbc.js","/escola-ibira-app/_next/static/chunks/493bf8da43f90d35.js"],"default"]
+3:I[40918,["/escola-ibira-app/_next/static/chunks/f45a9d0480f293d6.js","/escola-ibira-app/_next/static/chunks/af48c1d7050d0998.js","/escola-ibira-app/_next/static/chunks/195c216f52dae3f8.js","/escola-ibira-app/_next/static/chunks/0bc7563cad31a010.js","/escola-ibira-app/_next/static/chunks/d204b9be6a03cf27.js"],"default"]
 6:I[97367,["/escola-ibira-app/_next/static/chunks/ff1a16fafef87110.js","/escola-ibira-app/_next/static/chunks/d2be314c3ece3fbe.js"],"OutletBoundary"]
 7:"$Sreact.suspense"
-0:{"buildId":"sFcqGnCfS8XPQC2C2FIhs","rsc":["$","$1","c",{"children":[["$","$L2",null,{"Component":"$3","serverProvidedParams":{"searchParams":{},"params":{},"promises":["$@4","$@5"]}}],[["$","script","script-0",{"src":"/escola-ibira-app/_next/static/chunks/7b403e6795e66bbc.js","async":true}],["$","script","script-1",{"src":"/escola-ibira-app/_next/static/chunks/493bf8da43f90d35.js","async":true}]],["$","$L6",null,{"children":["$","$7",null,{"name":"Next.MetadataOutlet","children":"$@8"}]}]]}],"loading":null,"isPartial":false}
+0:{"buildId":"8gSTGY2UANiHUTpo-kPxF","rsc":["$","$1","c",{"children":[["$","$L2",null,{"Component":"$3","serverProvidedParams":{"searchParams":{},"params":{},"promises":["$@4","$@5"]}}],[["$","script","script-0",{"src":"/escola-ibira-app/_next/static/chunks/0bc7563cad31a010.js","async":true}],["$","script","script-1",{"src":"/escola-ibira-app/_next/static/chunks/d204b9be6a03cf27.js","async":true}]],["$","$L6",null,{"children":["$","$7",null,{"name":"Next.MetadataOutlet","children":"$@8"}]}]]}],"loading":null,"isPartial":false}
 4:{}
 5:{}
 8:null
