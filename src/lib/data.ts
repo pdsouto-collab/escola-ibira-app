@@ -95,6 +95,7 @@ export interface ScheduleItem {
     date?: string; // YYYY-MM-DD
     classId?: string;
     projectId?: string;
+    routineId?: string; // Links items created as a bulk routine
 }
 
 export const mockSchedule: ScheduleItem[] = [

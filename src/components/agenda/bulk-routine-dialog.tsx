@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -39,6 +39,7 @@ interface BulkRoutineDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     classes: SchoolClass[];
+    initialConfig?: BulkRoutineConfig;
     onSave: (config: BulkRoutineConfig) => void;
 }
 
@@ -52,7 +53,7 @@ const DAYS = [
     { label: "Sáb", value: 6 },
 ];
 
-export function BulkRoutineDialog({ open, onOpenChange, classes, onSave }: BulkRoutineDialogProps) {
+export function BulkRoutineDialog({ open, onOpenChange, classes, initialConfig, onSave }: BulkRoutineDialogProps) {
     const [config, setConfig] = useState<BulkRoutineConfig>({
         title: "",
         description: "",
@@ -64,6 +65,49 @@ export function BulkRoutineDialog({ open, onOpenChange, classes, onSave }: BulkR
         daysOfWeek: [1, 2, 3, 4, 5], // Default: Mon-Fri
         classId: "all"
     });
+
+    // Reset or load initial config when dialog opens
+    // We use a key or effect? Let's use an effect on open change to reset if empty, or on initialConfig change
+    // Better: use a simple effect to load initialConfig if present
+
+    // Actually, react state initialization only happens once.
+    // Let's use an effect to update state when initialConfig changes or open changes
+    if (initialConfig && config !== initialConfig && open) {
+        // This is risky for infinite loops if strict equality fails.
+        // Better to do it in a useEffect dependent on open
+    }
+
+    // Recommended pattern:
+    // When `open` becomes true, set config.
+    // We can use a `useEffect`.
+
+    // But since we can't easily import useEffect inside the replace block without wider context change (though I can add imports),
+    // wait, I can just use key on the parent component or use effect here.
+    // I'll update the component signature to include useEffect import if needed, or assume it's there?
+    // It's not there in the previous file view. I'll need to add it.
+
+    // Actually, I'll update the whole file import section too.
+
+
+    useEffect(() => {
+        if (open) {
+            if (initialConfig) {
+                setConfig(initialConfig);
+            } else {
+                setConfig({
+                    title: "",
+                    description: "",
+                    time: "",
+                    endTime: "",
+                    type: "activity",
+                    startDate: "",
+                    endDate: "",
+                    daysOfWeek: [1, 2, 3, 4, 5],
+                    classId: "all"
+                });
+            }
+        }
+    }, [open, initialConfig]);
 
     const handleDayToggle = (day: number) => {
         setConfig(prev => {

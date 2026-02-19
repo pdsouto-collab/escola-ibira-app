@@ -7,15 +7,21 @@ import { ptBR } from "date-fns/locale";
 import { DailySchedule } from "@/components/agenda/daily-schedule";
 import { useAppStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
-import { Plus, ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Calendar as CalendarIcon, Copy, Settings2 } from "lucide-react";
 import { ScheduleDialog } from "@/components/agenda/schedule-dialog";
-import { Copy } from "lucide-react"; // Import Icon
 import { BulkRoutineDialog, BulkRoutineConfig } from "@/components/agenda/bulk-routine-dialog";
+import { RoutineManagerDialog } from "@/components/agenda/routine-manager-dialog";
 import { ScheduleItem } from "@/lib/data";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function AgendaPage() {
     const { schedule, classes, currentUser, updateSchedule } = useAppStore();
@@ -23,7 +29,10 @@ export default function AgendaPage() {
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
     const [isScheduleDialogOpen, setIsScheduleDialogOpen] = useState(false);
     const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
+    const [isManagerDialogOpen, setIsManagerDialogOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<ScheduleItem | null>(null);
+    const [bulkConfig, setBulkConfig] = useState<BulkRoutineConfig | undefined>();
+    const [editingRoutineId, setEditingRoutineId] = useState<string | null>(null);
 
     // Filter Logic
     const availableClasses = currentUser?.role === "teacher"
@@ -74,7 +83,20 @@ export default function AgendaPage() {
 
     const canEdit = ["admin", "director", "teacher"].includes(currentUser?.role || "");
 
-    const handleBulkCreate = (config: BulkRoutineConfig) => {
+    const handleBulkCreateOptions = () => {
+        setBulkConfig(undefined);
+        setEditingRoutineId(null);
+        setIsBulkDialogOpen(true);
+    }
+
+    const handleBulkSave = (config: BulkRoutineConfig) => {
+        // If editing a routine, first remove old items
+        let currentSchedule = schedule;
+        if (editingRoutineId) {
+            currentSchedule = schedule.filter(i => i.routineId !== editingRoutineId);
+        }
+
+        const routineId = editingRoutineId || crypto.randomUUID();
         const newItems: ScheduleItem[] = [];
         const start = new Date(config.startDate + "T00:00:00"); // Ensure local time
         const end = new Date(config.endDate + "T00:00:00");
@@ -89,7 +111,8 @@ export default function AgendaPage() {
                 description: config.description,
                 type: config.type,
                 date: format(date, 'yyyy-MM-dd'),
-                classId: cId
+                classId: cId,
+                routineId: routineId
             });
         };
 
@@ -104,7 +127,32 @@ export default function AgendaPage() {
             }
         }
 
-        updateSchedule([...schedule, ...newItems]);
+        updateSchedule([...currentSchedule, ...newItems]);
+        setEditingRoutineId(null);
+    };
+
+    const handleDeleteRoutine = (routineId: string) => {
+        if (confirm("Tem certeza? Isso removerá TODAS as ocorrências desta rotina.")) {
+            updateSchedule(schedule.filter(i => i.routineId !== routineId));
+        }
+    };
+
+    const handleEditRoutine = (routineId: string, exampleItem: ScheduleItem) => {
+        // Pre-fill config from example item
+        setIsManagerDialogOpen(false);
+        setEditingRoutineId(routineId);
+        setBulkConfig({
+            title: exampleItem.title,
+            description: exampleItem.description || "",
+            time: exampleItem.time,
+            endTime: exampleItem.endTime || "",
+            type: exampleItem.type,
+            startDate: exampleItem.date || "", // This might be lossy if not stored on routine level, but good enough for now
+            endDate: exampleItem.date || "", // User will have to re-select range
+            daysOfWeek: [1, 2, 3, 4, 5], // Default, hard to infer perfectly without better data structure
+            classId: exampleItem.classId || "all"
+        });
+        setIsBulkDialogOpen(true);
     };
 
     return (
@@ -148,12 +196,29 @@ export default function AgendaPage() {
 
                     {canEdit && (
                         <div className="flex gap-2">
-                            <Button variant="outline" onClick={() => setIsBulkDialogOpen(true)}>
-                                <Copy className="mr-2 h-4 w-4" /> Rotina
+                            <Button variant="outline" className="gap-2" onClick={() => setIsManagerDialogOpen(true)}>
+                                <Settings2 className="w-4 h-4" />
+                                Gerenciar Rotinas
                             </Button>
-                            <Button onClick={handleAdd}>
-                                <Plus className="mr-2 h-4 w-4" /> Novo Item
-                            </Button>
+
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button className="gap-2">
+                                        <Plus className="w-4 h-4" />
+                                        Novo
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={handleAdd}>
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Item Único
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={handleBulkCreateOptions}>
+                                        <Copy className="mr-2 h-4 w-4" />
+                                        Nova Rotina (Massa)
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
                     )}
                 </div>
@@ -185,7 +250,17 @@ export default function AgendaPage() {
                 open={isBulkDialogOpen}
                 onOpenChange={setIsBulkDialogOpen}
                 classes={availableClasses}
-                onSave={handleBulkCreate}
+                initialConfig={bulkConfig}
+                onSave={handleBulkSave}
+            />
+
+            <RoutineManagerDialog
+                open={isManagerDialogOpen}
+                onOpenChange={setIsManagerDialogOpen}
+                schedule={schedule}
+                classes={classes}
+                onDeleteRoutine={handleDeleteRoutine}
+                onEditRoutine={handleEditRoutine}
             />
         </div>
     );
