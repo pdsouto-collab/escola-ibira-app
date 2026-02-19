@@ -17,25 +17,34 @@ interface MosaicGridProps {
 }
 
 export function MosaicGrid({ classId, projectId }: MosaicGridProps) {
-    const { projects, bnccProgress, updateBNCCStatus } = useAppStore();
+    const { projects, students, bnccProgress, updateBNCCStatus } = useAppStore();
     const [selectedSkill, setSelectedSkill] = useState<BNCCSkill | null>(null);
     const [comment, setComment] = useState("");
 
+    // Helper to check if project belongs to class
+    const isProjectInClass = (project: any, targetClassId: string) => {
+        // 1. Check direct assignment
+        if (project.classes?.includes(targetClassId)) return true;
+
+        // 2. Check indirect assignment via students
+        if (project.students?.length > 0) {
+            const projectStudents = students.filter(s => project.students.includes(s.id));
+            return projectStudents.some(s => s.classId === targetClassId);
+        }
+
+        return false;
+    };
+
     // Helper to get status
     const getSkillStatus = (code: string) => {
-        // 1. Check if Achieved (Blue/Green) - This is global for now, 
-        // but in a real app could be per class. We'll keep it simple: 
-        // if user filters by class, we technically should only show achievement for that class.
-        // For this prototype, let's assume "Achieved" is a global student record, so it shows up regardless of filter.
+        // 1. Check if Achieved (Blue/Green) - Currently global
         const progress = bnccProgress[code];
         if (progress?.status === "achieved") return "achieved";
 
         // 2. Check if In Progress (Blue)
         if (progress?.status === "in-progress") return "in-progress";
 
-        // 3. Check if Planned (Yellow) - DEPENDS ON FILTERS
-        // A skill is "planned" if it is in an ACTIVE project that matches the current filters.
-
+        // 3. Check if Planned (Yellow)
         const inActiveProject = projects.some(p => {
             // Must be active
             if (p.status !== "active") return false;
@@ -47,12 +56,7 @@ export function MosaicGrid({ classId, projectId }: MosaicGridProps) {
             if (projectId && p.id !== projectId) return false;
 
             // Filter by Class ID if set
-            // For now, if classId is set, we strictly should only count projects from that class.
-            // Since our mock project data structure is simple, we will assume if a project filter is NOT set,
-            // but a CLASS filter IS set, we should ideally filter projects by class.
-            // However, linking projects to classes is done via students in this mock.
-            // Let's assume for this prototype that if no specific project is selected, we show all active projects 
-            // (or let the user select a specific project to narrow it down).
+            if (classId && !isProjectInClass(p, classId)) return false;
 
             return true;
         });
@@ -70,9 +74,8 @@ export function MosaicGrid({ classId, projectId }: MosaicGridProps) {
             // Apply Filters
             if (projectId && p.id !== projectId) return false;
 
-            // Note on Class Filter: 
-            // If classId is set, we could filter here too.
-            // For now, project filter is the strongest constraint.
+            // Apply Class Filter
+            if (classId && !isProjectInClass(p, classId)) return false;
 
             return true;
         });
