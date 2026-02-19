@@ -24,7 +24,7 @@ import { SchoolLogo } from "@/components/ui/school-logo";
 const navigation = [
     { name: "Início", href: "/", icon: LayoutDashboard },
     { name: "Práticas", href: "/mosaico", icon: Grid2X2 },
-    { name: "Estudantes", href: "/alunos", icon: Users },
+    { name: "Alunos / Turmas", href: "/alunos", icon: Users },
     { name: "Pendências", href: "/pendencias", icon: CheckCircle2 },
     { name: "Rotinas", href: "/agenda", icon: CalendarDays },
     { name: "Mural de Eventos", href: "/mural", icon: PartyPopper },
