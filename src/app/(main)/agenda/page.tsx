@@ -49,7 +49,7 @@ export default function AgendaPage() {
     };
 
     const handleDelete = (item: ScheduleItem) => {
-        // eslint-disable-next-line no-restricted-globals
+         
         if (confirm("Remover este item da agenda?")) {
             updateSchedule(schedule.filter(i => i.id !== item.id));
         }

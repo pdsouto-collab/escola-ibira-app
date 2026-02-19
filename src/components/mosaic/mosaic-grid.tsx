@@ -1,170 +1,211 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Theme, Indicator, Status, MosaicNode } from "@/lib/data";
+import { useState } from "react";
+import { useAppStore } from "@/lib/store";
+import { mockBNCCData, BNCCSkill } from "@/lib/data";
 import { cn } from "@/lib/utils";
-import { CheckCircle2, Circle, Clock, LayoutGrid, PieChart } from "lucide-react";
-import { IndicatorModal } from "./indicator-modal";
-import { MosaicSunburst } from "./mosaic-sunburst";
-import { Button } from "../ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Check, Clock, Circle, FileText, AlertCircle } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
-interface MosaicGridProps {
-    themes: Theme[];
-}
+export function MosaicGrid() {
+    const { projects, bnccProgress, updateBNCCStatus } = useAppStore();
+    const [selectedSkill, setSelectedSkill] = useState<BNCCSkill | null>(null);
+    const [comment, setComment] = useState("");
 
-const statusIcon = {
-    "achieved": <CheckCircle2 className="h-4 w-4 text-green-600" />,
-    "in-progress": <Clock className="h-4 w-4 text-amber-600" />,
-    "not-started": <Circle className="h-4 w-4 text-slate-300" />,
-};
+    // Helper to get status
+    const getSkillStatus = (code: string) => {
+        const progress = bnccProgress[code];
+        if (progress?.status === "achieved") return "achieved";
+        if (progress?.status === "in-progress") return "in-progress";
 
-const statusColor = {
-    "achieved": "bg-green-100 hover:bg-green-200 border-green-200",
-    "in-progress": "bg-amber-100 hover:bg-amber-200 border-amber-200",
-    "not-started": "bg-white hover:bg-slate-50 border-slate-200",
-};
+        // Check if in any ACTIVE project
+        const inActiveProject = projects.some(p =>
+            p.status === "active" && p.bnccSkillIds?.includes(code)
+        );
+        if (inActiveProject) return "planned";
 
-// Helper to map Tailwind colors to Hex/CSS for SVG
-const colorMap: Record<string, string> = {
-    "orange": "#f97316",
-    "blue": "#3b82f6",
-    "teal": "#14b8a6",
-    "purple": "#a855f7",
-    "indigo": "#6366f1",
-    "pink": "#ec4899",
-    "green": "#22c55e",
-};
-
-export function MosaicGrid({ themes: initialThemes }: MosaicGridProps) {
-    const [themes, setThemes] = useState(initialThemes);
-    const [selectedIndicator, setSelectedIndicator] = useState<Indicator | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [viewMode, setViewMode] = useState<"grid" | "sunburst">("sunburst");
-
-    // Transform flat Theme[] to recursive MosaicNode[]
-    const chartData: MosaicNode[] = useMemo(() => {
-        return themes.map(theme => ({
-            id: theme.id,
-            label: theme.title,
-            type: "area", // Treat themes as main areas
-            status: "in-progress", // Aggregate status could be calculated, defaulting for now
-            color: colorMap[theme.color] || theme.color,
-            children: theme.indicators.map(ind => ({
-                id: ind.id,
-                label: ind.label,
-                type: "skill", // Treat indicators as skills
-                status: ind.status,
-                evidenceCount: ind.evidenceCount
-            }))
-        }));
-    }, [themes]);
-
-    const handleNodeClick = (node: MosaicNode) => {
-        // If it's a leaf node (skill/indicator), open the modal
-        if (node.type === "skill") {
-            // Find the original indicator object
-            for (const theme of themes) {
-                const indicator = theme.indicators.find(i => i.id === node.id);
-                if (indicator) {
-                    handleIndicatorClick(indicator);
-                    break;
-                }
-            }
-        }
+        return "not-started";
     };
 
-    const handleIndicatorClick = (indicator: Indicator) => {
-        setSelectedIndicator(indicator);
-        setIsModalOpen(true);
+    // Helper to get projects linked to a skill
+    const getLinkedProjects = (code: string) => {
+        return projects.filter(p => p.bnccSkillIds?.includes(code));
     };
 
-    const handleUpdateStatus = (indicatorId: string, newStatus: Status) => {
-        setThemes(prevThemes => prevThemes.map(theme => ({
-            ...theme,
-            indicators: theme.indicators.map(ind =>
-                ind.id === indicatorId ? { ...ind, status: newStatus } : ind
-            )
-        })));
+    const handleStatusUpdate = (status: "not-started" | "in-progress" | "achieved") => {
+        if (!selectedSkill) return;
+        updateBNCCStatus(selectedSkill.code, status);
+        // Note: In a real app we'd save the comment too
+        setComment("");
+        setSelectedSkill(null);
     };
 
     return (
-        <div className="space-y-8">
-            <div className="flex justify-end gap-2">
-                <Button
-                    variant={viewMode === "sunburst" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setViewMode("sunburst")}
-                >
-                    <PieChart className="h-4 w-4 mr-2" />
-                    Mosaico
-                </Button>
-                <Button
-                    variant={viewMode === "grid" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setViewMode("grid")}
-                >
-                    <LayoutGrid className="h-4 w-4 mr-2" />
-                    Lista
-                </Button>
-            </div>
+        <div className="w-full h-full overflow-y-auto p-6 space-y-8">
+            {mockBNCCData.map(subject => (
+                <div key={subject.id} className="space-y-4">
+                    <div className="flex items-center gap-3">
+                        <div className={cn("w-2 h-8 rounded-full",
+                            subject.id === "ciencias" ? "bg-green-500" :
+                                subject.id === "matematica" ? "bg-blue-500" :
+                                    subject.id === "portugues" ? "bg-purple-500" :
+                                        subject.id === "historia" ? "bg-orange-500" :
+                                            subject.id === "geografia" ? "bg-yellow-500" : "bg-slate-500"
+                        )} />
+                        <h3 className="text-xl font-bold text-slate-800">{subject.name}</h3>
+                    </div>
 
-            {viewMode === "sunburst" ? (
-                <div className="flex justify-center p-8 bg-slate-50 rounded-2xl border border-slate-100">
-                    <MosaicSunburst
-                        data={chartData}
-                        onSelectNode={handleNodeClick}
-                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        {subject.skills.map(skill => {
+                            const status = getSkillStatus(skill.code);
+                            const linkedProjects = getLinkedProjects(skill.code);
+                            const progress = bnccProgress[skill.code];
+
+                            return (
+                                <div
+                                    key={skill.code}
+                                    onClick={() => setSelectedSkill(skill)}
+                                    className={cn(
+                                        "relative p-4 rounded-xl border border-b-4 cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md group",
+                                        status === "achieved"
+                                            ? "bg-green-50 border-green-500/30 border-b-green-500"
+                                            : status === "planned"
+                                                ? "bg-amber-50 border-amber-300 border-b-amber-400 ring-2 ring-amber-400/20"
+                                                : status === "in-progress"
+                                                    ? "bg-blue-50 border-blue-300 border-b-blue-400"
+                                                    : "bg-white border-slate-200 border-b-slate-300 hover:border-slate-400"
+                                    )}
+                                >
+                                    <div className="flex justify-between items-start mb-2">
+                                        <Badge variant="outline" className={cn("text-[10px] font-mono",
+                                            status === "achieved" ? "bg-green-100 text-green-700 border-green-200" :
+                                                "bg-slate-100 text-slate-500"
+                                        )}>
+                                            {skill.code}
+                                        </Badge>
+                                        {status === "achieved" && <Check className="w-4 h-4 text-green-600" />}
+                                        {status === "planned" && <AlertCircle className="w-4 h-4 text-amber-500" />}
+                                        {status === "in-progress" && <Clock className="w-4 h-4 text-blue-500" />}
+                                    </div>
+
+                                    <p className="text-sm font-medium text-slate-700 line-clamp-3 mb-3 leading-snug">
+                                        {skill.description}
+                                    </p>
+
+                                    <div className="flex items-center justify-between text-xs text-slate-400 mt-auto">
+                                        <span className="font-semibold uppercase tracking-wider text-[10px]">{skill.category}</span>
+                                        {linkedProjects.length > 0 && (
+                                            <div className="flex items-center gap-1 text-slate-500" title={`${linkedProjects.length} projeto(s)`}>
+                                                <FileText className="w-3 h-3" />
+                                                {linkedProjects.length}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Tooltip-like details on hover could go here, or just stick to Dialog */}
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
-            ) : (
-                <div className="space-y-8">
-                    {themes.map((theme) => (
-                        <div key={theme.id} className="space-y-4">
-                            <div className="flex items-center gap-2">
-                                <h2 className="text-xl font-bold text-slate-800">{theme.title}</h2>
-                                <div className="h-px flex-1 bg-slate-200" />
+            ))}
+
+            <Dialog open={!!selectedSkill} onOpenChange={(open) => !open && setSelectedSkill(null)}>
+                <DialogContent className="max-w-xl">
+                    <DialogHeader>
+                        <div className="flex items-center gap-2 mb-2">
+                            <Badge variant="secondary">{selectedSkill?.code}</Badge>
+                            <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">{selectedSkill?.category}</span>
+                        </div>
+                        <DialogTitle className="text-xl leading-relaxed">
+                            {selectedSkill?.description}
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    <ScrollArea className="max-h-[60vh] py-4">
+                        <div className="space-y-6">
+                            {/* Status Selection */}
+                            <div className="space-y-3">
+                                <label className="text-sm font-medium text-slate-900">Situação Atual</label>
+                                <div className="grid grid-cols-3 gap-3">
+                                    <Button
+                                        variant={getSkillStatus(selectedSkill?.code || "") === "not-started" ? "default" : "outline"}
+                                        className={cn("h-auto py-3 flex flex-col gap-1", getSkillStatus(selectedSkill?.code || "") === "not-started" && "bg-slate-600")}
+                                        onClick={() => handleStatusUpdate("not-started")}
+                                    >
+                                        <Circle className="w-4 h-4" />
+                                        <span className="text-xs">Não Iniciado</span>
+                                    </Button>
+                                    <Button
+                                        variant={getSkillStatus(selectedSkill?.code || "") === "in-progress" ? "default" : "outline"}
+                                        className={cn("h-auto py-3 flex flex-col gap-1", getSkillStatus(selectedSkill?.code || "") === "in-progress" && "bg-blue-600 hover:bg-blue-700")}
+                                        onClick={() => handleStatusUpdate("in-progress")}
+                                    >
+                                        <Clock className="w-4 h-4" />
+                                        <span className="text-xs">Em Progresso</span>
+                                    </Button>
+                                    <Button
+                                        variant={getSkillStatus(selectedSkill?.code || "") === "achieved" ? "default" : "outline"}
+                                        className={cn("h-auto py-3 flex flex-col gap-1", getSkillStatus(selectedSkill?.code || "") === "achieved" && "bg-green-600 hover:bg-green-700")}
+                                        onClick={() => handleStatusUpdate("achieved")}
+                                    >
+                                        <Check className="w-4 h-4" />
+                                        <span className="text-xs">Conquistada!</span>
+                                    </Button>
+                                </div>
                             </div>
 
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                                {theme.indicators.map((indicator) => (
-                                    <button
-                                        key={indicator.id}
-                                        onClick={() => handleIndicatorClick(indicator)}
-                                        className={cn(
-                                            "relative flex flex-col justify-between h-32 p-4 rounded-xl border-2 text-left transition-all hover:scale-[1.02] hover:shadow-sm",
-                                            statusColor[indicator.status]
-                                        )}
-                                    >
-                                        <span className="text-sm font-medium leading-snug line-clamp-3 text-slate-700">
-                                            {indicator.label}
-                                        </span>
+                            {/* Linked Projects */}
+                            <div className="space-y-3">
+                                <label className="text-sm font-medium text-slate-900">Projetos Vinculados</label>
+                                {selectedSkill && getLinkedProjects(selectedSkill.code).length > 0 ? (
+                                    <div className="grid gap-2">
+                                        {getLinkedProjects(selectedSkill.code).map(project => (
+                                            <div key={project.id} className="flex items-center justify-between p-3 rounded-lg border bg-slate-50">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-8 w-8 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-700">
+                                                        <FileText className="w-4 h-4" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-medium text-slate-900">{project.title}</p>
+                                                        <p className="text-xs text-slate-500">
+                                                            {project.status === "active" ? "Em andamento" :
+                                                                project.status === "completed" ? "Concluído" : "Planejamento"}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <Button size="sm" variant="ghost" className="h-7 text-xs">Ver</Button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="p-4 border border-dashed rounded-lg text-center text-slate-500 text-sm bg-slate-50">
+                                        Nenhum projeto trabalhou esta habilidade ainda.
+                                    </div>
+                                )}
+                            </div>
 
-                                        <div className="flex items-center justify-between mt-2">
-                                            {statusIcon[indicator.status]}
-                                            {indicator.evidenceCount && indicator.evidenceCount > 0 && (
-                                                <span className="text-[10px] font-bold px-1.5 py-0.5 bg-white/50 rounded-full text-slate-600">
-                                                    {indicator.evidenceCount} 📸
-                                                </span>
-                                            )}
-                                        </div>
-                                    </button>
-                                ))}
-
-                                <button className="flex flex-col items-center justify-center h-32 p-4 rounded-xl border-2 border-dashed border-slate-200 text-slate-400 hover:border-slate-300 hover:bg-slate-50 transition-colors">
-                                    <span className="text-2xl">+</span>
-                                    <span className="text-xs">Adicionar</span>
-                                </button>
+                            {/* Evidence / Comments */}
+                            <div className="space-y-3">
+                                <label className="text-sm font-medium text-slate-900">Diário de Bordo / Evidências</label>
+                                <Textarea
+                                    placeholder="Adicione observações sobre o desenvolvimento desta habilidade..."
+                                    className="resize-none"
+                                    value={comment}
+                                    onChange={(e) => setComment(e.target.value)}
+                                />
+                                <div className="flex justify-end">
+                                    <Button size="sm" variant="secondary">Adicionar Nota</Button>
+                                </div>
                             </div>
                         </div>
-                    ))}
-                </div>
-            )}
-
-            <IndicatorModal
-                indicator={selectedIndicator}
-                open={isModalOpen}
-                onOpenChange={setIsModalOpen}
-                onUpdateStatus={handleUpdateStatus}
-            />
+                    </ScrollArea>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

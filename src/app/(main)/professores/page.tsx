@@ -51,7 +51,7 @@ export default function TeachersPage() {
     };
 
     const handleDeleteTeacher = (teacher: User) => {
-        // eslint-disable-next-line no-restricted-globals
+         
         if (confirm(`Tem certeza que deseja remover o registro de ${teacher.name}?`)) {
             removeUser(teacher.id);
         }

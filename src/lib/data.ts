@@ -94,6 +94,7 @@ export interface ScheduleItem {
     description?: string;
     date?: string; // YYYY-MM-DD
     classId?: string;
+    projectId?: string;
 }
 
 export const mockSchedule: ScheduleItem[] = [
@@ -629,6 +630,8 @@ export interface Project {
     students: string[]; // IDs
     classes?: string[]; // IDs of SchoolClass
     tags: string[];
+    bnccSkillIds?: string[]; // IDs of BNCC Skills
+    contentIds?: string[]; // IDs of Custom Content
 }
 
 export interface ChatMessage {

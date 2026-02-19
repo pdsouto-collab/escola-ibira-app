@@ -56,7 +56,7 @@ export default function MuralPage() {
     };
 
     const handleCreateEvent = () => {
-        if (!newEvent.title || !newEvent.date) return;
+        if (!newEvent.title || !newEvent.date || !currentUser) return;
 
         const eventDate = `${newEvent.date}T${newEvent.time || "00:00"}`;
 

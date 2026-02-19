@@ -24,6 +24,7 @@ interface AppState {
     mosaicData: MosaicNode[];
     currentUser: User | null;
     users: User[];
+    bnccProgress: Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>;
 }
 
 interface AppContextType extends AppState {
@@ -62,6 +63,10 @@ interface AppContextType extends AppState {
     addUser: (user: User) => void;
     updateUser: (id: string, updates: Partial<User>) => void;
     removeUser: (id: string) => void;
+
+    // BNCC Progress
+    bnccProgress: Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>;
+    updateBNCCStatus: (skillCode: string, status: "not-started" | "in-progress" | "achieved") => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -134,6 +139,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [mosaicData, setMosaicData] = useState<MosaicNode[]>(mockRecursiveDataSkills);
     const [users, setUsers] = useState<User[]>(mockUsers);
     const [currentUser, setCurrentUser] = useState<User | null>(mockUsers[1]); // Default to Teacher (Cláudia) for dev
+    const [bnccProgress, setBnccProgress] = useState<Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>>({});
 
     const [isLoaded, setIsLoaded] = useState(false);
 
@@ -163,6 +169,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         load("projects", setProjects, initialProjects);
         load("messages", setMessages, initialMessages);
         load("mosaicData", setMosaicData, mockRecursiveDataSkills);
+        load("bnccProgress", setBnccProgress, {});
 
         setIsLoaded(true);
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -180,7 +187,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem("app_projects", JSON.stringify(projects));
         localStorage.setItem("app_messages", JSON.stringify(messages));
         localStorage.setItem("app_mosaicData", JSON.stringify(mosaicData));
-    }, [students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, mosaicData, isLoaded]);
+        localStorage.setItem("app_bnccProgress", JSON.stringify(bnccProgress));
+    }, [students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, mosaicData, bnccProgress, isLoaded]);
 
     // Actions
     const addStudent = (student: Student) => setStudents(prev => [...prev, student]);
@@ -246,8 +254,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setMosaicData(prev => updateRecursive(prev));
     };
 
+    const updateBNCCStatus = (skillCode: string, status: "not-started" | "in-progress" | "achieved") => {
+        setBnccProgress(prev => ({
+            ...prev,
+            [skillCode]: {
+                status,
+                evidenceCount: (prev[skillCode]?.evidenceCount || 0) + (status === "achieved" ? 1 : 0) // Simple increment logic
+            }
+        }));
+    };
+
     const resetData = () => {
-        // eslint-disable-next-line no-restricted-globals
+
         if (confirm("Isso apagará todos os dados locais e restaurará o padrão. Continuar?")) {
             localStorage.clear();
             window.location.reload();
@@ -267,6 +285,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             addUser: (user) => setUsers(prev => [...prev, user]),
             updateUser: (id, updates) => setUsers(prev => prev.map(u => u.id === id ? { ...u, ...updates } : u)),
             removeUser: (id) => setUsers(prev => prev.filter(u => u.id !== id)),
+            bnccProgress, updateBNCCStatus
         }}>
             {children}
         </AppContext.Provider>

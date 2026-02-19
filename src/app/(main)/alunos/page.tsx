@@ -58,7 +58,7 @@ export default function StudentsPage() {
     };
 
     const handleDeleteStudent = (student: Student) => {
-        // eslint-disable-next-line no-restricted-globals
+         
         if (confirm(`Tem certeza que deseja remover ${student.name}?`)) {
             removeStudent(student.id);
         }
@@ -84,7 +84,7 @@ export default function StudentsPage() {
     };
 
     const handleDeleteClass = (schoolClass: SchoolClass) => {
-        // eslint-disable-next-line no-restricted-globals
+         
         if (confirm(`Tem certeza que deseja remover a turma ${schoolClass.name}? Os alunos desta turma não serão excluídos, mas ficarão sem turma.`)) {
             removeClass(schoolClass.id);
             if (selectedClassId === schoolClass.id) {

@@ -1,24 +1,27 @@
 "use client";
 
-
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/lib/store";
-import { Project } from "@/lib/data";
+import { Project, ScheduleItem } from "@/lib/data";
 
 import { BNCCSelector } from "@/components/bncc/bncc-selector";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Check, ChevronRight, ChevronLeft, Save } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Check, ChevronRight, ChevronLeft, Save, Plus, Trash2, Calendar as CalendarIcon } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 export default function NewProjectWizard() {
     const router = useRouter();
-    const { addProject, classes } = useAppStore();
+    const { addProject, classes, schedule, updateSchedule } = useAppStore();
     const [currentStep, setCurrentStep] = useState(1);
 
     // Mock State for Form Data
@@ -27,21 +30,82 @@ export default function NewProjectWizard() {
         description: "",
         classes: [] as string[],
         bnccSkills: [] as string[],
-        schedule: ""
+        customContent: [] as string[],
+        // New: Project Schedule Items
+        projectSchedule: [] as Partial<ScheduleItem>[]
     });
 
-    const handleSave = () => {
-        const newProject: Project = {
+    const [newSession, setNewSession] = useState({
+        date: new Date(),
+        time: "09:00",
+        endTime: "10:00",
+        description: "" // Activity title/desc
+    });
+
+    const handleAddSession = () => {
+        if (!newSession.description) return;
+
+        const item: Partial<ScheduleItem> = {
             id: Math.random().toString(36).substr(2, 9),
+            date: format(newSession.date, 'yyyy-MM-dd'),
+            time: newSession.time,
+            endTime: newSession.endTime,
+            title: newSession.description, // Using description as title for the schedule item
+            type: 'activity',
+            description: `Atividade do projeto: ${formData.title}`
+        };
+
+        setFormData({
+            ...formData,
+            projectSchedule: [...formData.projectSchedule, item]
+        });
+
+        // Reset inputs
+        setNewSession({ ...newSession, description: "" });
+    };
+
+    const handleRemoveSession = (id: string) => {
+        setFormData({
+            ...formData,
+            projectSchedule: formData.projectSchedule.filter(i => i.id !== id)
+        });
+    };
+
+    const handleSave = () => {
+        const projectId = Math.random().toString(36).substr(2, 9);
+
+        const newProject: Project = {
+            id: projectId,
             title: formData.title || "Novo Projeto",
             description: formData.description,
             status: "planning",
             startDate: new Date().toISOString(),
             students: [], // Could map classes here
             classes: formData.classes,
-            tags: formData.bnccSkills.length > 0 ? formData.bnccSkills.slice(0, 3) : ["Pedagógico"]
+            tags: ["Pedagógico"],
+            bnccSkillIds: formData.bnccSkills,
+            contentIds: formData.customContent
         };
+
         addProject(newProject);
+
+        // Add Schedule Items
+        if (formData.projectSchedule.length > 0) {
+            const newScheduleItems = formData.projectSchedule.map(item => ({
+                id: item.id || Math.random().toString(36).substr(2, 9),
+                time: item.time || "09:00",
+                endTime: item.endTime,
+                title: item.title || "Atividade de Projeto",
+                type: "activity" as const,
+                description: item.description,
+                date: item.date,
+                classId: formData.classes[0] || "all", // Assign to first class or generic
+                projectId: projectId
+            }));
+
+            updateSchedule([...schedule, ...newScheduleItems]);
+        }
+
         router.push("/projetos");
     };
 
@@ -173,13 +237,67 @@ export default function NewProjectWizard() {
                         </div>
                     )}
 
-                    {/* Step 3: BNCC (Integrated) */}
+                    {/* Step 3: BNCC & Content */}
                     {currentStep === 3 && (
-                        <div className="animate-in fade-in slide-in-from-right-4 duration-300 h-full">
+                        <div className="animate-in fade-in slide-in-from-right-4 duration-300 h-full space-y-8">
                             <BNCCSelector
                                 selected={formData.bnccSkills}
                                 onSelect={(skills) => setFormData({ ...formData, bnccSkills: skills })}
                             />
+
+                            <div className="border-t pt-8">
+                                <h2 className="text-2xl font-bold text-slate-800 mb-2">Conteúdos Específicos</h2>
+                                <p className="text-slate-500 mb-6">Adicione conteúdos ou temas personalizados que serão trabalhados neste projeto.</p>
+
+                                <div className="bg-slate-50 p-6 rounded-xl border">
+                                    <div className="flex gap-2 mb-4">
+                                        <Input
+                                            placeholder="Ex: Ciclo da Água, Cores Primárias..."
+                                            id="content-input"
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    const val = (e.target as HTMLInputElement).value.trim();
+                                                    if (val && !formData.customContent.includes(val)) {
+                                                        setFormData({ ...formData, customContent: [...formData.customContent, val] });
+                                                        (e.target as HTMLInputElement).value = "";
+                                                    }
+                                                }
+                                            }}
+                                        />
+                                        <Button onClick={() => {
+                                            const input = document.getElementById('content-input') as HTMLInputElement;
+                                            const val = input.value.trim();
+                                            if (val && !formData.customContent.includes(val)) {
+                                                setFormData({ ...formData, customContent: [...formData.customContent, val] });
+                                                input.value = "";
+                                            }
+                                        }}>
+                                            <div className="flex items-center gap-1">
+                                                <div className="h-4 w-px bg-current/20 mx-1" />
+                                                Adicionar
+                                            </div>
+                                        </Button>
+                                    </div>
+
+                                    <div className="flex flex-wrap gap-2">
+                                        {formData.customContent.length > 0 ? (
+                                            formData.customContent.map((item) => (
+                                                <Badge key={item} variant="secondary" className="bg-white border-slate-200 text-slate-700 px-3 py-1 flex items-center gap-2">
+                                                    {item}
+                                                    <button
+                                                        onClick={() => setFormData({ ...formData, customContent: formData.customContent.filter(c => c !== item) })}
+                                                        className="hover:text-red-500 transition-colors"
+                                                    >
+                                                        <div className="h-3 w-3 bg-slate-300 rounded-full flex items-center justify-center text-[8px] text-white hover:bg-red-500">x</div>
+                                                    </button>
+                                                </Badge>
+                                            ))
+                                        ) : (
+                                            <span className="text-sm text-slate-400 italic">Nenhum conteúdo adicionado.</span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     )}
 
@@ -187,14 +305,75 @@ export default function NewProjectWizard() {
                     {currentStep === 4 && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                             <h2 className="text-2xl font-bold text-slate-800">Planejamento de Encontros</h2>
-                            <p className="text-slate-500">Defina o cronograma prévio das atividades.</p>
-                            <div className="border rounded-xl p-6 bg-slate-50 text-center">
-                                <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                                <p className="text-slate-500 mb-4">Módulo de calendário em desenvolvimento...</p>
-                                <Textarea
-                                    placeholder="Digite o cronograma manualmente por enquanto..."
-                                    className="bg-white min-h-[200px]"
-                                />
+                            <p className="text-slate-500">Defina o cronograma das atividades. Esses eventos aparecerão automaticamente na Agenda.</p>
+
+                            {/* Schedule Form */}
+                            <div className="flex flex-col md:flex-row gap-4 items-end bg-slate-50 p-4 rounded-xl border">
+                                <div className="space-y-2 flex-1">
+                                    <label className="text-xs font-medium text-slate-700">O que será feito?</label>
+                                    <Input
+                                        placeholder="Ex: Roda de conversa inicial"
+                                        value={newSession.description}
+                                        onChange={(e) => setNewSession({ ...newSession, description: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-medium text-slate-700">Data</label>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button variant="outline" className={cn("w-[180px] justify-start text-left font-normal", !newSession.date && "text-muted-foreground")}>
+                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                {newSession.date ? format(newSession.date, "PPP", { locale: ptBR }) : <span>Selecione</span>}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0">
+                                            {/* @ts-ignore */}
+                                            <Calendar mode="single" selected={newSession.date} onSelect={(date) => date && setNewSession({ ...newSession, date })} initialFocus />
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-medium text-slate-700">Horário</label>
+                                    <div className="flex items-center gap-2">
+                                        <Input type="time" className="w-24" value={newSession.time} onChange={(e) => setNewSession({ ...newSession, time: e.target.value })} />
+                                        <span>às</span>
+                                        <Input type="time" className="w-24" value={newSession.endTime} onChange={(e) => setNewSession({ ...newSession, endTime: e.target.value })} />
+                                    </div>
+                                </div>
+                                <Button onClick={handleAddSession} disabled={!newSession.description}>
+                                    <Plus className="w-4 h-4 mr-2" /> Adicionar
+                                </Button>
+                            </div>
+
+                            {/* Schedule List */}
+                            <div className="space-y-2">
+                                <h3 className="text-sm font-semibold text-slate-700">Cronograma ({formData.projectSchedule.length} encontros)</h3>
+                                {formData.projectSchedule.length > 0 ? (
+                                    <div className="border rounded-xl divide-y">
+                                        {formData.projectSchedule.map((item, idx) => (
+                                            <div key={idx} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="bg-blue-100 text-blue-700 p-2 rounded-lg">
+                                                        <CalendarIcon className="w-5 h-5" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-semibold text-slate-800">{item.title}</p>
+                                                        <p className="text-xs text-slate-500">
+                                                            {format(new Date(item.date!), "dd/MM/yyyy")} • {item.time} - {item.endTime}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <Button variant="ghost" size="icon" className="text-red-400 hover:text-red-600 hover:bg-red-50" onClick={() => handleRemoveSession(item.id!)}>
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-8 text-slate-400 italic bg-white border border-dashed rounded-xl">
+                                        Nenhum encontro agendado ainda.
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
@@ -228,27 +407,4 @@ export default function NewProjectWizard() {
             </div>
         </div>
     );
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function Calendar(props: any) {
-    return (
-        <svg
-            {...props}
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
-            <path d="M8 2v4" />
-            <path d="M16 2v4" />
-            <rect width="18" height="18" x="3" y="4" rx="2" />
-            <path d="M3 10h18" />
-        </svg>
-    )
 }

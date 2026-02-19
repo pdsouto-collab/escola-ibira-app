@@ -5,6 +5,7 @@ import { useAppStore } from "@/lib/store";
 import { MilestoneReport } from "@/components/reports/milestone-report";
 import { DailyLogReport } from "@/components/reports/daily-log-report";
 import { PortfolioReport } from "@/components/reports/portfolio-report";
+import { SkillsChart } from "@/components/reports/skills-chart";
 import { User } from "lucide-react";
 import {
     Select,
@@ -110,14 +111,19 @@ export default function ReportsPage() {
                 </TabsList>
 
                 <TabsContent value="milestones" className="animate-in fade-in-50 duration-500 slide-in-from-bottom-2">
-                    <div className="mb-4">
-                        <h2 className="text-xl font-semibold text-slate-700 mb-2">Progresso por Áreas da BNCC</h2>
-                        <p className="text-slate-500 mb-6">Visualização do desenvolvimento da criança em relação aos objetivos de aprendizagem.</p>
-                        {selectedStudent ? (
-                            <MilestoneReport studentId={effectiveStudentId} />
-                        ) : (
-                            <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
-                        )}
+                    <div className="mb-4 space-y-8">
+                        <div>
+                            <h2 className="text-xl font-semibold text-slate-700 mb-2">Progresso por Áreas da BNCC</h2>
+                            <p className="text-slate-500 mb-6">Visualização do desenvolvimento da criança em relação aos objetivos de aprendizagem.</p>
+                            {selectedStudent ? (
+                                <div className="space-y-8">
+                                    <SkillsChart />
+                                    <MilestoneReport studentId={effectiveStudentId} />
+                                </div>
+                            ) : (
+                                <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
+                            )}
+                        </div>
                     </div>
                 </TabsContent>
 

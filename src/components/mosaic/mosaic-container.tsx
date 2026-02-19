@@ -7,6 +7,7 @@ import { MosaicSunburst } from "./mosaic-sunburst";
 import { MonalMosaic } from "./monal-mosaic"; // Keeping for reference/fallback
 // import { TreeMosaic } from "./tree-mosaic";
 import { PracticesTree } from "./practices-tree";
+import { MosaicGrid } from "./mosaic-grid";
 import { MosaicDetailPanel } from "./mosaic-detail-panel";
 import { Switch } from "../ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
@@ -211,12 +212,15 @@ export function MosaicContainer() {
                 </div>
 
                 {/* Chart Area */}
-                <div className="flex-1 overflow-auto bg-slate-50 flex items-center justify-center p-8">
+                <div className="flex-1 overflow-auto bg-slate-50 flex items-start justify-center p-0">
+                    <MosaicGrid />
+                    {/* 
                     <PracticesTree
                         data={currentData}
                         onSelectNode={setSelectedNode}
                         editMode={editMode}
-                    />
+                    /> 
+                    */}
                 </div>
             </div>
         </div>
