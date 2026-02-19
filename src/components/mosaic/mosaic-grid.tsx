@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Check, Clock, Circle, FileText, AlertCircle } from "lucide-react";
+import { Check, Clock, Circle, FileText, AlertCircle, Plus } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 
 interface MosaicGridProps {
@@ -86,10 +86,43 @@ export function MosaicGrid({ classId, projectId }: MosaicGridProps) {
         setSelectedSkill(null);
     };
 
+    // Filter BNCC Data based on used skills in projects
+    const filteredBNCCData = mockBNCCData.map(subject => {
+        const filteredSkills = subject.skills.filter(skill => {
+            // Check if this skill is used in any relevant project
+            const linkedProjects = getLinkedProjects(skill.code);
+            return linkedProjects.length > 0;
+        });
+        return { ...subject, skills: filteredSkills };
+    }).filter(subject => subject.skills.length > 0);
+
+    const hasAnySkills = filteredBNCCData.length > 0;
+
+    if (!hasAnySkills) {
+        return (
+            <div className="w-full h-full flex flex-col items-center justify-center text-center p-8 text-slate-500 animate-in fade-in zoom-in duration-500">
+                <div className="bg-slate-100 p-6 rounded-full mb-4">
+                    <FileText className="w-12 h-12 text-slate-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-slate-800 mb-2">Nenhuma prática gerada ainda</h3>
+                <p className="max-w-md mb-6 leading-relaxed">
+                    O Mosaico de Práticas é gerado automaticamente a partir das habilidades trabalhadas nos seus projetos.
+                    Crie seu primeiro projeto para começar a preencher este mural.
+                </p>
+                <Button asChild className="rounded-full shadow-lg hover:shadow-xl transition-all">
+                    <a href="/projetos/novo">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Criar Primeiro Projeto
+                    </a>
+                </Button>
+            </div>
+        );
+    }
+
     return (
         <div className="w-full h-full overflow-y-auto p-6 space-y-8">
-            {mockBNCCData.map(subject => (
-                <div key={subject.id} className="space-y-4">
+            {filteredBNCCData.map(subject => (
+                <div key={subject.id} className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
                     <div className="flex items-center gap-3">
                         <div className={cn("w-2 h-8 rounded-full",
                             subject.id === "ciencias" ? "bg-green-500" :
@@ -105,7 +138,6 @@ export function MosaicGrid({ classId, projectId }: MosaicGridProps) {
                         {subject.skills.map(skill => {
                             const status = getSkillStatus(skill.code);
                             const linkedProjects = getLinkedProjects(skill.code);
-                            // const progress = bnccProgress[skill.code]; // unused variable
 
                             return (
                                 <div
@@ -147,8 +179,6 @@ export function MosaicGrid({ classId, projectId }: MosaicGridProps) {
                                             </div>
                                         )}
                                     </div>
-
-                                    {/* Tooltip-like details on hover could go here, or just stick to Dialog */}
                                 </div>
                             );
                         })}

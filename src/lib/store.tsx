@@ -237,7 +237,49 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const updateProject = (id: string, updates: Partial<Project>) => {
         setProjects(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
     };
-    const removeProject = (id: string) => setProjects(prev => prev.filter(p => p.id !== id));
+    const removeProject = (id: string) => {
+        // 1. Identify skills in this project
+        const projectToRemove = projects.find(p => p.id === id);
+        if (!projectToRemove) return;
+
+        const skillsInProject = projectToRemove.bnccSkillIds || [];
+
+        // 2. Filter out project from list
+        const updatedProjects = projects.filter(p => p.id !== id);
+        setProjects(updatedProjects);
+
+        // 3. Check for orphaned skills and reset "in-progress" status
+        // We need to check if these skills exist in any of the REMAINING projects
+        // If not, and if their status is "in-progress", we reset to "not-started".
+        // We do NOT reset "achieved" status.
+
+        setBnccProgress(prev => {
+            const newProgress = { ...prev };
+            let hasChanges = false;
+
+            skillsInProject.forEach(skillCode => {
+                // If current status is not in-progress, skip (preserve achieved or not-started)
+                if (newProgress[skillCode]?.status !== "in-progress") return;
+
+                // Check if this skill is used in any OTHER active project
+                const isUsedElsewhere = updatedProjects.some(p =>
+                    p.status === "active" && p.bnccSkillIds?.includes(skillCode)
+                );
+
+                if (!isUsedElsewhere) {
+                    // Reset to not-started (effectively removing the key or setting status)
+                    // We'll keep the object but status "not-started"
+                    newProgress[skillCode] = {
+                        ...newProgress[skillCode],
+                        status: "not-started"
+                    };
+                    hasChanges = true;
+                }
+            });
+
+            return hasChanges ? newProgress : prev;
+        });
+    };
 
     const sendMessage = (msg: ChatMessage) => setMessages(prev => [...prev, msg]);
 

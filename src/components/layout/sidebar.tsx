@@ -16,7 +16,8 @@ import {
     MessageCircle,
     LogOut,
     PartyPopper,
-    GraduationCap
+    GraduationCap,
+    RefreshCw
 } from "lucide-react";
 import { SchoolLogo } from "@/components/ui/school-logo";
 
@@ -41,7 +42,7 @@ import { useRouter } from "next/navigation";
 export function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
-    const { currentUser, setCurrentUser } = useAppStore();
+    const { currentUser, setCurrentUser, resetData } = useAppStore();
 
     const handleLogout = () => {
         // Clear current user
@@ -83,10 +84,17 @@ export function Sidebar() {
                     })}
                 </nav>
             </div>
-            <div className="border-t p-4">
+            <div className="border-t p-4 space-y-1">
+                <button
+                    onClick={resetData}
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors mb-2"
+                >
+                    <RefreshCw className="h-4 w-4" />
+                    Resetar Dados
+                </button>
                 <button
                     onClick={handleLogout}
-                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-colors"
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50 hover:text-red-700 transition-colors"
                 >
                     <LogOut className="h-5 w-5" />
                     Sair

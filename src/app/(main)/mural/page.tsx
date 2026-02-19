@@ -3,7 +3,7 @@
 
 
 import { useState } from "react";
-import { Plus, Calendar, MapPin, MessageCircle, User, Edit2, Check, X, Users, MoreVertical, Trash2, Pencil } from "lucide-react";
+import { Plus, Calendar, MapPin, MessageCircle, User, Edit2, Check, X, Users, MoreVertical, Trash2, Pencil, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useAppStore } from "@/lib/store";
@@ -142,19 +142,22 @@ export default function MuralPage() {
                             ))}
                         </SelectContent>
                     </Select>
-                    <button
-                        onClick={() => {
-                            if (showNewEventForm) {
-                                resetForm();
-                            } else {
-                                setShowNewEventForm(true);
-                            }
-                        }}
-                        className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 transition-colors whitespace-nowrap"
-                    >
-                        {showNewEventForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                        {showNewEventForm ? "Cancelar" : "Novo Evento"}
-                    </button>
+                    {/* RBAC: Only allowed roles can create events */}
+                    {["admin", "director", "teacher"].includes(currentUser?.role || "") && (
+                        <button
+                            onClick={() => {
+                                if (showNewEventForm) {
+                                    resetForm();
+                                } else {
+                                    setShowNewEventForm(true);
+                                }
+                            }}
+                            className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 transition-colors whitespace-nowrap"
+                        >
+                            {showNewEventForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                            {showNewEventForm ? "Cancelar" : "Novo Evento"}
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -167,7 +170,7 @@ export default function MuralPage() {
                             <input
                                 value={newEvent.title}
                                 onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
-                                className="rounded-md border p-2 text-sm"
+                                className="rounded-md border p-2 text-sm w-full focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                                 placeholder="Ex: Festa Junina"
                             />
                         </div>
@@ -197,7 +200,7 @@ export default function MuralPage() {
                             <textarea
                                 value={newEvent.description}
                                 onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
-                                className="rounded-md border p-2 text-sm"
+                                className="rounded-md border p-2 text-sm w-full focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                                 placeholder="Detalhes do evento..."
                                 rows={3}
                             />
@@ -205,31 +208,40 @@ export default function MuralPage() {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">
                                 <label className="text-sm font-medium">Data</label>
-                                <input
-                                    type="date"
-                                    value={newEvent.date}
-                                    onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
-                                    className="rounded-md border p-2 text-sm"
-                                />
+                                <div className="relative">
+                                    <input
+                                        type="date"
+                                        value={newEvent.date}
+                                        onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
+                                        className="rounded-md border p-2 pl-9 text-sm w-full focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                    />
+                                    <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
+                                </div>
                             </div>
                             <div className="grid gap-2">
                                 <label className="text-sm font-medium">Hora</label>
-                                <input
-                                    type="time"
-                                    value={newEvent.time}
-                                    onChange={(e) => setNewEvent({ ...newEvent, time: e.target.value })}
-                                    className="rounded-md border p-2 text-sm"
-                                />
+                                <div className="relative">
+                                    <input
+                                        type="time"
+                                        value={newEvent.time}
+                                        onChange={(e) => setNewEvent({ ...newEvent, time: e.target.value })}
+                                        className="rounded-md border p-2 pl-9 text-sm w-full focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                    />
+                                    <Clock className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
+                                </div>
                             </div>
                         </div>
                         <div className="grid gap-2">
                             <label className="text-sm font-medium">Local</label>
-                            <input
-                                value={newEvent.location}
-                                onChange={(e) => setNewEvent({ ...newEvent, location: e.target.value })}
-                                className="rounded-md border p-2 text-sm"
-                                placeholder="Ex: Quadra Poliesportiva"
-                            />
+                            <div className="relative">
+                                <input
+                                    value={newEvent.location}
+                                    onChange={(e) => setNewEvent({ ...newEvent, location: e.target.value })}
+                                    className="rounded-md border p-2 pl-9 text-sm w-full focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                    placeholder="Ex: Quadra Poliesportiva"
+                                />
+                                <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
+                            </div>
                         </div>
                         <div className="grid gap-2">
                             <label className="text-sm font-medium">Imagem (Opcional)</label>
@@ -238,7 +250,7 @@ export default function MuralPage() {
                                     type="text"
                                     value={newEvent.image}
                                     onChange={(e) => setNewEvent({ ...newEvent, image: e.target.value })}
-                                    className="flex-1 rounded-md border p-2 text-sm"
+                                    className="flex-1 rounded-md border p-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                                     placeholder="Cole a URL da imagem aqui..."
                                 />
                                 <div className="relative">
@@ -257,35 +269,36 @@ export default function MuralPage() {
                                         }}
                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                     />
-                                    <button className="h-full px-3 py-2 bg-slate-100 border rounded-md text-sm hover:bg-slate-200">
+                                    <button className="h-full px-4 py-2 bg-slate-100 border rounded-md text-sm font-medium text-slate-700 hover:bg-slate-200 transition-colors flex items-center gap-2">
+                                        <div className="h-4 w-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin hidden" />
                                         Upload
                                     </button>
                                 </div>
                             </div>
                             {newEvent.image && (
-                                <div className="mt-2 relative h-32 w-full rounded-md overflow-hidden bg-slate-50 border">
+                                <div className="mt-2 relative h-48 w-full rounded-lg overflow-hidden bg-slate-50 border shadow-sm group/image">
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img src={newEvent.image} alt="Preview" className="h-full w-full object-cover" />
                                     <button
                                         onClick={() => setNewEvent({ ...newEvent, image: "" })}
-                                        className="absolute top-2 right-2 p-1 bg-black/50 text-white rounded-full hover:bg-black/70"
+                                        className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-full hover:bg-red-500 transition-colors backdrop-blur-sm opacity-0 group-hover/image:opacity-100"
                                     >
-                                        <X className="h-3 w-3" />
+                                        <X className="h-4 w-4" />
                                     </button>
                                 </div>
                             )}
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 pt-2">
                             <button
                                 onClick={handleCreateEvent}
-                                className="flex-1 bg-primary text-white p-2 rounded-md font-medium hover:bg-primary/90 mt-2"
+                                className="flex-1 bg-primary text-white p-2.5 rounded-md font-medium hover:bg-primary/90 transition-colors shadow-sm"
                             >
                                 {editingEventId ? "Salvar Alterações" : "Publicar Evento"}
                             </button>
                             {editingEventId && (
                                 <button
                                     onClick={resetForm}
-                                    className="px-4 py-2 bg-slate-100 text-slate-700 rounded-md font-medium hover:bg-slate-200 mt-2"
+                                    className="px-6 py-2.5 bg-slate-100 text-slate-700 rounded-md font-medium hover:bg-slate-200 transition-colors"
                                 >
                                     Cancelar
                                 </button>
@@ -297,26 +310,29 @@ export default function MuralPage() {
 
             <div className="grid gap-6">
                 {filteredEvents.map((event) => (
-                    <div key={event.id} className="rounded-xl border bg-white shadow-sm overflow-hidden relative group">
-                        <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <button className="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm border hover:bg-white text-slate-600">
-                                        <MoreVertical className="h-4 w-4" />
-                                    </button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => handleEditClick(event)}>
-                                        <Pencil className="mr-2 h-4 w-4" />
-                                        Editar
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={() => handleDeleteClick(event.id)}>
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        Excluir
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
+                    <div key={event.id} className="rounded-xl border bg-white shadow-sm overflow-hidden relative group transition-all hover:shadow-md">
+                        {/* RBAC: Only allowed roles can edit/delete */}
+                        {["admin", "director", "teacher"].includes(currentUser?.role || "") && (
+                            <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <button className="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm border hover:bg-white text-slate-600 transition-colors">
+                                            <MoreVertical className="h-4 w-4" />
+                                        </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onClick={() => handleEditClick(event)}>
+                                            <Pencil className="mr-2 h-4 w-4" />
+                                            Editar
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-50" onClick={() => handleDeleteClick(event.id)}>
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Excluir
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                        )}
 
                         {event.image && (
                             <div className="h-48 w-full overflow-hidden bg-slate-100">
