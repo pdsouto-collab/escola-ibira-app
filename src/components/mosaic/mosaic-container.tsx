@@ -167,7 +167,7 @@ export function MosaicContainer() {
                                     ))}
                                 </SelectContent>
                             </Select>
-                            <span className="text-xs text-slate-500 block mt-1">Fundamental</span>
+
                         </div>
                     </div>
 
