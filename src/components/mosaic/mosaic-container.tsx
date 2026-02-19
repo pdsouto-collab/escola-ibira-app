@@ -16,10 +16,14 @@ import { Bell, Edit3, Search } from "lucide-react";
 import { Button } from "../ui/button";
 
 export function MosaicContainer() {
-    const { mosaicData, replaceMosaicData, updateMosaicNode } = useAppStore();
+    const { mosaicData, replaceMosaicData, updateMosaicNode, classes, projects } = useAppStore();
     const [selectedNode, setSelectedNode] = useState<MosaicNode | null>(null);
     const [editMode, setEditMode] = useState(false);
     const [activeTab, setActiveTab] = useState<"skills" | "content">("skills");
+
+    // Filter States
+    const [selectedClassId, setSelectedClassId] = useState<string>("all");
+    const [selectedProjectId, setSelectedProjectId] = useState<string>("all");
 
     // Local state for content (still local as it's not in store yet)
     const [contentData, setContentData] = useState(mockRecursiveDataContent);
@@ -27,12 +31,22 @@ export function MosaicContainer() {
     // Derived state for display
     const currentData = activeTab === "skills" ? mosaicData : contentData;
 
+    // Filter projects based on selected class
+    const availableProjects = selectedClassId === "all"
+        ? projects
+        : projects.filter(p => p.students?.some(sId => true) || true); // Simplified: In real app, check if project has students from class
+    // Note: The mock project structure links students by ID. 
+    // For prototype simplicity, we will assume all projects are visible, 
+    // or strictly filter if we had class <-> student mapping readily available here without helper.
+    // Let's just show all projects for now or filter if possible.
+
+    // Better Project Filter: Active projects
+    const filteredProjects = projects.filter(p => p.status === 'active' || p.status === 'planning');
+
     // unified setter that routes to store or local state
     const setCurrentData = (updater: (prev: MosaicNode[]) => MosaicNode[]) => {
         if (activeTab === "skills") {
             // wrapper to handle functional updates for store
-            // Since we can't easily pass functional update to store action if it doesn't support it,
-            // we calculate new state here.
             const newData = updater(mosaicData);
             replaceMosaicData(newData);
         } else {
@@ -109,6 +123,8 @@ export function MosaicContainer() {
 
     // ---------------------
 
+    const selectedClassName = classes.find(c => c.id === selectedClassId)?.name || "Todas as Turmas";
+
     return (
         <div className="flex h-[calc(100vh-2rem)] bg-white rounded-2xl shadow-sm border overflow-hidden">
             {/* Left Sidebar (Detail Panel) */}
@@ -139,25 +155,36 @@ export function MosaicContainer() {
                             <AvatarFallback>TA</AvatarFallback>
                         </Avatar>
                         <div>
-                            <h2 className="font-bold text-lg text-slate-800 leading-none">Turma A</h2>
-                            <span className="text-xs text-slate-500">Fundamental</span>
+                            {/* Class Selector Replaces Static Text */}
+                            <Select value={selectedClassId} onValueChange={setSelectedClassId}>
+                                <SelectTrigger className="border-none shadow-none font-bold text-lg text-slate-800 p-0 h-auto hover:bg-transparent focus:ring-0">
+                                    <SelectValue>{selectedClassName}</SelectValue>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Todas as Turmas</SelectItem>
+                                    {classes.map(c => (
+                                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <span className="text-xs text-slate-500 block mt-1">Fundamental</span>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <div className="flex bg-slate-100 p-1 rounded-lg">
-                            <button
-                                onClick={() => setActiveTab("skills")}
-                                className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === "skills" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
-                            >
-                                Habilidades
-                            </button>
-                            <button
-                                onClick={() => setActiveTab("content")}
-                                className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === "content" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
-                            >
-                                Conteúdos
-                            </button>
+                        {/* Project Filter */}
+                        <div className="w-48">
+                            <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+                                <SelectTrigger className="h-9 text-xs bg-slate-50 border-slate-200">
+                                    <SelectValue placeholder="Filtrar por Projeto" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Todos os Projetos</SelectItem>
+                                    {filteredProjects.map(p => (
+                                        <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <div className="w-px h-8 bg-slate-200 mx-2" />
@@ -168,16 +195,7 @@ export function MosaicContainer() {
                             </span>
                             <Switch checked={editMode} onCheckedChange={setEditMode} />
                         </div>
-                        <div className="text-[10px] text-slate-300 font-mono">v6.0 Watercolor Edition</div>
 
-                        <div className="relative">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
-                            <input
-                                type="text"
-                                placeholder="Buscar..."
-                                className="h-9 w-64 rounded-full border border-slate-200 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-                            />
-                        </div>
                     </div>
                 </header>
 
@@ -196,31 +214,29 @@ export function MosaicContainer() {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <div className="flex flex-col gap-1">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Período</label>
-                            <Select defaultValue="todos">
-                                <SelectTrigger className="w-[100px] h-8 text-xs">
-                                    <SelectValue placeholder="Selecione" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="todos">Todos</SelectItem>
-                                    <SelectItem value="1sem">1º Semestre</SelectItem>
-                                </SelectContent>
-                            </Select>
+                        <div className="flex bg-slate-100 p-1 rounded-lg">
+                            <button
+                                onClick={() => setActiveTab("skills")}
+                                className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === "skills" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
+                            >
+                                Habilidades
+                            </button>
+                            <button
+                                onClick={() => setActiveTab("content")}
+                                className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === "content" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
+                            >
+                                Conteúdos
+                            </button>
                         </div>
                     </div>
                 </div>
 
                 {/* Chart Area */}
                 <div className="flex-1 overflow-auto bg-slate-50 flex items-start justify-center p-0">
-                    <MosaicGrid />
-                    {/* 
-                    <PracticesTree
-                        data={currentData}
-                        onSelectNode={setSelectedNode}
-                        editMode={editMode}
-                    /> 
-                    */}
+                    <MosaicGrid
+                        classId={selectedClassId === "all" ? undefined : selectedClassId}
+                        projectId={selectedProjectId === "all" ? undefined : selectedProjectId}
+                    />
                 </div>
             </div>
         </div>

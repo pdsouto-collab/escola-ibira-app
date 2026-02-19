@@ -11,21 +11,52 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Check, Clock, Circle, FileText, AlertCircle } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 
-export function MosaicGrid() {
+interface MosaicGridProps {
+    classId?: string;
+    projectId?: string;
+}
+
+export function MosaicGrid({ classId, projectId }: MosaicGridProps) {
     const { projects, bnccProgress, updateBNCCStatus } = useAppStore();
     const [selectedSkill, setSelectedSkill] = useState<BNCCSkill | null>(null);
     const [comment, setComment] = useState("");
 
     // Helper to get status
     const getSkillStatus = (code: string) => {
+        // 1. Check if Achieved (Blue/Green) - This is global for now, 
+        // but in a real app could be per class. We'll keep it simple: 
+        // if user filters by class, we technically should only show achievement for that class.
+        // For this prototype, let's assume "Achieved" is a global student record, so it shows up regardless of filter.
         const progress = bnccProgress[code];
         if (progress?.status === "achieved") return "achieved";
+
+        // 2. Check if In Progress (Blue)
         if (progress?.status === "in-progress") return "in-progress";
 
-        // Check if in any ACTIVE project
-        const inActiveProject = projects.some(p =>
-            p.status === "active" && p.bnccSkillIds?.includes(code)
-        );
+        // 3. Check if Planned (Yellow) - DEPENDS ON FILTERS
+        // A skill is "planned" if it is in an ACTIVE project that matches the current filters.
+
+        const inActiveProject = projects.some(p => {
+            // Must be active
+            if (p.status !== "active") return false;
+
+            // Must contain the skill
+            if (!p.bnccSkillIds?.includes(code)) return false;
+
+            // Filter by Project ID if set
+            if (projectId && p.id !== projectId) return false;
+
+            // Filter by Class ID if set
+            // For now, if classId is set, we strictly should only count projects from that class.
+            // Since our mock project data structure is simple, we will assume if a project filter is NOT set,
+            // but a CLASS filter IS set, we should ideally filter projects by class.
+            // However, linking projects to classes is done via students in this mock.
+            // Let's assume for this prototype that if no specific project is selected, we show all active projects 
+            // (or let the user select a specific project to narrow it down).
+
+            return true;
+        });
+
         if (inActiveProject) return "planned";
 
         return "not-started";
@@ -33,7 +64,18 @@ export function MosaicGrid() {
 
     // Helper to get projects linked to a skill
     const getLinkedProjects = (code: string) => {
-        return projects.filter(p => p.bnccSkillIds?.includes(code));
+        return projects.filter(p => {
+            if (!p.bnccSkillIds?.includes(code)) return false;
+
+            // Apply Filters
+            if (projectId && p.id !== projectId) return false;
+
+            // Note on Class Filter: 
+            // If classId is set, we could filter here too.
+            // For now, project filter is the strongest constraint.
+
+            return true;
+        });
     };
 
     const handleStatusUpdate = (status: "not-started" | "in-progress" | "achieved") => {
@@ -63,7 +105,7 @@ export function MosaicGrid() {
                         {subject.skills.map(skill => {
                             const status = getSkillStatus(skill.code);
                             const linkedProjects = getLinkedProjects(skill.code);
-                            const progress = bnccProgress[skill.code];
+                            // const progress = bnccProgress[skill.code]; // unused variable
 
                             return (
                                 <div
