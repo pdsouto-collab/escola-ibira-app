@@ -114,7 +114,9 @@ const initialProjects: Project[] = [
         status: "active",
         startDate: "2024-02-01",
         students: ["1", "3", "5"],
-        tags: ["Natureza", "Alimentação Saudável"]
+        tags: ["Natureza", "Alimentação Saudável"],
+        bnccSkillIds: ["EF02CI04", "EF03CI07", "EF01GE01"],
+        contentIds: []
     }
 ];
 

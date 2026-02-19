@@ -109,12 +109,6 @@ export function MosaicGrid({ classId, projectId }: MosaicGridProps) {
                     O Mosaico de Práticas é gerado automaticamente a partir das habilidades trabalhadas nos seus projetos.
                     Crie seu primeiro projeto para começar a preencher este mural.
                 </p>
-                <Button asChild className="rounded-full shadow-lg hover:shadow-xl transition-all">
-                    <a href="/projetos/novo">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Criar Primeiro Projeto
-                    </a>
-                </Button>
             </div>
         );
     }
