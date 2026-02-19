@@ -148,6 +148,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     // Load from LocalStorage on mount
     useEffect(() => {
+        const CURRENT_VERSION = "1.1"; // Increment this to force updates
+        const storedVersion = localStorage.getItem("app_version");
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const load = (key: string, setter: React.Dispatch<React.SetStateAction<any>>, defaultVal: any) => {
             const saved = localStorage.getItem(`app_${key}`);
@@ -163,16 +166,38 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             }
         };
 
-        load("students", setStudents, mockStudents);
-        load("classes", setClasses, mockClasses);
-        load("schedule", setSchedule, mockSchedule);
-        load("dailyLogs", setDailyLogs, mockDailyLogs);
-        load("tasks", setTasks, initialTasks);
-        load("muralEvents", setMuralEvents, initialMuralEvents);
-        load("projects", setProjects, initialProjects);
-        load("messages", setMessages, initialMessages);
-        load("mosaicData", setMosaicData, mockRecursiveDataSkills);
-        load("bnccProgress", setBnccProgress, {});
+        if (storedVersion !== CURRENT_VERSION) {
+            console.log("Migrating data to version", CURRENT_VERSION);
+            // Migration Logic:
+            // 1. Force update projects to include new fields (like bnccSkillIds in "Horta Comunitária")
+            setProjects(initialProjects);
+
+            // 2. Load other data as usual (or reset if needed, but here we just want to fix projects)
+            load("students", setStudents, mockStudents);
+            load("classes", setClasses, mockClasses);
+            load("schedule", setSchedule, mockSchedule);
+            load("dailyLogs", setDailyLogs, mockDailyLogs);
+            load("tasks", setTasks, initialTasks);
+            load("muralEvents", setMuralEvents, initialMuralEvents);
+            load("messages", setMessages, initialMessages);
+            load("mosaicData", setMosaicData, mockRecursiveDataSkills);
+            load("bnccProgress", setBnccProgress, {});
+
+            // 3. Update version
+            localStorage.setItem("app_version", CURRENT_VERSION);
+        } else {
+            // Normal Load
+            load("students", setStudents, mockStudents);
+            load("classes", setClasses, mockClasses);
+            load("schedule", setSchedule, mockSchedule);
+            load("dailyLogs", setDailyLogs, mockDailyLogs);
+            load("tasks", setTasks, initialTasks);
+            load("muralEvents", setMuralEvents, initialMuralEvents);
+            load("projects", setProjects, initialProjects);
+            load("messages", setMessages, initialMessages);
+            load("mosaicData", setMosaicData, mockRecursiveDataSkills);
+            load("bnccProgress", setBnccProgress, {});
+        }
 
         setIsLoaded(true);
         // eslint-disable-next-line react-hooks/exhaustive-deps
