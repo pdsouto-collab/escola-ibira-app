@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAppStore } from "@/lib/store";
 import { Project, ScheduleItem } from "@/lib/data";
 
@@ -20,8 +20,23 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 export default function NewProjectWizard() {
+    return (
+        <Suspense fallback={<div className="flex h-full items-center justify-center p-8">Carregando...</div>}>
+            <NewProjectWizardContent />
+        </Suspense>
+    );
+}
+
+function NewProjectWizardContent() {
     const router = useRouter();
-    const { addProject, classes, schedule, updateSchedule } = useAppStore();
+    const searchParams = useSearchParams();
+    const editId = searchParams.get("edit");
+    const { addProject, updateProject, projects, classes, schedule, updateSchedule } = useAppStore();
+
+    // Determine if we are in Edit Mode
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [originalProject, setOriginalProject] = useState<Project | null>(null);
+
     const [currentStep, setCurrentStep] = useState(1);
 
     // Mock State for Form Data
@@ -41,6 +56,32 @@ export default function NewProjectWizard() {
         endTime: "10:00",
         description: "" // Activity title/desc
     });
+
+    // Load Project Data if EditId is present
+    useEffect(() => {
+        if (editId && projects.length > 0) {
+            const projectToEdit = projects.find(p => p.id === editId);
+            if (projectToEdit) {
+                setIsEditMode(true);
+                setOriginalProject(projectToEdit);
+
+                // Find associated schedule items
+                const projectItems = schedule.filter(s => s.projectId === editId);
+
+                setFormData({
+                    title: projectToEdit.title,
+                    description: projectToEdit.description,
+                    classes: projectToEdit.classes || [],
+                    bnccSkills: projectToEdit.bnccSkillIds || [],
+                    customContent: projectToEdit.contentIds || [],
+                    projectSchedule: projectItems.map(item => ({
+                        ...item,
+                        date: item.date // Keep as string for now
+                    }))
+                });
+            }
+        }
+    }, [editId, projects, schedule]);
 
     const handleAddSession = () => {
         if (!newSession.description) return;
@@ -72,25 +113,32 @@ export default function NewProjectWizard() {
     };
 
     const handleSave = () => {
-        const projectId = Math.random().toString(36).substr(2, 9);
+        // Use existing ID if editing, otherwise generate new
+        const projectId = isEditMode && editId ? editId : Math.random().toString(36).substr(2, 9);
 
-        const newProject: Project = {
+        const projectData: Project = {
             id: projectId,
             title: formData.title || "Novo Projeto",
             description: formData.description,
-            status: "planning",
-            startDate: new Date().toISOString(),
-            students: [], // Could map classes here
+            status: originalProject?.status || "planning", // Keep status if editing
+            startDate: originalProject?.startDate || new Date().toISOString(),
+            students: [], // Could map classes here in a real app
             classes: formData.classes,
             tags: ["Pedagógico"],
             bnccSkillIds: formData.bnccSkills,
             contentIds: formData.customContent
         };
 
-        addProject(newProject);
+        if (isEditMode) {
+            updateProject(projectId, projectData);
 
-        // Add Schedule Items
-        if (formData.projectSchedule.length > 0) {
+            // FOR SCHEDULE:
+            // 1. Remove old items linked to this project (simple approach)
+            // 2. Add new items
+            // Ideally we would diff them, but for prototype simpler is better.
+            const otherItems = schedule.filter(s => s.projectId !== projectId);
+
+            // Prepare new items
             const newScheduleItems = formData.projectSchedule.map(item => ({
                 id: item.id || Math.random().toString(36).substr(2, 9),
                 time: item.time || "09:00",
@@ -98,12 +146,30 @@ export default function NewProjectWizard() {
                 title: item.title || "Atividade de Projeto",
                 type: "activity" as const,
                 description: item.description,
-                date: item.date,
-                classId: formData.classes[0] || "all", // Assign to first class or generic
+                date: item.date as string, // Cast because we know it's a string from form
+                classId: formData.classes[0] || "all",
                 projectId: projectId
             }));
 
-            updateSchedule([...schedule, ...newScheduleItems]);
+            updateSchedule([...otherItems, ...newScheduleItems]);
+
+        } else {
+            addProject(projectData);
+            // Add Schedule Items
+            if (formData.projectSchedule.length > 0) {
+                const newScheduleItems = formData.projectSchedule.map(item => ({
+                    id: item.id || Math.random().toString(36).substr(2, 9),
+                    time: item.time || "09:00",
+                    endTime: item.endTime,
+                    title: item.title || "Atividade de Projeto",
+                    type: "activity" as const,
+                    description: item.description,
+                    date: item.date as string,
+                    classId: formData.classes[0] || "all",
+                    projectId: projectId
+                }));
+                updateSchedule([...schedule, ...newScheduleItems]);
+            }
         }
 
         router.push("/projetos");

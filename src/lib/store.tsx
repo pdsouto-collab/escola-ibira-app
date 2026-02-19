@@ -50,6 +50,7 @@ interface AppContextType extends AppState {
 
     addProject: (project: Project) => void;
     updateProject: (id: string, updates: Partial<Project>) => void;
+    removeProject: (id: string) => void;
 
     sendMessage: (msg: ChatMessage) => void;
 
@@ -236,6 +237,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const updateProject = (id: string, updates: Partial<Project>) => {
         setProjects(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
     };
+    const removeProject = (id: string) => setProjects(prev => prev.filter(p => p.id !== id));
 
     const sendMessage = (msg: ChatMessage) => setMessages(prev => [...prev, msg]);
 
@@ -279,7 +281,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, currentUser,
             addStudent, updateStudent, removeStudent, addClass, updateClass, removeClass, toggleTask, addTask, removeTask,
             addMuralEvent, updateMuralEvent, removeMuralEvent, addCommentToEvent,
-            updateSchedule, addProject, updateProject, sendMessage, resetData,
+            updateSchedule, addProject, updateProject, removeProject, sendMessage, resetData,
             mosaicData, updateMosaicNode, replaceMosaicData,
             users, setCurrentUser,
             addUser: (user) => setUsers(prev => [...prev, user]),

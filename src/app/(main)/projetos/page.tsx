@@ -25,8 +25,17 @@ const statusColors = {
     completed: "bg-blue-100 text-blue-600"
 };
 
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Edit, Trash2 } from "lucide-react";
+
 export default function ProjectsPage() {
-    const { projects } = useAppStore();
+    const { projects, removeProject } = useAppStore();
+
+    const handleDelete = (id: string, title: string) => {
+        if (confirm(`Tem certeza que deseja excluir o projeto "${title}"?`)) {
+            removeProject(id);
+        }
+    };
 
     return (
         <div className="max-w-6xl mx-auto">
@@ -58,16 +67,36 @@ export default function ProjectsPage() {
             {/* Projects Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {projects.map((project) => (
-                    <Card key={project.id} className="hover:shadow-md transition-shadow group cursor-pointer border-slate-200">
+                    <Card key={project.id} className="hover:shadow-md transition-shadow group border-slate-200 relative">
                         <CardHeader className="pb-3">
                             <div className="flex justify-between items-start">
                                 <div className="p-2 bg-primary/10 rounded-lg text-primary mb-2">
                                     <Folder className="w-6 h-6" />
                                 </div>
                                 <div className="flex flex-col items-end gap-1">
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <MoreVertical className="w-4 h-4" />
-                                    </Button>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <MoreVertical className="w-4 h-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <Link href={`/projetos/novo?edit=${project.id}`}>
+                                                <DropdownMenuItem className="cursor-pointer">
+                                                    <Edit className="w-4 h-4 mr-2" />
+                                                    Editar
+                                                </DropdownMenuItem>
+                                            </Link>
+                                            <DropdownMenuItem
+                                                className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
+                                                onClick={() => handleDelete(project.id, project.title)}
+                                            >
+                                                <Trash2 className="w-4 h-4 mr-2" />
+                                                Excluir
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+
                                     <Badge className={cn("font-normal", statusColors[project.status])}>
                                         {statusMap[project.status]}
                                     </Badge>
@@ -77,22 +106,24 @@ export default function ProjectsPage() {
                                 {project.title}
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="pb-4">
-                            <p className="text-sm text-slate-600 line-clamp-2 mb-4">
-                                {project.description}
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                                {project.tags.map(tag => (
-                                    <Badge key={tag} variant="secondary" className="bg-slate-100 text-slate-600 font-normal">
-                                        {tag}
-                                    </Badge>
-                                ))}
-                            </div>
-                        </CardContent>
-                        <CardFooter className="pt-0 text-xs text-slate-400 flex items-center gap-2">
-                            <Calendar className="w-3 h-3" />
-                            Início em {format(new Date(project.startDate), "dd/MM/yyyy")}
-                        </CardFooter>
+                        <Link href={`/projetos/novo?edit=${project.id}`} className="block">
+                            <CardContent className="pb-4">
+                                <p className="text-sm text-slate-600 line-clamp-2 mb-4">
+                                    {project.description}
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                    {project.tags.map(tag => (
+                                        <Badge key={tag} variant="secondary" className="bg-slate-100 text-slate-600 font-normal">
+                                            {tag}
+                                        </Badge>
+                                    ))}
+                                </div>
+                            </CardContent>
+                            <CardFooter className="pt-0 text-xs text-slate-400 flex items-center gap-2">
+                                <Calendar className="w-3 h-3" />
+                                Início em {format(new Date(project.startDate), "dd/MM/yyyy")}
+                            </CardFooter>
+                        </Link>
                     </Card>
                 ))}
 
