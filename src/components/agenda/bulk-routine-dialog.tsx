@@ -1,6 +1,6 @@
+"use client";
+
 import { useState } from "react";
-import { format, eachDayOfInterval, isSameDay } from "date-fns";
-import { Calendar as CalendarIcon, Loader2, Plus, Trash2, Edit, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -10,6 +10,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
     Select,
     SelectContent,
@@ -17,454 +19,209 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScheduleItem } from "@/lib/data";
-import { useAppStore } from "@/lib/store";
+import { SchoolClass } from "@/lib/data";
+
+export interface BulkRoutineConfig {
+    title: string;
+    description: string;
+    time: string;
+    endTime: string;
+    type: "activity" | "meal" | "care";
+    startDate: string;
+    endDate: string;
+    daysOfWeek: number[]; // 0 = Sunday, 1 = Monday, etc.
+    classId: string;
+}
 
 interface BulkRoutineDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    defaultClassId?: string;
+    classes: SchoolClass[];
+    onSave: (config: BulkRoutineConfig) => void;
 }
 
-const WEEKDAYS = [
-    { id: 1, label: "Seg" },
-    { id: 2, label: "Ter" },
-    { id: 3, label: "Qua" },
-    { id: 4, label: "Qui" },
-    { id: 5, label: "Sex" },
-    { id: 6, label: "Sáb" },
-    { id: 0, label: "Dom" },
+const DAYS = [
+    { label: "Dom", value: 0 },
+    { label: "Seg", value: 1 },
+    { label: "Ter", value: 2 },
+    { label: "Qua", value: 3 },
+    { label: "Qui", value: 4 },
+    { label: "Sex", value: 5 },
+    { label: "Sáb", value: 6 },
 ];
 
-const ITEM_TYPES = [
-    { value: "activity", label: "Atividade" },
-    { value: "meal", label: "Refeição" },
-    { value: "care", label: "Cuidado/Sono" },
-];
+export function BulkRoutineDialog({ open, onOpenChange, classes, onSave }: BulkRoutineDialogProps) {
+    const [config, setConfig] = useState<BulkRoutineConfig>({
+        title: "",
+        description: "",
+        time: "",
+        endTime: "",
+        type: "activity",
+        startDate: "",
+        endDate: "",
+        daysOfWeek: [1, 2, 3, 4, 5], // Default: Mon-Fri
+        classId: "all"
+    });
 
-export function BulkRoutineDialog({ open, onOpenChange, defaultClassId }: BulkRoutineDialogProps) {
-    const { schedule, updateSchedule, classes } = useAppStore();
-
-    const [activeTab, setActiveTab] = useState("create");
-    const [classId, setClassId] = useState<string>(defaultClassId || "");
-    const [startDate, setStartDate] = useState<Date>();
-    const [endDate, setEndDate] = useState<Date>();
-    const [selectedWeekdays, setSelectedWeekdays] = useState<number[]>([1, 2, 3, 4, 5]); // Mon-Fri default
-    const [isProcessing, setIsProcessing] = useState(false);
-
-    // Create Tab State
-    const [templateItems, setTemplateItems] = useState<Omit<ScheduleItem, "id" | "date" | "classId">[]>([
-        { time: "08:00", endTime: "09:00", title: "Chegada", type: "care", description: "" }
-    ]);
-
-    // Edit/Delete Match Criteria
-    const [matchTitle, setMatchTitle] = useState("");
-    const [matchTime, setMatchTime] = useState("");
-
-    // Edit New Values
-    const [newTime, setNewTime] = useState("");
-    const [newEndTime, setNewEndTime] = useState("");
-    const [newTitle, setNewTitle] = useState("");
-    const [newType, setNewType] = useState<"activity" | "meal" | "care" | "">("");
-    const [newDescription, setNewDescription] = useState("");
-
-    const handleAddTemplateItem = () => {
-        setTemplateItems([...templateItems, { time: "09:00", endTime: "10:00", title: "", type: "activity", description: "" }]);
-    };
-
-    const handleRemoveTemplateItem = (index: number) => {
-        setTemplateItems(templateItems.filter((_, i) => i !== index));
-    };
-
-    const handleUpdateTemplateItem = (index: number, field: keyof ScheduleItem, value: any) => {
-        const newItems = [...templateItems];
-        newItems[index] = { ...newItems[index], [field]: value };
-        setTemplateItems(newItems);
-    };
-
-    const toggleWeekday = (dayId: number) => {
-        setSelectedWeekdays(prev =>
-            prev.includes(dayId)
-                ? prev.filter(d => d !== dayId)
-                : [...prev, dayId]
-        );
-    };
-
-    const getTargetItems = () => {
-        if (!classId || !startDate || !endDate) return [];
-
-        const interval = eachDayOfInterval({ start: startDate, end: endDate });
-
-        return schedule.filter(item => {
-            if (item.classId !== classId) return false;
-
-            const itemDate = new Date(item.date + "T12:00:00");
-            const isInDateRange = interval.some(date => isSameDay(date, itemDate));
-            if (!isInDateRange) return false;
-
-            const dayOfWeek = itemDate.getDay();
-            if (!selectedWeekdays.includes(dayOfWeek)) return false;
-
-            if (matchTitle && !item.title.toLowerCase().includes(matchTitle.toLowerCase())) return false;
-            if (matchTime && item.time !== matchTime) return false;
-
-            return true;
+    const handleDayToggle = (day: number) => {
+        setConfig(prev => {
+            const days = prev.daysOfWeek.includes(day)
+                ? prev.daysOfWeek.filter(d => d !== day)
+                : [...prev.daysOfWeek, day];
+            return { ...prev, daysOfWeek: days };
         });
     };
 
-    const handleCreate = async () => {
-        if (!classId || !startDate || !endDate || templateItems.length === 0) return;
-        setIsProcessing(true);
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        const interval = eachDayOfInterval({ start: startDate, end: endDate });
-        const newItems: ScheduleItem[] = [];
-
-        interval.forEach(date => {
-            const dayOfWeek = date.getDay();
-            if (selectedWeekdays.includes(dayOfWeek)) {
-                const dateStr = format(date, "yyyy-MM-dd");
-                templateItems.forEach(template => {
-                    newItems.push({
-                        ...template,
-                        id: Math.random().toString(36).substr(2, 9),
-                        date: dateStr,
-                        classId: classId
-                    });
-                });
-            }
-        });
-
-        updateSchedule([...schedule, ...newItems]);
-        handleClose();
-    };
-
-    const handleEdit = async () => {
-        setIsProcessing(true);
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        const targets = getTargetItems();
-        const targetIds = new Set(targets.map(t => t.id));
-
-        const updatedSchedule = schedule.map(item => {
-            if (targetIds.has(item.id)) {
-                return {
-                    ...item,
-                    time: newTime || item.time,
-                    endTime: newEndTime || item.endTime,
-                    title: newTitle || item.title,
-                    type: newType || item.type,
-                    description: newDescription || item.description
-                };
-            }
-            return item;
-        });
-
-        updateSchedule(updatedSchedule);
-        handleClose();
-    };
-
-    const handleDelete = async () => {
-        if (!confirm("Tem certeza que deseja excluir os itens selecionados? Esta ação não pode ser desfeita.")) return;
-
-        setIsProcessing(true);
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        const targets = getTargetItems();
-        const targetIds = new Set(targets.map(t => t.id));
-
-        const updatedSchedule = schedule.filter(item => !targetIds.has(item.id));
-        updateSchedule(updatedSchedule);
-        handleClose();
-    };
-
-    const handleClose = () => {
-        setIsProcessing(false);
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        onSave(config);
         onOpenChange(false);
-        setStartDate(undefined);
-        setEndDate(undefined);
-        setMatchTitle("");
-        setMatchTime("");
-        setNewTime("");
-        setNewEndTime("");
-        setNewTitle("");
-        setNewType("");
-        setNewDescription("");
     };
-
-    const previewCount = getTargetItems().length;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>Gerenciamento de Rotina em Massa</DialogTitle>
+                    <DialogTitle>Criar Rotina em Massa</DialogTitle>
                     <DialogDescription>
-                        Crie, edite ou remova itens da rotina para múltiplas datas.
+                        Crie itens recorrentes para vários dias de uma vez.
                     </DialogDescription>
                 </DialogHeader>
+                <form onSubmit={handleSubmit}>
+                    <div className="grid gap-4 py-4">
+                        {/* Title & Type */}
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="title" className="text-right">Título</Label>
+                            <Input
+                                id="title"
+                                value={config.title}
+                                onChange={(e) => setConfig({ ...config, title: e.target.value })}
+                                className="col-span-3"
+                                required
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="type" className="text-right">Tipo</Label>
+                            <Select
+                                value={config.type}
+                                onValueChange={(value: any) => setConfig({ ...config, type: value })}
+                            >
+                                <SelectTrigger className="col-span-3">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="activity">Atividade</SelectItem>
+                                    <SelectItem value="meal">Alimentação</SelectItem>
+                                    <SelectItem value="care">Cuidado/Higiene</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
 
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="create">Criar</TabsTrigger>
-                        <TabsTrigger value="edit">Editar</TabsTrigger>
-                        <TabsTrigger value="delete">Excluir</TabsTrigger>
-                    </TabsList>
-
-                    <div className="grid gap-6 py-4">
-                        {/* Common Filters */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-lg border">
-                            <div className="grid gap-2">
-                                <Label>Turma</Label>
-                                <Select value={classId} onValueChange={setClassId}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Selecione a turma" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {classes.map((c) => (
-                                            <SelectItem key={c.id} value={c.id}>
-                                                {c.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="grid gap-2">
-                                <Label>Período</Label>
-                                <div className="flex gap-2">
-                                    <Input
-                                        type="date"
-                                        value={startDate ? format(startDate, "yyyy-MM-dd") : ""}
-                                        onChange={(e) => setStartDate(e.target.value ? new Date(e.target.value + "T12:00:00") : undefined)}
-                                    />
-                                    <Input
-                                        type="date"
-                                        value={endDate ? format(endDate, "yyyy-MM-dd") : ""}
-                                        onChange={(e) => setEndDate(e.target.value ? new Date(e.target.value + "T12:00:00") : undefined)}
-                                    />
-                                </div>
-                            </div>
-                            <div className="grid gap-2 md:col-span-2">
-                                <Label>Dias da Semana</Label>
-                                <div className="flex flex-wrap gap-2">
-                                    {WEEKDAYS.map(day => (
-                                        <div key={day.id} className="flex items-center space-x-2">
-                                            <Checkbox
-                                                id={`day-${day.id}`}
-                                                checked={selectedWeekdays.includes(day.id)}
-                                                onCheckedChange={() => toggleWeekday(day.id)}
-                                            />
-                                            <label htmlFor={`day-${day.id}`} className="text-sm cursor-pointer select-none">
-                                                {day.label}
-                                            </label>
-                                        </div>
+                        {/* Class Selection */}
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="classId" className="text-right">Turma</Label>
+                            <Select
+                                value={config.classId}
+                                onValueChange={(value) => setConfig({ ...config, classId: value })}
+                            >
+                                <SelectTrigger className="col-span-3">
+                                    <SelectValue placeholder="Selecione a turma" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Todas as Turmas</SelectItem>
+                                    {classes.map(c => (
+                                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                                     ))}
-                                </div>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {/* Time */}
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="time" className="text-right">Início</Label>
+                            <Input
+                                id="time"
+                                type="time"
+                                value={config.time}
+                                onChange={(e) => setConfig({ ...config, time: e.target.value })}
+                                className="col-span-3"
+                                required
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="endTime" className="text-right">Fim</Label>
+                            <Input
+                                id="endTime"
+                                type="time"
+                                value={config.endTime}
+                                onChange={(e) => setConfig({ ...config, endTime: e.target.value })}
+                                className="col-span-3"
+                            />
+                        </div>
+
+                        {/* Date Range */}
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="startDate" className="text-right">De</Label>
+                            <Input
+                                id="startDate"
+                                type="date"
+                                value={config.startDate}
+                                onChange={(e) => setConfig({ ...config, startDate: e.target.value })}
+                                className="col-span-3"
+                                required
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="endDate" className="text-right">Até</Label>
+                            <Input
+                                id="endDate"
+                                type="date"
+                                value={config.endDate}
+                                onChange={(e) => setConfig({ ...config, endDate: e.target.value })}
+                                className="col-span-3"
+                                required
+                            />
+                        </div>
+
+                        {/* Days of Week */}
+                        <div className="grid grid-cols-4 items-start gap-4">
+                            <Label className="text-right pt-2">Dias</Label>
+                            <div className="col-span-3 flex flex-wrap gap-2">
+                                {DAYS.map((day) => (
+                                    <div key={day.value} className="flex items-center space-x-2">
+                                        <Checkbox
+                                            id={`day-${day.value}`}
+                                            checked={config.daysOfWeek.includes(day.value)}
+                                            onCheckedChange={() => handleDayToggle(day.value)}
+                                        />
+                                        <label
+                                            htmlFor={`day-${day.value}`}
+                                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                        >
+                                            {day.label}
+                                        </label>
+                                    </div>
+                                ))}
                             </div>
                         </div>
 
-                        <TabsContent value="create" className="space-y-4">
-                            <div className="space-y-4 border-t pt-4">
-                                <div className="flex items-center justify-between">
-                                    <Label>Itens da Rotina Padrão</Label>
-                                    <Button size="sm" variant="outline" onClick={handleAddTemplateItem}>
-                                        <Plus className="h-4 w-4 mr-2" />
-                                        Adicionar Item
-                                    </Button>
-                                </div>
-
-                                <div className="space-y-3">
-                                    {templateItems.map((item, index) => (
-                                        <div key={index} className="flex gap-2 items-start bg-slate-50 p-3 rounded-md border">
-                                            <div className="grid gap-2 flex-1">
-                                                <div className="flex gap-2">
-                                                    <Input
-                                                        type="time"
-                                                        value={item.time}
-                                                        onChange={(e) => handleUpdateTemplateItem(index, 'time', e.target.value)}
-                                                        className="w-24"
-                                                    />
-                                                    <Input
-                                                        type="time"
-                                                        value={item.endTime || ""}
-                                                        onChange={(e) => handleUpdateTemplateItem(index, 'endTime', e.target.value)}
-                                                        className="w-24"
-                                                    />
-                                                    <Select
-                                                        value={item.type}
-                                                        onValueChange={(value) => handleUpdateTemplateItem(index, 'type', value)}
-                                                    >
-                                                        <SelectTrigger className="w-32">
-                                                            <SelectValue />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            {ITEM_TYPES.map(t => (
-                                                                <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <Input
-                                                        value={item.title}
-                                                        onChange={(e) => handleUpdateTemplateItem(index, 'title', e.target.value)}
-                                                        placeholder="Título"
-                                                        className="flex-1"
-                                                    />
-                                                </div>
-                                                <Input
-                                                    value={item.description || ""}
-                                                    onChange={(e) => handleUpdateTemplateItem(index, 'description', e.target.value)}
-                                                    placeholder="Descrição (opcional)"
-                                                />
-                                            </div>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="text-slate-400 hover:text-red-500"
-                                                onClick={() => handleRemoveTemplateItem(index)}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                            <DialogFooter>
-                                <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-                                <Button onClick={handleCreate} disabled={isProcessing || !classId || !startDate || !endDate}>
-                                    {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    Gerar Rotinas
-                                </Button>
-                            </DialogFooter>
-                        </TabsContent>
-
-                        <TabsContent value="edit" className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
-                                <div>
-                                    <Label className="mb-2 block">1. Filtrar Itens Específicos (Opcional)</Label>
-                                    <div className="space-y-2 bg-yellow-50 p-3 rounded-md border border-yellow-100">
-                                        <div className="grid gap-2">
-                                            <Label>Título contém:</Label>
-                                            <Input
-                                                value={matchTitle}
-                                                onChange={(e) => setMatchTitle(e.target.value)}
-                                                placeholder="Ex: Lanche"
-                                            />
-                                        </div>
-                                        <div className="grid gap-2">
-                                            <Label>Horário exato:</Label>
-                                            <Input
-                                                type="time"
-                                                value={matchTime}
-                                                onChange={(e) => setMatchTime(e.target.value)}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <Label className="mb-2 block">2. Novos Valores (Preencha para alterar)</Label>
-                                    <div className="space-y-2 bg-blue-50 p-3 rounded-md border border-blue-100">
-                                        <div className="flex gap-2">
-                                            <Input
-                                                type="time"
-                                                value={newTime}
-                                                onChange={(e) => setNewTime(e.target.value)}
-                                                className="w-24"
-                                                placeholder="Início"
-                                            />
-                                            <Input
-                                                type="time"
-                                                value={newEndTime}
-                                                onChange={(e) => setNewEndTime(e.target.value)}
-                                                className="w-24"
-                                                placeholder="Fim"
-                                            />
-                                            <Select value={newType} onValueChange={(v: any) => setNewType(v)}>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Tipo" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {ITEM_TYPES.map(t => (
-                                                        <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <Input
-                                            value={newTitle}
-                                            onChange={(e) => setNewTitle(e.target.value)}
-                                            placeholder="Novo Título"
-                                        />
-                                        <Input
-                                            value={newDescription}
-                                            onChange={(e) => setNewDescription(e.target.value)}
-                                            placeholder="Nova Descrição"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="bg-slate-100 p-3 rounded-md text-sm text-center text-slate-600">
-                                {previewCount > 0
-                                    ? <span>{previewCount} item(s) serão atualizados.</span>
-                                    : <span>Nenhum item encontrado com os filtros atuais.</span>
-                                }
-                            </div>
-
-                            <DialogFooter>
-                                <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-                                <Button onClick={handleEdit} disabled={isProcessing || previewCount === 0} className="bg-blue-600 hover:bg-blue-700">
-                                    {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    Atualizar Itens
-                                </Button>
-                            </DialogFooter>
-                        </TabsContent>
-
-                        <TabsContent value="delete" className="space-y-4">
-                            <div className="grid gap-4 border-t pt-4">
-                                <Label className="mb-2 block">Filtrar Itens para Exclusão (Opcional)</Label>
-                                <div className="space-y-2 bg-red-50 p-3 rounded-md border border-red-100">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="grid gap-2">
-                                            <Label>Título contém:</Label>
-                                            <Input
-                                                value={matchTitle}
-                                                onChange={(e) => setMatchTitle(e.target.value)}
-                                                placeholder="Ex: Lanche"
-                                            />
-                                        </div>
-                                        <div className="grid gap-2">
-                                            <Label>Horário exato:</Label>
-                                            <Input
-                                                type="time"
-                                                value={matchTime}
-                                                onChange={(e) => setMatchTime(e.target.value)}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="bg-slate-100 p-3 rounded-md text-sm text-center text-slate-600">
-                                    {previewCount > 0
-                                        ? <span className="text-red-600 font-medium">{previewCount} item(s) serão excluídos permanentemente.</span>
-                                        : <span>Nenhum item encontrado com os filtros atuais.</span>
-                                    }
-                                </div>
-                            </div>
-
-                            <DialogFooter>
-                                <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-                                <Button onClick={handleDelete} disabled={isProcessing || previewCount === 0} variant="destructive">
-                                    {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    Excluir Itens
-                                </Button>
-                            </DialogFooter>
-                        </TabsContent>
+                        {/* Description */}
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="description" className="text-right">Descrição</Label>
+                            <Textarea
+                                id="description"
+                                value={config.description}
+                                onChange={(e) => setConfig({ ...config, description: e.target.value })}
+                                className="col-span-3"
+                            />
+                        </div>
                     </div>
-                </Tabs>
+                    <DialogFooter>
+                        <Button type="submit">Gerar Rotina</Button>
+                    </DialogFooter>
+                </form>
             </DialogContent>
         </Dialog>
     );

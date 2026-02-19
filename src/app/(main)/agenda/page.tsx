@@ -9,6 +9,8 @@ import { useAppStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Plus, ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
 import { ScheduleDialog } from "@/components/agenda/schedule-dialog";
+import { Copy } from "lucide-react"; // Import Icon
+import { BulkRoutineDialog, BulkRoutineConfig } from "@/components/agenda/bulk-routine-dialog";
 import { ScheduleItem } from "@/lib/data";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -20,6 +22,7 @@ export default function AgendaPage() {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
     const [isScheduleDialogOpen, setIsScheduleDialogOpen] = useState(false);
+    const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<ScheduleItem | null>(null);
 
     // Filter Logic
@@ -49,7 +52,7 @@ export default function AgendaPage() {
     };
 
     const handleDelete = (item: ScheduleItem) => {
-         
+
         if (confirm("Remover este item da agenda?")) {
             updateSchedule(schedule.filter(i => i.id !== item.id));
         }
@@ -70,6 +73,39 @@ export default function AgendaPage() {
     };
 
     const canEdit = ["admin", "director", "teacher"].includes(currentUser?.role || "");
+
+    const handleBulkCreate = (config: BulkRoutineConfig) => {
+        const newItems: ScheduleItem[] = [];
+        const start = new Date(config.startDate + "T00:00:00"); // Ensure local time
+        const end = new Date(config.endDate + "T00:00:00");
+
+        // Helper to add item
+        const addItem = (date: Date, cId?: string) => {
+            newItems.push({
+                id: crypto.randomUUID(),
+                time: config.time,
+                endTime: config.endTime,
+                title: config.title,
+                description: config.description,
+                type: config.type,
+                date: format(date, 'yyyy-MM-dd'),
+                classId: cId
+            });
+        };
+
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+            if (config.daysOfWeek.includes(d.getDay())) {
+                if (config.classId === "all") {
+                    // Create for all available classes
+                    availableClasses.forEach(c => addItem(new Date(d), c.id));
+                } else {
+                    addItem(new Date(d), config.classId);
+                }
+            }
+        }
+
+        updateSchedule([...schedule, ...newItems]);
+    };
 
     return (
         <div className="space-y-6">
@@ -111,9 +147,14 @@ export default function AgendaPage() {
                     )}
 
                     {canEdit && (
-                        <Button onClick={handleAdd}>
-                            <Plus className="mr-2 h-4 w-4" /> Novo Item
-                        </Button>
+                        <div className="flex gap-2">
+                            <Button variant="outline" onClick={() => setIsBulkDialogOpen(true)}>
+                                <Copy className="mr-2 h-4 w-4" /> Rotina
+                            </Button>
+                            <Button onClick={handleAdd}>
+                                <Plus className="mr-2 h-4 w-4" /> Novo Item
+                            </Button>
+                        </div>
                     )}
                 </div>
             </div>
@@ -138,6 +179,13 @@ export default function AgendaPage() {
                 onOpenChange={setIsScheduleDialogOpen}
                 item={editingItem}
                 onSave={handleSave}
+            />
+
+            <BulkRoutineDialog
+                open={isBulkDialogOpen}
+                onOpenChange={setIsBulkDialogOpen}
+                classes={availableClasses}
+                onSave={handleBulkCreate}
             />
         </div>
     );
