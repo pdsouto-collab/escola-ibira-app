@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Users, MoreVertical, Edit2, Trash2, FolderPlus } from "lucide-react";
 import { StudentDialog } from "@/components/students/student-dialog";
 import { ClassDialog } from "@/components/students/class-dialog";
+import { StudentImportDialog } from "@/components/students/student-import-dialog";
 import { Student, SchoolClass } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import {
@@ -22,6 +23,7 @@ export default function StudentsPage() {
     // Dialog States
     const [isStudentDialogOpen, setIsStudentDialogOpen] = useState(false);
     const [isClassDialogOpen, setIsClassDialogOpen] = useState(false);
+    const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 
     // Selection States
     const [selectedClassId, setSelectedClassId] = useState<string | "all">("all");
@@ -58,7 +60,7 @@ export default function StudentsPage() {
     };
 
     const handleDeleteStudent = (student: Student) => {
-         
+
         if (confirm(`Tem certeza que deseja remover ${student.name}?`)) {
             removeStudent(student.id);
         }
@@ -84,7 +86,7 @@ export default function StudentsPage() {
     };
 
     const handleDeleteClass = (schoolClass: SchoolClass) => {
-         
+
         if (confirm(`Tem certeza que deseja remover a turma ${schoolClass.name}? Os alunos desta turma não serão excluídos, mas ficarão sem turma.`)) {
             removeClass(schoolClass.id);
             if (selectedClassId === schoolClass.id) {
@@ -99,6 +101,11 @@ export default function StudentsPage() {
         } else {
             addClass(schoolClass);
         }
+    };
+
+    const handleImportStudents = (newStudents: Student[]) => {
+        newStudents.forEach(student => addStudent(student));
+        alert(`${newStudents.length} alunos importados com sucesso!`);
     };
 
     return (
@@ -192,10 +199,16 @@ export default function StudentsPage() {
                                 : selectedClass?.description || "Gerencie os alunos desta turma."}
                         </p>
                     </div>
-                    <Button onClick={handleAddStudent} className="bg-primary hover:bg-primary/90 text-white gap-2 shadow-sm">
-                        <Plus className="w-4 h-4" />
-                        Novo Aluno
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline" onClick={() => setIsImportDialogOpen(true)} className="gap-2">
+                            <Plus className="w-4 h-4 rotate-45" /> {/* Using Plus rotated as pseudo-import icon or just generic */}
+                            Importar
+                        </Button>
+                        <Button onClick={handleAddStudent} className="bg-primary hover:bg-primary/90 text-white gap-2 shadow-sm">
+                            <Plus className="w-4 h-4" />
+                            Novo Aluno
+                        </Button>
+                    </div>
                 </div>
 
                 <StudentList
@@ -218,6 +231,12 @@ export default function StudentsPage() {
                     onOpenChange={setIsClassDialogOpen}
                     schoolClass={editingClass}
                     onSave={handleSaveClass}
+                />
+
+                <StudentImportDialog
+                    open={isImportDialogOpen}
+                    onOpenChange={setIsImportDialogOpen}
+                    onImport={handleImportStudents}
                 />
             </main>
         </div>
