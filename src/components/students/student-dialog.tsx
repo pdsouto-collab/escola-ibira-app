@@ -25,7 +25,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
-import { Upload, AlertCircle, Check, FileText } from "lucide-react";
+import { Upload, AlertCircle, Check, FileText, Users } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface StudentDialogProps {
@@ -230,37 +230,77 @@ export function StudentDialog({ open, onOpenChange, student, onSave }: StudentDi
                             {/* 1. Dados da Criança */}
                             <div className="space-y-4 border-b pb-6">
                                 <h3 className="text-lg font-medium text-slate-900">1. Dados da Criança</h3>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2 col-span-2">
-                                        <Label>Nome Completo</Label>
-                                        <Input value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required />
+                                <div className="grid grid-cols-1 md:grid-cols-[120px_1fr] gap-6">
+                                    {/* Photo Upload */}
+                                    <div className="flex flex-col items-center gap-3">
+                                        <div className="relative h-24 w-24 rounded-full overflow-hidden border-2 border-slate-200 bg-slate-100 flex items-center justify-center">
+                                            {formData.photo ? (
+                                                /* eslint-disable-next-line @next/next/no-img-element */
+                                                <img
+                                                    src={formData.photo}
+                                                    alt="Foto do aluno"
+                                                    className="h-full w-full object-cover"
+                                                />
+                                            ) : (
+                                                <Users className="h-10 w-10 text-slate-400" />
+                                            )}
+                                        </div>
+                                        <div className="flex flex-col items-center w-full">
+                                            <Label htmlFor="photo-upload" className="cursor-pointer text-xs text-primary font-medium hover:underline">
+                                                Alterar foto
+                                            </Label>
+                                            <Input
+                                                id="photo-upload"
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                                onChange={(e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        const reader = new FileReader();
+                                                        reader.onloadend = () => {
+                                                            setFormData({ ...formData, photo: reader.result as string });
+                                                        };
+                                                        reader.readAsDataURL(file);
+                                                    }
+                                                }}
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label>Data de Nascimento</Label>
-                                        <Input type="date" value={formData.dateOfBirth} onChange={e => setFormData({ ...formData, dateOfBirth: e.target.value })} required />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Documento (CPF/RG/Certidão)</Label>
-                                        <Input value={formData.document} onChange={e => setFormData({ ...formData, document: e.target.value })} />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Turma</Label>
-                                        <Select value={formData.classId} onValueChange={v => setFormData({ ...formData, classId: v })}>
-                                            <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                                            <SelectContent>
-                                                {classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Período</Label>
-                                        <Select value={formData.period} onValueChange={(v: any) => setFormData({ ...formData, period: v })}>
-                                            <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="integral">Integral (08h30 - 15h30)</SelectItem>
-                                                <SelectItem value="matutino">Matutino (08h30 - 12h30)</SelectItem>
-                                            </SelectContent>
-                                        </Select>
+
+                                    {/* Basic Info Fields */}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2 col-span-2">
+                                            <Label>Nome Completo</Label>
+                                            <Input value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Data de Nascimento</Label>
+                                            <Input type="date" value={formData.dateOfBirth} onChange={e => setFormData({ ...formData, dateOfBirth: e.target.value })} required />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Documento (CPF/RG/Certidão)</Label>
+                                            <Input value={formData.document} onChange={e => setFormData({ ...formData, document: e.target.value })} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Turma</Label>
+                                            <Select value={formData.classId} onValueChange={v => setFormData({ ...formData, classId: v })}>
+                                                <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                                                <SelectContent>
+                                                    {classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Período</Label>
+                                            <Select value={formData.period} onValueChange={(v: any) => setFormData({ ...formData, period: v })}>
+                                                <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="integral">Integral (08h30 - 15h30)</SelectItem>
+                                                    <SelectItem value="matutino">Matutino (08h30 - 12h30)</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
