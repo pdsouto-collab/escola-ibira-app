@@ -134,19 +134,16 @@ export function StudentDialog({ open, onOpenChange, student, onSave }: StudentDi
         reader.onload = (e) => {
             const text = e.target?.result as string;
             if (!text) return;
-            const lines = text.split('\n');
-            if (lines.length < 2) return;
 
-            const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+            const rows = parseCSVString(text);
+            if (rows.length < 2) return;
+
+            const headers = rows[0].map(h => h.trim().replace(/^"|"$/g, ''));
             const students: Partial<Student>[] = [];
 
-            for (let i = 1; i < lines.length; i++) {
-                const line = lines[i]; // Don't trim yet to preserve empty fields if separated by commas
-                if (!line.trim()) continue;
-
-                // Basic CSV split
-                const row = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
-                if (row.length < 3) continue;
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                if (row.length < 2) continue; // Skip empty rows
 
                 const newStudent: any = {
                     id: crypto.randomUUID(),
@@ -158,35 +155,90 @@ export function StudentDialog({ open, onOpenChange, student, onSave }: StudentDi
                     emergencyContacts: []
                 };
 
-                let guardianName = "";
-                let guardianPhone = "";
+                // Temporary variables for guardians
+                let g1: Partial<Guardian> = { kinship: "Responsável" };
+                let g2: Partial<Guardian> = { kinship: "Responsável" };
+
+                let currentSection = 'student'; // 'student', 'resp1', 'resp2'
 
                 headers.forEach((header, index) => {
-                    const value = row[index];
+                    if (index >= row.length) return;
+
+                    const value = row[index].trim();
                     const h = header.toLowerCase();
 
-                    if (h.includes("nome da criança") || h.includes("nome do aluno")) newStudent.name = value;
-                    else if (h.includes("nascimento")) newStudent.dateOfBirth = value; // Needs formatting if not YYYY-MM-DD
-                    else if (h.includes("turma")) {
-                        const matchedClass = classes.find(c => c.name.toLowerCase() === value.toLowerCase());
-                        newStudent.classId = matchedClass ? matchedClass.id : "";
-                        newStudent.classNameRaw = value;
-                    }
-                    // Guardian 1
-                    else if (h.includes("responsável 1") && h.includes("nome")) guardianName = value;
-                    else if (h.includes("responsável 1") && h.includes("telefone")) guardianPhone = value;
+                    // Detect section changes based on header keywords
+                    if (h.includes('responsável 1') || h.includes('responsavel 1') || h.includes('pai/mãe 1')) currentSection = 'resp1';
+                    else if (h.includes('responsável 2') || h.includes('responsavel 2') || h.includes('pai/mãe 2')) currentSection = 'resp2';
+                    else if (h.includes('financeiro')) currentSection = 'financial';
+                    else if (h.includes('saúde') || h.includes('alergia') || h.includes('pediatra')) currentSection = 'health';
 
-                    // Health
-                    else if (h.includes("alergia") && h.includes("sim")) newStudent.health.hasAllergy = value.toLowerCase() === 'sim';
-                    else if (h.includes("qual alergia")) newStudent.health.allergyDetail = value;
+                    // --- MAPPING LOGIC ---
+
+                    // 1. STUDENT INFO (Default section)
+                    if (currentSection === 'student' || (!h.includes('responsável') && !h.includes('financeiro') && !h.includes('saúde'))) {
+                        if (h === 'nome:' || h === 'nome' || h.includes('nome da criança') || h.includes('nome do aluno')) {
+                            newStudent.name = value;
+                        }
+                        else if (h.includes('nascimento')) {
+                            // Try to parse DD/MM/YYYY to YYYY-MM-DD
+                            if (value.includes('/')) {
+                                const parts = value.split('/');
+                                if (parts.length === 3) newStudent.dateOfBirth = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                            } else {
+                                newStudent.dateOfBirth = value;
+                            }
+                        }
+                        else if (h.includes('turma') || h.includes('etapa')) {
+                            // Fuzzy match class name
+                            const matchedClass = classes.find(c =>
+                                value.toLowerCase().includes(c.name.toLowerCase()) ||
+                                c.name.toLowerCase().includes(value.toLowerCase())
+                            );
+                            if (matchedClass) {
+                                newStudent.classId = matchedClass.id;
+                            }
+                            newStudent.classNameRaw = value;
+                        }
+                        else if (h.includes('documento') || h.includes('cpf') || h.includes('rg')) {
+                            newStudent.document = value;
+                        }
+                    }
+
+                    // 2. GUARDIAN 1
+                    if (currentSection === 'resp1' || (h.includes('responsável 1') && !h.includes('financeiro'))) {
+                        if (h.includes('nome')) g1.name = value;
+                        else if (h.includes('telefone') || h.includes('celular') || h.includes('whatsapp')) g1.phone = value;
+                        else if (h.includes('parentesco') || h.includes('liame')) g1.kinship = value;
+                        else if (h.includes('cpf')) g1.cpf = value;
+                        else if (h.includes('email') || h.includes('e-mail')) g1.email = value;
+                    }
+
+                    // 3. GUARDIAN 2
+                    if (currentSection === 'resp2' || (h.includes('responsável 2') && !h.includes('financeiro'))) {
+                        if (h.includes('nome')) g2.name = value;
+                        else if (h.includes('telefone') || h.includes('celular') || h.includes('whatsapp')) g2.phone = value;
+                        else if (h.includes('parentesco') || h.includes('liame')) g2.kinship = value;
+                        else if (h.includes('cpf')) g2.cpf = value;
+                        else if (h.includes('email') || h.includes('e-mail')) g2.email = value;
+                    }
+
+                    // 4. HEALTH
+                    if (currentSection === 'health' || h.includes('alergia') || h.includes('doença') || h.includes('pediatra')) {
+                        if (h.includes('alergia') && h.includes('sim')) newStudent.health.hasAllergy = value.toLowerCase() === 'sim';
+                        else if (h.includes('qual alergia')) newStudent.health.allergyDetail = value;
+                        else if (h.includes('pediatra')) newStudent.health.pediatricianName = value;
+                    }
                 });
 
-                if (guardianName) {
-                    newStudent.guardians.push({ name: guardianName, phone: guardianPhone, kinship: "Responsável" });
-                    newStudent.parentName = guardianName;
-                }
+                // Post-processing
+                if (g1.name) newStudent.guardians.push(g1);
+                if (g2.name) newStudent.guardians.push(g2);
+                if (g1.name) newStudent.parentName = g1.name;
 
-                if (newStudent.name) students.push(newStudent);
+                if (newStudent.name && newStudent.name.length > 2) {
+                    students.push(newStudent);
+                }
             }
 
             setParsedStudents(students);
@@ -536,4 +588,45 @@ export function StudentDialog({ open, onOpenChange, student, onSave }: StudentDi
             </DialogContent>
         </Dialog>
     );
+}
+
+function parseCSVString(text: string): string[][] {
+    const rows: string[][] = [];
+    let currentRow: string[] = [];
+    let currentField = '';
+    let insideQuotes = false;
+
+    // Normalize line endings
+    const normalizedText = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+    for (let i = 0; i < normalizedText.length; i++) {
+        const char = normalizedText[i];
+        const nextChar = normalizedText[i + 1];
+
+        if (char === '"') {
+            if (insideQuotes && nextChar === '"') {
+                currentField += '"';
+                i++;
+            } else {
+                insideQuotes = !insideQuotes;
+            }
+        } else if (char === ',' && !insideQuotes) {
+            currentRow.push(currentField);
+            currentField = '';
+        } else if (char === '\n' && !insideQuotes) {
+            currentRow.push(currentField);
+            rows.push(currentRow);
+            currentRow = [];
+            currentField = '';
+        } else {
+            currentField += char;
+        }
+    }
+
+    if (currentField || currentRow.length > 0) {
+        currentRow.push(currentField);
+        rows.push(currentRow);
+    }
+
+    return rows;
 }
