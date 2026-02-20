@@ -1,0 +1,9 @@
+1:"$Sreact.fragment"
+2:I[47257,["/escola-ibira-app/_next/static/chunks/ff1a16fafef87110.js","/escola-ibira-app/_next/static/chunks/d2be314c3ece3fbe.js"],"ClientPageRoot"]
+3:I[39842,["/escola-ibira-app/_next/static/chunks/a8e985976f5c521c.js","/escola-ibira-app/_next/static/chunks/5e8add190ca90d17.js","/escola-ibira-app/_next/static/chunks/195c216f52dae3f8.js","/escola-ibira-app/_next/static/chunks/5f113584e85fde5c.js","/escola-ibira-app/_next/static/chunks/189aee0fc9928ea1.js","/escola-ibira-app/_next/static/chunks/cedbafbb68dbbaca.js","/escola-ibira-app/_next/static/chunks/4e48881a4806b499.js"],"default"]
+6:I[97367,["/escola-ibira-app/_next/static/chunks/ff1a16fafef87110.js","/escola-ibira-app/_next/static/chunks/d2be314c3ece3fbe.js"],"OutletBoundary"]
+7:"$Sreact.suspense"
+0:{"buildId":"BPmRv0UDFVM7b6jkdUwC9","rsc":["$","$1","c",{"children":[["$","$L2",null,{"Component":"$3","serverProvidedParams":{"searchParams":{},"params":{},"promises":["$@4","$@5"]}}],[["$","script","script-0",{"src":"/escola-ibira-app/_next/static/chunks/5f113584e85fde5c.js","async":true}],["$","script","script-1",{"src":"/escola-ibira-app/_next/static/chunks/189aee0fc9928ea1.js","async":true}],["$","script","script-2",{"src":"/escola-ibira-app/_next/static/chunks/cedbafbb68dbbaca.js","async":true}],["$","script","script-3",{"src":"/escola-ibira-app/_next/static/chunks/4e48881a4806b499.js","async":true}]],["$","$L6",null,{"children":["$","$7",null,{"name":"Next.MetadataOutlet","children":"$@8"}]}]]}],"loading":null,"isPartial":false}
+4:{}
+5:{}
+8:null
