@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAppStore } from "@/lib/store";
 import { Project, ScheduleItem } from "@/lib/data";
 
-import { BNCCSelector } from "@/components/bncc/bncc-selector";
+import { LibrarySelector } from "@/components/biblioteca/library-selector";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,7 +31,7 @@ function NewProjectWizardContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const editId = searchParams.get("edit");
-    const { addProject, updateProject, projects, classes, schedule, updateSchedule } = useAppStore();
+    const { addProject, updateProject, projects, classes, schedule, updateSchedule, libraryItems } = useAppStore();
 
     // Determine if we are in Edit Mode
     const [isEditMode, setIsEditMode] = useState(false);
@@ -303,67 +303,27 @@ function NewProjectWizardContent() {
                         </div>
                     )}
 
-                    {/* Step 3: BNCC & Content */}
+                    {/* Step 3: Library Selection */}
                     {currentStep === 3 && (
-                        <div className="animate-in fade-in slide-in-from-right-4 duration-300 h-full space-y-8">
-                            <BNCCSelector
-                                selected={formData.bnccSkills}
-                                onSelect={(skills) => setFormData({ ...formData, bnccSkills: skills })}
+                        <div className="animate-in fade-in slide-in-from-right-4 duration-300 h-full space-y-8 pb-8">
+                            <LibrarySelector
+                                selectedIds={[...formData.bnccSkills, ...formData.customContent]}
+                                onSelect={(ids) => {
+                                    // The selector returns mixed IDs. For simplicity in the form state,
+                                    // we could split them back into bncc vs custom, but let's just use the store
+                                    // to see which is which. A quick hack is just setting all of them to customContent
+                                    // and sorting it out during save, or splitting them right here.
+                                    // Since we will save them in project.bnccSkillIds and project.contentIds:
+                                    const bncc = ids.filter(id => libraryItems.find((i: any) => i.id === id)?.isBNCC);
+                                    const custom = ids.filter(id => !libraryItems.find((i: any) => i.id === id)?.isBNCC);
+
+                                    setFormData({
+                                        ...formData,
+                                        bnccSkills: bncc,
+                                        customContent: custom
+                                    });
+                                }}
                             />
-
-                            <div className="border-t pt-8">
-                                <h2 className="text-2xl font-bold text-slate-800 mb-2">Conteúdos Específicos</h2>
-                                <p className="text-slate-500 mb-6">Adicione conteúdos ou temas personalizados que serão trabalhados neste projeto.</p>
-
-                                <div className="bg-slate-50 p-6 rounded-xl border">
-                                    <div className="flex gap-2 mb-4">
-                                        <Input
-                                            placeholder="Ex: Ciclo da Água, Cores Primárias..."
-                                            id="content-input"
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter') {
-                                                    const val = (e.target as HTMLInputElement).value.trim();
-                                                    if (val && !formData.customContent.includes(val)) {
-                                                        setFormData({ ...formData, customContent: [...formData.customContent, val] });
-                                                        (e.target as HTMLInputElement).value = "";
-                                                    }
-                                                }
-                                            }}
-                                        />
-                                        <Button onClick={() => {
-                                            const input = document.getElementById('content-input') as HTMLInputElement;
-                                            const val = input.value.trim();
-                                            if (val && !formData.customContent.includes(val)) {
-                                                setFormData({ ...formData, customContent: [...formData.customContent, val] });
-                                                input.value = "";
-                                            }
-                                        }}>
-                                            <div className="flex items-center gap-1">
-                                                <div className="h-4 w-px bg-current/20 mx-1" />
-                                                Adicionar
-                                            </div>
-                                        </Button>
-                                    </div>
-
-                                    <div className="flex flex-wrap gap-2">
-                                        {formData.customContent.length > 0 ? (
-                                            formData.customContent.map((item) => (
-                                                <Badge key={item} variant="secondary" className="bg-white border-slate-200 text-slate-700 px-3 py-1 flex items-center gap-2">
-                                                    {item}
-                                                    <button
-                                                        onClick={() => setFormData({ ...formData, customContent: formData.customContent.filter(c => c !== item) })}
-                                                        className="hover:text-red-500 transition-colors"
-                                                    >
-                                                        <div className="h-3 w-3 bg-slate-300 rounded-full flex items-center justify-center text-[8px] text-white hover:bg-red-500">x</div>
-                                                    </button>
-                                                </Badge>
-                                            ))
-                                        ) : (
-                                            <span className="text-sm text-slate-400 italic">Nenhum conteúdo adicionado.</span>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     )}
 

@@ -9,7 +9,8 @@ import {
     Task, MuralEvent, Project, ChatMessage,
     mockMessages,
     mockClasses, SchoolClass, // Import mockClasses
-    User, mockUsers // Import User types
+    User, mockUsers, // Import User types
+    LibraryItem, mockLibraryItems // Import new library items
 } from "@/lib/data";
 
 interface AppState {
@@ -24,6 +25,7 @@ interface AppState {
     mosaicData: MosaicNode[];
     currentUser: User | null;
     users: User[];
+    libraryItems: LibraryItem[];
     bnccProgress: Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>;
 }
 
@@ -68,6 +70,11 @@ interface AppContextType extends AppState {
     // BNCC Progress
     bnccProgress: Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>;
     updateBNCCStatus: (skillCode: string, status: "not-started" | "in-progress" | "achieved") => void;
+
+    // Library
+    addLibraryItem: (item: LibraryItem) => void;
+    updateLibraryItem: (id: string, updates: Partial<LibraryItem>) => void;
+    removeLibraryItem: (id: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -171,6 +178,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [mosaicData, setMosaicData] = useState<MosaicNode[]>(mockRecursiveDataSkills);
     const [users, setUsers] = useState<User[]>(mockUsers);
     const [currentUser, setCurrentUser] = useState<User | null>(mockUsers[1]); // Default to Teacher (Cláudia) for dev
+    const [libraryItems, setLibraryItems] = useState<LibraryItem[]>(mockLibraryItems);
     const [bnccProgress, setBnccProgress] = useState<Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>>({});
 
     const [isLoaded, setIsLoaded] = useState(false);
@@ -210,6 +218,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             load("muralEvents", setMuralEvents, initialMuralEvents);
             load("messages", setMessages, initialMessages);
             load("mosaicData", setMosaicData, mockRecursiveDataSkills);
+            load("libraryItems", setLibraryItems, mockLibraryItems);
             load("bnccProgress", setBnccProgress, {});
 
             // 3. Update version
@@ -225,6 +234,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             load("projects", setProjects, initialProjects);
             load("messages", setMessages, initialMessages);
             load("mosaicData", setMosaicData, mockRecursiveDataSkills);
+            load("libraryItems", setLibraryItems, mockLibraryItems);
             load("bnccProgress", setBnccProgress, {});
         }
 
@@ -244,8 +254,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem("app_projects", JSON.stringify(projects));
         localStorage.setItem("app_messages", JSON.stringify(messages));
         localStorage.setItem("app_mosaicData", JSON.stringify(mosaicData));
+        localStorage.setItem("app_libraryItems", JSON.stringify(libraryItems));
         localStorage.setItem("app_bnccProgress", JSON.stringify(bnccProgress));
-    }, [students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, mosaicData, bnccProgress, isLoaded]);
+    }, [students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, mosaicData, libraryItems, bnccProgress, isLoaded]);
 
     // Actions
     const addStudent = (student: Student) => setStudents(prev => [...prev, student]);
@@ -374,6 +385,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     const replaceMosaicData = (newData: MosaicNode[]) => setMosaicData(newData);
 
+    const addLibraryItem = (item: LibraryItem) => setLibraryItems(prev => [...prev, item]);
+    const updateLibraryItem = (id: string, updates: Partial<LibraryItem>) => setLibraryItems(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i));
+    const removeLibraryItem = (id: string) => setLibraryItems(prev => prev.filter(i => i.id !== id));
+
     return (
         <AppContext.Provider value={{
             students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, currentUser,
@@ -385,7 +400,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             addUser: (user) => setUsers(prev => [...prev, user]),
             updateUser: (id, updates) => setUsers(prev => prev.map(u => u.id === id ? { ...u, ...updates } : u)),
             removeUser: (id) => setUsers(prev => prev.filter(u => u.id !== id)),
-            bnccProgress, updateBNCCStatus
+            bnccProgress, updateBNCCStatus,
+            libraryItems, addLibraryItem, updateLibraryItem, removeLibraryItem
         }}>
             {children}
         </AppContext.Provider>

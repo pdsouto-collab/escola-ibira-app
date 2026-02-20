@@ -41,7 +41,7 @@ export function MosaicContainer() {
     // Let's just show all projects for now or filter if possible.
 
     // Better Project Filter: Active projects
-    const filteredProjects = projects.filter(p => p.status === 'active' || p.status === 'planning');
+    const filteredProjects = projects.filter(p => p.status === 'active');
 
     // unified setter that routes to store or local state
     const setCurrentData = (updater: (prev: MosaicNode[]) => MosaicNode[]) => {

@@ -599,6 +599,84 @@ export interface PortfolioEntry {
     tags: string[];
 }
 
+// --- NEW ENHANCED LIBRARY STRUCTURE ---
+export interface LibraryItem {
+    id: string;
+    type: "skill" | "content";
+    code?: string; // Only for BNCC skills (e.g. EF01 MA01)
+    name: string; // The category, title, or short name
+    description: string; // The full text or content detail
+    isBNCC: boolean;
+}
+
+// Convert existing mockBNCCData into the new LibraryItem format for initial state
+export const mockLibraryItems: LibraryItem[] = [
+    // --- SKILLS (BNCC) ---
+    {
+        id: "lib-bncc-ci-01",
+        type: "skill",
+        code: "EF01CI01",
+        name: "Matéria e Energia",
+        description: "Comparar características de diferentes materiais presentes em objetos de uso cotidiano...",
+        isBNCC: true
+    },
+    {
+        id: "lib-bncc-ci-04",
+        type: "skill",
+        code: "EF02CI04",
+        name: "Vida e Evolução",
+        description: "Descrever características de plantas e animais (tamanho, forma, cor, fase da vida, local onde se desenvolvem...).",
+        isBNCC: true
+    },
+    {
+        id: "lib-bncc-ci-07",
+        type: "skill",
+        code: "EF03CI07",
+        name: "Terra e Universo",
+        description: "Identificar características da Terra (como seu formato esférico, a presença de água, solo etc.).",
+        isBNCC: true
+    },
+    {
+        id: "lib-bncc-mat-01",
+        type: "skill",
+        code: "EF01MA01",
+        name: "Números",
+        description: "Utilizar números naturais como indicador de quantidade ou de ordem em diferentes situações cotidianas.",
+        isBNCC: true
+    },
+    {
+        id: "lib-bncc-mat-13",
+        type: "skill",
+        code: "EF03MA13",
+        name: "Geometria",
+        description: "Associar figuras geométricas espaciais (cubo, bloco retangular, pirâmide, cone, cilindro e esfera) a objetos do mundo físico.",
+        isBNCC: true
+    },
+    // --- SKILLS (CUSTOM) ---
+    {
+        id: "lib-custom-sk-01",
+        type: "skill",
+        name: "Inteligência Emocional",
+        description: "Identificar e nomear as próprias emoções em situações de conflito no parquinho.",
+        isBNCC: false
+    },
+    // --- CONTENTS (CUSTOM) ---
+    {
+        id: "lib-custom-co-01",
+        type: "content",
+        name: "Ciclo da Água",
+        description: "Estudo sobre evaporação, condensação e precipitação focado na preservação da água doce.",
+        isBNCC: false
+    },
+    {
+        id: "lib-custom-co-02",
+        type: "content",
+        name: "Cores Primárias",
+        description: "Exploração visual e mistura de tintas com as cores Vermelho, Amarelo e Azul.",
+        isBNCC: false
+    }
+];
+
 export const mockPortfolio: PortfolioEntry[] = [
     {
         id: "port-1",

@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { SchoolLogo } from "@/components/ui/school-logo";
 
+import { BookOpen } from "lucide-react";
+
 const navigation = [
     { name: "Início", href: "/", icon: LayoutDashboard },
     { name: "Práticas", href: "/mosaico", icon: Grid2X2 },
@@ -29,6 +31,7 @@ const navigation = [
     { name: "Rotinas", href: "/agenda", icon: CalendarDays },
     { name: "Mural de Eventos", href: "/mural", icon: PartyPopper },
     { name: "Banco de projetos", href: "/projetos", icon: FolderOpen },
+    { name: "Biblioteca", href: "/biblioteca", icon: BookOpen },
     { name: "Relatórios", href: "/relatorios", icon: BarChart3 },
 
     { name: "Conversas", href: "/conversas", icon: MessageCircle },
