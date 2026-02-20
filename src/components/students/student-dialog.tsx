@@ -141,7 +141,11 @@ export function StudentDialog({ open, onOpenChange, student, onSave }: StudentDi
             // Helper to normalize headers for comparison (remove accents, lowercase)
             const normalize = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-            const headers = rows[0].map(h => normalize(h.trim().replace(/^"|"$/g, '')));
+            const rawHeaders = rows[0];
+            console.log("=== ORIGINAL CSV HEADERS ===");
+            console.log(JSON.stringify(rawHeaders, null, 2));
+
+            const headers = rawHeaders.map(h => normalize(h.trim().replace(/^"|"$/g, '')));
 
             const students: Partial<Student>[] = [];
 
