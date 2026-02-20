@@ -138,12 +138,16 @@ export function StudentDialog({ open, onOpenChange, student, onSave }: StudentDi
             const rows = parseCSVString(text);
             if (rows.length < 2) return;
 
-            const headers = rows[0].map(h => h.trim().replace(/^"|"$/g, ''));
+            // Helper to normalize headers for comparison (remove accents, lowercase)
+            const normalize = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+            const headers = rows[0].map(h => normalize(h.trim().replace(/^"|"$/g, '')));
+
             const students: Partial<Student>[] = [];
 
             for (let i = 1; i < rows.length; i++) {
                 const row = rows[i];
-                if (row.length < 2) continue; // Skip empty rows
+                if (row.length < 5) continue; // Skip empty/too short rows
 
                 const newStudent: any = {
                     id: crypto.randomUUID(),
@@ -155,36 +159,40 @@ export function StudentDialog({ open, onOpenChange, student, onSave }: StudentDi
                     emergencyContacts: []
                 };
 
-                // Temporary variables for guardians
+                // Temporary variables
                 let g1: Partial<Guardian> = { kinship: "Responsável" };
                 let g2: Partial<Guardian> = { kinship: "Responsável" };
+                let fin: any = {};
+                let em1: Partial<EmergencyContact> = {};
+                let em2: Partial<EmergencyContact> = {};
 
-                let currentSection = 'student'; // 'student', 'resp1', 'resp2'
+                // State machine for sections
+                let section = 'student'; // student, resp1, resp2, financial, health, emergency1, emergency2, hospital
 
-                headers.forEach((header, index) => {
+                headers.forEach((h, index) => {
                     if (index >= row.length) return;
-
                     const value = row[index].trim();
-                    const h = header.toLowerCase();
+                    // if (!value) return; // Don't skip empty values, position matches rely on index flow
 
-                    // Detect section changes based on header keywords
-                    if (h.includes('responsável 1') || h.includes('responsavel 1') || h.includes('pai/mãe 1')) currentSection = 'resp1';
-                    else if (h.includes('responsável 2') || h.includes('responsavel 2') || h.includes('pai/mãe 2')) currentSection = 'resp2';
-                    else if (h.includes('financeiro')) currentSection = 'financial';
-                    else if (h.includes('saúde') || h.includes('alergia') || h.includes('pediatra')) currentSection = 'health';
+                    // --- SECTION DETECTION ---
+                    if (h.includes('responsavel 1')) section = 'resp1';
+                    else if (h.includes('responsavel 2')) section = 'resp2';
+                    else if (section === 'resp2' && h === 'nome:') section = 'financial'; // "Nome:" appearing after resp2 is financial
+                    else if (h.includes('saude cronico') || h.includes('doenca')) section = 'health';
+                    else if (h.includes('emergencia') && h.includes('contato 1')) section = 'emergency1';
+                    else if (h.includes('emergencia') && h.includes('contato 2')) section = 'emergency2';
+                    else if (h.includes('removido para qual hospital') || h.includes('endereco do hospital')) section = 'hospital';
 
-                    // --- MAPPING LOGIC ---
+                    // --- FIELD MAPPING ---
 
-                    // 1. STUDENT INFO (Default section)
-                    if (currentSection === 'student' || (!h.includes('responsável') && !h.includes('financeiro') && !h.includes('saúde'))) {
-                        if (h === 'nome:' || h === 'nome' || h.includes('nome da criança') || h.includes('nome do aluno')) {
-                            newStudent.name = value;
-                        }
+                    // 1. STUDENT
+                    if (section === 'student') {
+                        if (h === 'nome:') newStudent.name = value;
                         else if (h.includes('nascimento')) {
-                            // Try to parse DD/MM/YYYY to YYYY-MM-DD
+                            // Format DD/MM/YYYY to YYYY-MM-DD
                             if (value.includes('/')) {
-                                const parts = value.split('/');
-                                if (parts.length === 3) newStudent.dateOfBirth = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                                const [d, m, y] = value.split('/');
+                                newStudent.dateOfBirth = `${y}-${m}-${d}`;
                             } else {
                                 newStudent.dateOfBirth = value;
                             }
@@ -205,30 +213,7 @@ export function StudentDialog({ open, onOpenChange, student, onSave }: StudentDi
                         }
                     }
 
-                    // 2. GUARDIAN 1
-                    if (currentSection === 'resp1' || (h.includes('responsável 1') && !h.includes('financeiro'))) {
-                        if (h.includes('nome')) g1.name = value;
-                        else if (h.includes('telefone') || h.includes('celular') || h.includes('whatsapp')) g1.phone = value;
-                        else if (h.includes('parentesco') || h.includes('liame')) g1.kinship = value;
-                        else if (h.includes('cpf')) g1.cpf = value;
-                        else if (h.includes('email') || h.includes('e-mail')) g1.email = value;
-                    }
 
-                    // 3. GUARDIAN 2
-                    if (currentSection === 'resp2' || (h.includes('responsável 2') && !h.includes('financeiro'))) {
-                        if (h.includes('nome')) g2.name = value;
-                        else if (h.includes('telefone') || h.includes('celular') || h.includes('whatsapp')) g2.phone = value;
-                        else if (h.includes('parentesco') || h.includes('liame')) g2.kinship = value;
-                        else if (h.includes('cpf')) g2.cpf = value;
-                        else if (h.includes('email') || h.includes('e-mail')) g2.email = value;
-                    }
-
-                    // 4. HEALTH
-                    if (currentSection === 'health' || h.includes('alergia') || h.includes('doença') || h.includes('pediatra')) {
-                        if (h.includes('alergia') && h.includes('sim')) newStudent.health.hasAllergy = value.toLowerCase() === 'sim';
-                        else if (h.includes('qual alergia')) newStudent.health.allergyDetail = value;
-                        else if (h.includes('pediatra')) newStudent.health.pediatricianName = value;
-                    }
                 });
 
                 // Post-processing
