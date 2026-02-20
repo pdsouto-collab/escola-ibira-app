@@ -425,21 +425,24 @@ export function StudentDialog({ open, onOpenChange, student, onSave }: StudentDi
                                 <div className="bg-slate-50 p-4 rounded-lg space-y-3">
                                     <h4 className="font-medium text-sm text-slate-700">Responsável 1 (Principal)</h4>
                                     <div className="grid grid-cols-2 gap-3">
-                                        <Input placeholder="Nome" value={formData.guardians?.[0]?.name} onChange={e => updateGuardian(0, 'name', e.target.value)} />
-                                        <Input placeholder="Parentesco" value={formData.guardians?.[0]?.kinship} onChange={e => updateGuardian(0, 'kinship', e.target.value)} />
-                                        <Input placeholder="Telefone" value={formData.guardians?.[0]?.phone} onChange={e => updateGuardian(0, 'phone', e.target.value)} />
-                                        <Input placeholder="CPF" value={formData.guardians?.[0]?.cpf} onChange={e => updateGuardian(0, 'cpf', e.target.value)} />
-                                        <Input placeholder="Email" className="col-span-2" value={formData.guardians?.[0]?.email} onChange={e => updateGuardian(0, 'email', e.target.value)} />
+                                        <div className="col-span-2 space-y-1"><Label className="text-xs">Nome</Label><Input value={formData.guardians?.[0]?.name} onChange={e => updateGuardian(0, 'name', e.target.value)} /></div>
+                                        <div className="space-y-1"><Label className="text-xs">CPF</Label><Input value={formData.guardians?.[0]?.cpf} onChange={e => updateGuardian(0, 'cpf', e.target.value)} /></div>
+                                        <div className="space-y-1"><Label className="text-xs">Parentesco</Label><Input value={formData.guardians?.[0]?.kinship} onChange={e => updateGuardian(0, 'kinship', e.target.value)} /></div>
+                                        <div className="space-y-1"><Label className="text-xs">Telefone</Label><Input value={formData.guardians?.[0]?.phone} onChange={e => updateGuardian(0, 'phone', e.target.value)} /></div>
+                                        <div className="space-y-1"><Label className="text-xs">Email</Label><Input value={formData.guardians?.[0]?.email} onChange={e => updateGuardian(0, 'email', e.target.value)} /></div>
+                                        <div className="col-span-2 space-y-1"><Label className="text-xs">Endereço Residencial</Label><Input value={formData.guardians?.[0]?.address} onChange={e => updateGuardian(0, 'address', e.target.value)} /></div>
                                     </div>
                                 </div>
                                 {/* Responsável 2 */}
                                 <div className="bg-slate-50 p-4 rounded-lg space-y-3">
                                     <h4 className="font-medium text-sm text-slate-700">Responsável 2</h4>
                                     <div className="grid grid-cols-2 gap-3">
-                                        <Input placeholder="Nome" value={formData.guardians?.[1]?.name} onChange={e => updateGuardian(1, 'name', e.target.value)} />
-                                        <Input placeholder="Parentesco" value={formData.guardians?.[1]?.kinship} onChange={e => updateGuardian(1, 'kinship', e.target.value)} />
-                                        <Input placeholder="Telefone" value={formData.guardians?.[1]?.phone} onChange={e => updateGuardian(1, 'phone', e.target.value)} />
-                                        <Input placeholder="Email" className="col-span-2" value={formData.guardians?.[1]?.email} onChange={e => updateGuardian(1, 'email', e.target.value)} />
+                                        <div className="col-span-2 space-y-1"><Label className="text-xs">Nome</Label><Input value={formData.guardians?.[1]?.name} onChange={e => updateGuardian(1, 'name', e.target.value)} /></div>
+                                        <div className="space-y-1"><Label className="text-xs">CPF</Label><Input value={formData.guardians?.[1]?.cpf} onChange={e => updateGuardian(1, 'cpf', e.target.value)} /></div>
+                                        <div className="space-y-1"><Label className="text-xs">Parentesco</Label><Input value={formData.guardians?.[1]?.kinship} onChange={e => updateGuardian(1, 'kinship', e.target.value)} /></div>
+                                        <div className="space-y-1"><Label className="text-xs">Telefone</Label><Input value={formData.guardians?.[1]?.phone} onChange={e => updateGuardian(1, 'phone', e.target.value)} /></div>
+                                        <div className="space-y-1"><Label className="text-xs">Email</Label><Input value={formData.guardians?.[1]?.email} onChange={e => updateGuardian(1, 'email', e.target.value)} /></div>
+                                        <div className="col-span-2 space-y-1"><Label className="text-xs">Endereço Residencial</Label><Input value={formData.guardians?.[1]?.address} onChange={e => updateGuardian(1, 'address', e.target.value)} /></div>
                                     </div>
                                 </div>
                             </div>
@@ -448,10 +451,11 @@ export function StudentDialog({ open, onOpenChange, student, onSave }: StudentDi
                             <div className="space-y-4 border-b pb-6">
                                 <h3 className="text-lg font-medium text-slate-900">3. Responsável Financeiro</h3>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <Input placeholder="Nome" value={formData.financialResponsible?.name} onChange={e => updateFinancial('name', e.target.value)} />
-                                    <Input placeholder="CPF" value={formData.financialResponsible?.cpf} onChange={e => updateFinancial('cpf', e.target.value)} />
-                                    <Input placeholder="Telefone" value={formData.financialResponsible?.phone} onChange={e => updateFinancial('phone', e.target.value)} />
-                                    <Input placeholder="Endereço" value={formData.financialResponsible?.address} onChange={e => updateFinancial('address', e.target.value)} />
+                                    <div className="col-span-2 space-y-1"><Label className="text-xs">Nome</Label><Input value={formData.financialResponsible?.name} onChange={e => updateFinancial('name', e.target.value)} /></div>
+                                    <div className="space-y-1"><Label className="text-xs">Telefone</Label><Input value={formData.financialResponsible?.phone} onChange={e => updateFinancial('phone', e.target.value)} /></div>
+                                    <div className="space-y-1"><Label className="text-xs">CPF</Label><Input value={formData.financialResponsible?.cpf} onChange={e => updateFinancial('cpf', e.target.value)} /></div>
+                                    <div className="col-span-2 space-y-1"><Label className="text-xs">Endereço Residencial</Label><Input value={formData.financialResponsible?.address} onChange={e => updateFinancial('address', e.target.value)} /></div>
+                                    <div className="col-span-2 space-y-1"><Label className="text-xs">E-mail</Label><Input value={formData.financialResponsible?.email} onChange={e => updateFinancial('email', e.target.value)} /></div>
                                 </div>
                             </div>
 
@@ -460,52 +464,91 @@ export function StudentDialog({ open, onOpenChange, student, onSave }: StudentDi
                                 <h3 className="text-lg font-medium text-slate-900">4. Dados de Saúde</h3>
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between">
-                                        <Label>Possui problema de saúde crônico?</Label>
+                                        <Label>Apresenta algum problema de saúde crônico?</Label>
                                         <Switch checked={formData.health?.hasChronicIssue} onCheckedChange={v => updateHealth('hasChronicIssue', v)} />
                                     </div>
                                     {formData.health?.hasChronicIssue && (
-                                        <Input placeholder="Qual?" value={formData.health?.chronicIssueDetail} onChange={e => updateHealth('chronicIssueDetail', e.target.value)} />
+                                        <div className="ml-4 space-y-2"><Label className="text-xs text-slate-500">Qual?</Label><Input value={formData.health?.chronicIssueDetail} onChange={e => updateHealth('chronicIssueDetail', e.target.value)} /></div>
                                     )}
 
                                     <div className="flex items-center justify-between">
-                                        <Label>Possui alergia?</Label>
+                                        <Label>Tem alguma alergia?</Label>
                                         <Switch checked={formData.health?.hasAllergy} onCheckedChange={v => updateHealth('hasAllergy', v)} />
                                     </div>
                                     {formData.health?.hasAllergy && (
-                                        <div className="space-y-2">
-                                            <Input placeholder="Qual alergia?" value={formData.health?.allergyDetail} onChange={e => updateHealth('allergyDetail', e.target.value)} />
-                                            <Textarea placeholder="Em caso de manifestação, o que fazer?" value={formData.health?.emergencyAction} onChange={e => updateHealth('emergencyAction', e.target.value)} />
-                                        </div>
+                                        <div className="ml-4 space-y-2"><Label className="text-xs text-slate-500">Qual?</Label><Input value={formData.health?.allergyDetail} onChange={e => updateHealth('allergyDetail', e.target.value)} /></div>
                                     )}
 
                                     <div className="flex items-center justify-between">
-                                        <Label>Restrição Alimentar?</Label>
+                                        <Label>Tem alguma restrição alimentar?</Label>
                                         <Switch checked={formData.health?.hasDietaryRestriction} onCheckedChange={v => updateHealth('hasDietaryRestriction', v)} />
                                     </div>
                                     {formData.health?.hasDietaryRestriction && (
-                                        <Input placeholder="Qual?" value={formData.health?.dietaryRestrictionDetail} onChange={e => updateHealth('dietaryRestrictionDetail', e.target.value)} />
+                                        <div className="ml-4 space-y-2"><Label className="text-xs text-slate-500">Qual?</Label><Input value={formData.health?.dietaryRestrictionDetail} onChange={e => updateHealth('dietaryRestrictionDetail', e.target.value)} /></div>
                                     )}
 
-                                    <div className="grid grid-cols-2 gap-4 pt-2">
-                                        <Input placeholder="Nome do Pediatra" value={formData.health?.pediatricianName} onChange={e => updateHealth('pediatricianName', e.target.value)} />
-                                        <Input placeholder="Tel. Pediatra" value={formData.health?.pediatricianPhone} onChange={e => updateHealth('pediatricianPhone', e.target.value)} />
+                                    <div className="space-y-2 mt-4 pt-4 border-t border-slate-100">
+                                        <Label className="text-sm">Em caso de manifestação alérgica, que atitude devemos tomar?</Label>
+                                        <Textarea value={formData.health?.emergencyAction} onChange={e => updateHealth('emergencyAction', e.target.value)} />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label className="text-sm">Em caso de febre, até a família chegar, qual procedimento deverá ser tomado?</Label>
+                                        <Textarea value={formData.health?.feverProcedure} onChange={e => updateHealth('feverProcedure', e.target.value)} />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4 mt-4">
+                                        <div className="space-y-1"><Label className="text-xs">Nome do Pediatra</Label><Input value={formData.health?.pediatricianName} onChange={e => updateHealth('pediatricianName', e.target.value)} /></div>
+                                        <div className="space-y-1"><Label className="text-xs">Telefone do Pediatra</Label><Input value={formData.health?.pediatricianPhone} onChange={e => updateHealth('pediatricianPhone', e.target.value)} /></div>
+                                    </div>
+
+                                    <div className="flex items-center justify-between mt-4 border-t border-slate-100 pt-4">
+                                        <Label>A família possui plano de saúde?</Label>
+                                        <Switch checked={formData.health?.hasHealthInsurance} onCheckedChange={v => updateHealth('hasHealthInsurance', v)} />
+                                    </div>
+                                    {formData.health?.hasHealthInsurance && (
+                                        <div className="space-y-2 ml-4"><Label className="text-xs text-slate-500">Qual?</Label><Input value={formData.health?.healthInsuranceDetail} onChange={e => updateHealth('healthInsuranceDetail', e.target.value)} /></div>
+                                    )}
+
+                                    <div className="space-y-2 mt-4">
+                                        <Label className="text-sm">Outras informações relevantes?</Label>
+                                        <Textarea value={formData.health?.otherInfo} onChange={e => updateHealth('otherInfo', e.target.value)} />
                                     </div>
                                 </div>
                             </div>
 
                             {/* 5. Emergências */}
-                            <div className="space-y-4">
+                            <div className="space-y-6">
                                 <h3 className="text-lg font-medium text-slate-900">5. Emergências</h3>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="col-span-2 space-y-2">
-                                        <Label>Hospital de Preferência</Label>
-                                        <Input value={formData.hospitalPreference} onChange={e => setFormData({ ...formData, hospitalPreference: e.target.value })} />
+
+                                <div className="space-y-4">
+                                    <Label className="font-semibold text-slate-700">Em caso de emergência e ausência dos pais, quem deve ser contatado?</Label>
+
+                                    <div className="bg-slate-50 p-4 rounded-lg space-y-3">
+                                        <h4 className="font-medium text-sm text-slate-700">Contato 1</h4>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="col-span-2 space-y-1"><Label className="text-xs">Nome</Label><Input value={formData.emergencyContacts?.[0]?.name} onChange={e => updateEmergency(0, 'name', e.target.value)} /></div>
+                                            <div className="space-y-1"><Label className="text-xs">Parentesco</Label><Input value={formData.emergencyContacts?.[0]?.kinship} onChange={e => updateEmergency(0, 'kinship', e.target.value)} /></div>
+                                            <div className="space-y-1"><Label className="text-xs">Telefone</Label><Input value={formData.emergencyContacts?.[0]?.phone} onChange={e => updateEmergency(0, 'phone', e.target.value)} /></div>
+                                        </div>
                                     </div>
-                                    <div className="col-span-2"><Label>Contatos de Emergência (além dos pais)</Label></div>
-                                    <Input placeholder="Nome Contato 1" value={formData.emergencyContacts?.[0]?.name} onChange={e => updateEmergency(0, 'name', e.target.value)} />
-                                    <Input placeholder="Telefone Contato 1" value={formData.emergencyContacts?.[0]?.phone} onChange={e => updateEmergency(0, 'phone', e.target.value)} />
-                                    <Input placeholder="Nome Contato 2" value={formData.emergencyContacts?.[1]?.name} onChange={e => updateEmergency(1, 'name', e.target.value)} />
-                                    <Input placeholder="Telefone Contato 2" value={formData.emergencyContacts?.[1]?.phone} onChange={e => updateEmergency(1, 'phone', e.target.value)} />
+
+                                    <div className="bg-slate-50 p-4 rounded-lg space-y-3">
+                                        <h4 className="font-medium text-sm text-slate-700">Contato 2</h4>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="col-span-2 space-y-1"><Label className="text-xs">Nome</Label><Input value={formData.emergencyContacts?.[1]?.name} onChange={e => updateEmergency(1, 'name', e.target.value)} /></div>
+                                            <div className="space-y-1"><Label className="text-xs">Parentesco</Label><Input value={formData.emergencyContacts?.[1]?.kinship} onChange={e => updateEmergency(1, 'kinship', e.target.value)} /></div>
+                                            <div className="space-y-1"><Label className="text-xs">Telefone</Label><Input value={formData.emergencyContacts?.[1]?.phone} onChange={e => updateEmergency(1, 'phone', e.target.value)} /></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <Label className="font-semibold text-slate-700">Em caso de emergência, o aluno deverá ser removido para qual hospital?</Label>
+                                    <div className="grid grid-cols-1 gap-3">
+                                        <div className="space-y-1"><Label className="text-xs">Nome do Hospital de Preferência</Label><Input value={formData.hospitalPreference} onChange={e => setFormData({ ...formData, hospitalPreference: e.target.value })} /></div>
+                                        <div className="space-y-1"><Label className="text-xs">Endereço do Hospital</Label><Input value={formData.hospitalAddress} onChange={e => setFormData({ ...formData, hospitalAddress: e.target.value })} /></div>
+                                    </div>
                                 </div>
                             </div>
 
