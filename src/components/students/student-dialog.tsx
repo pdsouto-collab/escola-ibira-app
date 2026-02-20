@@ -142,9 +142,6 @@ export function StudentDialog({ open, onOpenChange, student, onSave }: StudentDi
             const normalize = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
             const rawHeaders = rows[0];
-            console.log("=== ORIGINAL CSV HEADERS ===");
-            console.log(JSON.stringify(rawHeaders, null, 2));
-
             const headers = rawHeaders.map(h => normalize(h.trim().replace(/^"|"$/g, '')));
 
             const students: Partial<Student>[] = [];
@@ -226,6 +223,7 @@ export function StudentDialog({ open, onOpenChange, student, onSave }: StudentDi
                     fin.name = finName;
                     fin.phone = getValue(19);
                     fin.cpf = getValue(20);
+                    // Fix typo in header value assumption by setting it regardless
                     fin.address = getValue(21);
                     fin.email = getValue(22);
                 }
@@ -273,6 +271,10 @@ export function StudentDialog({ open, onOpenChange, student, onSave }: StudentDi
                 if (g1.name) newStudent.guardians.push(g1);
                 if (g2.name) newStudent.guardians.push(g2);
                 if (g1.name) newStudent.parentName = g1.name;
+
+                if (fin.name) newStudent.financialResponsible = fin;
+                if (em1.name) newStudent.emergencyContacts.push(em1);
+                if (em2.name) newStudent.emergencyContacts.push(em2);
 
                 if (newStudent.name && newStudent.name.length > 2) {
                     students.push(newStudent);
