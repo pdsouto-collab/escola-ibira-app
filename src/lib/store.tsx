@@ -111,12 +111,41 @@ const initialProjects: Project[] = [
         id: "p1",
         title: "Horta Comunitária",
         description: "Projeto de cultivo de hortaliças com as crianças do Jardim II.",
+        guidingQuestion: "Como as plantas nascem e crescem do feijão à nossa mesa?",
         status: "active",
         startDate: "2024-02-01",
         students: ["1", "3", "5"],
         tags: ["Natureza", "Alimentação Saudável"],
         bnccSkillIds: ["EF02CI04", "EF03CI07", "EF01GE01"],
-        contentIds: []
+        contentIds: [],
+        imageUrl: "https://images.unsplash.com/photo-1592424001844-04149e8eb3f3?auto=format&fit=crop&q=80&w=600&h=300"
+    },
+    {
+        id: "p2",
+        title: "Música do Nosso Corpo",
+        description: "Exploração de sons e ritmos utilizando o próprio corpo como instrumento.",
+        guidingQuestion: "Quantos sons diferentes o nosso corpo consegue fazer?",
+        status: "planning",
+        startDate: "2024-04-10",
+        students: ["2", "4"],
+        tags: ["Artes", "Música", "Corpo e Movimento"],
+        bnccSkillIds: ["EF03CI01"],
+        contentIds: [],
+        imageUrl: "https://images.unsplash.com/photo-1549420042-79fc7341fc7a?auto=format&fit=crop&q=80&w=600&h=300"
+    },
+    {
+        id: "p3",
+        title: "Pequenos Construtores",
+        description: "Construção de maquetes e circuitos para desenvolver noções espaciais e motoras.",
+        guidingQuestion: "Como construir uma cidade onde todos os brinquedos possam morar juntos?",
+        status: "completed",
+        startDate: "2023-10-01",
+        endDate: "2023-12-15",
+        students: ["1", "2", "3", "4", "5", "6"],
+        tags: ["Geometria", "Socialização", "Matemática"],
+        bnccSkillIds: ["EF01MA01", "EF03MA13"],
+        contentIds: [],
+        imageUrl: "https://images.unsplash.com/photo-1512314889357-e157c22f938d?auto=format&fit=crop&q=80&w=600&h=300"
     }
 ];
 

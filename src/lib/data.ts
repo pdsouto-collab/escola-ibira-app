@@ -720,11 +720,14 @@ export interface Project {
     description: string;
     status: "planning" | "active" | "completed";
     startDate: string;
+    endDate?: string;
     students: string[]; // IDs
     classes?: string[]; // IDs of SchoolClass
     tags: string[];
     bnccSkillIds?: string[]; // IDs of BNCC Skills
     contentIds?: string[]; // IDs of Custom Content
+    guidingQuestion?: string; // e.g. "Como podemos cuidar da natureza?"
+    imageUrl?: string; // Banner image url for the project card
 }
 
 export interface ChatMessage {
