@@ -128,9 +128,11 @@ export function BulkRoutineDialog({ open, onOpenChange, classes, initialConfig, 
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>Criar Rotina em Massa</DialogTitle>
+                    <DialogTitle>{initialConfig ? "Editar Rotina" : "Criar Rotina em Massa"}</DialogTitle>
                     <DialogDescription>
-                        Crie itens recorrentes para vários dias de uma vez.
+                        {initialConfig
+                            ? "Edite os detalhes da rotina. Isso recriará os itens para o período selecionado."
+                            : "Crie itens recorrentes para vários dias de uma vez."}
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit}>
@@ -263,7 +265,7 @@ export function BulkRoutineDialog({ open, onOpenChange, classes, initialConfig, 
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button type="submit">Gerar Rotina</Button>
+                        <Button type="submit">{initialConfig ? "Salvar Alterações" : "Gerar Rotina"}</Button>
                     </DialogFooter>
                 </form>
             </DialogContent>
