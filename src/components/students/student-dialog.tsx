@@ -166,55 +166,104 @@ export function StudentDialog({ open, onOpenChange, student, onSave }: StudentDi
                 let em1: Partial<EmergencyContact> = {};
                 let em2: Partial<EmergencyContact> = {};
 
-                // State machine for sections
-                let section = 'student'; // student, resp1, resp2, financial, health, emergency1, emergency2, hospital
+                const getValue = (idx: number) => (row[idx] || "").trim();
 
-                headers.forEach((h, index) => {
-                    if (index >= row.length) return;
-                    const value = row[index].trim();
-                    // if (!value) return; // Don't skip empty values, position matches rely on index flow
-
-                    // --- SECTION DETECTION ---
-                    if (h.includes('responsavel 1')) section = 'resp1';
-                    else if (h.includes('responsavel 2')) section = 'resp2';
-                    else if (section === 'resp2' && h === 'nome:') section = 'financial'; // "Nome:" appearing after resp2 is financial
-                    else if (h.includes('saude cronico') || h.includes('doenca')) section = 'health';
-                    else if (h.includes('emergencia') && h.includes('contato 1')) section = 'emergency1';
-                    else if (h.includes('emergencia') && h.includes('contato 2')) section = 'emergency2';
-                    else if (h.includes('removido para qual hospital') || h.includes('endereco do hospital')) section = 'hospital';
-
-                    // --- FIELD MAPPING ---
-
-                    // 1. STUDENT
-                    if (section === 'student') {
-                        if (h === 'nome:') newStudent.name = value;
-                        else if (h.includes('nascimento')) {
-                            // Format DD/MM/YYYY to YYYY-MM-DD
-                            if (value.includes('/')) {
-                                const [d, m, y] = value.split('/');
-                                newStudent.dateOfBirth = `${y}-${m}-${d}`;
-                            } else {
-                                newStudent.dateOfBirth = value;
-                            }
-                        }
-                        else if (h.includes('turma') || h.includes('etapa')) {
-                            // Fuzzy match class name
-                            const matchedClass = classes.find(c =>
-                                value.toLowerCase().includes(c.name.toLowerCase()) ||
-                                c.name.toLowerCase().includes(value.toLowerCase())
-                            );
-                            if (matchedClass) {
-                                newStudent.classId = matchedClass.id;
-                            }
-                            newStudent.classNameRaw = value;
-                        }
-                        else if (h.includes('documento') || h.includes('cpf') || h.includes('rg')) {
-                            newStudent.document = value;
-                        }
+                // 1. STUDENT
+                newStudent.name = getValue(1);
+                const dob = getValue(2);
+                if (dob) {
+                    if (dob.includes('/')) {
+                        const [d, m, y] = dob.split('/');
+                        newStudent.dateOfBirth = `${y}-${m}-${d}`;
+                    } else {
+                        newStudent.dateOfBirth = dob;
                     }
+                }
+                newStudent.document = getValue(3);
 
+                const className = getValue(4);
+                if (className) {
+                    const matchedClass = classes.find(c =>
+                        className.toLowerCase().includes(c.name.toLowerCase()) ||
+                        c.name.toLowerCase().includes(className.toLowerCase())
+                    );
+                    if (matchedClass) {
+                        newStudent.classId = matchedClass.id;
+                    }
+                    newStudent.classNameRaw = className;
+                }
+                newStudent.period = getValue(5).toLowerCase().includes('matutino') ? 'matutino' : 'integral';
 
-                });
+                // 2. GUARDIAN 1
+                const g1Name = getValue(6);
+                if (g1Name) {
+                    g1.name = g1Name;
+                    g1.cpf = getValue(7);
+                    g1.kinship = getValue(8) || "Responsável";
+                    g1.phone = getValue(9);
+                    g1.address = getValue(10);
+                    g1.email = getValue(11);
+                }
+
+                // 3. GUARDIAN 2
+                const g2Name = getValue(12);
+                if (g2Name) {
+                    g2.name = g2Name;
+                    g2.cpf = getValue(13);
+                    g2.kinship = getValue(14) || "Responsável";
+                    g2.phone = getValue(15);
+                    g2.address = getValue(16);
+                    g2.email = getValue(17);
+                }
+
+                // 4. FINANCIAL
+                const finName = getValue(18);
+                if (finName) {
+                    fin.name = finName;
+                    fin.phone = getValue(19);
+                    fin.cpf = getValue(20);
+                    fin.address = getValue(21);
+                    fin.email = getValue(22);
+                }
+
+                // 5. HEALTH
+                newStudent.health.hasChronicIssue = getValue(23).toLowerCase().includes('sim');
+                newStudent.health.chronicIssueDetail = getValue(24);
+
+                newStudent.health.hasAllergy = getValue(25).toLowerCase().includes('sim');
+                newStudent.health.allergyDetail = getValue(26);
+
+                newStudent.health.hasDietaryRestriction = getValue(27).toLowerCase().includes('sim');
+                newStudent.health.dietaryRestrictionDetail = getValue(28);
+
+                newStudent.health.emergencyAction = getValue(29);
+                newStudent.health.feverProcedure = getValue(30);
+                newStudent.health.pediatricianName = getValue(31);
+                newStudent.health.pediatricianPhone = getValue(32);
+
+                newStudent.health.hasHealthInsurance = getValue(33).toLowerCase().includes('sim');
+                newStudent.health.healthInsuranceDetail = getValue(34);
+                newStudent.health.otherInfo = getValue(35);
+
+                // 6. EMERGENCY 1
+                const em1Name = getValue(36);
+                if (em1Name) {
+                    em1.name = em1Name;
+                    em1.kinship = getValue(37);
+                    em1.phone = getValue(38);
+                }
+
+                // 7. EMERGENCY 2
+                const em2Name = getValue(39);
+                if (em2Name) {
+                    em2.name = em2Name;
+                    em2.kinship = getValue(40);
+                    em2.phone = getValue(41);
+                }
+
+                // 8. HOSPITAL
+                newStudent.hospitalPreference = getValue(42);
+                newStudent.hospitalAddress = getValue(43);
 
                 // Post-processing
                 if (g1.name) newStudent.guardians.push(g1);
