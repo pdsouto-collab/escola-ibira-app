@@ -21,6 +21,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { SchoolClass } from "@/lib/data";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -59,6 +61,7 @@ export function StudentDialog({ open, onOpenChange, student, onSave }: StudentDi
     const [file, setFile] = useState<File | null>(null);
     const [parsedStudents, setParsedStudents] = useState<Partial<Student>[]>([]);
     const [previewOpen, setPreviewOpen] = useState(false);
+    const [selectedIndices, setSelectedIndices] = useState<Set<number>>(new Set());
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -69,6 +72,7 @@ export function StudentDialog({ open, onOpenChange, student, onSave }: StudentDi
         }
         setFile(null);
         setParsedStudents([]);
+        setSelectedIndices(new Set());
         setPreviewOpen(false);
     }, [student, open]);
 
@@ -184,26 +188,49 @@ export function StudentDialog({ open, onOpenChange, student, onSave }: StudentDi
 
                 if (newStudent.name) students.push(newStudent);
             }
+
             setParsedStudents(students);
+            // Select all valid students by default
+            const validIndices = students.map((_, i) => i).filter(i => students[i].name && students[i].classId);
+            setSelectedIndices(new Set(validIndices));
             setPreviewOpen(true);
         };
         reader.readAsText(file);
     };
 
+    const toggleSelection = (index: number) => {
+        const newSelected = new Set(selectedIndices);
+        if (newSelected.has(index)) {
+            newSelected.delete(index);
+        } else {
+            newSelected.add(index);
+        }
+        setSelectedIndices(newSelected);
+    };
+
+    const toggleAll = () => {
+        if (selectedIndices.size === parsedStudents.length) {
+            setSelectedIndices(new Set());
+        } else {
+            setSelectedIndices(new Set(parsedStudents.map((_, i) => i)));
+        }
+    };
+
     const handleConfirmImport = () => {
-        const validStudents = parsedStudents.filter(s => s.name && s.classId) as Student[];
-        if (validStudents.length === 0) {
-            alert("Nenhum aluno válido encontrado.");
+        const studentsToImport = parsedStudents.filter((_, i) => selectedIndices.has(i)) as Student[];
+
+        if (studentsToImport.length === 0) {
+            alert("Nenhum aluno selecionado.");
             return;
         }
-        // Bulk add directly via store hook (prop drilling simple addStudent for now)
-        validStudents.forEach(s => addStudent(s)); // Using the hook from props or store? 
-        // We need to use 'addStudent' from store, which we have.
+
+        studentsToImport.forEach(s => addStudent(s));
 
         onOpenChange(false);
         setFile(null);
         setParsedStudents([]);
-        alert(`${validStudents.length} alunos importados!`);
+        setSelectedIndices(new Set());
+        alert(`${studentsToImport.length} alunos importados!`);
     };
 
 
@@ -442,6 +469,12 @@ export function StudentDialog({ open, onOpenChange, student, onSave }: StudentDi
                                         <Table>
                                             <TableHeader>
                                                 <TableRow>
+                                                    <TableHead className="w-[50px]">
+                                                        <Checkbox
+                                                            checked={parsedStudents.length > 0 && selectedIndices.size === parsedStudents.length}
+                                                            onCheckedChange={toggleAll}
+                                                        />
+                                                    </TableHead>
                                                     <TableHead>Nome</TableHead>
                                                     <TableHead>Turma Detectada</TableHead>
                                                     <TableHead>Status</TableHead>
@@ -449,7 +482,13 @@ export function StudentDialog({ open, onOpenChange, student, onSave }: StudentDi
                                             </TableHeader>
                                             <TableBody>
                                                 {parsedStudents.map((student, i) => (
-                                                    <TableRow key={i}>
+                                                    <TableRow key={i} className={selectedIndices.has(i) ? "bg-slate-50" : ""}>
+                                                        <TableCell>
+                                                            <Checkbox
+                                                                checked={selectedIndices.has(i)}
+                                                                onCheckedChange={() => toggleSelection(i)}
+                                                            />
+                                                        </TableCell>
                                                         <TableCell className="font-medium">{student.name}</TableCell>
                                                         <TableCell>
                                                             {student.classId ? (
@@ -478,8 +517,8 @@ export function StudentDialog({ open, onOpenChange, student, onSave }: StudentDi
                                         </Table>
                                     </ScrollArea>
                                 </div>
-                                <Button onClick={handleConfirmImport} disabled={parsedStudents.length === 0} className="w-full">
-                                    Confirmar Importação de {parsedStudents.length} Alunos
+                                <Button onClick={handleConfirmImport} disabled={selectedIndices.size === 0} className="w-full">
+                                    Confirmar Importação de {selectedIndices.size} Alunos
                                 </Button>
                             </div>
                         )}
