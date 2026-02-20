@@ -7,6 +7,13 @@ import { Input } from "../ui/input";
 import { Badge } from "../ui/badge";
 import { Switch } from "../ui/switch";
 import { cn } from "@/lib/utils";
+import { BookOpen, Layers } from "lucide-react";
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface LibrarySelectorProps {
     selectedIds?: string[];
@@ -55,6 +62,19 @@ export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all"
     const skills = filteredItems.filter(i => i.type === "skill");
     const contents = filteredItems.filter(i => i.type === "content");
 
+    // Helper function to group items
+    const groupItems = (items: any[]) => {
+        const grouped = items.reduce((acc, item) => {
+            if (!acc[item.subGroup]) acc[item.subGroup] = [];
+            acc[item.subGroup].push(item);
+            return acc;
+        }, {} as Record<string, any[]>);
+        return { grouped, sortedKeys: Object.keys(grouped).sort() };
+    };
+
+    const { grouped: groupedSkills, sortedKeys: sortedSkillKeys } = groupItems(skills);
+    const { grouped: groupedContents, sortedKeys: sortedContentKeys } = groupItems(contents);
+
     return (
         <div className="w-full space-y-6">
             {/* Header Content */}
@@ -94,20 +114,50 @@ export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all"
                         <h3 className="font-semibold text-sm text-slate-500 uppercase tracking-wider sticky top-0 bg-white/90 backdrop-blur pb-2 z-10">
                             Habilidades ({skills.length})
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            {skills.map(item => <LibraryItemCard key={item.id} item={item} isSelected={currentSelection.includes(item.id)} onClick={() => toggleItem(item.id)} />)}
-                        </div>
+                        <Accordion type="multiple" className="w-full space-y-3" defaultValue={sortedSkillKeys}>
+                            {sortedSkillKeys.map(group => (
+                                <AccordionItem key={`skill-${group}`} value={group} className="border bg-white rounded-xl overflow-hidden data-[state=open]:shadow-sm">
+                                    <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-slate-50 transition-colors">
+                                        <div className="flex items-center gap-2">
+                                            <BookOpen className="w-4 h-4 text-primary" />
+                                            <span className="font-bold text-slate-800">{group}</span>
+                                            <span className="text-xs font-normal text-slate-500 ml-2">({groupedSkills[group].length})</span>
+                                        </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent className="px-4 pb-4 pt-1">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            {groupedSkills[group].map((item: any) => <LibraryItemCard key={item.id} item={item} isSelected={currentSelection.includes(item.id)} onClick={() => toggleItem(item.id)} />)}
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            ))}
+                        </Accordion>
                     </div>
                 )}
 
                 {contents.length > 0 && (
-                    <div className="space-y-3">
+                    <div className="space-y-3 pt-4">
                         <h3 className="font-semibold text-sm text-slate-500 uppercase tracking-wider sticky top-0 bg-white/90 backdrop-blur pb-2 z-10">
                             Conteúdos Específicos ({contents.length})
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            {contents.map(item => <LibraryItemCard key={item.id} item={item} isSelected={currentSelection.includes(item.id)} onClick={() => toggleItem(item.id)} />)}
-                        </div>
+                        <Accordion type="multiple" className="w-full space-y-3" defaultValue={sortedContentKeys}>
+                            {sortedContentKeys.map(group => (
+                                <AccordionItem key={`content-${group}`} value={group} className="border bg-white rounded-xl overflow-hidden data-[state=open]:shadow-sm">
+                                    <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-slate-50 transition-colors">
+                                        <div className="flex items-center gap-2">
+                                            <Layers className="w-4 h-4 text-primary" />
+                                            <span className="font-bold text-slate-800">{group}</span>
+                                            <span className="text-xs font-normal text-slate-500 ml-2">({groupedContents[group].length})</span>
+                                        </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent className="px-4 pb-4 pt-1">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            {groupedContents[group].map((item: any) => <LibraryItemCard key={item.id} item={item} isSelected={currentSelection.includes(item.id)} onClick={() => toggleItem(item.id)} />)}
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            ))}
+                        </Accordion>
                     </div>
                 )}
 

@@ -8,7 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Plus, Filter, BookOpen, Layers, Trash2, Edit } from "lucide-react";
+import { Search, Plus, Filter, BookOpen, Layers, Trash2, Edit, ChevronDown } from "lucide-react";
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion";
 import {
     Dialog,
     DialogContent,
@@ -39,7 +45,12 @@ export default function BibliotecaPage() {
         type: "skill" as "skill" | "content",
         name: "",
         description: "",
+        subGroup: "",
+        isCustomGroup: false
     });
+
+    // Get unique existing groups for the active tab (to populate the combobox)
+    const existingGroups = Array.from(new Set(libraryItems.filter(i => i.type === activeTab).map(i => i.subGroup))).sort();
 
     const handleOpenDialog = (item?: LibraryItem) => {
         if (item) {
@@ -47,27 +58,32 @@ export default function BibliotecaPage() {
             setFormData({
                 type: item.type,
                 name: item.name,
-                description: item.description
+                description: item.description,
+                subGroup: item.subGroup,
+                isCustomGroup: false
             });
         } else {
             setEditingItem(null);
             setFormData({
                 type: activeTab,
                 name: "",
-                description: ""
+                description: "",
+                subGroup: existingGroups[0] || "",
+                isCustomGroup: false
             });
         }
         setIsDialogOpen(true);
     };
 
     const handleSave = () => {
-        if (!formData.name.trim() || !formData.description.trim()) return;
+        if (!formData.name.trim() || !formData.description.trim() || !formData.subGroup.trim()) return;
 
         if (editingItem) {
             updateLibraryItem(editingItem.id, {
                 type: formData.type,
                 name: formData.name,
-                description: formData.description
+                description: formData.description,
+                subGroup: formData.subGroup
             });
         } else {
             addLibraryItem({
@@ -75,6 +91,7 @@ export default function BibliotecaPage() {
                 type: formData.type,
                 name: formData.name,
                 description: formData.description,
+                subGroup: formData.subGroup,
                 isBNCC: false // Custom items are never BNCC
             });
         }
@@ -97,10 +114,23 @@ export default function BibliotecaPage() {
         const query = searchQuery.toLowerCase();
         const matchesSearch = item.name.toLowerCase().includes(query) ||
             item.description.toLowerCase().includes(query) ||
+            item.subGroup.toLowerCase().includes(query) ||
             (item.code && item.code.toLowerCase().includes(query));
 
         return matchesTab && matchesSearch;
     });
+
+    // Group items by subGroup
+    const groupedItems = filteredItems.reduce((acc, item) => {
+        if (!acc[item.subGroup]) {
+            acc[item.subGroup] = [];
+        }
+        acc[item.subGroup].push(item);
+        return acc;
+    }, {} as Record<string, LibraryItem[]>);
+
+    // Sort groups alphabetically
+    const sortedGroups = Object.keys(groupedItems).sort();
 
     return (
         <div className="max-w-6xl mx-auto pb-12">
@@ -149,60 +179,79 @@ export default function BibliotecaPage() {
                     </TabsList>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {filteredItems.map(item => (
-                        <div key={item.id} className="bg-white border text-left p-5 rounded-xl hover:shadow-md transition-shadow relative group flex flex-col h-full">
-                            <div className="flex justify-between items-start mb-3">
-                                {item.isBNCC ? (
-                                    <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200 uppercase text-[10px] tracking-wider">
-                                        Oficial BNCC
-                                    </Badge>
-                                ) : (
-                                    <Badge variant="secondary" className="bg-purple-50 text-purple-700 border-purple-200 uppercase text-[10px] tracking-wider">
-                                        Personalizado
-                                    </Badge>
-                                )}
-
-                                {!item.isBNCC && (
-                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-primary" onClick={(e) => { e.stopPropagation(); handleOpenDialog(item); }}>
-                                            <Edit className="w-3.5 h-3.5" />
-                                        </Button>
-                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-red-600 hover:bg-red-50" onClick={(e) => { e.stopPropagation(); handleDelete(item.id, item.isBNCC); }}>
-                                            <Trash2 className="w-3.5 h-3.5" />
-                                        </Button>
+                <Accordion type="multiple" className="w-full space-y-4" defaultValue={sortedGroups}>
+                    {sortedGroups.map(group => (
+                        <AccordionItem key={group} value={group} className="border bg-white rounded-xl overflow-hidden data-[state=open]:shadow-sm">
+                            <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-slate-50 transition-colors">
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-primary/10 text-primary p-2 rounded-lg">
+                                        {activeTab === 'skill' ? <BookOpen className="w-5 h-5" /> : <Layers className="w-5 h-5" />}
                                     </div>
-                                )}
-                            </div>
-
-                            <div className="flex-1">
-                                {item.code && (
-                                    <div className="text-xs font-mono font-bold text-slate-400 mb-1">
-                                        {item.code}
+                                    <div className="flex flex-col items-start">
+                                        <h3 className="text-lg font-bold text-slate-800">{group}</h3>
+                                        <span className="text-sm font-normal text-slate-500">{groupedItems[group].length} {groupedItems[group].length === 1 ? 'item' : 'itens'}</span>
                                     </div>
-                                )}
-                                <h3 className="text-base font-bold text-slate-800 leading-tight mb-2">
-                                    {item.name}
-                                </h3>
-                                <p className="text-sm text-slate-600 line-clamp-4">
-                                    {item.description}
-                                </p>
-                            </div>
-                        </div>
+                                </div>
+                            </AccordionTrigger>
+                            <AccordionContent className="px-6 pb-6 pt-2">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {groupedItems[group].map(item => (
+                                        <div key={item.id} className="bg-slate-50 border border-slate-200 text-left p-5 rounded-xl hover:border-slate-300 transition-colors relative group flex flex-col h-full">
+                                            <div className="flex justify-between items-start mb-3">
+                                                {item.isBNCC ? (
+                                                    <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200 uppercase text-[10px] tracking-wider">
+                                                        Oficial BNCC
+                                                    </Badge>
+                                                ) : (
+                                                    <Badge variant="secondary" className="bg-purple-100 text-purple-700 border-purple-200 uppercase text-[10px] tracking-wider">
+                                                        Personalizado
+                                                    </Badge>
+                                                )}
+
+                                                {!item.isBNCC && (
+                                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-primary" onClick={(e) => { e.stopPropagation(); handleOpenDialog(item); }}>
+                                                            <Edit className="w-3.5 h-3.5" />
+                                                        </Button>
+                                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-red-600 hover:bg-red-50" onClick={(e) => { e.stopPropagation(); handleDelete(item.id, item.isBNCC); }}>
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="flex-1">
+                                                {item.code && (
+                                                    <div className="text-xs font-mono font-bold text-slate-400 mb-1">
+                                                        {item.code}
+                                                    </div>
+                                                )}
+                                                <h3 className="text-base font-bold text-slate-800 leading-tight mb-2">
+                                                    {item.name}
+                                                </h3>
+                                                <p className="text-sm text-slate-600 line-clamp-4">
+                                                    {item.description}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </AccordionContent>
+                        </AccordionItem>
                     ))}
-                    {filteredItems.length === 0 && (
-                        <div className="col-span-full text-center py-20 bg-slate-50 border border-dashed border-slate-200 rounded-2xl">
-                            <p className="text-slate-500 font-medium">Nenhum item encontrado nesta categoria.</p>
-                            <Button
-                                variant="link"
-                                onClick={() => setSearchQuery("")}
-                                className="mt-2 text-primary"
-                            >
-                                Limpar busca
-                            </Button>
-                        </div>
-                    )}
-                </div>
+                </Accordion>
+                {filteredItems.length === 0 && (
+                    <div className="col-span-full text-center py-20 bg-slate-50 border border-dashed border-slate-200 rounded-2xl">
+                        <p className="text-slate-500 font-medium">Nenhum item encontrado nesta categoria.</p>
+                        <Button
+                            variant="link"
+                            onClick={() => setSearchQuery("")}
+                            className="mt-2 text-primary"
+                        >
+                            Limpar busca
+                        </Button>
+                    </div>
+                )}
             </Tabs>
 
             {/* Custom Create/Edit Dialog */}
@@ -251,12 +300,12 @@ export default function BibliotecaPage() {
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
-                        <Button onClick={handleSave} disabled={!formData.name.trim() || !formData.description.trim()}>
+                        <Button onClick={handleSave} disabled={!formData.name.trim() || !formData.description.trim() || !formData.subGroup.trim()}>
                             Gravar
                         </Button>
                     </DialogFooter>
                 </DialogContent>
-            </Dialog>
-        </div>
+            </Dialog >
+        </div >
     );
 }
