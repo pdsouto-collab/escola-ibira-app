@@ -138,7 +138,7 @@ export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all"
                 {contents.length > 0 && (
                     <div className="space-y-3 pt-4">
                         <h3 className="font-semibold text-sm text-slate-500 uppercase tracking-wider sticky top-0 bg-white/90 backdrop-blur pb-2 z-10">
-                            Conteúdos Específicos ({contents.length})
+                            Conteúdos ({contents.length})
                         </h3>
                         <Accordion type="multiple" className="w-full space-y-3" defaultValue={sortedContentKeys}>
                             {sortedContentKeys.map(group => (

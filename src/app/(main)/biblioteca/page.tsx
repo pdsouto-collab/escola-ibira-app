@@ -191,14 +191,14 @@ export default function BibliotecaPage() {
                             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-2 py-3 text-base font-medium text-slate-500 data-[state=active]:text-primary transition-all flex items-center gap-2"
                         >
                             <BookOpen className="w-4 h-4" />
-                            Habilidades (BNCC e Escola)
+                            Habilidades
                         </TabsTrigger>
                         <TabsTrigger
                             value="content"
                             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-2 py-3 text-base font-medium text-slate-500 data-[state=active]:text-primary transition-all flex items-center gap-2"
                         >
                             <Layers className="w-4 h-4" />
-                            Conteúdos Específicos
+                            Conteúdos
                         </TabsTrigger>
                     </TabsList>
                 </div>
@@ -298,8 +298,8 @@ export default function BibliotecaPage() {
                                     <SelectValue placeholder="Selecione o tipo" />
                                 </SelectTrigger>
                                 <SelectContent className="z-[9999]">
-                                    <SelectItem value="skill">Habilidade</SelectItem>
-                                    <SelectItem value="content">Conteúdo Específico</SelectItem>
+                                    <SelectItem value="skill">Habilidades</SelectItem>
+                                    <SelectItem value="content">Conteúdos</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
