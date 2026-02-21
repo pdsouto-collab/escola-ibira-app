@@ -128,10 +128,10 @@ function NewProjectWizardContent() {
     };
 
     const steps = [
-        { id: 1, label: "Project Details" },
-        { id: 2, label: "Participants" },
-        { id: 3, label: "Standards" },
-        { id: 4, label: "Lessons planning" }
+        { id: 1, label: "Detalhes do Projeto" },
+        { id: 2, label: "Participantes" },
+        { id: 3, label: "Competências" },
+        { id: 4, label: "Planejamento" }
     ];
 
     const toggleSkill = (id: string, isSkill: boolean) => {
@@ -182,12 +182,12 @@ function NewProjectWizardContent() {
                     {/* STEP 1 */}
                     {currentStep === 1 && (
                         <div className="animate-in fade-in duration-300">
-                            <h2 className="text-2xl font-bold text-slate-800 mb-2">Project Details</h2>
-                            <p className="text-slate-500 mb-8">Start by giving your project a name and defining its core elements.</p>
+                            <h2 className="text-2xl font-bold text-slate-800 mb-2">Detalhes do Projeto</h2>
+                            <p className="text-slate-500 mb-8">Comece dando um nome ao seu projeto e definindo seus elementos principais.</p>
 
                             <div className="space-y-8">
                                 <div>
-                                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Project Mode</label>
+                                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Modo do Projeto</label>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <button
                                             type="button"
@@ -198,8 +198,8 @@ function NewProjectWizardContent() {
                                                 {formData.isTemplate === "start_immediately" && <div className="w-2.5 h-2.5 rounded-full bg-indigo-600" />}
                                             </div>
                                             <div>
-                                                <p className="font-bold text-slate-800 text-base mb-1">Start project immediately</p>
-                                                <p className="text-sm text-slate-500">Choose this to add participants and start right away.</p>
+                                                <p className="font-bold text-slate-800 text-base mb-1">Iniciar projeto imediatamente</p>
+                                                <p className="text-sm text-slate-500">Escolha esta opção para adicionar participantes e começar agora.</p>
                                             </div>
                                         </button>
 
@@ -212,8 +212,8 @@ function NewProjectWizardContent() {
                                                 {formData.isTemplate === "create_template" && <div className="w-2.5 h-2.5 rounded-full bg-indigo-600" />}
                                             </div>
                                             <div>
-                                                <p className="font-bold text-slate-800 text-base mb-1">Create a template for later</p>
-                                                <p className="text-sm text-slate-500">Save this setup to reuse later without assigning students yet.</p>
+                                                <p className="font-bold text-slate-800 text-base mb-1">Criar um modelo para depois</p>
+                                                <p className="text-sm text-slate-500">Salve essa configuração para reutilizar depois.</p>
                                             </div>
                                         </button>
                                     </div>
@@ -221,47 +221,47 @@ function NewProjectWizardContent() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div>
-                                        <Label className="font-semibold text-slate-700">Project Title *</Label>
+                                        <Label className="font-semibold text-slate-700">Título do Projeto *</Label>
                                         <Input className="mt-2" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} />
                                     </div>
                                     <div>
-                                        <Label className="font-semibold text-slate-700">Type *</Label>
+                                        <Label className="font-semibold text-slate-700">Tipo *</Label>
                                         <Select value={formData.type} onValueChange={v => setFormData({ ...formData, type: v })}>
                                             <SelectTrigger className="mt-2 text-slate-700"><SelectValue /></SelectTrigger>
-                                            <SelectContent><SelectItem value="Project">Project</SelectItem><SelectItem value="Workshop">Workshop</SelectItem></SelectContent>
+                                            <SelectContent><SelectItem value="Project">Projeto</SelectItem><SelectItem value="Workshop">Oficina</SelectItem></SelectContent>
                                         </Select>
                                     </div>
                                 </div>
 
                                 <div>
-                                    <Label className="font-semibold text-slate-700">Guiding Question</Label>
-                                    <Textarea className="mt-2 min-h-20" value={formData.guidingQuestion} onChange={e => setFormData({ ...formData, guidingQuestion: e.target.value })} placeholder="What drives this project?" />
+                                    <Label className="font-semibold text-slate-700">Pergunta Norteadora</Label>
+                                    <Textarea className="mt-2 min-h-20" value={formData.guidingQuestion} onChange={e => setFormData({ ...formData, guidingQuestion: e.target.value })} placeholder="Qual é o tema principal deste projeto?" />
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div>
-                                        <Label className="font-semibold text-slate-700">Summary</Label>
+                                        <Label className="font-semibold text-slate-700">Resumo</Label>
                                         <Textarea className="mt-2 min-h-24" value={formData.summary} onChange={e => setFormData({ ...formData, summary: e.target.value })} />
                                     </div>
                                     <div>
-                                        <Label className="font-semibold text-slate-700">Objectives</Label>
+                                        <Label className="font-semibold text-slate-700">Objetivos</Label>
                                         <Textarea className="mt-2 min-h-24" value={formData.objectives} onChange={e => setFormData({ ...formData, objectives: e.target.value })} />
                                     </div>
                                 </div>
                                 <div>
-                                    <Label className="font-semibold text-slate-700">Final Product</Label>
+                                    <Label className="font-semibold text-slate-700">Produto Final</Label>
                                     <Select value={formData.finalProduct} onValueChange={v => setFormData({ ...formData, finalProduct: v })}>
                                         <SelectTrigger className="mt-2 text-slate-700"><SelectValue /></SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="None">None</SelectItem>
-                                            <SelectItem value="Arts and Crafts">Arts and Crafts</SelectItem>
-                                            <SelectItem value="Document">Document</SelectItem>
+                                            <SelectItem value="None">Nenhum</SelectItem>
+                                            <SelectItem value="Arts and Crafts">Artes e Ofícios</SelectItem>
+                                            <SelectItem value="Document">Documento</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
                             </div>
 
                             <div className="flex justify-end pt-8 mt-8 border-t">
-                                <Button onClick={() => setCurrentStep(2)} disabled={!formData.title}>Continue</Button>
+                                <Button onClick={() => setCurrentStep(2)} disabled={!formData.title}>Continuar</Button>
                             </div>
                         </div>
                     )}
@@ -269,15 +269,15 @@ function NewProjectWizardContent() {
                     {/* STEP 2 */}
                     {currentStep === 2 && (
                         <div className="animate-in fade-in duration-300">
-                            <h2 className="text-2xl font-bold text-slate-800 mb-2">Participants</h2>
-                            <p className="text-slate-500 mb-8">Select which students and teachers will be part of this project.</p>
+                            <h2 className="text-2xl font-bold text-slate-800 mb-2">Participantes</h2>
+                            <p className="text-slate-500 mb-8">Selecione quais alunos farão parte deste projeto.</p>
 
                             <div className="space-y-6">
                                 <div className="flex items-center justify-between border-b pb-4">
-                                    <h3 className="font-bold text-lg">Students</h3>
+                                    <h3 className="font-bold text-lg">Alunos</h3>
                                     <div className="flex gap-4">
-                                        <Select><SelectTrigger className="w-32"><SelectValue placeholder="Term" /></SelectTrigger><SelectContent><SelectItem value="2025">2025</SelectItem></SelectContent></Select>
-                                        <Select><SelectTrigger className="w-40"><SelectValue placeholder="Group" /></SelectTrigger><SelectContent><SelectItem value="all">All Groups</SelectItem></SelectContent></Select>
+                                        <Select><SelectTrigger className="w-32"><SelectValue placeholder="Ano" /></SelectTrigger><SelectContent><SelectItem value="2025">2025</SelectItem></SelectContent></Select>
+                                        <Select><SelectTrigger className="w-40"><SelectValue placeholder="Turma" /></SelectTrigger><SelectContent><SelectItem value="all">Todas as Turmas</SelectItem></SelectContent></Select>
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -301,8 +301,8 @@ function NewProjectWizardContent() {
                             </div>
 
                             <div className="flex justify-between pt-8 mt-8 border-t">
-                                <Button variant="outline" onClick={() => setCurrentStep(1)}>Back</Button>
-                                <Button onClick={() => setCurrentStep(3)}>Continue</Button>
+                                <Button variant="outline" onClick={() => setCurrentStep(1)}>Voltar</Button>
+                                <Button onClick={() => setCurrentStep(3)}>Continuar</Button>
                             </div>
                         </div>
                     )}
@@ -312,8 +312,8 @@ function NewProjectWizardContent() {
                         <div className="flex h-full min-h-[600px] animate-in fade-in duration-300">
                             {/* Main Selection Area */}
                             <div className="flex-1 p-8">
-                                <h2 className="text-2xl font-bold text-slate-800 mb-2">Skills & Standards</h2>
-                                <p className="text-slate-500 mb-8">Click on a subject to expand and associate skills to the project.</p>
+                                <h2 className="text-2xl font-bold text-slate-800 mb-2">Competências e Habilidades</h2>
+                                <p className="text-slate-500 mb-8">Clique em uma disciplina para expandir e associar habilidades ao projeto.</p>
 
                                 <Accordion type="multiple" className="space-y-4">
                                     {subjects.map(subject => {
@@ -324,7 +324,7 @@ function NewProjectWizardContent() {
                                                 <AccordionTrigger className="hover:no-underline py-4">
                                                     <div className="flex items-center justify-between w-full pr-4">
                                                         <span className="font-bold text-lg text-slate-800">{subject}</span>
-                                                        {selectedCount > 0 && <Badge className="bg-indigo-100 text-indigo-700">{selectedCount} selected</Badge>}
+                                                        {selectedCount > 0 && <Badge className="bg-indigo-100 text-indigo-700">{selectedCount} selecionados</Badge>}
                                                     </div>
                                                 </AccordionTrigger>
                                                 <AccordionContent className="pt-2 pb-4">
@@ -335,7 +335,7 @@ function NewProjectWizardContent() {
                                                             return (
                                                                 <div key={item.id} onClick={() => toggleSkill(item.id, isBncc || false)} className={cn("border-2 rounded-xl p-4 cursor-pointer transition-all relative overflow-hidden", isSelected ? "border-indigo-600 shadow-sm" : "border-slate-200 hover:border-indigo-300")}>
                                                                     <div className="flex justify-between items-start mb-2">
-                                                                        <Badge variant="outline" className={cn("text-xs font-bold", isBncc ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-sky-50 text-sky-700 border-sky-200")}>{isBncc ? "BNCC" : "Custom"}</Badge>
+                                                                        <Badge variant="outline" className={cn("text-xs font-bold", isBncc ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-sky-50 text-sky-700 border-sky-200")}>{isBncc ? "BNCC" : "Personalizado"}</Badge>
                                                                         <div className={cn("w-5 h-5 rounded-full border flex items-center justify-center", isSelected ? "bg-indigo-600 border-indigo-600" : "border-slate-300")}>
                                                                             {isSelected && <Check className="w-3 h-3 text-white" />}
                                                                         </div>
@@ -355,10 +355,10 @@ function NewProjectWizardContent() {
 
                             {/* Sidebar Summary */}
                             <div className="w-[320px] bg-slate-50 border-l p-6 flex flex-col h-full rounded-r-2xl">
-                                <h3 className="font-bold text-lg text-slate-800 mb-6">Review</h3>
+                                <h3 className="font-bold text-lg text-slate-800 mb-6">Revisão</h3>
                                 <div className="flex-1 overflow-y-auto space-y-4 pr-2">
                                     {(formData.bnccSkills.length === 0 && formData.customContent.length === 0) ? (
-                                        <p className="text-sm text-slate-400 italic">No skills selected yet.</p>
+                                        <p className="text-sm text-slate-400 italic">Nenhuma habilidade selecionada ainda.</p>
                                     ) : (
                                         <>
                                             {formData.bnccSkills.map(id => {
@@ -385,8 +385,8 @@ function NewProjectWizardContent() {
                                     )}
                                 </div>
                                 <div className="pt-6 border-t mt-4 flex gap-3">
-                                    <Button variant="outline" className="flex-1" onClick={() => setCurrentStep(2)}>Back</Button>
-                                    <Button className="flex-1" onClick={() => setCurrentStep(4)}>Continue</Button>
+                                    <Button variant="outline" className="flex-1" onClick={() => setCurrentStep(2)}>Voltar</Button>
+                                    <Button className="flex-1" onClick={() => setCurrentStep(4)}>Continuar</Button>
                                 </div>
                             </div>
                         </div>
@@ -395,14 +395,14 @@ function NewProjectWizardContent() {
                     {/* STEP 4 */}
                     {currentStep === 4 && (
                         <div className="animate-in fade-in duration-300">
-                            <h2 className="text-2xl font-bold text-slate-800 mb-2">Lessons Planning</h2>
-                            <p className="text-slate-500 mb-8">Organize the sessions and activities for this project.</p>
+                            <h2 className="text-2xl font-bold text-slate-800 mb-2">Planejamento de Aulas</h2>
+                            <p className="text-slate-500 mb-8">Organize as sessões e atividades para este projeto.</p>
 
                             <div className="space-y-6">
                                 {formData.projectSchedule.length === 0 ? (
                                     <div className="text-center p-10 border-2 border-dashed rounded-xl bg-slate-50">
-                                        <p className="text-slate-500 font-medium">No sessions scheduled yet.</p>
-                                        <p className="text-sm text-slate-400 mt-1">Add your first session below.</p>
+                                        <p className="text-slate-500 font-medium">Nenhuma sessão agendada ainda.</p>
+                                        <p className="text-sm text-slate-400 mt-1">Adicione sua primeira sessão abaixo.</p>
                                     </div>
                                 ) : (
                                     <div className="space-y-4 relative before:absolute before:inset-0 before:left-6 before:w-0.5 before:-z-10 before:bg-slate-200">
@@ -427,11 +427,11 @@ function NewProjectWizardContent() {
                                 )}
 
                                 <div className="bg-indigo-50/50 p-6 rounded-xl border border-indigo-100 mt-8">
-                                    <h4 className="font-bold text-sm text-indigo-800 mb-4 flex items-center gap-2"><Plus className="w-4 h-4" /> Add Session</h4>
+                                    <h4 className="font-bold text-sm text-indigo-800 mb-4 flex items-center gap-2"><Plus className="w-4 h-4" /> Adicionar Sessão</h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
-                                            <Label className="text-xs font-semibold text-slate-600">Session Name</Label>
-                                            <Input className="mt-1" value={newSession.description} onChange={e => setNewSession({ ...newSession, description: e.target.value })} placeholder="e.g. Introduction & Brainstorming" />
+                                            <Label className="text-xs font-semibold text-slate-600">Nome da Sessão</Label>
+                                            <Input className="mt-1" value={newSession.description} onChange={e => setNewSession({ ...newSession, description: e.target.value })} placeholder="Ex: Introdução & Brainstorming" />
                                         </div>
                                         <div></div>
                                     </div>
@@ -450,14 +450,14 @@ function NewProjectWizardContent() {
                                                 });
                                                 setNewSession({ ...newSession, description: "" });
                                             }
-                                        }}>Add to Timeline</Button>
+                                        }}>Adicionar à Linha do Tempo</Button>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="flex justify-between pt-8 mt-8 border-t">
-                                <Button variant="outline" onClick={() => setCurrentStep(3)}>Back</Button>
-                                <Button onClick={handleSaveAndComplete} className="bg-green-600 hover:bg-green-700">Complete Project</Button>
+                                <Button variant="outline" onClick={() => setCurrentStep(3)}>Voltar</Button>
+                                <Button onClick={handleSaveAndComplete} className="bg-green-600 hover:bg-green-700">Concluir Projeto</Button>
                             </div>
                         </div>
                     )}
@@ -469,13 +469,13 @@ function NewProjectWizardContent() {
                                 <PartyPopper className="w-12 h-12 text-green-600" />
                                 <div className="absolute -bottom-2 -right-2 bg-white rounded-full p-1"><Check className="w-6 h-6 text-green-600 bg-green-100 rounded-full p-1" /></div>
                             </div>
-                            <h2 className="text-3xl font-black text-slate-800 mb-3 tracking-tight">Project {isEditMode ? 'Updated' : 'Created'}!</h2>
-                            <p className="text-slate-500 mb-8 max-w-sm mx-auto text-lg leading-relaxed">Your project <strong className="text-slate-800 font-semibold">{formData.title}</strong> is ready and saved to your library.</p>
+                            <h2 className="text-3xl font-black text-slate-800 mb-3 tracking-tight">Projeto {isEditMode ? 'Atualizado' : 'Criado'}!</h2>
+                            <p className="text-slate-500 mb-8 max-w-sm mx-auto text-lg leading-relaxed">Seu projeto <strong className="text-slate-800 font-semibold">{formData.title}</strong> está pronto e salvo na sua biblioteca.</p>
                             <div className="flex flex-col gap-3">
                                 <Link href="/projetos" className="w-full">
-                                    <Button size="lg" className="w-full font-bold shadow-sm h-12">Return to Projects List</Button>
+                                    <Button size="lg" className="w-full font-bold shadow-sm h-12">Voltar para Lista de Projetos</Button>
                                 </Link>
-                                <Button variant="outline" size="lg" onClick={() => router.push('/agenda')} className="w-full font-semibold border-2 h-12">View Schedule</Button>
+                                <Button variant="outline" size="lg" onClick={() => router.push('/agenda')} className="w-full font-semibold border-2 h-12">Ver Agenda</Button>
                             </div>
                         </div>
                     )}
