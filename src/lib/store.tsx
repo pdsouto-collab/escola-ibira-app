@@ -10,7 +10,8 @@ import {
     mockMessages,
     mockClasses, SchoolClass, // Import mockClasses
     User, mockUsers, // Import User types
-    LibraryItem, mockLibraryItems // Import new library items
+    LibraryItem, mockLibraryItems, // Import new library items
+    KnowledgeNode, mockSkillsTree, mockContentsTree // Import new hierarchy
 } from "@/lib/data";
 
 interface AppState {
@@ -27,6 +28,8 @@ interface AppState {
     users: User[];
     libraryItems: LibraryItem[];
     bnccProgress: Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>;
+    skillsTree: KnowledgeNode[];
+    contentsTree: KnowledgeNode[];
 }
 
 interface AppContextType extends AppState {
@@ -77,6 +80,11 @@ interface AppContextType extends AppState {
     removeLibraryItem: (id: string) => void;
     renameSubGroup: (oldName: string, newName: string) => void;
     deleteSubGroup: (name: string) => void;
+
+    // Knowledge Trees
+    addKnowledgeNode: (treeType: "skill" | "content", parentId: string | null, node: KnowledgeNode) => void;
+    updateKnowledgeNode: (treeType: "skill" | "content", id: string, updates: Partial<KnowledgeNode>) => void;
+    removeKnowledgeNode: (treeType: "skill" | "content", id: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -182,6 +190,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [currentUser, setCurrentUser] = useState<User | null>(mockUsers[1]); // Default to Teacher (Cláudia) for dev
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>(mockLibraryItems);
     const [bnccProgress, setBnccProgress] = useState<Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>>({});
+    const [skillsTree, setSkillsTree] = useState<KnowledgeNode[]>(mockSkillsTree);
+    const [contentsTree, setContentsTree] = useState<KnowledgeNode[]>(mockContentsTree);
 
     const [isLoaded, setIsLoaded] = useState(false);
 
@@ -222,6 +232,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             load("mosaicData", setMosaicData, mockRecursiveDataSkills);
             load("libraryItems", setLibraryItems, mockLibraryItems);
             load("bnccProgress", setBnccProgress, {});
+            load("skillsTree", setSkillsTree, mockSkillsTree);
+            load("contentsTree", setContentsTree, mockContentsTree);
 
             // 3. Update version
             localStorage.setItem("app_version", CURRENT_VERSION);
@@ -238,6 +250,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             load("mosaicData", setMosaicData, mockRecursiveDataSkills);
             load("libraryItems", setLibraryItems, mockLibraryItems);
             load("bnccProgress", setBnccProgress, {});
+            load("skillsTree", setSkillsTree, mockSkillsTree);
+            load("contentsTree", setContentsTree, mockContentsTree);
         }
 
         setIsLoaded(true);
@@ -258,7 +272,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem("app_mosaicData", JSON.stringify(mosaicData));
         localStorage.setItem("app_libraryItems", JSON.stringify(libraryItems));
         localStorage.setItem("app_bnccProgress", JSON.stringify(bnccProgress));
-    }, [students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, mosaicData, libraryItems, bnccProgress, isLoaded]);
+        localStorage.setItem("app_skillsTree", JSON.stringify(skillsTree));
+        localStorage.setItem("app_contentsTree", JSON.stringify(contentsTree));
+    }, [students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, mosaicData, libraryItems, bnccProgress, skillsTree, contentsTree, isLoaded]);
 
     // Actions
     const addStudent = (student: Student) => setStudents(prev => [...prev, student]);
@@ -407,6 +423,65 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }).filter(Boolean) as LibraryItem[]);
     };
 
+    const addKnowledgeNode = (treeType: "skill" | "content", parentId: string | null, node: KnowledgeNode) => {
+        const updater = (prev: KnowledgeNode[]): KnowledgeNode[] => {
+            if (!parentId) return [...prev, node];
+
+            const addRecursive = (nodes: KnowledgeNode[]): KnowledgeNode[] => {
+                return nodes.map(n => {
+                    if (n.id === parentId) {
+                        return { ...n, children: [...(n.children || []), node] };
+                    }
+                    if (n.children && n.children.length > 0) {
+                        return { ...n, children: addRecursive(n.children) };
+                    }
+                    return n;
+                });
+            };
+            return addRecursive(prev);
+        };
+
+        if (treeType === "skill") setSkillsTree(updater);
+        else setContentsTree(updater);
+    };
+
+    const updateKnowledgeNode = (treeType: "skill" | "content", id: string, updates: Partial<KnowledgeNode>) => {
+        const updater = (prev: KnowledgeNode[]): KnowledgeNode[] => {
+            const updateRecursive = (nodes: KnowledgeNode[]): KnowledgeNode[] => {
+                return nodes.map(n => {
+                    if (n.id === id) {
+                        return { ...n, ...updates };
+                    }
+                    if (n.children && n.children.length > 0) {
+                        return { ...n, children: updateRecursive(n.children) };
+                    }
+                    return n;
+                });
+            };
+            return updateRecursive(prev);
+        };
+
+        if (treeType === "skill") setSkillsTree(updater);
+        else setContentsTree(updater);
+    };
+
+    const removeKnowledgeNode = (treeType: "skill" | "content", id: string) => {
+        const updater = (prev: KnowledgeNode[]): KnowledgeNode[] => {
+            const removeRecursive = (nodes: KnowledgeNode[]): KnowledgeNode[] => {
+                return nodes.filter(n => n.id !== id).map(n => {
+                    if (n.children && n.children.length > 0) {
+                        return { ...n, children: removeRecursive(n.children) };
+                    }
+                    return n;
+                });
+            };
+            return removeRecursive(prev);
+        };
+
+        if (treeType === "skill") setSkillsTree(updater);
+        else setContentsTree(updater);
+    };
+
     return (
         <AppContext.Provider value={{
             students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, currentUser,
@@ -420,7 +495,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             removeUser: (id) => setUsers(prev => prev.filter(u => u.id !== id)),
             bnccProgress, updateBNCCStatus,
             libraryItems, addLibraryItem, updateLibraryItem, removeLibraryItem,
-            renameSubGroup, deleteSubGroup
+            renameSubGroup, deleteSubGroup,
+            skillsTree, contentsTree, addKnowledgeNode, updateKnowledgeNode, removeKnowledgeNode
         }}>
             {children}
         </AppContext.Provider>

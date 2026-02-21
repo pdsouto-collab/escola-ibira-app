@@ -19,7 +19,7 @@ export function MosaicContainer() {
     const { mosaicData, replaceMosaicData, updateMosaicNode, classes, projects } = useAppStore();
     const [selectedNode, setSelectedNode] = useState<MosaicNode | null>(null);
     const [editMode, setEditMode] = useState(false);
-    const [activeTab, setActiveTab] = useState<"skills" | "content">("skills");
+    const [activeTab, setActiveTab] = useState<"skill" | "content">("skill");
 
     // Filter States
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
@@ -29,7 +29,7 @@ export function MosaicContainer() {
     const [contentData, setContentData] = useState(mockRecursiveDataContent);
 
     // Derived state for display
-    const currentData = activeTab === "skills" ? mosaicData : contentData;
+    const currentData = activeTab === "skill" ? mosaicData : contentData;
 
     // Filter projects based on selected class
     const availableProjects = selectedClassId === "all"
@@ -45,7 +45,7 @@ export function MosaicContainer() {
 
     // unified setter that routes to store or local state
     const setCurrentData = (updater: (prev: MosaicNode[]) => MosaicNode[]) => {
-        if (activeTab === "skills") {
+        if (activeTab === "skill") {
             // wrapper to handle functional updates for store
             const newData = updater(mosaicData);
             replaceMosaicData(newData);
@@ -216,8 +216,8 @@ export function MosaicContainer() {
                     <div className="flex items-center gap-4">
                         <div className="flex bg-slate-100 p-1 rounded-lg">
                             <button
-                                onClick={() => setActiveTab("skills")}
-                                className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === "skills" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
+                                onClick={() => setActiveTab("skill")}
+                                className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === "skill" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
                             >
                                 Habilidades
                             </button>
@@ -236,6 +236,7 @@ export function MosaicContainer() {
                     <MosaicGrid
                         classId={selectedClassId === "all" ? undefined : selectedClassId}
                         projectId={selectedProjectId === "all" ? undefined : selectedProjectId}
+                        treeType={activeTab}
                     />
                 </div>
             </div>

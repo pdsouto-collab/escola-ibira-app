@@ -36,6 +36,7 @@ const navigation = [
 
     { name: "Conversas", href: "/conversas", icon: MessageCircle },
     // Restricted Route
+    { name: "Painel Admin", href: "/admin-panel", icon: Settings, roles: ["director", "admin"] },
     { name: "Professores", href: "/professores", icon: GraduationCap, roles: ["director", "admin"] },
 ];
 

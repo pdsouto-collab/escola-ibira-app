@@ -1,3 +1,94 @@
+// --- 4-LEVEL KNOWLEDGE HIERARCHY ---
+// L1 = Macro (Eixo / Área do Saber)
+// L2 = Mesclado (Competência / Tópico)
+// L3 = Micro (Habilidade / Objetivo de Aprendizagem) -> Links to LibraryItem ID
+// L4 = Atômico (Habilidade Específica / Evidência de Conteúdo) -> Checkpoints for Teachers
+export type KnowledgeLevel = "macro" | "mesclado" | "micro" | "atomico";
+
+export interface KnowledgeNode {
+    id: string;
+    level: KnowledgeLevel;
+    type: "skill" | "content";
+    name: string; // The label/name of the level (e.g. "Natureza e Sociedade" or "Compreensão de Adição")
+    description?: string; // Optional detailed description
+    libraryItemId?: string; // ONLY for L3 (Micro): points to an item in `libraryItems`
+    linkedNodeIds?: string[]; // For Cross-Linking: L3/L4 Contenúdo mapping to L3/L4 Habilidades
+    children: KnowledgeNode[]; // Nested nodes down the hierarchy
+}
+
+// Initial mock data to bootstrap the trees
+export const mockSkillsTree: KnowledgeNode[] = [
+    {
+        id: "sk-macro-1",
+        level: "macro",
+        type: "skill",
+        name: "Linguagens",
+        children: [
+            {
+                id: "sk-mesclado-1",
+                level: "mesclado",
+                type: "skill",
+                name: "Comunicação",
+                children: [
+                    {
+                        id: "sk-micro-1",
+                        level: "micro",
+                        type: "skill",
+                        name: "Escuta ativa e fala", // In reality, pulls from LibraryItem
+                        libraryItemId: "EF01LP01", // Assuming this BNCC code exists in the library
+                        children: [
+                            {
+                                id: "sk-ato-1",
+                                level: "atomico",
+                                type: "skill",
+                                name: "Espera a vez de falar e ouve o colega",
+                                children: []
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+];
+
+export const mockContentsTree: KnowledgeNode[] = [
+    {
+        id: "co-macro-1",
+        level: "macro",
+        type: "content",
+        name: "Lógica e Matemática",
+        children: [
+            {
+                id: "co-mesclado-1",
+                level: "mesclado",
+                type: "content",
+                name: "Números e Operações",
+                children: [
+                    {
+                        id: "co-micro-1",
+                        level: "micro",
+                        type: "content",
+                        name: "Compreensão de Adição",
+                        libraryItemId: "EF01MA01", // Assuming this BNCC code exists
+                        linkedNodeIds: ["sk-micro-1"], // Cross-linked to the skill above
+                        children: [
+                            {
+                                id: "co-ato-1",
+                                level: "atomico",
+                                type: "content",
+                                name: "Resolve somas simples de um dígito usando material concreto",
+                                linkedNodeIds: ["sk-ato-1"], // Cross-linked to the specific skill evidence
+                                children: []
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+];
+
 export type Status = "not-started" | "in-progress" | "achieved";
 
 export interface Indicator {
