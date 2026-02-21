@@ -69,6 +69,9 @@ export function MosaicGrid({ classId, projectId }: MosaicGridProps) {
     // Helper to get projects linked to a skill
     const getLinkedProjects = (code: string) => {
         return projects.filter(p => {
+            // Only consider active projects for the mosaic
+            if (p.status !== "active") return false;
+
             if (!p.bnccSkillIds?.includes(code)) return false;
 
             // Apply Filters
