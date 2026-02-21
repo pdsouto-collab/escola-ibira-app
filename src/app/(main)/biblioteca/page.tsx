@@ -52,6 +52,8 @@ export default function BibliotecaPage() {
     const [isManageGroupsOpen, setIsManageGroupsOpen] = useState(false);
     const [manageGroupEditing, setManageGroupEditing] = useState<string | null>(null);
     const [manageGroupNewName, setManageGroupNewName] = useState("");
+    const [isCreatingNewGroup, setIsCreatingNewGroup] = useState(false);
+    const [newGroupName, setNewGroupName] = useState("");
 
     // Get unique existing groups for the active tab (to populate the combobox)
     const existingGroups = Array.from(new Set(libraryItems.filter(i => i.type === activeTab).map(i => i.subGroup))).sort();
@@ -100,6 +102,20 @@ export default function BibliotecaPage() {
             });
         }
         setIsDialogOpen(false);
+    };
+
+    const handleCreateGroup = () => {
+        if (!newGroupName.trim()) return;
+        addLibraryItem({
+            id: `lib-custom-${Date.now()}`,
+            type: activeTab,
+            name: `Exemplo de ${newGroupName.trim()}`,
+            description: `Este item foi criado automaticamente para que o grupo "${newGroupName.trim()}" apareça na lista. Você pode editá-lo para adicionar um conteúdo real ou excluí-lo após adicionar outros itens a este grupo.`,
+            subGroup: newGroupName.trim(),
+            isBNCC: false
+        });
+        setNewGroupName("");
+        setIsCreatingNewGroup(false);
     };
 
     const handleDelete = (id: string, isBNCC: boolean) => {
@@ -216,7 +232,7 @@ export default function BibliotecaPage() {
                                                     </Badge>
                                                 )}
 
-                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="flex items-center gap-1 transition-opacity">
                                                     <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-primary" onClick={(e) => { e.stopPropagation(); handleOpenDialog(item); }}>
                                                         <Edit className="w-3.5 h-3.5" />
                                                     </Button>
@@ -277,7 +293,6 @@ export default function BibliotecaPage() {
                             <Select
                                 value={formData.type}
                                 onValueChange={(val) => setFormData({ ...formData, type: val as "skill" | "content" })}
-                                disabled={editingItem?.isBNCC} // Can't change type of official BNCC item
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Selecione o tipo" />
@@ -436,6 +451,36 @@ export default function BibliotecaPage() {
                                 )}
                             </div>
                         ))}
+
+                        {isCreatingNewGroup ? (
+                            <div className="flex flex-col gap-2 p-3 bg-white border border-primary/20 shadow-sm rounded-lg mt-2">
+                                <label className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Nome do Novo Grupo</label>
+                                <div className="flex items-center gap-2">
+                                    <Input
+                                        value={newGroupName}
+                                        onChange={(e) => setNewGroupName(e.target.value)}
+                                        placeholder="Ex: Projetos de Leitura"
+                                        className="h-8 text-sm flex-1"
+                                        autoFocus
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') handleCreateGroup();
+                                            if (e.key === 'Escape') setIsCreatingNewGroup(false);
+                                        }}
+                                    />
+                                    <Button size="sm" onClick={handleCreateGroup} className="h-8 px-3">Criar</Button>
+                                    <Button size="sm" variant="ghost" onClick={() => setIsCreatingNewGroup(false)} className="h-8 px-3">Cancelar</Button>
+                                </div>
+                            </div>
+                        ) : (
+                            <Button
+                                variant="outline"
+                                className="w-full mt-2 border-dashed text-slate-500 hover:text-primary hover:border-primary hover:bg-primary/5"
+                                onClick={() => setIsCreatingNewGroup(true)}
+                            >
+                                <Plus className="w-4 h-4 mr-2" />
+                                Criar Novo Grupo
+                            </Button>
+                        )}
                     </div>
                 </DialogContent>
             </Dialog>
