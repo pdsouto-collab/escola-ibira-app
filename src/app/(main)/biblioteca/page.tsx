@@ -277,12 +277,12 @@ export default function BibliotecaPage() {
                             <Select
                                 value={formData.type}
                                 onValueChange={(val) => setFormData({ ...formData, type: val as "skill" | "content" })}
-                                disabled={!!editingItem} // Don't allow changing type of existing item
+                                disabled={editingItem?.isBNCC} // Can't change type of official BNCC item
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Selecione o tipo" />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="z-[9999]">
                                     <SelectItem value="skill">Habilidade</SelectItem>
                                     <SelectItem value="content">Conteúdo Específico</SelectItem>
                                 </SelectContent>
@@ -304,7 +304,7 @@ export default function BibliotecaPage() {
                                     <SelectTrigger>
                                         <SelectValue placeholder="Selecione um grupo existente" />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className="z-[9999]">
                                         {existingGroups.map(g => (
                                             <SelectItem key={g} value={g}>{g}</SelectItem>
                                         ))}
