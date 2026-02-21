@@ -610,46 +610,11 @@ export interface LibraryItem {
     subGroup: string; // e.g. "Ciências", "Matemática", "Projetos Culturais"
 }
 
+import { bnccData } from "./bncc-data";
+
 // Comprehensive Mock Data spanning multiple BNCC subjects and custom examples
 export const mockLibraryItems: LibraryItem[] = [
-    // --- CIÊNCIAS ---
-    { id: "lib-bncc-ci-01", type: "skill", code: "EF01CI01", name: "Matéria e Energia", description: "Comparar características de diferentes materiais presentes em objetos de uso cotidiano...", isBNCC: true, subGroup: "Ciências" },
-    { id: "lib-bncc-ci-04", type: "skill", code: "EF02CI04", name: "Vida e Evolução", description: "Descrever características de plantas e animais (tamanho, forma, cor, fase da vida, local onde se desenvolvem...).", isBNCC: true, subGroup: "Ciências" },
-    { id: "lib-bncc-ci-07", type: "skill", code: "EF03CI07", name: "Terra e Universo", description: "Identificar características da Terra (como seu formato esférico, a presença de água, solo etc.).", isBNCC: true, subGroup: "Ciências" },
-    { id: "lib-co-ci-01", type: "content", name: "Ciclo da Água", description: "Estudo sobre evaporação, condensação e precipitação focado na preservação da água doce.", isBNCC: true, subGroup: "Ciências" },
-    { id: "lib-co-ci-02", type: "content", name: "Animais Vertebrados", description: "Classificação básica: mamíferos, aves, répteis, anfíbios e peixes.", isBNCC: true, subGroup: "Ciências" },
-
-    // --- MATEMÁTICA ---
-    { id: "lib-bncc-mat-01", type: "skill", code: "EF01MA01", name: "Números", description: "Utilizar números naturais como indicador de quantidade ou de ordem em diferentes situações cotidianas.", isBNCC: true, subGroup: "Matemática" },
-    { id: "lib-bncc-mat-13", type: "skill", code: "EF03MA13", name: "Geometria", description: "Associar figuras geométricas espaciais a objetos do mundo físico.", isBNCC: true, subGroup: "Matemática" },
-    { id: "lib-bncc-mat-20", type: "skill", code: "EF02MA20", name: "Grandezas e Medidas", description: "Estabelecer a equivalência de valores entre moedas e cédulas do sistema monetário brasileiro.", isBNCC: true, subGroup: "Matemática" },
-    { id: "lib-co-mat-01", type: "content", name: "Adição e Subtração Básica", description: "Operações com números até 100 usando material dourado.", isBNCC: true, subGroup: "Matemática" },
-
-    // --- LÍNGUA PORTUGUESA ---
-    { id: "lib-bncc-lp-01", type: "skill", code: "EF01LP01", name: "Leitura/Escuta", description: "Reconhecer que textos são lidos e escritos da esquerda para a direita e de cima para baixo da página.", isBNCC: true, subGroup: "Língua Portuguesa" },
-    { id: "lib-bncc-lp-02", type: "skill", code: "EF01LP02", name: "Escrita", description: "Escrever, espontaneamente ou por ditado, palavras e frases de forma alfabética.", isBNCC: true, subGroup: "Língua Portuguesa" },
-    { id: "lib-bncc-lp-05", type: "skill", code: "EF15LP05", name: "Produção de Textos", description: "Planejar, com a ajuda do professor, o texto que será produzido, considerando a situação comunicativa.", isBNCC: true, subGroup: "Língua Portuguesa" },
-    { id: "lib-co-lp-01", type: "content", name: "Gênero Textual: Poema", description: "Trabalho com rimas, estrofes e sonoridade utilizando poemas de Vinicius de Moraes.", isBNCC: true, subGroup: "Língua Portuguesa" },
-
-    // --- HISTÓRIA ---
-    { id: "lib-bncc-hi-01", type: "skill", code: "EF01HI01", name: "O sujeito e seu lugar no mundo", description: "Identificar aspectos do seu crescimento por meio do registro das lembranças particulares ou de lembranças dos membros de sua família.", isBNCC: true, subGroup: "História" },
-    { id: "lib-bncc-hi-04", type: "skill", code: "EF02HI04", name: "A comunidade e seus registros", description: "Selecionar e compreender o significado de objetos e documentos pessoais como fontes de memórias e histórias nos âmbitos pessoal, familiar e escolar.", isBNCC: true, subGroup: "História" },
-    { id: "lib-co-hi-01", type: "content", name: "Árvore Genealógica", description: "Construção da árvore familiar para entender as origens e os parentescos.", isBNCC: true, subGroup: "História" },
-
-    // --- GEOGRAFIA ---
-    { id: "lib-bncc-ge-01", type: "skill", code: "EF01GE01", name: "O sujeito e seu lugar no mundo", description: "Descrever características observadas de seus lugares de vivência (moradia, escola etc.) e identificar semelhanças e diferenças entre esses lugares.", isBNCC: true, subGroup: "Geografia" },
-    { id: "lib-bncc-ge-08", type: "skill", code: "EF02GE08", name: "Natureza, ambientes e qualidade de vida", description: "Identificar e elaborar diferentes formas de representação (desenhos, mapas mentais, maquetes) para representar componentes da paisagem dos lugares de vivência.", isBNCC: true, subGroup: "Geografia" },
-    { id: "lib-co-ge-01", type: "content", name: "Tipos de Moradia", description: "Estudo sobre casas, apartamentos, palafitas e ocas.", isBNCC: true, subGroup: "Geografia" },
-
-    // --- ARTES ---
-    { id: "lib-bncc-ar-01", type: "skill", code: "EF15AR01", name: "Artes Visuais", description: "Identificar e apreciar formas distintas das artes visuais tradicionais e contemporâneas, cultivando a percepção, o imaginário, a capacidade de simbolizar e o repertório imagético.", isBNCC: true, subGroup: "Artes" },
-    { id: "lib-bncc-ar-13", type: "skill", code: "EF15AR13", name: "Música", description: "Identificar e apreciar criticamente diversas formas e gêneros de expressão musical.", isBNCC: true, subGroup: "Artes" },
-    { id: "lib-co-ar-01", type: "content", name: "Cores Primárias e Secundárias", description: "Exploração visual e mistura de tintas.", isBNCC: true, subGroup: "Artes" },
-
-    // --- EDUCAÇÃO FÍSICA ---
-    { id: "lib-bncc-ef-01", type: "skill", code: "EF12EF01", name: "Brincadeiras e Jogos", description: "Experimentar, fruir e recriar diferentes brincadeiras e jogos da cultura popular presentes no contexto comunitário e regional.", isBNCC: true, subGroup: "Educação Física" },
-    { id: "lib-co-ef-01", type: "content", name: "Jogos de Roda", description: "Regras e cantigas clássicas (Ciranda Cirandinha, Escravos de Jó).", isBNCC: true, subGroup: "Educação Física" },
-
+    ...bnccData,
     // --- CUSTOM CATEGORY EXAMPLES ---
     { id: "lib-custom-sk-01", type: "skill", name: "Inteligência Emocional", description: "Identificar e nomear as próprias emoções em situações de conflito no parquinho.", isBNCC: false, subGroup: "Sócio-Emocional" },
     { id: "lib-custom-co-01", type: "content", name: "Horta Comunitária", description: "Técnicas de plantio e cuidado diário com hortaliças no ambiente escolar.", isBNCC: false, subGroup: "Projetos Especiais" }

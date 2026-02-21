@@ -75,6 +75,8 @@ interface AppContextType extends AppState {
     addLibraryItem: (item: LibraryItem) => void;
     updateLibraryItem: (id: string, updates: Partial<LibraryItem>) => void;
     removeLibraryItem: (id: string) => void;
+    renameSubGroup: (oldName: string, newName: string) => void;
+    deleteSubGroup: (name: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -389,6 +391,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const updateLibraryItem = (id: string, updates: Partial<LibraryItem>) => setLibraryItems(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i));
     const removeLibraryItem = (id: string) => setLibraryItems(prev => prev.filter(i => i.id !== id));
 
+    const renameSubGroup = (oldName: string, newName: string) => {
+        setLibraryItems(prev => prev.map(item => item.subGroup === oldName ? { ...item, subGroup: newName } : item));
+    };
+
+    const deleteSubGroup = (name: string) => {
+        setLibraryItems(prev => prev.map(item => {
+            if (item.subGroup === name) {
+                if (item.isBNCC) {
+                    return { ...item, subGroup: "BNCC Sem Grupo" };
+                }
+                return null;
+            }
+            return item;
+        }).filter(Boolean) as LibraryItem[]);
+    };
+
     return (
         <AppContext.Provider value={{
             students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, currentUser,
@@ -401,7 +419,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             updateUser: (id, updates) => setUsers(prev => prev.map(u => u.id === id ? { ...u, ...updates } : u)),
             removeUser: (id) => setUsers(prev => prev.filter(u => u.id !== id)),
             bnccProgress, updateBNCCStatus,
-            libraryItems, addLibraryItem, updateLibraryItem, removeLibraryItem
+            libraryItems, addLibraryItem, updateLibraryItem, removeLibraryItem,
+            renameSubGroup, deleteSubGroup
         }}>
             {children}
         </AppContext.Provider>

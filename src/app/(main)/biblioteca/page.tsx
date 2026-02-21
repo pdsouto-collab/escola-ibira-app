@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Plus, Filter, BookOpen, Layers, Trash2, Edit, ChevronDown } from "lucide-react";
+import { Search, Plus, Filter, BookOpen, Layers, Trash2, Edit, ChevronDown, Settings2 } from "lucide-react";
 import {
     Accordion,
     AccordionContent,
@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/select";
 
 export default function BibliotecaPage() {
-    const { libraryItems, addLibraryItem, updateLibraryItem, removeLibraryItem } = useAppStore();
+    const { libraryItems, addLibraryItem, updateLibraryItem, removeLibraryItem, renameSubGroup, deleteSubGroup } = useAppStore();
     const [searchQuery, setSearchQuery] = useState("");
     const [activeTab, setActiveTab] = useState<"skill" | "content">("skill");
 
@@ -48,6 +48,10 @@ export default function BibliotecaPage() {
         subGroup: "",
         isCustomGroup: false
     });
+
+    const [isManageGroupsOpen, setIsManageGroupsOpen] = useState(false);
+    const [manageGroupEditing, setManageGroupEditing] = useState<string | null>(null);
+    const [manageGroupNewName, setManageGroupNewName] = useState("");
 
     // Get unique existing groups for the active tab (to populate the combobox)
     const existingGroups = Array.from(new Set(libraryItems.filter(i => i.type === activeTab).map(i => i.subGroup))).sort();
@@ -151,6 +155,10 @@ export default function BibliotecaPage() {
                         />
                     </div>
 
+                    <Button variant="outline" onClick={() => setIsManageGroupsOpen(true)} className="gap-2 rounded-lg px-4 shadow-sm hover:shadow-md transition-all">
+                        <Settings2 className="w-4 h-4" />
+                        Gerenciar Grupos
+                    </Button>
                     <Button onClick={() => handleOpenDialog()} className="gap-2 rounded-lg px-6 shadow-sm hover:shadow-md transition-all">
                         <Plus className="w-4 h-4" />
                         Novo Item
@@ -208,16 +216,16 @@ export default function BibliotecaPage() {
                                                     </Badge>
                                                 )}
 
-                                                {!item.isBNCC && (
-                                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-primary" onClick={(e) => { e.stopPropagation(); handleOpenDialog(item); }}>
-                                                            <Edit className="w-3.5 h-3.5" />
-                                                        </Button>
+                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-primary" onClick={(e) => { e.stopPropagation(); handleOpenDialog(item); }}>
+                                                        <Edit className="w-3.5 h-3.5" />
+                                                    </Button>
+                                                    {!item.isBNCC && (
                                                         <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-red-600 hover:bg-red-50" onClick={(e) => { e.stopPropagation(); handleDelete(item.id, item.isBNCC); }}>
                                                             <Trash2 className="w-3.5 h-3.5" />
                                                         </Button>
-                                                    </div>
-                                                )}
+                                                    )}
+                                                </div>
                                             </div>
 
                                             <div className="flex-1">
@@ -281,11 +289,51 @@ export default function BibliotecaPage() {
                             </Select>
                         </div>
                         <div className="space-y-2">
+                            <label className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Grupo / Disciplina</label>
+                            {!formData.isCustomGroup ? (
+                                <Select
+                                    value={formData.subGroup}
+                                    onValueChange={(val) => {
+                                        if (val === "new_group_trigger") {
+                                            setFormData({ ...formData, isCustomGroup: true, subGroup: "" });
+                                        } else {
+                                            setFormData({ ...formData, subGroup: val });
+                                        }
+                                    }}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Selecione um grupo existente" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {existingGroups.map(g => (
+                                            <SelectItem key={g} value={g}>{g}</SelectItem>
+                                        ))}
+                                        <SelectItem value="new_group_trigger" className="font-bold text-primary border-t mt-1">
+                                            + Criar Novo Grupo
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            ) : (
+                                <div className="flex gap-2">
+                                    <Input
+                                        placeholder="Digite o nome do novo grupo..."
+                                        value={formData.subGroup}
+                                        onChange={(e) => setFormData({ ...formData, subGroup: e.target.value })}
+                                        autoFocus
+                                    />
+                                    <Button variant="outline" onClick={() => setFormData({ ...formData, isCustomGroup: false, subGroup: existingGroups[0] || "" })}>
+                                        Cancelar
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+                        <div className="space-y-2">
                             <label className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Nome / Título</label>
                             <Input
                                 placeholder={formData.type === 'skill' ? 'Ex: Inteligência Emocional' : 'Ex: Ciclo da Água'}
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                disabled={editingItem?.isBNCC}
                             />
                         </div>
                         <div className="space-y-2">
@@ -295,7 +343,11 @@ export default function BibliotecaPage() {
                                 className="h-32"
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                disabled={editingItem?.isBNCC}
                             />
+                            {editingItem?.isBNCC && (
+                                <p className="text-xs text-amber-600 mt-1">Você só pode alterar o grupo de um item oficial da BNCC.</p>
+                            )}
                         </div>
                     </div>
                     <DialogFooter>
@@ -305,7 +357,88 @@ export default function BibliotecaPage() {
                         </Button>
                     </DialogFooter>
                 </DialogContent>
-            </Dialog >
-        </div >
+            </Dialog>
+
+            {/* Manage Groups Dialog */}
+            <Dialog open={isManageGroupsOpen} onOpenChange={setIsManageGroupsOpen}>
+                <DialogContent className="sm:max-w-[400px]">
+                    <DialogHeader>
+                        <DialogTitle>Gerenciar Grupos</DialogTitle>
+                        <DialogDescription>
+                            Renomeie ou exclua os grupos existentes na aba atual ({activeTab === 'skill' ? 'Habilidades' : 'Conteúdos'}).<br />
+                            Itens da BNCC de um grupo excluído irão para a categoria "BNCC Sem Grupo".
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-2 py-4">
+                        {existingGroups.length === 0 && (
+                            <p className="text-sm text-slate-500 text-center py-4">Nenhum grupo encontrado.</p>
+                        )}
+                        {existingGroups.map(group => (
+                            <div key={group} className="flex flex-col gap-2 p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                                {manageGroupEditing === group ? (
+                                    <div className="flex items-center gap-2">
+                                        <Input
+                                            value={manageGroupNewName}
+                                            onChange={(e) => setManageGroupNewName(e.target.value)}
+                                            className="h-8 text-sm"
+                                            autoFocus
+                                        />
+                                        <Button
+                                            size="sm"
+                                            onClick={() => {
+                                                if (manageGroupNewName.trim() && manageGroupNewName !== group) {
+                                                    renameSubGroup(group, manageGroupNewName.trim());
+                                                }
+                                                setManageGroupEditing(null);
+                                            }}
+                                            className="h-8 px-3"
+                                        >
+                                            Salvar
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={() => setManageGroupEditing(null)}
+                                            className="h-8 px-3"
+                                        >
+                                            Cancelar
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-medium text-slate-800">{group}</span>
+                                        <div className="flex items-center gap-1">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-7 w-7 text-slate-400 hover:text-primary"
+                                                onClick={() => {
+                                                    setManageGroupEditing(group);
+                                                    setManageGroupNewName(group);
+                                                }}
+                                            >
+                                                <Edit className="w-3.5 h-3.5" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-7 w-7 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                                                onClick={() => {
+                                                    if (confirm(`Tem certeza que deseja excluir o grupo "${group}"? Itens personalizados serão apagados.`)) {
+                                                        deleteSubGroup(group);
+                                                    }
+                                                }}
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </DialogContent>
+            </Dialog>
+        </div>
     );
 }
