@@ -6,7 +6,7 @@ import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Search, Filter, MoreVertical } from "lucide-react";
+import { Plus, Search, Filter, MoreVertical, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/lib/store";
@@ -84,7 +84,7 @@ export default function ProjectsPage() {
                             Em Andamento
                         </TabsTrigger>
                         <TabsTrigger
-                            value="planning"
+                            value="draft"
                             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-2 py-3 text-base font-medium text-slate-500 data-[state=active]:text-primary transition-all"
                         >
                             Rascunhos
@@ -123,7 +123,7 @@ export default function ProjectsPage() {
                                 ))}
 
                                 {/* Add New Placeholder Card (Only shown in Drafts or Ongoing) */}
-                                {(tabValue === 'planning' || tabValue === 'active') && !searchQuery && (
+                                {(tabValue === 'draft' || tabValue === 'active') && !searchQuery && (
                                     <Link href="/projetos/novo" className="contents">
                                         <div className="border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center p-6 text-slate-400 hover:border-primary/50 hover:bg-primary/5 hover:text-primary transition-all cursor-pointer min-h-[380px]">
                                             <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center mb-4 group-hover:bg-primary/10">
@@ -153,26 +153,27 @@ function ProjectCard({
     classNames: string;
     onDelete: () => void;
 }) {
-    // Determine the banner image or a fallback gradient
-    const bannerStyle = project.imageUrl
-        ? { backgroundImage: `url(${project.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-        : { background: 'linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%)' };
+    // Generate a default color for the banner top bar
+    const colorClasses = [
+        "bg-indigo-600", "bg-emerald-600", "bg-sky-600", "bg-amber-600", "bg-rose-600", "bg-violet-600"
+    ];
+    // Simple hash to consistently pick a color based on project ID
+    const colorIdx = project.id ? project.id.charCodeAt(0) % colorClasses.length : 0;
+    const bannerColor = colorClasses[colorIdx];
 
     return (
-        <Card className="hover:shadow-lg transition-all duration-300 group border-slate-200 relative overflow-hidden flex flex-col h-full rounded-2xl">
+        <Card className="hover:shadow-lg transition-all duration-300 group border-slate-200 relative flex flex-col h-full rounded-2xl overflow-hidden bg-white">
 
-            {/* Banner Image Area */}
-            <div className="h-40 w-full relative" style={bannerStyle}>
-                <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
-
-                <div className="absolute top-3 right-3">
+            {/* Top Colored Banner with Grade and Title */}
+            <div className={cn("p-5 flex flex-col justify-end min-h-[140px] relative", bannerColor)}>
+                <div className="absolute top-3 right-3 z-10 text-white">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="secondary" size="icon" className="h-8 w-8 bg-white/80 backdrop-blur-sm hover:bg-white text-slate-700 shadow-sm transition-opacity">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/20">
                                 <MoreVertical className="w-4 h-4" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-40">
+                        <DropdownMenuContent align="end" className="w-40 border-slate-200">
                             <Link href={`/projetos/novo?edit=${project.id}`}>
                                 <DropdownMenuItem className="cursor-pointer">
                                     <Edit className="w-4 h-4 mr-2" />
@@ -189,56 +190,61 @@ function ProjectCard({
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
+
+                <Badge variant="outline" className="w-fit text-xs font-bold uppercase tracking-widest text-white border-white/30 bg-black/10 mb-2">
+                    {classNames}
+                </Badge>
+
+                <h3 className="text-2xl font-bold text-white leading-tight line-clamp-2">
+                    {project.title}
+                </h3>
             </div>
 
-            <CardContent className="pt-5 pb-6 flex-1 flex flex-col">
-                <div className="flex justify-between items-start mb-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                        {classNames}
-                    </span>
-                    <Badge variant="outline" className="text-[10px] bg-slate-50 text-slate-500 font-semibold uppercase tracking-wider border-slate-200">
-                        PROJETO
-                    </Badge>
+            {/* Optional Banner Image directly below or just structural split */}
+            {project.imageUrl && (
+                <div className="h-32 w-full relative">
+                    <Image src={project.imageUrl} alt={project.title} fill className="object-cover" />
                 </div>
+            )}
 
-                <Link href={`/projetos/novo?edit=${project.id}`} className="block mb-4 flex-1">
-                    <CardTitle className="text-xl font-bold text-slate-800 leading-snug mb-3 hover:text-primary transition-colors">
-                        {project.title}
-                    </CardTitle>
+            <CardContent className="pt-6 pb-6 flex-1 flex flex-col gap-5">
 
-                    {/* Guiding Question Section - Visual Highlight */}
-                    {project.guidingQuestion && (
-                        <div className="bg-primary/5 border border-primary/10 rounded-xl p-3 mb-4">
-                            <span className="text-[10px] font-bold text-primary uppercase tracking-widest block mb-1">
-                                Pergunta Norteadora
-                            </span>
-                            <p className="text-sm text-slate-700 font-medium italic">
-                                "{project.guidingQuestion}"
-                            </p>
-                        </div>
-                    )}
-
-                    <p className="text-sm text-slate-500 line-clamp-2">
-                        {project.description}
-                    </p>
-                </Link>
-
-                <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
-                    <div className="flex flex-wrap gap-1.5">
-                        {project.tags.slice(0, 2).map((tag: string) => (
-                            <Badge key={tag} variant="secondary" className="bg-slate-100 text-slate-600 font-normal hover:bg-slate-200">
-                                {tag}
+                <div className="grid grid-cols-2 gap-4 border-b border-slate-100 pb-5">
+                    <div>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
+                            Tipo
+                        </span>
+                        <span className="text-sm font-semibold text-slate-800">
+                            {project.type || "Projeto"}
+                        </span>
+                    </div>
+                    <div>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
+                            Produto Final
+                        </span>
+                        {project.finalProduct && project.finalProduct !== "None" ? (
+                            <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 font-medium">
+                                {project.finalProduct}
                             </Badge>
-                        ))}
-                        {project.tags.length > 2 && (
-                            <Badge variant="secondary" className="bg-slate-100 text-slate-600 font-normal hover:bg-slate-200">
-                                +{project.tags.length - 2}
-                            </Badge>
+                        ) : (
+                            <span className="text-sm text-slate-500 italic">Não definido</span>
                         )}
                     </div>
+                </div>
 
-                    <Link href={`/projetos/novo?edit=${project.id}`} className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors whitespace-nowrap ml-2">
-                        Detalhes &gt;
+                {/* Guiding Question */}
+                <div className="mb-2">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
+                        Pergunta Norteadora
+                    </span>
+                    <p className="text-sm text-slate-700 font-medium italic leading-relaxed">
+                        {project.guidingQuestion ? `"${project.guidingQuestion}"` : "Nenhuma pergunta norteadora definida."}
+                    </p>
+                </div>
+
+                <div className="mt-auto pt-4 flex items-center justify-end">
+                    <Link href={`/projetos/novo?edit=${project.id}`} className="text-sm font-bold text-indigo-600 hover:text-indigo-800 transition-colors uppercase tracking-wider flex items-center gap-1">
+                        Detalhes <ChevronRight className="w-4 h-4" />
                     </Link>
                 </div>
             </CardContent>

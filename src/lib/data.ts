@@ -830,7 +830,7 @@ export interface Project {
     id: string;
     title: string;
     description: string;
-    status: "planning" | "active" | "completed";
+    status: "planning" | "active" | "completed" | "draft";
     startDate: string;
     endDate?: string;
     students: string[]; // IDs
@@ -840,6 +840,10 @@ export interface Project {
     contentIds?: string[]; // IDs of Custom Content
     guidingQuestion?: string; // e.g. "Como podemos cuidar da natureza?"
     imageUrl?: string; // Banner image url for the project card
+    type?: string; // e.g. "Project"
+    summary?: string; // rich text overview
+    objectives?: string; // learning objectives
+    finalProduct?: string; // "None", "Audio visual", etc.
 }
 
 export interface ChatMessage {
