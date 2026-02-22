@@ -48,9 +48,13 @@ const LEVEL_COLORS = {
 };
 
 export function KnowledgeTreeEditor({ treeType }: Props) {
-    const { skillsTree, contentsTree, libraryItems, addKnowledgeNode, updateKnowledgeNode, removeKnowledgeNode } = useAppStore();
+    const { skillsTree, contentsTree, libraryItems, classes, addKnowledgeNode, updateKnowledgeNode, removeKnowledgeNode } = useAppStore();
 
     const treeData = treeType === "skill" ? skillsTree : contentsTree;
+    const [selectedClassId, setSelectedClassId] = useState<string>("all");
+
+    // Filter only the roots. Children belong to whatever root they are in.
+    const filteredTreeData = treeData.filter(node => (node.classId || "all") === selectedClassId);
 
     // Dialog State
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -66,6 +70,7 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
             level: "macro",
             name: "",
             description: "",
+            classId: selectedClassId, // Assign to the currently selected class view
             children: []
         });
         setParentLevel(null);
@@ -215,8 +220,25 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-200 border-dashed">
-                <div className="text-sm text-slate-600">
-                    Construa as ramificações hierárquicas, começando pelas <strong>Áreas/Eixos</strong> até as <strong>Evidências</strong> atômicas.
+                <div className="flex items-center gap-4">
+                    <div className="text-sm text-slate-600 max-w-md">
+                        Construa as ramificações hierárquicas, começando pelas <strong>Áreas/Eixos</strong> até as <strong>Evidências</strong> atômicas.
+                    </div>
+                    <div className="h-8 w-px bg-slate-200" />
+                    <div className="flex items-center gap-2">
+                        <Label className="text-slate-500 text-xs font-semibold uppercase tracking-wider">Turma:</Label>
+                        <Select value={selectedClassId} onValueChange={setSelectedClassId}>
+                            <SelectTrigger className="w-[200px] h-9 bg-white">
+                                <SelectValue placeholder="Selecione a Turma" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Todas as Turmas</SelectItem>
+                                {classes.map(c => (
+                                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
                 <Button onClick={handleAddRoot} className="gap-2">
                     <Plus className="w-4 h-4" />
@@ -225,17 +247,17 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
             </div>
 
             <div className="border border-slate-200 rounded-xl p-6 bg-white overflow-hidden relative min-h-[400px]">
-                {treeData.length === 0 ? (
+                {filteredTreeData.length === 0 ? (
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
                         <div className="bg-slate-50 p-4 rounded-full mb-3">
                             <Plus className="w-8 h-8 opacity-50" />
                         </div>
-                        <p>A árvore ainda está vazia.</p>
+                        <p>A árvore ainda está vazia para esta seleção.</p>
                         <p className="text-sm">Clique em "Criar Nível Macro" para iniciar.</p>
                     </div>
                 ) : (
                     <div className="space-y-4 -ml-4">
-                        {treeData.map(node => (
+                        {filteredTreeData.map(node => (
                             <TreeNode key={node.id} node={node} />
                         ))}
                     </div>

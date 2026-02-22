@@ -13,6 +13,7 @@ export interface KnowledgeNode {
     description?: string; // Optional detailed description
     libraryItemId?: string; // ONLY for L3 (Micro): points to an item in `libraryItems`
     linkedNodeIds?: string[]; // For Cross-Linking: L3/L4 Contenúdo mapping to L3/L4 Habilidades
+    classId?: string; // e.g. "all" or a specific class ID. Usually set at the macro (root) level.
     children: KnowledgeNode[]; // Nested nodes down the hierarchy
 }
 
