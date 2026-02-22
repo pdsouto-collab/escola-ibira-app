@@ -32,7 +32,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 
-export default function BibliotecaPage() {
+export function BibliotecaEditor() {
     const { libraryItems, addLibraryItem, updateLibraryItem, removeLibraryItem, renameSubGroup, deleteSubGroup } = useAppStore();
     const [searchQuery, setSearchQuery] = useState("");
     const [activeTab, setActiveTab] = useState<"skill" | "content">("skill");

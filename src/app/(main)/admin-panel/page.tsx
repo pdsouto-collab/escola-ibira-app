@@ -4,7 +4,8 @@ import { useAppStore } from "@/lib/store";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { KnowledgeTreeEditor } from "@/components/admin/knowledge-tree-editor";
 import { FinalProductsEditor } from "@/components/admin/final-products-editor";
-import { BookOpen, Layers, PackagePlus } from "lucide-react";
+import { BibliotecaEditor } from "@/components/admin/biblioteca-editor";
+import { BookOpen, Layers, PackagePlus, Library } from "lucide-react";
 
 export default function AdminPanelPage() {
     return (
@@ -21,9 +22,13 @@ export default function AdminPanelPage() {
                 </div>
 
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <Tabs defaultValue="skills" className="w-full">
+                    <Tabs defaultValue="biblioteca" className="w-full">
                         <div className="border-b px-6 py-4 bg-slate-50/50 flex justify-between items-center">
-                            <TabsList className="bg-slate-200/50 p-1">
+                            <TabsList className="bg-slate-200/50 p-1 flex-wrap h-auto">
+                                <TabsTrigger value="biblioteca" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 flex items-center gap-2 transition-all">
+                                    <Library className="w-4 h-4" />
+                                    Biblioteca
+                                </TabsTrigger>
                                 <TabsTrigger value="skills" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 flex items-center gap-2 transition-all">
                                     <BookOpen className="w-4 h-4" />
                                     Árvore de Habilidades
@@ -40,6 +45,10 @@ export default function AdminPanelPage() {
                         </div>
 
                         <div className="p-6">
+                            <TabsContent value="biblioteca" className="m-0 border-none outline-none focus-visible:ring-0">
+                                <BibliotecaEditor />
+                            </TabsContent>
+
                             <TabsContent value="skills" className="m-0 border-none outline-none focus-visible:ring-0">
                                 <KnowledgeTreeEditor treeType="skill" />
                             </TabsContent>
