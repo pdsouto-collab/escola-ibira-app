@@ -41,9 +41,14 @@ function describeArc(x: number, y: number, innerRadius: number, outerRadius: num
     ].join(" ");
 }
 
-// Counts how many leaves (L3/micro or L2/mesclado if no micro) are under a node, to divide the 360 degree circle proportionally
+// Counts how many leaves are under a node to divide the 360 circle proportionally.
+// For radially stacked outer rings, all competence nodes (maxDepth - 2) carry a weight of 1.
 function countLeavesForRender(node: KnowledgeNode, currentDepth: number, maxDepth: number): number {
-    if (!node.children || node.children.length === 0 || currentDepth === maxDepth - 1) {
+    // If the next level is the radially stacked level, we don't count its children for angular width!
+    if (currentDepth === maxDepth - 2) {
+        return 1;
+    }
+    if (!node.children || node.children.length === 0 || currentDepth >= maxDepth - 1) {
         return 1;
     }
     return node.children.reduce((acc, child) => acc + countLeavesForRender(child, currentDepth + 1, maxDepth), 0);
@@ -94,32 +99,48 @@ export function RadialMatrix({ data, treeType, drilledNodeId, onNodeClick, onNod
         startAngle: number,
         depth: number, // 0 to maxDepth - 1
         parentColor: string,
-        parentIndexOffset: number = 0
+        parentIndexOffset: number = 0,
+        parentAngleSpan?: number
     ) => {
         let currentStartAngle = startAngle;
         const elements: React.ReactNode[] = [];
+        const stackRadially = depth === maxDepth - 1;
 
         nodes.forEach((node, idx) => {
-            // How much of the pie does this node take?
-            const leaves = countLeavesForRender(node, depth, maxDepth);
-            const angleSpan = (leaves / totalLeaves) * 360;
+            let angleSpan: number;
+
+            if (stackRadially && parentAngleSpan !== undefined) {
+                angleSpan = parentAngleSpan;
+            } else {
+                const leaves = countLeavesForRender(node, depth, maxDepth);
+                angleSpan = (leaves / totalLeaves) * 360;
+            }
+
             const endAngle = currentStartAngle + angleSpan;
 
-            const innerR = centerHoleRadius + (depth * ringWidth);
-            const outerR = innerR + ringWidth;
+            let innerR: number;
+            let outerR: number;
 
-            // Give a distinct color base to the macro rings, children inherit or slightly vary
+            if (stackRadially) {
+                const stackedWidth = ringWidth / Math.max(1, nodes.length);
+                innerR = centerHoleRadius + (depth * ringWidth) + (idx * stackedWidth);
+                outerR = innerR + stackedWidth;
+            } else {
+                innerR = centerHoleRadius + (depth * ringWidth);
+                outerR = innerR + ringWidth;
+            }
+
             let baseColor = parentColor;
             if (depth === 0) {
                 baseColor = BASE_COLORS[(parentIndexOffset + idx) % BASE_COLORS.length];
             }
 
-            // Opacity gradient for visual depth
-            const opacity = depth === 0 ? 0.3 : (depth === 1 ? 0.6 : 0.9);
+            const effectiveDepth = drilledNodeId ? depth + 1 : depth;
+            const opacity = effectiveDepth === 0 ? 0.3 : (effectiveDepth === 1 ? 0.6 : 0.9);
             const fillColor = baseColor;
 
-            // The actual SVG Path
-            const pathData = describeArc(center, center, innerR, outerR, currentStartAngle + gap / 2, endAngle - gap / 2);
+            const rGap = stackRadially && nodes.length > 1 ? 1 : 0;
+            const pathData = describeArc(center, center, innerR + rGap, outerR - rGap, currentStartAngle + gap / 2, endAngle - gap / 2);
 
             elements.push(
                 <TooltipProvider key={node.id} delayDuration={300}>
@@ -131,8 +152,8 @@ export function RadialMatrix({ data, treeType, drilledNodeId, onNodeClick, onNod
                                     fill={fillColor}
                                     fillOpacity={opacity}
                                     stroke="white"
-                                    strokeWidth="2"
-                                    className="cursor-pointer hover:opacity-100 transition-opacity drop-shadow-sm"
+                                    strokeWidth="1.5"
+                                    className="cursor-pointer hover:opacity-100 hover:stroke-slate-300 transition-all drop-shadow-sm"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         onNodeClick?.(node);
@@ -142,21 +163,6 @@ export function RadialMatrix({ data, treeType, drilledNodeId, onNodeClick, onNod
                                         onNodeDoubleClick?.(node);
                                     }}
                                 />
-
-                                {/* Label if there is enough space */}
-                                {angleSpan > 10 && (
-                                    <text
-                                        x={polarToCartesian(center, center, innerR + (ringWidth / 2), currentStartAngle + angleSpan / 2).x}
-                                        y={polarToCartesian(center, center, innerR + (ringWidth / 2), currentStartAngle + angleSpan / 2).y}
-                                        textAnchor="middle"
-                                        dominantBaseline="middle"
-                                        fill={depth === 0 ? '#1e293b' : 'white'}
-                                        className="text-[10px] font-medium pointer-events-none select-none"
-                                        style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
-                                    >
-                                        {node.name.length > 20 ? node.name.slice(0, 18) + '...' : node.name}
-                                    </text>
-                                )}
                             </g>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="max-w-xs z-[9999] pointer-events-none">
@@ -170,13 +176,14 @@ export function RadialMatrix({ data, treeType, drilledNodeId, onNodeClick, onNod
                 </TooltipProvider>
             );
 
-            // Render children for the next ring out, if we haven't hit max depth limits
             if (node.children && node.children.length > 0 && depth < maxDepth - 1) {
-                const childElements = renderArcs(node.children, currentStartAngle, depth + 1, baseColor, parentIndexOffset + idx);
+                const childElements = renderArcs(node.children, currentStartAngle, depth + 1, baseColor, parentIndexOffset + idx, angleSpan);
                 elements.push(...childElements);
             }
 
-            currentStartAngle += angleSpan;
+            if (!stackRadially) {
+                currentStartAngle += angleSpan;
+            }
         });
 
         return elements;
