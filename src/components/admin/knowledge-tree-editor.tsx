@@ -54,7 +54,9 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
 
     // Filter only the roots. Children belong to whatever root they are in.
-    const filteredTreeData = treeData.filter(node => (node.classId || "all") === selectedClassId);
+    const filteredTreeData = selectedClassId === "all"
+        ? treeData
+        : treeData.filter(node => node.classId === selectedClassId);
 
     // Dialog State
     const [isDialogOpen, setIsDialogOpen] = useState(false);
