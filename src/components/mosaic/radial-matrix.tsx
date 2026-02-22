@@ -77,8 +77,34 @@ export function RadialMatrix({ data, treeType, drilledNodeId, onNodeClick, onNod
     // Drilled view: Competencia (Anel 1) > Habilidade (Anel 2) = 2 rings max
     const maxDepth = drilledNodeId ? 2 : 3;
 
-    // Width of each ring
-    const ringWidth = (maxRadius - centerHoleRadius) / maxDepth;
+    // Proportional widths for rings
+    // 3 rings (default): 15% (Macro), 15% (Mesclado), 70% (Micro)
+    // 2 rings (drilled): 25% (Mesclado), 75% (Micro)
+    const getRingRadii = (depth: number) => {
+        const totalUsableRadius = maxRadius - centerHoleRadius;
+
+        if (maxDepth === 3) {
+            const ratios = [0.15, 0.15, 0.70];
+            let innerOffset = 0;
+            for (let i = 0; i < depth; i++) {
+                innerOffset += ratios[i] * totalUsableRadius;
+            }
+            const innerR = centerHoleRadius + innerOffset;
+            const outerR = innerR + (ratios[depth] * totalUsableRadius);
+            return { innerR, outerR };
+        } else {
+            // maxDepth === 2 (Drilled)
+            const ratios = [0.25, 0.75];
+            let innerOffset = 0;
+            for (let i = 0; i < depth; i++) {
+                innerOffset += ratios[i] * totalUsableRadius;
+            }
+            const innerR = centerHoleRadius + innerOffset;
+            const outerR = innerR + (ratios[depth] * totalUsableRadius);
+            return { innerR, outerR };
+        }
+    };
+
     const gap = 2; // Gap between slices
 
     // Truncate the tree if needed to only show up to maxDepth layers
@@ -118,16 +144,18 @@ export function RadialMatrix({ data, treeType, drilledNodeId, onNodeClick, onNod
 
             const endAngle = currentStartAngle + angleSpan;
 
-            let innerR: number;
-            let outerR: number;
+            const { innerR: baseInnerR, outerR: baseOuterR } = getRingRadii(depth);
+            let innerR = baseInnerR;
+            let outerR = baseOuterR;
 
             if (stackRadially) {
-                const stackedWidth = ringWidth / Math.max(1, nodes.length);
-                innerR = centerHoleRadius + (depth * ringWidth) + (idx * stackedWidth);
+                const currentRingWidth = baseOuterR - baseInnerR;
+                const stackedWidth = currentRingWidth / Math.max(1, nodes.length);
+                innerR = baseInnerR + (idx * stackedWidth);
                 outerR = innerR + stackedWidth;
             } else {
-                innerR = centerHoleRadius + (depth * ringWidth);
-                outerR = innerR + ringWidth;
+                innerR = baseInnerR;
+                outerR = baseOuterR;
             }
 
             let baseColor = parentColor;
