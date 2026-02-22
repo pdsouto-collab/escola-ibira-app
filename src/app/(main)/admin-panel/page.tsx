@@ -3,7 +3,8 @@
 import { useAppStore } from "@/lib/store";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { KnowledgeTreeEditor } from "@/components/admin/knowledge-tree-editor";
-import { BookOpen, Layers } from "lucide-react";
+import { FinalProductsEditor } from "@/components/admin/final-products-editor";
+import { BookOpen, Layers, PackagePlus } from "lucide-react";
 
 export default function AdminPanelPage() {
     return (
@@ -31,6 +32,10 @@ export default function AdminPanelPage() {
                                     <Layers className="w-4 h-4" />
                                     Árvore de Conteúdos
                                 </TabsTrigger>
+                                <TabsTrigger value="products" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 flex items-center gap-2 transition-all">
+                                    <PackagePlus className="w-4 h-4" />
+                                    Produtos Finais
+                                </TabsTrigger>
                             </TabsList>
                         </div>
 
@@ -41,6 +46,10 @@ export default function AdminPanelPage() {
 
                             <TabsContent value="contents" className="m-0 border-none outline-none focus-visible:ring-0">
                                 <KnowledgeTreeEditor treeType="content" />
+                            </TabsContent>
+
+                            <TabsContent value="products" className="m-0 border-none outline-none focus-visible:ring-0">
+                                <FinalProductsEditor />
                             </TabsContent>
                         </div>
                     </Tabs>

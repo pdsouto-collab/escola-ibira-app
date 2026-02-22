@@ -31,13 +31,14 @@ function NewProjectWizardContent() {
         schedule,
         updateSchedule,
         libraryItems,
+        finalProductTypes,
         students,
         users
     } = useAppStore();
 
     const [isEditMode, setIsEditMode] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
-
+    const [selectedClass, setSelectedClass] = useState<string>("all");
     // Local form state
     const [formData, setFormData] = useState({
         isTemplate: "start_immediately",
@@ -56,10 +57,12 @@ function NewProjectWizardContent() {
         projectSchedule: [] as Partial<ScheduleItem>[]
     });
 
-    const [newSession, setNewSession] = useState<{ date: Date, time: string, endTime: string, description: string }>({
-        date: new Date(),
-        time: "09:00",
-        endTime: "10:00",
+    const [newSession, setNewSession] = useState<{ date: string, time: string, endTime: string, description: string, title: string, type: "activity" | "meal" | "care" }>({
+        date: new Date().toISOString().split('T')[0],
+        time: "",
+        endTime: "",
+        title: "",
+        type: "activity",
         description: ""
     });
 
@@ -121,7 +124,9 @@ function NewProjectWizardContent() {
         }
 
         if (formData.projectSchedule.length > 0) {
-            updateSchedule(projectId, formData.projectSchedule as ScheduleItem[]);
+            const projectItems = formData.projectSchedule.map(item => ({ ...item, projectId }) as ScheduleItem);
+            const remainingSchedule = schedule.filter(s => s.projectId !== projectId);
+            updateSchedule([...remainingSchedule, ...projectItems]);
         }
 
         setCurrentStep(5);
@@ -130,7 +135,7 @@ function NewProjectWizardContent() {
     const steps = [
         { id: 1, label: "Detalhes do Projeto" },
         { id: 2, label: "Participantes" },
-        { id: 3, label: "Competências" },
+        { id: 3, label: "Conteúdos e Habilidades" },
         { id: 4, label: "Planejamento" }
     ];
 
@@ -252,9 +257,9 @@ function NewProjectWizardContent() {
                                     <Select value={formData.finalProduct} onValueChange={v => setFormData({ ...formData, finalProduct: v })}>
                                         <SelectTrigger className="mt-2 text-slate-700"><SelectValue /></SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="None">Nenhum</SelectItem>
-                                            <SelectItem value="Arts and Crafts">Artes e Ofícios</SelectItem>
-                                            <SelectItem value="Document">Documento</SelectItem>
+                                            {finalProductTypes.map(type => (
+                                                <SelectItem key={type.id} value={type.name}>{type.name}</SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -276,18 +281,36 @@ function NewProjectWizardContent() {
                                 <div className="flex items-center justify-between border-b pb-4">
                                     <h3 className="font-bold text-lg">Alunos</h3>
                                     <div className="flex gap-4">
-                                        <Select><SelectTrigger className="w-32"><SelectValue placeholder="Ano" /></SelectTrigger><SelectContent><SelectItem value="2025">2025</SelectItem></SelectContent></Select>
-                                        <Select><SelectTrigger className="w-40"><SelectValue placeholder="Turma" /></SelectTrigger><SelectContent><SelectItem value="all">Todas as Turmas</SelectItem></SelectContent></Select>
+                                        <Button
+                                            variant="outline"
+                                            onClick={() => {
+                                                const displayedStudents = selectedClass === "all" ? students : students.filter(s => s.classId === selectedClass);
+                                                const newIds = displayedStudents.map(s => s.id);
+                                                const mergedSet = new Set([...formData.students, ...newIds]);
+                                                setFormData({ ...formData, students: Array.from(mergedSet) });
+                                            }}
+                                        >
+                                            Selecionar todos
+                                        </Button>
+                                        <Select value={selectedClass} onValueChange={setSelectedClass}>
+                                            <SelectTrigger className="w-48"><SelectValue placeholder="Turma" /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">Todas as Turmas</SelectItem>
+                                                {classes.map(c => (
+                                                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                    {students.slice(0, 12).map(student => (
+                                    {(selectedClass === "all" ? students : students.filter(s => s.classId === selectedClass)).map(student => (
                                         <button key={student.id} onClick={() => {
                                             const newStudents = formData.students.includes(student.id) ? formData.students.filter(id => id !== student.id) : [...formData.students, student.id];
                                             setFormData({ ...formData, students: newStudents });
                                         }} className={cn("flex items-center gap-3 p-3 border rounded-xl text-left transition-all", formData.students.includes(student.id) ? "border-indigo-600 bg-indigo-50/30" : "hover:bg-slate-50")}>
                                             <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-200">
-                                                {student.photoUrl && <Image src={student.photoUrl} alt="" width={40} height={40} />}
+                                                {student.photo && <Image src={student.photo} alt="" width={40} height={40} />}
                                             </div>
                                             <div className="flex-1">
                                                 <p className="font-semibold text-sm line-clamp-1">{student.name}</p>
@@ -312,8 +335,8 @@ function NewProjectWizardContent() {
                         <div className="flex h-full min-h-[600px] animate-in fade-in duration-300">
                             {/* Main Selection Area */}
                             <div className="flex-1 p-8">
-                                <h2 className="text-2xl font-bold text-slate-800 mb-2">Competências e Habilidades</h2>
-                                <p className="text-slate-500 mb-8">Clique em uma disciplina para expandir e associar habilidades ao projeto.</p>
+                                <h2 className="text-2xl font-bold text-slate-800 mb-2">Conteúdos e Habilidades</h2>
+                                <p className="text-slate-500 mb-8">Clique em uma disciplina para expandir e associar habilidades e conteúdos ao projeto.</p>
 
                                 <Accordion type="multiple" className="space-y-4">
                                     {subjects.map(subject => {
@@ -331,7 +354,7 @@ function NewProjectWizardContent() {
                                                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-2">
                                                         {subjectItems.map(item => {
                                                             const isSelected = formData.bnccSkills.includes(item.id) || formData.customContent.includes(item.id);
-                                                            const isBncc = item.tags?.includes("BNCC");
+                                                            const isBncc = item.isBNCC;
                                                             return (
                                                                 <div key={item.id} onClick={() => toggleSkill(item.id, isBncc || false)} className={cn("border-2 rounded-xl p-4 cursor-pointer transition-all relative overflow-hidden", isSelected ? "border-indigo-600 shadow-sm" : "border-slate-200 hover:border-indigo-300")}>
                                                                     <div className="flex justify-between items-start mb-2">
@@ -340,7 +363,8 @@ function NewProjectWizardContent() {
                                                                             {isSelected && <Check className="w-3 h-3 text-white" />}
                                                                         </div>
                                                                     </div>
-                                                                    <h4 className="font-bold text-slate-800 text-sm mb-1">{item.title}</h4>
+                                                                    {isBncc && item.code && <p className="text-emerald-700 font-mono text-[10px] mb-1 font-bold">{item.code}</p>}
+                                                                    <h4 className="font-bold text-slate-800 text-sm mb-1">{item.name}</h4>
                                                                     <p className="text-slate-500 text-xs line-clamp-3 leading-relaxed">{item.description}</p>
                                                                 </div>
                                                             );
@@ -365,9 +389,10 @@ function NewProjectWizardContent() {
                                                 const skill = libraryItems.find(s => s.id === id);
                                                 if (!skill) return null;
                                                 return (
-                                                    <div key={id} className="bg-white p-3 rounded-lg border shadow-sm relative pr-8">
-                                                        <span className="text-xs font-bold text-emerald-600 block mb-1">{skill.title}</span>
-                                                        <button onClick={() => toggleSkill(id, true)} className="absolute top-3 right-3 text-slate-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+                                                    <div key={id} className="bg-emerald-50 p-3 rounded-lg border border-emerald-100 shadow-sm relative pr-8">
+                                                        <span className="text-xs font-bold text-emerald-700 block mb-1">{skill.name}</span>
+                                                        <p className="text-[10px] text-emerald-600/80 line-clamp-1">{skill.description}</p>
+                                                        <button onClick={() => toggleSkill(id, true)} className="absolute top-3 right-2 text-emerald-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
                                                     </div>
                                                 );
                                             })}
@@ -375,9 +400,10 @@ function NewProjectWizardContent() {
                                                 const content = libraryItems.find(s => s.id === id);
                                                 if (!content) return null;
                                                 return (
-                                                    <div key={id} className="bg-white p-3 rounded-lg border shadow-sm relative pr-8">
-                                                        <span className="text-xs font-bold text-sky-600 block mb-1">{content.title}</span>
-                                                        <button onClick={() => toggleSkill(id, false)} className="absolute top-3 right-3 text-slate-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+                                                    <div key={id} className="bg-sky-50 p-3 rounded-lg border border-sky-100 shadow-sm relative pr-8">
+                                                        <span className="text-xs font-bold text-sky-700 block mb-1">{content.name}</span>
+                                                        <p className="text-[10px] text-sky-600/80 line-clamp-1">{content.description}</p>
+                                                        <button onClick={() => toggleSkill(id, false)} className="absolute top-3 right-2 text-sky-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
                                                     </div>
                                                 );
                                             })}
@@ -430,25 +456,42 @@ function NewProjectWizardContent() {
                                     <h4 className="font-bold text-sm text-indigo-800 mb-4 flex items-center gap-2"><Plus className="w-4 h-4" /> Adicionar Sessão</h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
-                                            <Label className="text-xs font-semibold text-slate-600">Nome da Sessão</Label>
-                                            <Input className="mt-1" value={newSession.description} onChange={e => setNewSession({ ...newSession, description: e.target.value })} placeholder="Ex: Introdução & Brainstorming" />
+                                            <Label className="text-xs font-semibold text-slate-600">Título</Label>
+                                            <Input className="mt-1" value={newSession.title} onChange={e => setNewSession({ ...newSession, title: e.target.value })} placeholder="Ex: Introdução & Brainstorming" />
                                         </div>
-                                        <div></div>
+                                        <div>
+                                            <Label className="text-xs font-semibold text-slate-600">Data</Label>
+                                            <Input type="date" className="mt-1" value={newSession.date} onChange={e => setNewSession({ ...newSession, date: e.target.value })} />
+                                        </div>
+                                        <div>
+                                            <Label className="text-xs font-semibold text-slate-600">Horário Inicial</Label>
+                                            <Input type="time" className="mt-1" value={newSession.time} onChange={e => setNewSession({ ...newSession, time: e.target.value })} />
+                                        </div>
+                                        <div>
+                                            <Label className="text-xs font-semibold text-slate-600">Horário Final</Label>
+                                            <Input type="time" className="mt-1" value={newSession.endTime} onChange={e => setNewSession({ ...newSession, endTime: e.target.value })} />
+                                        </div>
+                                        <div className="md:col-span-2">
+                                            <Label className="text-xs font-semibold text-slate-600">Descrição</Label>
+                                            <Textarea className="mt-1" value={newSession.description} onChange={e => setNewSession({ ...newSession, description: e.target.value })} placeholder="Detalhes da atividade..." />
+                                        </div>
                                     </div>
                                     <div className="mt-4 flex justify-end">
                                         <Button variant="secondary" onClick={() => {
-                                            if (newSession.description) {
+                                            if (newSession.title) {
                                                 setFormData({
                                                     ...formData,
                                                     projectSchedule: [...formData.projectSchedule, {
                                                         id: Math.random().toString(),
-                                                        title: newSession.description,
-                                                        date: newSession.date.toISOString(),
+                                                        title: newSession.title,
+                                                        type: newSession.type,
+                                                        date: newSession.date,
                                                         time: newSession.time,
-                                                        endTime: newSession.endTime
+                                                        endTime: newSession.endTime,
+                                                        description: newSession.description
                                                     }]
                                                 });
-                                                setNewSession({ ...newSession, description: "" });
+                                                setNewSession({ ...newSession, title: "", description: "" });
                                             }
                                         }}>Adicionar à Linha do Tempo</Button>
                                     </div>

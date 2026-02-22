@@ -11,7 +11,8 @@ import {
     mockClasses, SchoolClass, // Import mockClasses
     User, mockUsers, // Import User types
     LibraryItem, mockLibraryItems, // Import new library items
-    KnowledgeNode, mockSkillsTree, mockContentsTree // Import new hierarchy
+    KnowledgeNode, mockSkillsTree, mockContentsTree, // Import new hierarchy
+    FinalProductType, mockFinalProductTypes // Import final product types
 } from "@/lib/data";
 
 interface AppState {
@@ -30,6 +31,7 @@ interface AppState {
     bnccProgress: Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>;
     skillsTree: KnowledgeNode[];
     contentsTree: KnowledgeNode[];
+    finalProductTypes: FinalProductType[];
 }
 
 interface AppContextType extends AppState {
@@ -85,6 +87,11 @@ interface AppContextType extends AppState {
     addKnowledgeNode: (treeType: "skill" | "content", parentId: string | null, node: KnowledgeNode) => void;
     updateKnowledgeNode: (treeType: "skill" | "content", id: string, updates: Partial<KnowledgeNode>) => void;
     removeKnowledgeNode: (treeType: "skill" | "content", id: string) => void;
+
+    // Final Product Types
+    addFinalProductType: (type: FinalProductType) => void;
+    updateFinalProductType: (id: string, updates: Partial<FinalProductType>) => void;
+    removeFinalProductType: (id: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -192,6 +199,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [bnccProgress, setBnccProgress] = useState<Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>>({});
     const [skillsTree, setSkillsTree] = useState<KnowledgeNode[]>(mockSkillsTree);
     const [contentsTree, setContentsTree] = useState<KnowledgeNode[]>(mockContentsTree);
+    const [finalProductTypes, setFinalProductTypes] = useState<FinalProductType[]>(mockFinalProductTypes);
 
     const [isLoaded, setIsLoaded] = useState(false);
 
@@ -496,7 +504,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             bnccProgress, updateBNCCStatus,
             libraryItems, addLibraryItem, updateLibraryItem, removeLibraryItem,
             renameSubGroup, deleteSubGroup,
-            skillsTree, contentsTree, addKnowledgeNode, updateKnowledgeNode, removeKnowledgeNode
+            skillsTree, contentsTree, addKnowledgeNode, updateKnowledgeNode, removeKnowledgeNode,
+            finalProductTypes,
+            addFinalProductType: (type) => setFinalProductTypes(prev => [...prev, type]),
+            updateFinalProductType: (id, updates) => setFinalProductTypes(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t)),
+            removeFinalProductType: (id) => setFinalProductTypes(prev => prev.filter(t => t.id !== id))
         }}>
             {children}
         </AppContext.Provider>
