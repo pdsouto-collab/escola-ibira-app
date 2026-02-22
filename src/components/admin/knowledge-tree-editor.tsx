@@ -325,7 +325,7 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
                                 </div>
                             )}
 
-                            {/* Cross-Linking UI for Content Nodes */}
+                            {/* Cross-Linking UI for Content Nodes - Temporarily Removed
                             {canCrossLink && linkableSkills.length > 0 && (
                                 <div className="space-y-3 pt-4 border-t mt-4">
                                     <Label className="flex items-center gap-2">
@@ -362,6 +362,7 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
                                     </ScrollArea>
                                 </div>
                             )}
+                            */}
 
                         </div>
                     )}
