@@ -17,7 +17,8 @@ import {
     LogOut,
     PartyPopper,
     GraduationCap,
-    RefreshCw
+    RefreshCw,
+    Aperture
 } from "lucide-react";
 import { SchoolLogo } from "@/components/ui/school-logo";
 
@@ -25,7 +26,7 @@ import { BookOpen } from "lucide-react";
 
 const navigation = [
     { name: "Início", href: "/", icon: LayoutDashboard },
-    { name: "Práticas", href: "/mosaico", icon: Grid2X2 },
+    { name: "Matriz Circular", href: "/mosaico", icon: Aperture },
     { name: "Alunos / Turmas", href: "/alunos", icon: Users },
     { name: "Pendências", href: "/pendencias", icon: CheckCircle2 },
     { name: "Rotinas", href: "/agenda", icon: CalendarDays },
