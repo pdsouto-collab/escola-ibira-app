@@ -347,6 +347,26 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
                                 </div>
                             )}
 
+                            {currentNode.level === "macro" && (
+                                <div className="space-y-2">
+                                    <Label>Turma Associada</Label>
+                                    <Select
+                                        value={currentNode.classId || "all"}
+                                        onValueChange={(val) => setCurrentNode(prev => ({ ...prev, classId: val }))}
+                                    >
+                                        <SelectTrigger className="w-full bg-white">
+                                            <SelectValue placeholder="Selecione a Turma" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">Todas as Turmas (Padrão)</SelectItem>
+                                            {classes.map(c => (
+                                                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
+
                             {/* Cross-Linking UI for Content Nodes - Temporarily Removed
                             {canCrossLink && linkableSkills.length > 0 && (
                                 <div className="space-y-3 pt-4 border-t mt-4">
