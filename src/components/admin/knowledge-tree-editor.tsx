@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useAppStore } from "@/lib/store";
 import { KnowledgeNode, KnowledgeLevel, LibraryItem } from "@/lib/data";
-import { ChevronRight, ChevronDown, Plus, Edit2, Trash2, Link as LinkIcon, BookOpen } from "lucide-react";
+import { ChevronRight, ChevronDown, Plus, Edit2, Trash2, Link as LinkIcon, BookOpen, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -126,9 +126,19 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
         setCurrentNode(null);
     };
 
-    // Derived states for Dialog
+    const [libSearchQuery, setLibSearchQuery] = useState("");
     const isLevel3 = currentNode?.level === "micro";
-    const availableLibraryItems = libraryItems.filter(item => item.type === treeType);
+
+    // Filter library items by search query and type
+    const availableLibraryItems = libraryItems
+        .filter(item => item.type === treeType)
+        .filter(item => {
+            const query = libSearchQuery.toLowerCase();
+            return item.name.toLowerCase().includes(query) ||
+                item.description.toLowerCase().includes(query) ||
+                (item.code && item.code.toLowerCase().includes(query)) ||
+                item.subGroup.toLowerCase().includes(query);
+        });
 
     // Helper to get flat list of nodes from a tree by level (for cross-linking)
     const getNodesByLevel = (nodes: KnowledgeNode[], level: KnowledgeLevel): KnowledgeNode[] => {
@@ -174,14 +184,14 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
                                 <Badge variant="outline" className="text-[10px] uppercase font-semibold tracking-wider bg-white/50 border-black/10">
                                     {LEVEL_LABELS[treeType][node.level]}
                                 </Badge>
-                                {isLevel3 && node.libraryItemId && (
+                                {node.level === "micro" && node.libraryItemId && (
                                     <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] flex items-center gap-1">
                                         <BookOpen className="w-3 h-3" /> Vinculado à Biblioteca
                                     </Badge>
                                 )}
                             </div>
                             <h4 className="font-semibold text-sm leading-tight pr-2">
-                                {isLevel3 && node.libraryItemId ? (
+                                {node.level === "micro" && node.libraryItemId ? (
                                     <>
                                         <span className="text-slate-500 font-mono mr-2">{node.libraryItemId}</span>
                                         {node.name}
@@ -267,8 +277,11 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
             </div>
 
             {/* Dialog for Add/Edit Node */}
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent>
+            <Dialog open={isDialogOpen} onOpenChange={(open) => {
+                setIsDialogOpen(open);
+                if (!open) setLibSearchQuery(""); // Reset search on close
+            }}>
+                <DialogContent className="max-w-[600px]">
                     <DialogHeader>
                         <DialogTitle>
                             {editMode === "add" ? "Adicionar " : "Editar "}
@@ -276,7 +289,7 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
                         </DialogTitle>
                         <DialogDescription>
                             {isLevel3
-                                ? "Selecione o item diretamente do seu Banco da Biblioteca."
+                                ? "Busque e selecione o item diretamente do seu Banco da Biblioteca."
                                 : "Preencha as informações do nó e descreva o seu significado."}
                         </DialogDescription>
                     </DialogHeader>
@@ -284,45 +297,68 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
                     {currentNode && (
                         <div className="space-y-4 py-4">
 
-                            {/* IF LEVEL 3: Use Select from Library */}
+                            {/* IF LEVEL 3: Use Search + Select from Library */}
                             {isLevel3 ? (
-                                <div className="space-y-2">
-                                    <Label>Item da Biblioteca</Label>
-                                    <Select
-                                        value={currentNode.libraryItemId || ""}
-                                        onValueChange={(val) => {
-                                            const item = availableLibraryItems.find(i => i.code === val || i.id === val);
-                                            setCurrentNode(prev => ({
-                                                ...prev,
-                                                libraryItemId: item?.code || item?.id,
-                                                name: item?.description || item?.name, // Use description for BNCC as it's the actual skill text
-                                                description: item?.isBNCC ? `BNCC: ${item.subGroup}` : item?.description
-                                            }));
-                                        }}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Selecione..." />
-                                        </SelectTrigger>
-                                        <SelectContent className="z-[9999] max-h-64">
-                                            {availableLibraryItems.map(item => (
-                                                <SelectItem key={item.id} value={item.code || item.id}>
-                                                    <div className="flex flex-col items-start text-left max-w-[400px]">
-                                                        {item.isBNCC ? (
-                                                            <>
-                                                                <span className="font-semibold text-xs">{item.code} - {item.subGroup}</span>
-                                                                <span className="text-xs text-slate-500 line-clamp-1">{item.description}</span>
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <span className="font-semibold text-xs">{item.name}</span>
-                                                                <span className="text-xs text-slate-500 line-clamp-1">{item.subGroup}</span>
-                                                            </>
-                                                        )}
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label>Buscar na Biblioteca (Nome ou Código BNCC)</Label>
+                                        <div className="relative">
+                                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                                            <Input
+                                                placeholder="Ex: EF01LP, Números, Natureza..."
+                                                className="pl-9"
+                                                value={libSearchQuery}
+                                                onChange={(e) => setLibSearchQuery(e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label>Item Selecionado</Label>
+                                        <Select
+                                            value={currentNode.libraryItemId || ""}
+                                            onValueChange={(val) => {
+                                                const item = libraryItems.find(i => i.code === val || i.id === val);
+                                                setCurrentNode(prev => ({
+                                                    ...prev,
+                                                    libraryItemId: item?.code || item?.id,
+                                                    name: item?.description || item?.name,
+                                                    description: item?.isBNCC ? `BNCC: ${item.subGroup}` : item?.description
+                                                }));
+                                            }}
+                                        >
+                                            <SelectTrigger className="h-auto py-3">
+                                                <SelectValue placeholder="Selecione um item da lista abaixo..." />
+                                            </SelectTrigger>
+                                            <SelectContent className="z-[9999] max-h-[300px]">
+                                                {availableLibraryItems.length === 0 ? (
+                                                    <div className="p-4 text-center text-sm text-slate-500">
+                                                        Nenhum item encontrado para "{libSearchQuery}"
                                                     </div>
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                                ) : (
+                                                    availableLibraryItems.map(item => (
+                                                        <SelectItem key={item.id} value={item.code || item.id}>
+                                                            <div className="flex flex-col items-start text-left py-1">
+                                                                <div className="flex items-center gap-2 mb-1">
+                                                                    {item.code && <Badge variant="outline" className="text-[10px] font-mono">{item.code}</Badge>}
+                                                                    <span className="font-bold text-xs text-slate-700">{item.subGroup}</span>
+                                                                    <Badge className="text-[9px] h-4 px-1 bg-slate-100 text-slate-600 border-none">{item.grade === 'all' ? 'Geral' : item.grade}</Badge>
+                                                                </div>
+                                                                <span className="text-sm font-medium leading-tight line-clamp-2">
+                                                                    {item.name}
+                                                                </span>
+                                                                {item.isBNCC && (
+                                                                    <span className="text-[11px] text-slate-500 mt-1 line-clamp-1 italic">
+                                                                        {item.description}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </SelectItem>
+                                                    ))
+                                                )}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </div>
                             ) : (
                                 // Normal Input for L1, L2, L4

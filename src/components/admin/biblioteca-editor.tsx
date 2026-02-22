@@ -35,6 +35,7 @@ import {
 export function BibliotecaEditor() {
     const { libraryItems, addLibraryItem, updateLibraryItem, removeLibraryItem, renameSubGroup, deleteSubGroup } = useAppStore();
     const [searchQuery, setSearchQuery] = useState("");
+    const [selectedGrade, setSelectedGrade] = useState<string>("all");
     const [activeTab, setActiveTab] = useState<"skill" | "content">("skill");
 
     // Dialog State
@@ -46,6 +47,7 @@ export function BibliotecaEditor() {
         name: "",
         description: "",
         subGroup: "",
+        grade: "all" as any,
         isCustomGroup: false
     });
 
@@ -66,6 +68,7 @@ export function BibliotecaEditor() {
                 name: item.name,
                 description: item.description,
                 subGroup: item.subGroup,
+                grade: item.grade || "all",
                 isCustomGroup: false
             });
         } else {
@@ -75,6 +78,7 @@ export function BibliotecaEditor() {
                 name: "",
                 description: "",
                 subGroup: existingGroups[0] || "",
+                grade: selectedGrade === "all" ? "all" : selectedGrade as any,
                 isCustomGroup: false
             });
         }
@@ -89,7 +93,8 @@ export function BibliotecaEditor() {
                 type: formData.type,
                 name: formData.name,
                 description: formData.description,
-                subGroup: formData.subGroup
+                subGroup: formData.subGroup,
+                grade: formData.grade
             });
         } else {
             addLibraryItem({
@@ -98,6 +103,7 @@ export function BibliotecaEditor() {
                 name: formData.name,
                 description: formData.description,
                 subGroup: formData.subGroup,
+                grade: formData.grade,
                 isBNCC: false // Custom items are never BNCC
             });
         }
@@ -112,6 +118,7 @@ export function BibliotecaEditor() {
             name: `Exemplo de ${newGroupName.trim()}`,
             description: `Este item foi criado automaticamente para que o grupo "${newGroupName.trim()}" apareça na lista. Você pode editá-lo para adicionar um conteúdo real ou excluí-lo após adicionar outros itens a este grupo.`,
             subGroup: newGroupName.trim(),
+            grade: "all",
             isBNCC: false
         });
         setNewGroupName("");
@@ -128,16 +135,18 @@ export function BibliotecaEditor() {
         }
     };
 
-    // Filter items based on tab and search
+    // Filter items based on tab, search and grade
     const filteredItems = libraryItems.filter(item => {
         const matchesTab = item.type === activeTab;
+        const matchesGrade = selectedGrade === "all" || item.grade === selectedGrade || item.grade === "all";
+
         const query = searchQuery.toLowerCase();
         const matchesSearch = item.name.toLowerCase().includes(query) ||
             item.description.toLowerCase().includes(query) ||
             item.subGroup.toLowerCase().includes(query) ||
             (item.code && item.code.toLowerCase().includes(query));
 
-        return matchesTab && matchesSearch;
+        return matchesTab && matchesGrade && matchesSearch;
     });
 
     // Group items by subGroup
@@ -161,6 +170,22 @@ export function BibliotecaEditor() {
                     <p className="text-slate-500 mt-1">Gerencie habilidades da BNCC e conteúdos personalizados da escola.</p>
                 </div>
                 <div className="flex items-center gap-3">
+                    <Select value={selectedGrade} onValueChange={setSelectedGrade}>
+                        <SelectTrigger className="w-[180px] bg-white border-slate-200">
+                            <Filter className="w-4 h-4 mr-2 text-slate-400" />
+                            <SelectValue placeholder="Filtrar por Etapa" />
+                        </SelectTrigger>
+                        <SelectContent className="z-[9999]">
+                            <SelectItem value="all">Todas as Etapas</SelectItem>
+                            <SelectItem value="infantil">Educação Infantil</SelectItem>
+                            <SelectItem value="1ano">1º Ano</SelectItem>
+                            <SelectItem value="2ano">2º Ano</SelectItem>
+                            <SelectItem value="3ano">3º Ano</SelectItem>
+                            <SelectItem value="4ano">4º Ano</SelectItem>
+                            <SelectItem value="5ano">5º Ano</SelectItem>
+                        </SelectContent>
+                    </Select>
+
                     <div className="relative flex-1 md:w-64">
                         <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                         <Input
@@ -300,6 +325,26 @@ export function BibliotecaEditor() {
                                 <SelectContent className="z-[9999]">
                                     <SelectItem value="skill">Habilidades</SelectItem>
                                     <SelectItem value="content">Conteúdos</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Etapa / Segmento</label>
+                            <Select
+                                value={formData.grade}
+                                onValueChange={(val) => setFormData({ ...formData, grade: val as any })}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecione a etapa" />
+                                </SelectTrigger>
+                                <SelectContent className="z-[9999]">
+                                    <SelectItem value="all">Todas as Etapas (Geral)</SelectItem>
+                                    <SelectItem value="infantil">Educação Infantil</SelectItem>
+                                    <SelectItem value="1ano">1º Ano</SelectItem>
+                                    <SelectItem value="2ano">2º Ano</SelectItem>
+                                    <SelectItem value="3ano">3º Ano</SelectItem>
+                                    <SelectItem value="4ano">4º Ano</SelectItem>
+                                    <SelectItem value="5ano">5º Ano</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>

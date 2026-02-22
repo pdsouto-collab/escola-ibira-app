@@ -205,7 +205,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     // Load from LocalStorage on mount
     useEffect(() => {
-        const CURRENT_VERSION = "1.1"; // Increment this to force updates
+        const CURRENT_VERSION = "1.2"; // Increment this to force updates
         const storedVersion = localStorage.getItem("app_version");
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -229,16 +229,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             // 1. Force update projects to include new fields (like bnccSkillIds in "Horta Comunitária")
             setProjects(initialProjects);
 
-            // 2. Load other data as usual (or reset if needed, but here we just want to fix projects)
-            load("students", setStudents, mockStudents);
-            load("classes", setClasses, mockClasses);
-            load("schedule", setSchedule, mockSchedule);
-            load("dailyLogs", setDailyLogs, mockDailyLogs);
-            load("tasks", setTasks, initialTasks);
-            load("muralEvents", setMuralEvents, initialMuralEvents);
-            load("messages", setMessages, initialMessages);
-            load("mosaicData", setMosaicData, mockRecursiveDataSkills);
-            load("libraryItems", setLibraryItems, mockLibraryItems);
+            // 2. Force update library items to include grades
+            setLibraryItems(mockLibraryItems);
             load("bnccProgress", setBnccProgress, {});
             load("skillsTree", setSkillsTree, mockSkillsTree);
             load("contentsTree", setContentsTree, mockContentsTree);

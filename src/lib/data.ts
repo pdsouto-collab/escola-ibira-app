@@ -692,6 +692,8 @@ export interface PortfolioEntry {
 }
 
 // --- NEW ENHANCED LIBRARY STRUCTURE ---
+export type Grade = "infantil" | "1ano" | "2ano" | "3ano" | "4ano" | "5ano" | "all";
+
 export interface LibraryItem {
     id: string;
     type: "skill" | "content";
@@ -700,6 +702,7 @@ export interface LibraryItem {
     description: string; // The full text or content detail
     isBNCC: boolean;
     subGroup: string; // e.g. "Ciências", "Matemática", "Projetos Culturais"
+    grade: Grade; // Target school stage
 }
 
 import { bnccData } from "./bncc-data";
@@ -708,8 +711,8 @@ import { bnccData } from "./bncc-data";
 export const mockLibraryItems: LibraryItem[] = [
     ...bnccData,
     // --- CUSTOM CATEGORY EXAMPLES ---
-    { id: "lib-custom-sk-01", type: "skill", name: "Inteligência Emocional", description: "Identificar e nomear as próprias emoções em situações de conflito no parquinho.", isBNCC: false, subGroup: "Sócio-Emocional" },
-    { id: "lib-custom-co-01", type: "content", name: "Horta Comunitária", description: "Técnicas de plantio e cuidado diário com hortaliças no ambiente escolar.", isBNCC: false, subGroup: "Projetos Especiais" }
+    { id: "lib-custom-sk-01", type: "skill", name: "Inteligência Emocional", description: "Identificar e nomear as próprias emoções em situações de conflito no parquinho.", isBNCC: false, subGroup: "Sócio-Emocional", grade: "all" },
+    { id: "lib-custom-co-01", type: "content", name: "Horta Comunitária", description: "Técnicas de plantio e cuidado diário com hortaliças no ambiente escolar.", isBNCC: false, subGroup: "Projetos Especiais", grade: "all" }
 ];
 
 export const mockPortfolio: PortfolioEntry[] = [
