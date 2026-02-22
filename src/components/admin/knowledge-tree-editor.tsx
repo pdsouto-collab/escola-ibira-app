@@ -27,7 +27,7 @@ const LEVEL_LABELS = {
     content: {
         macro: "Área do Saber",
         mesclado: "Tópico",
-        micro: "Objetivo de Aprendizagem",
+        micro: "Conteúdo",
         atomico: "Evidência de Conteúdo"
     }
 };

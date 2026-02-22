@@ -114,7 +114,7 @@ export default function ReportsPage() {
                     <div className="mb-4 space-y-8">
                         <div>
                             <h2 className="text-xl font-semibold text-slate-700 mb-2">Progresso por Áreas da BNCC</h2>
-                            <p className="text-slate-500 mb-6">Visualização do desenvolvimento da criança em relação aos objetivos de aprendizagem.</p>
+                            <p className="text-slate-500 mb-6">Visualização do desenvolvimento da criança em relação aos conteúdos e habilidades.</p>
                             {selectedStudent ? (
                                 <div className="space-y-8">
                                     <SkillsChart />
