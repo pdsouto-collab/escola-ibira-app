@@ -280,6 +280,11 @@ export default function AgendaPage() {
                 onDeleteProjectSessions={(projectId) => {
                     updateSchedule(schedule.filter(s => s.projectId !== projectId));
                 }}
+                onEditProjectSessions={(projectId, patch) => {
+                    updateSchedule(schedule.map(s =>
+                        s.projectId === projectId ? { ...s, ...patch } : s
+                    ));
+                }}
             />
         </div>
     );

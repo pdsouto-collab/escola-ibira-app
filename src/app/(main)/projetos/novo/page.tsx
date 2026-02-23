@@ -106,6 +106,13 @@ function NewProjectWizardContent() {
             if (projectToEdit) {
                 setIsEditMode(true);
                 const projectItems = schedule.filter(s => s.projectId === editId);
+                const seen = new Set<string>();
+                const uniqueProjectItems = projectItems.filter(item => {
+                    const key = `${item.date}|${item.time}|${item.title}`;
+                    if (seen.has(key)) return false;
+                    seen.add(key);
+                    return true;
+                });
                 setFormData({
                     isTemplate: projectToEdit.status === "planning" ? "create_template" : "start_immediately",
                     title: projectToEdit.title,
@@ -120,7 +127,7 @@ function NewProjectWizardContent() {
                     teachers: [],
                     bnccSkills: projectToEdit.bnccSkillIds || [],
                     customContent: projectToEdit.contentIds || [],
-                    projectSchedule: projectItems.map(item => ({ ...item }))
+                    projectSchedule: uniqueProjectItems.map(item => ({ ...item }))
                 });
             }
         }
