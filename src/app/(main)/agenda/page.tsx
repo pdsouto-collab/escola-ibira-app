@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { format, addDays, subDays, isSameDay } from "date-fns";
+import { format, addDays, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { DailySchedule } from "@/components/agenda/daily-schedule";
 import { useAppStore } from "@/lib/store";
