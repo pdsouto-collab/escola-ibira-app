@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect, Suspense } from "react";
 import { Button } from "@/components/ui/button";
@@ -164,7 +164,7 @@ function NewProjectWizardContent() {
     const steps = [
         { id: 1, label: "Detalhes do Projeto" },
         { id: 2, label: "Participantes" },
-        { id: 3, label: "Conteúdos e Habilidades" },
+        { id: 3, label: "ConteÃºdos e Habilidades" },
         { id: 4, label: "Planejamento" }
     ];
 
@@ -233,7 +233,7 @@ function NewProjectWizardContent() {
                                             </div>
                                             <div>
                                                 <p className="font-bold text-slate-800 text-base mb-1">Iniciar projeto imediatamente</p>
-                                                <p className="text-sm text-slate-500">Escolha esta opção para adicionar participantes e começar agora.</p>
+                                                <p className="text-sm text-slate-500">Escolha esta opÃ§Ã£o para adicionar participantes e comeÃ§ar agora.</p>
                                             </div>
                                         </button>
 
@@ -247,7 +247,7 @@ function NewProjectWizardContent() {
                                             </div>
                                             <div>
                                                 <p className="font-bold text-slate-800 text-base mb-1">Criar um modelo para depois</p>
-                                                <p className="text-sm text-slate-500">Salve essa configuração para reutilizar depois.</p>
+                                                <p className="text-sm text-slate-500">Salve essa configuraÃ§Ã£o para reutilizar depois.</p>
                                             </div>
                                         </button>
                                     </div>
@@ -255,7 +255,7 @@ function NewProjectWizardContent() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div>
-                                        <Label className="font-semibold text-slate-700">Título do Projeto *</Label>
+                                        <Label className="font-semibold text-slate-700">TÃ­tulo do Projeto *</Label>
                                         <Input className="mt-2" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} />
                                     </div>
                                     <div>
@@ -269,7 +269,7 @@ function NewProjectWizardContent() {
 
                                 <div>
                                     <Label className="font-semibold text-slate-700">Pergunta Norteadora</Label>
-                                    <Textarea className="mt-2 min-h-20" value={formData.guidingQuestion} onChange={e => setFormData({ ...formData, guidingQuestion: e.target.value })} placeholder="Qual é o tema principal deste projeto?" />
+                                    <Textarea className="mt-2 min-h-20" value={formData.guidingQuestion} onChange={e => setFormData({ ...formData, guidingQuestion: e.target.value })} placeholder="Qual Ã© o tema principal deste projeto?" />
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div>
@@ -304,7 +304,7 @@ function NewProjectWizardContent() {
                     {currentStep === 2 && (
                         <div className="animate-in fade-in duration-300">
                             <h2 className="text-2xl font-bold text-slate-800 mb-2">Participantes</h2>
-                            <p className="text-slate-500 mb-8">Selecione quais alunos farão parte deste projeto.</p>
+                            <p className="text-slate-500 mb-8">Selecione quais alunos farÃ£o parte deste projeto.</p>
 
                             <div className="space-y-6">
                                 <div className="flex items-center justify-between border-b pb-4">
@@ -364,8 +364,8 @@ function NewProjectWizardContent() {
                         <div className="flex h-full min-h-[600px] animate-in fade-in duration-300">
                             {/* Main Selection Area */}
                             <div className="flex-1 p-8">
-                                <h2 className="text-2xl font-bold text-slate-800 mb-2">Conteúdos e Habilidades</h2>
-                                <p className="text-slate-500 mb-8">Clique em uma disciplina para expandir e associar habilidades e conteúdos ao projeto.</p>
+                                <h2 className="text-2xl font-bold text-slate-800 mb-2">ConteÃºdos e Habilidades</h2>
+                                <p className="text-slate-500 mb-8">Clique em uma disciplina para expandir e associar habilidades e conteÃºdos ao projeto.</p>
 
                                 <Accordion type="multiple" className="space-y-4">
                                     {subjects.map(subject => {
@@ -408,7 +408,7 @@ function NewProjectWizardContent() {
 
                             {/* Sidebar Summary */}
                             <div className="w-[320px] bg-slate-50 border-l p-6 flex flex-col h-full rounded-r-2xl">
-                                <h3 className="font-bold text-lg text-slate-800 mb-6">Revisão</h3>
+                                <h3 className="font-bold text-lg text-slate-800 mb-6">RevisÃ£o</h3>
                                 <div className="flex-1 overflow-y-auto space-y-4 pr-2">
                                     {(formData.bnccSkills.length === 0 && formData.customContent.length === 0) ? (
                                         <p className="text-sm text-slate-400 italic">Nenhuma habilidade selecionada ainda.</p>
@@ -451,13 +451,13 @@ function NewProjectWizardContent() {
                     {currentStep === 4 && (
                         <div className="animate-in fade-in duration-300">
                             <h2 className="text-2xl font-bold text-slate-800 mb-2">Planejamento de Aulas</h2>
-                            <p className="text-slate-500 mb-8">Organize as sessões e atividades para este projeto.</p>
+                            <p className="text-slate-500 mb-8">Organize as sessÃµes e atividades para este projeto.</p>
 
                             <div className="space-y-6">
                                 {formData.projectSchedule.length === 0 ? (
                                     <div className="text-center p-10 border-2 border-dashed rounded-xl bg-slate-50">
-                                        <p className="text-slate-500 font-medium">Nenhuma sessão agendada ainda.</p>
-                                        <p className="text-sm text-slate-400 mt-1">Adicione sua primeira sessão abaixo.</p>
+                                        <p className="text-slate-500 font-medium">Nenhuma sessÃ£o agendada ainda.</p>
+                                        <p className="text-sm text-slate-400 mt-1">Adicione sua primeira sessÃ£o abaixo.</p>
                                     </div>
                                 ) : (
                                     <div className="space-y-4 relative before:absolute before:inset-0 before:left-6 before:w-0.5 before:-z-10 before:bg-slate-200">
@@ -467,13 +467,13 @@ function NewProjectWizardContent() {
                                                     {idx + 1}
                                                 </div>
                                                 <div className="bg-white border p-4 rounded-xl flex-1 shadow-sm relative">
-                                                    <button onClick={() => setFormData({ ...formData, projectSchedule: formData.projectSchedule.filter((_, i) => i !== idx) })} className="absolute top-4 right-4 text-slate-400 hover:text-red-500">
+                                                    <button onClick={() => { const updated = formData.projectSchedule.filter((_, i) => i !== idx); setFormData({ ...formData, projectSchedule: updated }); persistSessionsToStore(updated); }} className="absolute top-4 right-4 text-slate-400 hover:text-red-500">
                                                         <Trash2 className="w-4 h-4" />
                                                     </button>
                                                     <h4 className="font-bold text-slate-800 pr-8">{item.title}</h4>
                                                     <div className="flex gap-3 text-xs text-slate-500 mt-2 font-medium">
                                                         <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {item.date && typeof item.date === 'string' ? item.date.split('-').reverse().join('/') : 'TBD'}</span>
-                                                        <span className="flex items-center gap-1">⏱ {item.time} - {item.endTime}</span>
+                                                        <span className="flex items-center gap-1">â± {item.time} - {item.endTime}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -494,7 +494,7 @@ function NewProjectWizardContent() {
 
                                 <div className="bg-indigo-50/50 p-6 rounded-xl border border-indigo-100 mt-8">
                                     <div className="flex items-center justify-between mb-4">
-                                        <h4 className="font-bold text-sm text-indigo-800 flex items-center gap-2"><Plus className="w-4 h-4" /> Adicionar Sessão</h4>
+                                        <h4 className="font-bold text-sm text-indigo-800 flex items-center gap-2"><Plus className="w-4 h-4" /> Adicionar SessÃ£o</h4>
                                         <Button
                                             type="button"
                                             variant="outline"
@@ -508,7 +508,7 @@ function NewProjectWizardContent() {
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
-                                            <Label className={`text-xs font-semibold ${sessionTitleError ? 'text-red-500' : 'text-slate-600'}`}>Título {sessionTitleError && <span className="font-normal">— obrigatório!</span>}</Label>
+                                            <Label className={`text-xs font-semibold ${sessionTitleError ? 'text-red-500' : 'text-slate-600'}`}>TÃ­tulo {sessionTitleError && <span className="font-normal">â€” obrigatÃ³rio!</span>}</Label>
                                             <Input
                                                 className={`mt-1 ${sessionTitleError ? 'border-red-400 focus:ring-red-400' : ''}`}
                                                 value={newSession.title}
@@ -516,7 +516,7 @@ function NewProjectWizardContent() {
                                                     setSessionTitleError(false);
                                                     setNewSession({ ...newSession, title: e.target.value });
                                                 }}
-                                                placeholder="Ex: Introdução & Brainstorming"
+                                                placeholder="Ex: IntroduÃ§Ã£o & Brainstorming"
                                             />
                                         </div>
                                         <div>
@@ -524,15 +524,15 @@ function NewProjectWizardContent() {
                                             <Input type="date" className="mt-1" value={newSession.date} onChange={e => setNewSession({ ...newSession, date: e.target.value })} />
                                         </div>
                                         <div>
-                                            <Label className="text-xs font-semibold text-slate-600">Horário Inicial</Label>
+                                            <Label className="text-xs font-semibold text-slate-600">HorÃ¡rio Inicial</Label>
                                             <Input type="time" className="mt-1" value={newSession.time} onChange={e => setNewSession({ ...newSession, time: e.target.value })} />
                                         </div>
                                         <div>
-                                            <Label className="text-xs font-semibold text-slate-600">Horário Final</Label>
+                                            <Label className="text-xs font-semibold text-slate-600">HorÃ¡rio Final</Label>
                                             <Input type="time" className="mt-1" value={newSession.endTime} onChange={e => setNewSession({ ...newSession, endTime: e.target.value })} />
                                         </div>
                                         <div className="md:col-span-2">
-                                            <Label className="text-xs font-semibold text-slate-600">Descrição</Label>
+                                            <Label className="text-xs font-semibold text-slate-600">DescriÃ§Ã£o</Label>
                                             <Textarea className="mt-1" value={newSession.description} onChange={e => setNewSession({ ...newSession, description: e.target.value })} placeholder="Detalhes da atividade..." />
                                         </div>
                                     </div>
@@ -569,7 +569,7 @@ function NewProjectWizardContent() {
                                             }}
                                         >
                                             <Plus className="w-4 h-4" />
-                                            Adicionar Sessão
+                                            Adicionar SessÃ£o
                                         </Button>
                                     </div>
                                 </div>
@@ -590,7 +590,7 @@ function NewProjectWizardContent() {
                                 <div className="absolute -bottom-2 -right-2 bg-white rounded-full p-1"><Check className="w-6 h-6 text-green-600 bg-green-100 rounded-full p-1" /></div>
                             </div>
                             <h2 className="text-3xl font-black text-slate-800 mb-3 tracking-tight">Projeto {isEditMode ? 'Atualizado' : 'Criado'}!</h2>
-                            <p className="text-slate-500 mb-8 max-w-sm mx-auto text-lg leading-relaxed">Seu projeto <strong className="text-slate-800 font-semibold">{formData.title}</strong> está pronto e salvo na sua biblioteca.</p>
+                            <p className="text-slate-500 mb-8 max-w-sm mx-auto text-lg leading-relaxed">Seu projeto <strong className="text-slate-800 font-semibold">{formData.title}</strong> estÃ¡ pronto e salvo na sua biblioteca.</p>
                             <div className="flex flex-col gap-3">
                                 <Link href="/projetos" className="w-full">
                                     <Button size="lg" className="w-full font-bold shadow-sm h-12">Voltar para Lista de Projetos</Button>
@@ -613,3 +613,4 @@ export default function NewProjectWizardPage() {
         </Suspense>
     );
 }
+

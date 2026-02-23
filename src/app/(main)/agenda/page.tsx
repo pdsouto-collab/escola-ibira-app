@@ -277,6 +277,9 @@ export default function AgendaPage() {
                 classes={classes}
                 onDeleteRoutine={handleDeleteRoutine}
                 onEditRoutine={handleEditRoutine}
+                onDeleteProjectSessions={(projectId) => {
+                    updateSchedule(schedule.filter(s => s.projectId !== projectId));
+                }}
             />
         </div>
     );
