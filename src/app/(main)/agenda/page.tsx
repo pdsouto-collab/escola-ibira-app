@@ -40,12 +40,16 @@ export default function AgendaPage() {
         : classes;
 
     const filteredSchedule = schedule.filter(item => {
-        // Assume items without date are "daily" for now, or match date
         const itemDateMatches = item.date ? isSameDay(new Date(item.date), currentDate) : true;
 
-        const classMatches = selectedClassId === "all"
-            ? (currentUser?.role === "teacher" ? availableClasses.some(c => c.id === item.classId) : true)
-            : item.classId === selectedClassId;
+        // Project sessions (have projectId but no classId) always show
+        const isProjectSession = !!item.projectId && !item.classId;
+
+        const classMatches = isProjectSession
+            ? true
+            : selectedClassId === "all"
+                ? (currentUser?.role === "teacher" ? availableClasses.some(c => c.id === item.classId) : true)
+                : item.classId === selectedClassId;
 
         return itemDateMatches && classMatches;
     });

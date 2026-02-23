@@ -39,10 +39,12 @@ export function WeeklyView() {
 
     const getItemsForDay = (dateStr: string) => {
         return schedule
-            .filter(item =>
-                (item.classId === selectedClassId) &&
-                (item.date === dateStr)
-            )
+            .filter(item => {
+                if (item.date !== dateStr) return false;
+                // Project sessions (have projectId but no classId) always show
+                if (item.projectId && !item.classId) return true;
+                return item.classId === selectedClassId;
+            })
             .sort((a, b) => a.time.localeCompare(b.time));
     };
 
