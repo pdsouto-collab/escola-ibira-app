@@ -48,8 +48,8 @@ const DAYS = [
 const defaultConfig = (): BulkSessionConfig => ({
     title: "",
     description: "",
-    time: "",
-    endTime: "",
+    time: "08:00",
+    endTime: "09:00",
     startDate: "",
     endDate: "",
     daysOfWeek: [1, 2, 3, 4, 5], // Mon–Fri default
