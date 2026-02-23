@@ -65,8 +65,8 @@ function NewProjectWizardContent() {
 
     const [newSession, setNewSession] = useState<{ date: string, time: string, endTime: string, description: string, title: string, type: "activity" | "meal" | "care" | "project" }>({
         date: format(new Date(), 'yyyy-MM-dd'),
-        time: "",
-        endTime: "",
+        time: "08:00",
+        endTime: "09:00",
         title: "",
         type: "project",
         description: ""
@@ -560,8 +560,8 @@ function NewProjectWizardContent() {
                                                 persistSessionsToStore(updated);
                                                 setNewSession({
                                                     date: newSession.date,
-                                                    time: "",
-                                                    endTime: "",
+                                                    time: "08:00",
+                                                    endTime: "09:00",
                                                     title: "",
                                                     type: "project",
                                                     description: ""
