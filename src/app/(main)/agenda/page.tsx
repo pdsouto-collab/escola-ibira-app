@@ -27,6 +27,7 @@ export default function AgendaPage() {
     const { schedule, classes, currentUser, updateSchedule } = useAppStore();
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
+    const [selectedType, setSelectedType] = useState<string>("all");
     const [isScheduleDialogOpen, setIsScheduleDialogOpen] = useState(false);
     const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
     const [isManagerDialogOpen, setIsManagerDialogOpen] = useState(false);
@@ -46,7 +47,9 @@ export default function AgendaPage() {
             ? (currentUser?.role === "teacher" ? availableClasses.some(c => c.id === item.classId) : true)
             : item.classId === selectedClassId || !item.classId;
 
-        return itemDateMatches && classMatches;
+        const typeMatches = selectedType === "all" || item.type === selectedType;
+
+        return itemDateMatches && classMatches && typeMatches;
     });
 
     const handleAdd = () => {
@@ -192,6 +195,19 @@ export default function AgendaPage() {
                             </SelectContent>
                         </Select>
                     )}
+
+                    <Select value={selectedType} onValueChange={setSelectedType}>
+                        <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Tipo de Atividade" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todos os Tipos</SelectItem>
+                            <SelectItem value="activity">Atividade</SelectItem>
+                            <SelectItem value="meal">Alimentação</SelectItem>
+                            <SelectItem value="care">Cuidado/Higiene</SelectItem>
+                            <SelectItem value="project">Sessão de Projeto</SelectItem>
+                        </SelectContent>
+                    </Select>
 
                     {canEdit && (
                         <div className="flex gap-2">

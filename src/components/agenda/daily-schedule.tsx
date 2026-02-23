@@ -11,56 +11,39 @@ interface DailyScheduleProps {
     onDelete?: (item: ScheduleItem) => void;
 }
 
-const typeIcons = {
-    activity: BookOpen,
-    meal: Utensils,
-    care: Moon,
-    project: FolderKanban,
-};
+function getIcon(type: ScheduleItem["type"]) {
+    switch (type) {
+        case "meal": return Utensils;
+        case "care": return Moon;
+        case "project": return FolderKanban;
+        default: return BookOpen; // activity
+    }
+}
 
-const typeColors = {
-    activity: "bg-blue-100 text-blue-600 border-blue-200",
-    meal: "bg-green-100 text-green-600 border-green-200",
-    care: "bg-amber-100 text-amber-600 border-amber-200",
-    project: "bg-violet-100 text-violet-600 border-violet-200",
-};
-
-const typeDotColors = {
-    activity: "border-blue-400 bg-blue-400",
-    meal: "border-green-400 bg-green-400",
-    care: "border-amber-400 bg-amber-400",
-    project: "border-violet-500 bg-violet-500",
-};
-
-const typeLabels = {
-    activity: "Atividade",
-    meal: "Alimentação",
-    care: "Cuidado",
-    project: "Sessão de Projeto",
-};
+function getColors(type: ScheduleItem["type"]) {
+    switch (type) {
+        case "meal": return { icon: "bg-green-100 text-green-600", dot: "bg-green-400", border: "border-green-400" };
+        case "care": return { icon: "bg-amber-100 text-amber-600", dot: "bg-amber-400", border: "border-amber-400" };
+        case "project": return { icon: "bg-violet-100 text-violet-600", dot: "bg-violet-500", border: "border-violet-500" };
+        default: return { icon: "bg-blue-100 text-blue-600", dot: "bg-blue-400", border: "border-blue-400" };
+    }
+}
 
 export function DailySchedule({ items, onEdit, onDelete }: DailyScheduleProps) {
     return (
         <div className="relative border-l border-slate-200 ml-3 space-y-8 py-2">
             {items.map((item) => {
-                const Icon = typeIcons[item.type] || Clock;
-                const dotColors = typeDotColors[item.type] || "border-slate-400 bg-slate-400";
-                const iconColor = typeColors[item.type] || "bg-slate-100 text-slate-600";
-                const label = typeLabels[item.type];
+                const Icon = getIcon(item.type);
+                const colors = getColors(item.type);
 
                 return (
                     <div key={item.id} className="relative pl-8 group">
                         {/* Timeline Connector */}
-                        <div
-                            className={cn(
-                                "absolute -left-[9px] top-1 flex h-4 w-4 items-center justify-center rounded-full border bg-white transition-colors group-hover:scale-110",
-                                item.type === "project" ? "border-violet-500" :
-                                    item.type === "activity" ? "border-blue-400" :
-                                        item.type === "meal" ? "border-green-400" :
-                                            "border-amber-400"
-                            )}
-                        >
-                            <div className={cn("h-2 w-2 rounded-full", dotColors.split(" ")[1])} />
+                        <div className={cn(
+                            "absolute -left-[9px] top-1 flex h-4 w-4 items-center justify-center rounded-full border bg-white transition-colors group-hover:scale-110",
+                            colors.border
+                        )}>
+                            <div className={cn("h-2 w-2 rounded-full", colors.dot)} />
                         </div>
 
                         <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4 group/card">
@@ -86,7 +69,7 @@ export function DailySchedule({ items, onEdit, onDelete }: DailyScheduleProps) {
                                             <p className="mt-1 text-sm text-slate-500">{item.description}</p>
                                         )}
                                     </div>
-                                    <div className={cn("p-2 rounded-full shrink-0", iconColor)}>
+                                    <div className={cn("p-2 rounded-full shrink-0", colors.icon)}>
                                         <Icon className="h-4 w-4" />
                                     </div>
                                 </div>
@@ -109,3 +92,4 @@ export function DailySchedule({ items, onEdit, onDelete }: DailyScheduleProps) {
         </div>
     );
 }
+
