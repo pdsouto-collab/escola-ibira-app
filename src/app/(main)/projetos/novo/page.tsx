@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Check, ChevronLeft, Plus, Search, Calendar, Clock, Users, Target, BookOpen, Trash2, PartyPopper, CalendarRange } from "lucide-react";
+import { Check, ChevronLeft, Plus, Search, Calendar, Clock, Users, Target, BookOpen, Trash2, PartyPopper, CalendarRange, Pencil, X } from "lucide-react";
 import { format } from "date-fns";
 import { BulkSessionDialog } from "@/components/projetos/bulk-session-dialog";
 import Link from "next/link";
@@ -72,6 +72,8 @@ function NewProjectWizardContent() {
     });
     const [sessionTitleError, setSessionTitleError] = useState(false);
     const [bulkSessionOpen, setBulkSessionOpen] = useState(false);
+    const [editingSessionIdx, setEditingSessionIdx] = useState<number | null>(null);
+    const [editingSessionData, setEditingSessionData] = useState<Partial<typeof newSession>>({})
 
     // Immediately write sessions to store (expanded per selected classes)
     const persistSessionsToStore = (updatedSessions: Partial<ScheduleItem>[]) => {
@@ -477,15 +479,60 @@ function NewProjectWizardContent() {
                                                 <div className="w-12 h-12 rounded-full border-4 border-white bg-indigo-100 flex items-center justify-center flex-shrink-0 text-indigo-600 font-bold">
                                                     {idx + 1}
                                                 </div>
-                                                <div className="bg-white border p-4 rounded-xl flex-1 shadow-sm relative">
-                                                    <button onClick={() => { const updated = formData.projectSchedule.filter((_, i) => i !== idx); setFormData({ ...formData, projectSchedule: updated }); persistSessionsToStore(updated); }} className="absolute top-4 right-4 text-slate-400 hover:text-red-500">
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                    <h4 className="font-bold text-slate-800 pr-8">{item.title}</h4>
-                                                    <div className="flex gap-3 text-xs text-slate-500 mt-2 font-medium">
-                                                        <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {item.date && typeof item.date === 'string' ? item.date.split('-').reverse().join('/') : 'TBD'}</span>
-                                                        <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {item.time} - {item.endTime}</span>
-                                                    </div>
+                                                <div className="bg-white border rounded-xl flex-1 shadow-sm relative overflow-hidden">
+                                                    {editingSessionIdx === idx ? (
+                                                        <div className="p-4 space-y-3">
+                                                            <div className="flex gap-2">
+                                                                <div className="flex-1">
+                                                                    <Label className="text-xs font-semibold text-slate-600">Título</Label>
+                                                                    <Input value={editingSessionData.title ?? ''} onChange={e => setEditingSessionData(p => ({ ...p, title: e.target.value }))} className="mt-1" />
+                                                                </div>
+                                                                <div>
+                                                                    <Label className="text-xs font-semibold text-slate-600">Data</Label>
+                                                                    <Input type="date" value={editingSessionData.date ?? ''} onChange={e => setEditingSessionData(p => ({ ...p, date: e.target.value }))} className="mt-1" />
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex gap-2">
+                                                                <div className="flex-1">
+                                                                    <Label className="text-xs font-semibold text-slate-600">Início</Label>
+                                                                    <Input type="time" value={editingSessionData.time ?? ''} onChange={e => setEditingSessionData(p => ({ ...p, time: e.target.value }))} className="mt-1" />
+                                                                </div>
+                                                                <div className="flex-1">
+                                                                    <Label className="text-xs font-semibold text-slate-600">Fim</Label>
+                                                                    <Input type="time" value={editingSessionData.endTime ?? ''} onChange={e => setEditingSessionData(p => ({ ...p, endTime: e.target.value }))} className="mt-1" />
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex justify-end gap-2 pt-1">
+                                                                <Button type="button" size="sm" variant="ghost" onClick={() => setEditingSessionIdx(null)}>
+                                                                    <X className="w-3 h-3 mr-1" /> Cancelar
+                                                                </Button>
+                                                                <Button type="button" size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white" onClick={() => {
+                                                                    const updated = formData.projectSchedule.map((s, i) => i === idx ? { ...s, ...editingSessionData } : s);
+                                                                    setFormData({ ...formData, projectSchedule: updated });
+                                                                    persistSessionsToStore(updated);
+                                                                    setEditingSessionIdx(null);
+                                                                }}>
+                                                                    Salvar
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="p-4">
+                                                            <div className="absolute top-3 right-3 flex items-center gap-1">
+                                                                <button type="button" onClick={() => { setEditingSessionIdx(idx); setEditingSessionData({ title: item.title, date: item.date as string, time: item.time, endTime: item.endTime }); }} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
+                                                                    <Pencil className="w-3.5 h-3.5" />
+                                                                </button>
+                                                                <button type="button" onClick={() => { const updated = formData.projectSchedule.filter((_, i) => i !== idx); setFormData({ ...formData, projectSchedule: updated }); persistSessionsToStore(updated); }} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                                </button>
+                                                            </div>
+                                                            <h4 className="font-bold text-slate-800 pr-16">{item.title}</h4>
+                                                            <div className="flex gap-3 text-xs text-slate-500 mt-2 font-medium">
+                                                                <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {item.date && typeof item.date === 'string' ? item.date.split('-').reverse().join('/') : 'TBD'}</span>
+                                                                <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {item.time} - {item.endTime}</span>
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         ))}
