@@ -506,8 +506,16 @@ function NewProjectWizardContent() {
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
-                                            <Label className="text-xs font-semibold text-slate-600">Título</Label>
-                                            <Input className="mt-1" value={newSession.title} onChange={e => setNewSession({ ...newSession, title: e.target.value })} placeholder="Ex: Introdução & Brainstorming" />
+                                            <Label className={`text-xs font-semibold ${sessionTitleError ? 'text-red-500' : 'text-slate-600'}`}>Título {sessionTitleError && <span className="font-normal">— obrigatório!</span>}</Label>
+                                            <Input
+                                                className={`mt-1 ${sessionTitleError ? 'border-red-400 focus:ring-red-400' : ''}`}
+                                                value={newSession.title}
+                                                onChange={e => {
+                                                    setSessionTitleError(false);
+                                                    setNewSession({ ...newSession, title: e.target.value });
+                                                }}
+                                                placeholder="Ex: Introdução & Brainstorming"
+                                            />
                                         </div>
                                         <div>
                                             <Label className="text-xs font-semibold text-slate-600">Data</Label>
@@ -527,28 +535,41 @@ function NewProjectWizardContent() {
                                         </div>
                                     </div>
                                     <div className="mt-4 flex justify-end">
-                                        <Button variant="secondary" onClick={() => {
-                                            if (!newSession.title.trim()) {
-                                                setSessionTitleError(true);
-                                                return;
-                                            }
-                                            setSessionTitleError(false);
-                                            const session: Partial<ScheduleItem> = {
-                                                id: crypto.randomUUID(),
-                                                title: newSession.title,
-                                                type: newSession.type,
-                                                date: newSession.date,
-                                                time: newSession.time,
-                                                endTime: newSession.endTime,
-                                                description: newSession.description
-                                            };
-                                            const updated = [...formData.projectSchedule, session];
-                                            setFormData({ ...formData, projectSchedule: updated });
-                                            persistSessionsToStore(updated);
-                                            setNewSession({ ...newSession, title: "", description: "" });
-                                        }}>Adicionar à Linha do Tempo</Button>
+                                        <Button
+                                            variant="default"
+                                            className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white"
+                                            onClick={() => {
+                                                if (!newSession.title.trim()) {
+                                                    setSessionTitleError(true);
+                                                    return;
+                                                }
+                                                setSessionTitleError(false);
+                                                const session: Partial<ScheduleItem> = {
+                                                    id: crypto.randomUUID(),
+                                                    title: newSession.title,
+                                                    type: newSession.type,
+                                                    date: newSession.date,
+                                                    time: newSession.time,
+                                                    endTime: newSession.endTime,
+                                                    description: newSession.description
+                                                };
+                                                const updated = [...formData.projectSchedule, session];
+                                                setFormData(prev => ({ ...prev, projectSchedule: updated }));
+                                                persistSessionsToStore(updated);
+                                                setNewSession({
+                                                    date: newSession.date,
+                                                    time: "",
+                                                    endTime: "",
+                                                    title: "",
+                                                    type: "project",
+                                                    description: ""
+                                                });
+                                            }}
+                                        >
+                                            <Plus className="w-4 h-4" />
+                                            Adicionar Sessão
+                                        </Button>
                                     </div>
-                                    {sessionTitleError && <p className="text-xs text-red-500 text-right mt-1">Título obrigatório para adicionar.</p>}
                                 </div>
                             </div>
 
