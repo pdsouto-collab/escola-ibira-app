@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
+import { AssessmentDrawer } from "../assessment/assessment-drawer";
+import { Assessment } from "@/lib/data";
 
 export function MosaicContainer() {
     const { skillsTree, contentsTree, classes, projects, students, currentUser } = useAppStore();
@@ -24,6 +26,9 @@ export function MosaicContainer() {
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
     const [selectedProjectId, setSelectedProjectId] = useState<string>("all");
     const [selectedStudentId, setSelectedStudentId] = useState<string>("all");
+
+    // Assessment Drawer State
+    const [drawerCtx, setDrawerCtx] = useState<Partial<Assessment> & { contextLabel: string } | null>(null);
 
     // Derived state for display
     const currentData = activeTab === "skill" ? skillsTree : contentsTree;
@@ -44,6 +49,17 @@ export function MosaicContainer() {
     // If drilled down, we only render the drilled node as the root.
     const dataToRender = drilledNode ? [drilledNode] : filteredTreeData;
 
+    const handleAvaliacao = (node: KnowledgeNode) => {
+        setDrawerCtx({
+            knowledgeNodeId: node.id,
+            projectId: selectedProjectId !== "all" ? selectedProjectId : undefined,
+            classId: selectedClassId !== "all" ? selectedClassId : undefined,
+            studentId: selectedStudentId !== "all" ? selectedStudentId : undefined,
+            scope: selectedStudentId !== "all" ? "student" : "class",
+            contextLabel: node.name
+        });
+    };
+
     const selectTriggerClass = "h-9 text-xs bg-white border-slate-200 min-w-[160px]";
 
     return (
@@ -53,14 +69,14 @@ export function MosaicContainer() {
                 <MosaicDetailPanel
                     node={selectedNode}
                     treeType={activeTab}
+                    onAvaliacao={handleAvaliacao}
                 />
             </div>
 
             {/* Main Content (Chart & Filters) */}
             <div className="flex-1 flex flex-col min-w-0">
-                {/* Header */}
+                {/* Header (re-using current logic) */}
                 <header className="flex items-center gap-3 px-6 py-4 border-b">
-
                     {/* Filter: Turma */}
                     <Select
                         value={selectedClassId}
@@ -168,6 +184,19 @@ export function MosaicContainer() {
                     />
                 </div>
             </div>
+
+            {/* Assessment Drawer */}
+            {drawerCtx && (
+                <AssessmentDrawer
+                    open={!!drawerCtx}
+                    onOpenChange={(open) => !open && setDrawerCtx(null)}
+                    knowledgeNodeId={drawerCtx.knowledgeNodeId}
+                    projectId={drawerCtx.projectId}
+                    defaultClassId={drawerCtx.classId}
+                    defaultStudentId={drawerCtx.studentId}
+                    contextLabel={drawerCtx.contextLabel}
+                />
+            )}
         </div>
     );
 }

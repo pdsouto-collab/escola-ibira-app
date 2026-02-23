@@ -10,6 +10,7 @@ import { ScrollArea } from "../ui/scroll-area";
 interface MosaicDetailPanelProps {
     node: KnowledgeNode | null;
     treeType: "skill" | "content";
+    onAvaliacao?: (node: KnowledgeNode) => void;
 }
 
 const LEVEL_LABELS = {
@@ -39,7 +40,7 @@ function getLeavesUnderNode(node: KnowledgeNode, targetLevel: KnowledgeLevel): K
     return results;
 }
 
-export function MosaicDetailPanel({ node, treeType }: MosaicDetailPanelProps) {
+export function MosaicDetailPanel({ node, treeType, onAvaliacao }: MosaicDetailPanelProps) {
     const { bnccProgress } = useAppStore();
 
     if (!node) {
@@ -57,6 +58,7 @@ export function MosaicDetailPanel({ node, treeType }: MosaicDetailPanelProps) {
     }
 
     const levelLabel = LEVEL_LABELS[treeType][node.level];
+    const canAssessHeader = node.level === "micro" || node.level === "atomico";
 
     // Determine what to show in the list
     // If macro/mesclado, show micro children. If micro, show atomic children. If atomic, show nothing.
@@ -74,9 +76,22 @@ export function MosaicDetailPanel({ node, treeType }: MosaicDetailPanelProps) {
     return (
         <div className="h-full flex flex-col p-6 bg-white overflow-y-hidden border-r border-slate-200">
             <div className="mb-6 shrink-0">
-                <Badge className="mb-3 bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300 shadow-sm uppercase">
-                    {levelLabel}
-                </Badge>
+                <div className="flex justify-between items-start gap-4 mb-3">
+                    <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300 shadow-sm uppercase">
+                        {levelLabel}
+                    </Badge>
+
+                    {canAssessHeader && onAvaliacao && (
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-[10px] gap-1 px-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                            onClick={() => onAvaliacao(node)}
+                        >
+                            <History className="w-3 h-3" /> Avaliar
+                        </Button>
+                    )}
+                </div>
 
                 <h2 className="text-xl font-bold text-slate-900 leading-tight mb-2">
                     {node.name}
@@ -120,29 +135,43 @@ export function MosaicDetailPanel({ node, treeType }: MosaicDetailPanelProps) {
                                     const isAchieved = progress?.status === "achieved";
 
                                     return (
-                                        <div key={child.id} className="p-3 bg-white border border-slate-200 rounded-lg shadow-sm">
+                                        <div key={child.id} className="p-3 bg-white border border-slate-200 rounded-lg shadow-sm group hover:border-emerald-200 transition-colors">
                                             <div className="flex justify-between items-start gap-2">
-                                                <p className="text-sm font-medium text-slate-800 leading-snug">
-                                                    {child.name.length > 80 ? child.name.slice(0, 80) + '...' : child.name}
-                                                </p>
-                                                {isAchieved && (
-                                                    <div className="w-2 h-2 rounded-full bg-green-500 mt-1.5 shrink-0" title="Desenvolvido" />
-                                                )}
-                                            </div>
-                                            {(child.libraryItemId || (child.linkedNodeIds && child.linkedNodeIds.length > 0)) && (
-                                                <div className="flex gap-2 mt-2">
-                                                    {child.libraryItemId && (
-                                                        <span className="text-[10px] font-mono text-slate-500 bg-slate-100 px-1 rounded">
-                                                            {child.libraryItemId}
-                                                        </span>
-                                                    )}
-                                                    {child.linkedNodeIds && child.linkedNodeIds.length > 0 && (
-                                                        <span className="text-[10px] text-blue-600 bg-blue-50 px-1 rounded flex items-center gap-1">
-                                                            <LinkIcon className="w-3 h-3" /> Vinculado
-                                                        </span>
+                                                <div className="flex-1">
+                                                    <p className="text-sm font-medium text-slate-800 leading-snug">
+                                                        {child.name.length > 80 ? child.name.slice(0, 80) + '...' : child.name}
+                                                    </p>
+                                                    {(child.libraryItemId || (child.linkedNodeIds && child.linkedNodeIds.length > 0)) && (
+                                                        <div className="flex gap-2 mt-2">
+                                                            {child.libraryItemId && (
+                                                                <span className="text-[10px] font-mono text-slate-500 bg-slate-100 px-1 rounded">
+                                                                    {child.libraryItemId}
+                                                                </span>
+                                                            )}
+                                                            {child.linkedNodeIds && child.linkedNodeIds.length > 0 && (
+                                                                <span className="text-[10px] text-blue-600 bg-blue-50 px-1 rounded flex items-center gap-1">
+                                                                    <LinkIcon className="w-3 h-3" /> Vinculado
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     )}
                                                 </div>
-                                            )}
+                                                <div className="flex flex-col items-end gap-2">
+                                                    {isAchieved && (
+                                                        <div className="w-2 h-2 rounded-full bg-green-500 mt-1.5 shrink-0" title="Desenvolvido" />
+                                                    )}
+                                                    {onAvaliacao && (
+                                                        <Button
+                                                            size="icon"
+                                                            variant="ghost"
+                                                            className="h-7 w-7 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all"
+                                                            onClick={() => onAvaliacao(child)}
+                                                        >
+                                                            <History className="w-3.5 h-3.5" />
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
                                     );
                                 })}
