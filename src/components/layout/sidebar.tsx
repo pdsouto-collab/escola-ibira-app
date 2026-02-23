@@ -18,7 +18,8 @@ import {
     PartyPopper,
     GraduationCap,
     RefreshCw,
-    Aperture
+    Aperture,
+    BookMarked
 } from "lucide-react";
 import { SchoolLogo } from "@/components/ui/school-logo";
 
@@ -32,6 +33,7 @@ const navigation = [
     { name: "Rotinas", href: "/agenda", icon: CalendarDays },
     { name: "Conversas", href: "/conversas", icon: MessageCircle },
     { name: "Banco de Projetos", href: "/projetos", icon: FolderOpen },
+    { name: "Portfólio", href: "/portfolio", icon: BookMarked },
     { name: "Relatórios e Dashboards", href: "/relatorios", icon: BarChart3 },
     { name: "Alunos / Turmas", href: "/alunos", icon: Users },
     // Restricted Routes
