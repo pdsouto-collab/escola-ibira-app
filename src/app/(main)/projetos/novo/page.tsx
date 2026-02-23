@@ -126,8 +126,22 @@ function NewProjectWizardContent() {
         }
 
         if (formData.projectSchedule.length > 0) {
-            const projectItems = formData.projectSchedule.map(item => ({ ...item, projectId }) as ScheduleItem);
             const remainingSchedule = schedule.filter(s => s.projectId !== projectId);
+            const selectedClasses = formData.classes.length > 0 ? formData.classes : [undefined];
+            const projectItems: ScheduleItem[] = [];
+            for (const session of formData.projectSchedule) {
+                for (const classId of selectedClasses) {
+                    projectItems.push({
+                        ...session,
+                        id: crypto.randomUUID(),
+                        projectId,
+                        classId,
+                        type: (session.type ?? "project") as ScheduleItem["type"],
+                        time: session.time ?? "",
+                        title: session.title ?? "",
+                    } as ScheduleItem);
+                }
+            }
             updateSchedule([...remainingSchedule, ...projectItems]);
         }
 
@@ -457,6 +471,7 @@ function NewProjectWizardContent() {
                                 <BulkSessionDialog
                                     open={bulkSessionOpen}
                                     onOpenChange={setBulkSessionOpen}
+                                    classIds={formData.classes}
                                     onSave={(sessions) => {
                                         setFormData(prev => ({
                                             ...prev,

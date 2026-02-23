@@ -30,6 +30,7 @@ interface BulkSessionDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onSave: (sessions: Partial<ScheduleItem>[]) => void;
+    classIds?: string[]; // if provided, creates one session per class
 }
 
 const DAYS = [
@@ -52,7 +53,7 @@ const defaultConfig = (): BulkSessionConfig => ({
     daysOfWeek: [1, 2, 3, 4, 5], // Mon–Fri default
 });
 
-export function BulkSessionDialog({ open, onOpenChange, onSave }: BulkSessionDialogProps) {
+export function BulkSessionDialog({ open, onOpenChange, onSave, classIds }: BulkSessionDialogProps) {
     const [config, setConfig] = useState<BulkSessionConfig>(defaultConfig());
 
     useEffect(() => {
@@ -94,7 +95,16 @@ export function BulkSessionDialog({ open, onOpenChange, onSave }: BulkSessionDia
             current.setDate(current.getDate() + 1);
         }
 
-        onSave(sessions);
+        // Expand per class if classIds provided
+        const effectiveClasses = classIds && classIds.length > 0 ? classIds : [undefined];
+        const allSessions: Partial<ScheduleItem>[] = [];
+        for (const session of sessions) {
+            for (const classId of effectiveClasses) {
+                allSessions.push({ ...session, id: Math.random().toString(36).substr(2, 9), classId });
+            }
+        }
+
+        onSave(allSessions);
         onOpenChange(false);
     };
 

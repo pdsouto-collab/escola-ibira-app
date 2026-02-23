@@ -42,9 +42,8 @@ export function WeeklyView() {
         return schedule
             .filter(item => {
                 if (item.date !== dateStr) return false;
-                // Project sessions (have projectId but no classId) always show
-                if (item.projectId && !item.classId) return true;
-                return item.classId === selectedClassId;
+                // Show items for the selected class, or items with no class (school-wide)
+                return item.classId === selectedClassId || !item.classId;
             })
             .sort((a, b) => a.time.localeCompare(b.time));
     };
