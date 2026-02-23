@@ -58,6 +58,9 @@ function NewProjectWizardContent() {
         projectSchedule: [] as Partial<ScheduleItem>[]
     });
 
+    // Stable project ID across steps
+    const [projectId] = useState(() => isEditMode ? (editId || crypto.randomUUID()) : crypto.randomUUID());
+
     const [newSession, setNewSession] = useState<{ date: string, time: string, endTime: string, description: string, title: string, type: "activity" | "meal" | "care" | "project" }>({
         date: new Date().toISOString().split('T')[0],
         time: "",
@@ -66,7 +69,31 @@ function NewProjectWizardContent() {
         type: "project",
         description: ""
     });
+    const [sessionTitleError, setSessionTitleError] = useState(false);
     const [bulkSessionOpen, setBulkSessionOpen] = useState(false);
+
+    // Immediately write sessions to store (expanded per selected classes)
+    const persistSessionsToStore = (updatedSessions: Partial<ScheduleItem>[]) => {
+        const selectedClasses = formData.classes.length > 0 ? formData.classes : [undefined];
+        const remaining = schedule.filter(s => s.projectId !== projectId);
+        const expanded: ScheduleItem[] = [];
+        for (const session of updatedSessions) {
+            for (const classId of selectedClasses) {
+                expanded.push({
+                    id: crypto.randomUUID(),
+                    title: session.title ?? "",
+                    type: (session.type ?? "project") as ScheduleItem["type"],
+                    date: session.date,
+                    time: session.time ?? "",
+                    endTime: session.endTime,
+                    description: session.description,
+                    projectId,
+                    classId,
+                } as ScheduleItem);
+            }
+        }
+        updateSchedule([...remaining, ...expanded]);
+    };
 
     // SubGroups derived from libraryItems
     const subjects = Array.from(new Set(libraryItems.map(i => i.subGroup || "Geral")));
@@ -98,7 +125,6 @@ function NewProjectWizardContent() {
     }, [editId, projects, schedule]);
 
     const handleSaveAndComplete = () => {
-        const projectId = isEditMode ? (editId as string) : Math.random().toString(36).substr(2, 9);
         const newStatus = formData.isTemplate === "create_template" ? "planning" : "active";
 
         const projectData: Project = {
@@ -126,23 +152,8 @@ function NewProjectWizardContent() {
         }
 
         if (formData.projectSchedule.length > 0) {
-            const remainingSchedule = schedule.filter(s => s.projectId !== projectId);
-            const selectedClasses = formData.classes.length > 0 ? formData.classes : [undefined];
-            const projectItems: ScheduleItem[] = [];
-            for (const session of formData.projectSchedule) {
-                for (const classId of selectedClasses) {
-                    projectItems.push({
-                        ...session,
-                        id: crypto.randomUUID(),
-                        projectId,
-                        classId,
-                        type: (session.type ?? "project") as ScheduleItem["type"],
-                        time: session.time ?? "",
-                        title: session.title ?? "",
-                    } as ScheduleItem);
-                }
-            }
-            updateSchedule([...remainingSchedule, ...projectItems]);
+            // Re-sync store in case classes changed after sessions were added
+            persistSessionsToStore(formData.projectSchedule);
         }
 
         setCurrentStep(5);
@@ -473,10 +484,9 @@ function NewProjectWizardContent() {
                                     onOpenChange={setBulkSessionOpen}
                                     classIds={formData.classes}
                                     onSave={(sessions) => {
-                                        setFormData(prev => ({
-                                            ...prev,
-                                            projectSchedule: [...prev.projectSchedule, ...sessions]
-                                        }));
+                                        const updated = [...formData.projectSchedule, ...sessions];
+                                        setFormData(prev => ({ ...prev, projectSchedule: updated }));
+                                        persistSessionsToStore(updated);
                                     }}
                                 />
 
@@ -518,23 +528,27 @@ function NewProjectWizardContent() {
                                     </div>
                                     <div className="mt-4 flex justify-end">
                                         <Button variant="secondary" onClick={() => {
-                                            if (newSession.title) {
-                                                setFormData({
-                                                    ...formData,
-                                                    projectSchedule: [...formData.projectSchedule, {
-                                                        id: Math.random().toString(),
-                                                        title: newSession.title,
-                                                        type: newSession.type,
-                                                        date: newSession.date,
-                                                        time: newSession.time,
-                                                        endTime: newSession.endTime,
-                                                        description: newSession.description
-                                                    }]
-                                                });
-                                                setNewSession({ ...newSession, title: "", description: "" });
+                                            if (!newSession.title.trim()) {
+                                                setSessionTitleError(true);
+                                                return;
                                             }
+                                            setSessionTitleError(false);
+                                            const session: Partial<ScheduleItem> = {
+                                                id: crypto.randomUUID(),
+                                                title: newSession.title,
+                                                type: newSession.type,
+                                                date: newSession.date,
+                                                time: newSession.time,
+                                                endTime: newSession.endTime,
+                                                description: newSession.description
+                                            };
+                                            const updated = [...formData.projectSchedule, session];
+                                            setFormData({ ...formData, projectSchedule: updated });
+                                            persistSessionsToStore(updated);
+                                            setNewSession({ ...newSession, title: "", description: "" });
                                         }}>Adicionar à Linha do Tempo</Button>
                                     </div>
+                                    {sessionTitleError && <p className="text-xs text-red-500 text-right mt-1">Título obrigatório para adicionar.</p>}
                                 </div>
                             </div>
 
