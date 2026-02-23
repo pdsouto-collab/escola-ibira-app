@@ -30,7 +30,7 @@ interface ScheduleDialogProps {
 }
 
 const emptyItem: Omit<ScheduleItem, "id"> = {
-    time: "",
+    time: "08:00",
     title: "",
     type: "activity",
     description: ""
