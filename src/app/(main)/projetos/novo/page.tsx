@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Check, ChevronLeft, Plus, Search, Calendar, Users, Target, BookOpen, Trash2, PartyPopper } from "lucide-react";
+import { Check, ChevronLeft, Plus, Search, Calendar, Users, Target, BookOpen, Trash2, PartyPopper, CalendarRange } from "lucide-react";
+import { BulkSessionDialog } from "@/components/projetos/bulk-session-dialog";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAppStore } from "@/lib/store";
@@ -65,6 +66,7 @@ function NewProjectWizardContent() {
         type: "activity",
         description: ""
     });
+    const [bulkSessionOpen, setBulkSessionOpen] = useState(false);
 
     // SubGroups derived from libraryItems
     const subjects = Array.from(new Set(libraryItems.map(i => i.subGroup || "Geral")));
@@ -452,8 +454,31 @@ function NewProjectWizardContent() {
                                     </div>
                                 )}
 
+                                <BulkSessionDialog
+                                    open={bulkSessionOpen}
+                                    onOpenChange={setBulkSessionOpen}
+                                    onSave={(sessions) => {
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            projectSchedule: [...prev.projectSchedule, ...sessions]
+                                        }));
+                                    }}
+                                />
+
                                 <div className="bg-indigo-50/50 p-6 rounded-xl border border-indigo-100 mt-8">
-                                    <h4 className="font-bold text-sm text-indigo-800 mb-4 flex items-center gap-2"><Plus className="w-4 h-4" /> Adicionar Sessão</h4>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h4 className="font-bold text-sm text-indigo-800 flex items-center gap-2"><Plus className="w-4 h-4" /> Adicionar Sessão</h4>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            className="gap-2 text-indigo-700 border-indigo-200 hover:bg-indigo-50"
+                                            onClick={() => setBulkSessionOpen(true)}
+                                        >
+                                            <CalendarRange className="w-4 h-4" />
+                                            Criar em Massa
+                                        </Button>
+                                    </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
                                             <Label className="text-xs font-semibold text-slate-600">Título</Label>
