@@ -280,10 +280,38 @@ export default function AgendaPage() {
                 onDeleteProjectSessions={(projectId) => {
                     updateSchedule(schedule.filter(s => s.projectId !== projectId));
                 }}
-                onEditProjectSessions={(projectId, patch) => {
-                    updateSchedule(schedule.map(s =>
-                        s.projectId === projectId ? { ...s, ...patch } : s
-                    ));
+                onEditProjectSessionsBulk={(projectId, config) => {
+                    // Remove all existing sessions for this project
+                    const remaining = schedule.filter(s => s.projectId !== projectId);
+                    // Get the classIds from the existing sessions for this project
+                    const existingClassIds = [...new Set(
+                        schedule.filter(s => s.projectId === projectId && s.classId).map(s => s.classId as string)
+                    )];
+                    const effectiveClasses = existingClassIds.length > 0 ? existingClassIds : [undefined];
+                    // Regenerate sessions for the new date range
+                    const start = new Date(config.startDate + "T12:00:00");
+                    const end = new Date(config.endDate + "T12:00:00");
+                    const newSessions: import("@/lib/data").ScheduleItem[] = [];
+                    const cur = new Date(start);
+                    while (cur <= end) {
+                        if (config.daysOfWeek.includes(cur.getDay())) {
+                            for (const classId of effectiveClasses) {
+                                newSessions.push({
+                                    id: crypto.randomUUID(),
+                                    title: config.title,
+                                    description: config.description,
+                                    type: "project",
+                                    date: format(cur, "yyyy-MM-dd"),
+                                    time: config.time,
+                                    endTime: config.endTime,
+                                    projectId,
+                                    classId,
+                                } as import("@/lib/data").ScheduleItem);
+                            }
+                        }
+                        cur.setDate(cur.getDate() + 1);
+                    }
+                    updateSchedule([...remaining, ...newSessions]);
                 }}
             />
         </div>
