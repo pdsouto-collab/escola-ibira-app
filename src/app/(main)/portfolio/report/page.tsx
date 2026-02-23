@@ -232,7 +232,10 @@ function ReportCard({
 // ─────────────────────────────────────────────────────────────────────────
 // Page Wrapper (with print/export controls)
 // ─────────────────────────────────────────────────────────────────────────
-export default function ReportCardPage() {
+// ─────────────────────────────────────────────────────────────────────────
+// Page Content (using useSearchParams)
+// ─────────────────────────────────────────────────────────────────────────
+function ReportCardContent() {
     const searchParams = useSearchParams();
     const projectId = searchParams.get("project") ?? "";
     const studentId = searchParams.get("student") ?? null;
@@ -271,5 +274,16 @@ export default function ReportCardPage() {
                 <ReportCard projectId={projectId} studentId={studentId} />
             </div>
         </>
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Main Page
+// ─────────────────────────────────────────────────────────────────────────
+export default function ReportCardPage() {
+    return (
+        <React.Suspense fallback={<div className="p-20 text-center text-slate-400">Carregando relat&#xF3;rio...</div>}>
+            <ReportCardContent />
+        </React.Suspense>
     );
 }
