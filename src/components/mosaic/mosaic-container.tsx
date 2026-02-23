@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAppStore } from "@/lib/store";
-import { KnowledgeNode, Project } from "@/lib/data";
+import { KnowledgeNode } from "@/lib/data";
 import { RadialMatrix } from "./radial-matrix";
 import { MosaicDetailPanel } from "./mosaic-detail-panel";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
@@ -11,7 +11,7 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 
 export function MosaicContainer() {
-    const { skillsTree, contentsTree, classes, projects } = useAppStore();
+    const { skillsTree, contentsTree, classes, projects, students, currentUser } = useAppStore();
 
     // Core State
     const [activeTab, setActiveTab] = useState<"skill" | "content">("skill");
@@ -23,18 +23,18 @@ export function MosaicContainer() {
     // Filter States
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
     const [selectedProjectId, setSelectedProjectId] = useState<string>("all");
+    const [selectedStudentId, setSelectedStudentId] = useState<string>("all");
 
     // Derived state for display
     const currentData = activeTab === "skill" ? skillsTree : contentsTree;
 
-    // Filter projects based on selected class
-    const availableProjects = selectedClassId === "all"
-        ? projects
-        : projects.filter(p => p.students?.some(sId => true) || true); // Simplified
-
+    // Active projects only
     const filteredProjects = projects.filter(p => p.status === 'active');
 
-    const selectedClassName = classes.find(c => c.id === selectedClassId)?.name || "Todas as Turmas";
+    // Students filtered by selected class
+    const filteredStudents = selectedClassId === "all"
+        ? students
+        : students.filter(s => s.classId === selectedClassId);
 
     // Filtering logic for the tree itself based on class
     const filteredTreeData = currentData.filter(node =>
@@ -43,6 +43,8 @@ export function MosaicContainer() {
 
     // If drilled down, we only render the drilled node as the root.
     const dataToRender = drilledNode ? [drilledNode] : filteredTreeData;
+
+    const selectTriggerClass = "h-9 text-xs bg-white border-slate-200 min-w-[160px]";
 
     return (
         <div className="flex h-[calc(100vh-2rem)] bg-white rounded-2xl shadow-sm border overflow-hidden">
@@ -57,81 +59,94 @@ export function MosaicContainer() {
             {/* Main Content (Chart & Filters) */}
             <div className="flex-1 flex flex-col min-w-0">
                 {/* Header */}
-                <header className="flex items-center justify-between px-8 py-6 border-b">
-                    <div className="flex items-center gap-4">
-                        <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
-                            <AvatarImage src="https://github.com/shadcn.png" />
-                            <AvatarFallback>TA</AvatarFallback>
-                        </Avatar>
-                        <div>
-                            <Select value={selectedClassId} onValueChange={setSelectedClassId}>
-                                <SelectTrigger className="border-none shadow-none font-bold text-lg text-slate-800 p-0 h-auto hover:bg-transparent focus:ring-0">
-                                    <SelectValue>{selectedClassName}</SelectValue>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">Todas as Turmas</SelectItem>
-                                    {classes.map(c => (
-                                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                <header className="flex items-center gap-3 px-6 py-4 border-b">
+
+                    {/* Filter: Turma */}
+                    <Select
+                        value={selectedClassId}
+                        onValueChange={(v) => {
+                            setSelectedClassId(v);
+                            setSelectedStudentId("all");
+                        }}
+                    >
+                        <SelectTrigger className={selectTriggerClass}>
+                            <SelectValue placeholder="Todas as Turmas" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todas as Turmas</SelectItem>
+                            {classes.map(c => (
+                                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
+                    {/* Filter: Projeto */}
+                    <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+                        <SelectTrigger className={selectTriggerClass}>
+                            <SelectValue placeholder="Todos os Projetos" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todos os Projetos</SelectItem>
+                            {filteredProjects.map(p => (
+                                <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
+                    {/* Filter: Aluno */}
+                    <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
+                        <SelectTrigger className={selectTriggerClass}>
+                            <SelectValue placeholder="Todos os Alunos" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todos os Alunos</SelectItem>
+                            {filteredStudents.map(s => (
+                                <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
+                    {/* Habilidades / Conteúdos Toggle */}
+                    <div className="flex bg-slate-100 p-1 rounded-lg flex-shrink-0">
+                        <button
+                            onClick={() => { setActiveTab("skill"); setDrilledNode(null); setSelectedNode(null); }}
+                            className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === "skill" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
+                        >
+                            Habilidades
+                        </button>
+                        <button
+                            onClick={() => { setActiveTab("content"); setDrilledNode(null); setSelectedNode(null); }}
+                            className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === "content" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
+                        >
+                            Conteúdos
+                        </button>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                        <div className="w-48">
-                            <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
-                                <SelectTrigger className="h-9 text-xs bg-slate-50 border-slate-200">
-                                    <SelectValue placeholder="Filtrar por Projeto" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">Todos os Projetos</SelectItem>
-                                    {filteredProjects.map(p => (
-                                        <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                    {/* RIGHT: Avatar (teacher) */}
+                    <div className="ml-auto flex-shrink-0">
+                        <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
+                            <AvatarImage src={currentUser?.avatar || "https://github.com/shadcn.png"} />
+                            <AvatarFallback>
+                                {currentUser?.name?.charAt(0) ?? "U"}
+                            </AvatarFallback>
+                        </Avatar>
                     </div>
                 </header>
 
-                {/* Controls Bar */}
-                <div className="px-8 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b bg-slate-50/50">
-                    <div className="flex items-center gap-2">
-                        {drilledNode ? (
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className="gap-2"
-                                onClick={() => setDrilledNode(null)}
-                            >
-                                <ArrowLeft className="w-4 h-4" />
-                                Voltar para Visão Geral
-                            </Button>
-                        ) : (
-                            <div className="text-sm text-slate-500 font-medium">
-                                Selecione um Eixo para focar
-                            </div>
-                        )}
+                {/* Drill-down back button (only when drilled in) */}
+                {drilledNode && (
+                    <div className="px-6 py-2 border-b bg-slate-50/50">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-2"
+                            onClick={() => setDrilledNode(null)}
+                        >
+                            <ArrowLeft className="w-4 h-4" />
+                            Voltar para Visão Geral
+                        </Button>
                     </div>
-
-                    <div className="flex items-center gap-4">
-                        <div className="flex bg-slate-100 p-1 rounded-lg">
-                            <button
-                                onClick={() => { setActiveTab("skill"); setDrilledNode(null); setSelectedNode(null); }}
-                                className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === "skill" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
-                            >
-                                Habilidades
-                            </button>
-                            <button
-                                onClick={() => { setActiveTab("content"); setDrilledNode(null); setSelectedNode(null); }}
-                                className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === "content" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
-                            >
-                                Conteúdos
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                )}
 
                 {/* Chart Area */}
                 <div className="flex-1 overflow-auto bg-slate-50 flex items-center justify-center p-0">
@@ -140,10 +155,9 @@ export function MosaicContainer() {
                         treeType={activeTab}
                         drilledNodeId={drilledNode?.id}
                         onNodeDoubleClick={(node: KnowledgeNode) => {
-                            // Only allow drill down on Macro levels (e.g., Eixo/Área)
                             if (node && node.level === "macro") {
                                 setDrilledNode(node);
-                                setSelectedNode(null); // Clear selection on drill down
+                                setSelectedNode(null);
                             } else if (!node) {
                                 setDrilledNode(null);
                             }
