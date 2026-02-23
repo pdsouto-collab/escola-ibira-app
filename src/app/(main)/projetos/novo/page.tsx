@@ -58,12 +58,12 @@ function NewProjectWizardContent() {
         projectSchedule: [] as Partial<ScheduleItem>[]
     });
 
-    const [newSession, setNewSession] = useState<{ date: string, time: string, endTime: string, description: string, title: string, type: "activity" | "meal" | "care" }>({
+    const [newSession, setNewSession] = useState<{ date: string, time: string, endTime: string, description: string, title: string, type: "activity" | "meal" | "care" | "project" }>({
         date: new Date().toISOString().split('T')[0],
         time: "",
         endTime: "",
         title: "",
-        type: "activity",
+        type: "project",
         description: ""
     });
     const [bulkSessionOpen, setBulkSessionOpen] = useState(false);

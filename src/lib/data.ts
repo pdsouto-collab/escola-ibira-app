@@ -182,7 +182,7 @@ export interface ScheduleItem {
     time: string;
     endTime?: string;
     title: string;
-    type: "activity" | "meal" | "care";
+    type: "activity" | "meal" | "care" | "project";
     description?: string;
     date?: string; // YYYY-MM-DD
     classId?: string;

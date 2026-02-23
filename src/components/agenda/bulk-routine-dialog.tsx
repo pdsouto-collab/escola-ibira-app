@@ -28,7 +28,7 @@ export interface BulkRoutineConfig {
     description: string;
     time: string;
     endTime: string;
-    type: "activity" | "meal" | "care";
+    type: "activity" | "meal" | "care" | "project";
     startDate: string;
     endDate: string;
     daysOfWeek: number[]; // 0 = Sunday, 1 = Monday, etc.
@@ -161,6 +161,7 @@ export function BulkRoutineDialog({ open, onOpenChange, classes, initialConfig, 
                                     <SelectItem value="activity">Atividade</SelectItem>
                                     <SelectItem value="meal">Alimentação</SelectItem>
                                     <SelectItem value="care">Cuidado/Higiene</SelectItem>
+                                    <SelectItem value="project">Sessão de Projeto</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>

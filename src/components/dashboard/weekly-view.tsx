@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAppStore } from "@/lib/store";
-import { CalendarDays, Users } from "lucide-react";
+import { CalendarDays, Users, FolderKanban } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { startOfWeek, addDays, format, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -33,6 +33,7 @@ export function WeeklyView() {
             case "activity": return "bg-white border-l-4 border-l-blue-400 text-slate-700";
             case "meal": return "bg-white border-l-4 border-l-emerald-400 text-slate-700";
             case "care": return "bg-white border-l-4 border-l-amber-400 text-slate-700";
+            case "project": return "bg-violet-50 border-l-4 border-l-violet-500 text-violet-900";
             default: return "bg-white border text-slate-800";
         }
     };
@@ -97,6 +98,7 @@ export function WeeklyView() {
                                         >
                                             <div className="flex justify-between items-start gap-1 mb-0.5">
                                                 <span className="font-semibold line-clamp-1">{item.title}</span>
+                                                {item.type === "project" && <FolderKanban className="w-3 h-3 text-violet-500 shrink-0 mt-0.5" />}
                                             </div>
                                             <div className="text-[10px] text-slate-500 font-mono">
                                                 {item.time} {item.endTime ? `- ${item.endTime}` : ''}

@@ -85,7 +85,7 @@ export function BulkSessionDialog({ open, onOpenChange, onSave }: BulkSessionDia
                     id: Math.random().toString(36).substr(2, 9),
                     title: config.title,
                     description: config.description,
-                    type: "activity",
+                    type: "project",
                     date: current.toISOString().split("T")[0],
                     time: config.time,
                     endTime: config.endTime,

@@ -104,7 +104,7 @@ export function ScheduleDialog({ open, onOpenChange, item, onSave }: ScheduleDia
                             </Label>
                             <Select
                                 value={formData.type}
-                                onValueChange={(value: "activity" | "meal" | "care") => setFormData({ ...formData, type: value })}
+                                onValueChange={(value: "activity" | "meal" | "care" | "project") => setFormData({ ...formData, type: value })}
                             >
                                 <SelectTrigger className="col-span-3">
                                     <SelectValue placeholder="Selecione o tipo" />
@@ -113,6 +113,7 @@ export function ScheduleDialog({ open, onOpenChange, item, onSave }: ScheduleDia
                                     <SelectItem value="activity">Atividade</SelectItem>
                                     <SelectItem value="meal">Alimentação</SelectItem>
                                     <SelectItem value="care">Cuidado/Higiene</SelectItem>
+                                    <SelectItem value="project">Sessão de Projeto</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
