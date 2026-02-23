@@ -8,11 +8,12 @@ import {
     mockRecursiveDataSkills, MosaicNode,
     Task, MuralEvent, Project, ChatMessage,
     mockMessages,
-    mockClasses, SchoolClass, // Import mockClasses
-    User, mockUsers, // Import User types
-    LibraryItem, mockLibraryItems, // Import new library items
-    KnowledgeNode, mockSkillsTree, mockContentsTree, // Import new hierarchy
-    FinalProductType, mockFinalProductTypes // Import final product types
+    mockClasses, SchoolClass,
+    User, mockUsers,
+    LibraryItem, mockLibraryItems,
+    KnowledgeNode, mockSkillsTree, mockContentsTree,
+    FinalProductType, mockFinalProductTypes,
+    Assessment, mockAssessments
 } from "@/lib/data";
 
 interface AppState {
@@ -32,6 +33,7 @@ interface AppState {
     skillsTree: KnowledgeNode[];
     contentsTree: KnowledgeNode[];
     finalProductTypes: FinalProductType[];
+    assessments: Assessment[];
 }
 
 interface AppContextType extends AppState {
@@ -92,6 +94,11 @@ interface AppContextType extends AppState {
     addFinalProductType: (type: FinalProductType) => void;
     updateFinalProductType: (id: string, updates: Partial<FinalProductType>) => void;
     removeFinalProductType: (id: string) => void;
+
+    // Assessments
+    addAssessment: (assessment: Assessment) => void;
+    updateAssessment: (id: string, updates: Partial<Assessment>) => void;
+    removeAssessment: (id: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -200,6 +207,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [skillsTree, setSkillsTree] = useState<KnowledgeNode[]>(mockSkillsTree);
     const [contentsTree, setContentsTree] = useState<KnowledgeNode[]>(mockContentsTree);
     const [finalProductTypes, setFinalProductTypes] = useState<FinalProductType[]>(mockFinalProductTypes);
+    const [assessments, setAssessments] = useState<Assessment[]>(mockAssessments);
 
     const [isLoaded, setIsLoaded] = useState(false);
 
@@ -500,7 +508,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             finalProductTypes,
             addFinalProductType: (type) => setFinalProductTypes(prev => [...prev, type]),
             updateFinalProductType: (id, updates) => setFinalProductTypes(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t)),
-            removeFinalProductType: (id) => setFinalProductTypes(prev => prev.filter(t => t.id !== id))
+            removeFinalProductType: (id) => setFinalProductTypes(prev => prev.filter(t => t.id !== id)),
+            assessments,
+            addAssessment: (a) => setAssessments(prev => [...prev, a]),
+            updateAssessment: (id, updates) => setAssessments(prev => prev.map(a => a.id === id ? { ...a, ...updates } : a)),
+            removeAssessment: (id) => setAssessments(prev => prev.filter(a => a.id !== id)),
         }}>
             {children}
         </AppContext.Provider>

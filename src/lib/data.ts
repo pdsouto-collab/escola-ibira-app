@@ -926,3 +926,38 @@ export const mockUsers: User[] = [
     }
 ];
 
+// ─────────────────────────────────────────────
+// ASSESSMENT SYSTEM
+// ─────────────────────────────────────────────
+
+export interface AssessmentAttachment {
+    id: string;
+    type: "photo" | "document" | "audio";
+    url: string;         // base64 data URL (phase 1)
+    name?: string;
+    capturedAt: string;  // ISO date
+}
+
+/** A teacher evaluation record. */
+export interface Assessment {
+    id: string;
+    createdAt: string;
+
+    // Context (at least one required)
+    projectId?: string;
+    sessionId?: string;        // ScheduleItem.id
+    routineId?: string;
+    knowledgeNodeId?: string;  // KnowledgeNode.id
+
+    // Scope
+    scope: "class" | "student";
+    classId?: string;
+    studentId?: string;
+
+    // Content
+    rating?: 1 | 2 | 3 | 4 | 5;
+    observations: string;
+    attachments: AssessmentAttachment[];
+}
+
+export const mockAssessments: Assessment[] = [];
