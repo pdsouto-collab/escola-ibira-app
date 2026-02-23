@@ -41,7 +41,8 @@ export default function AgendaPage() {
         : classes;
 
     const filteredSchedule = schedule.filter(item => {
-        const itemDateMatches = item.date ? isSameDay(new Date(item.date), currentDate) : true;
+        const todayStr = format(currentDate, 'yyyy-MM-dd');
+        const itemDateMatches = item.date ? item.date === todayStr : true;
 
         const classMatches = selectedClassId === "all"
             ? (currentUser?.role === "teacher" ? availableClasses.some(c => c.id === item.classId) : true)

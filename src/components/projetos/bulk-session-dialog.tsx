@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { format } from "date-fns";
+
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -87,7 +89,7 @@ export function BulkSessionDialog({ open, onOpenChange, onSave, classIds }: Bulk
                     title: config.title,
                     description: config.description,
                     type: "project",
-                    date: current.toISOString().split("T")[0],
+                    date: format(current, 'yyyy-MM-dd'),
                     time: config.time,
                     endTime: config.endTime,
                 });

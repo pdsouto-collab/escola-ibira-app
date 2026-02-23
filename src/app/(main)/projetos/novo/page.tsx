@@ -16,6 +16,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAppStore } from "@/lib/store";
 import { Project, ScheduleItem } from "@/lib/data";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+
 import Image from "next/image";
 
 function NewProjectWizardContent() {
@@ -62,7 +64,7 @@ function NewProjectWizardContent() {
     const [projectId] = useState(() => isEditMode ? (editId || crypto.randomUUID()) : crypto.randomUUID());
 
     const [newSession, setNewSession] = useState<{ date: string, time: string, endTime: string, description: string, title: string, type: "activity" | "meal" | "care" | "project" }>({
-        date: new Date().toISOString().split('T')[0],
+        date: format(new Date(), 'yyyy-MM-dd'),
         time: "",
         endTime: "",
         title: "",
@@ -470,7 +472,7 @@ function NewProjectWizardContent() {
                                                     </button>
                                                     <h4 className="font-bold text-slate-800 pr-8">{item.title}</h4>
                                                     <div className="flex gap-3 text-xs text-slate-500 mt-2 font-medium">
-                                                        <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {item.date && typeof item.date === 'string' ? item.date.split('T')[0] : 'TBD'}</span>
+                                                        <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {item.date && typeof item.date === 'string' ? item.date.split('-').reverse().join('/') : 'TBD'}</span>
                                                         <span className="flex items-center gap-1">⏱ {item.time} - {item.endTime}</span>
                                                     </div>
                                                 </div>
