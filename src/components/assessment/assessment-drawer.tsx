@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,16 +30,23 @@ interface AssessmentDrawerProps {
 export function AssessmentDrawer({
     open,
     onOpenChange,
-    sessionId,
-    routineId,
-    knowledgeNodeId,
-    projectId,
+    sessionId: propSessionId,
+    routineId: propRoutineId,
+    knowledgeNodeId: propKnowledgeNodeId,
+    projectId: propProjectId,
     defaultClassId,
     defaultStudentId,
     contextLabel,
 }: AssessmentDrawerProps) {
-    const { students, classes, addAssessment, currentUser } = useAppStore();
+    const { students, classes, projects, schedule, addAssessment, currentUser } = useAppStore();
 
+    // Context State
+    const [contextType, setContextType] = useState<"project" | "routine">(propRoutineId ? "routine" : "project");
+    const [selectedProjectId, setSelectedProjectId] = useState(propProjectId || "");
+    const [selectedSessionId, setSelectedSessionId] = useState(propSessionId || "");
+    const [selectedRoutineId, setSelectedRoutineId] = useState(propRoutineId || "");
+
+    // Scope & Basic Info
     const [scope, setScope] = useState<"class" | "student">(defaultStudentId ? "student" : "class");
     const [classId, setClassId] = useState(defaultClassId || classes[0]?.id || "");
     const [studentId, setStudentId] = useState(defaultStudentId || "");
@@ -49,8 +56,14 @@ export function AssessmentDrawer({
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const studentsInClass = students.filter(s => s.classId === classId);
+    const sessionsForProject = schedule.filter(s => s.projectId === selectedProjectId);
+
+    // Filter routines (using schedule for now or a hardcoded list if available in store)
+    // For this context, we'll suggest items that follow the routine pattern (activity/meal/care)
+    const routines = schedule.filter(s => !s.projectId && (s.type === "activity" || s.type === "meal" || s.type === "care"));
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        // ... (existing file handling code)
         const files = Array.from(e.target.files || []);
         if (attachments.length + files.length > 3) {
             alert("Máximo de 3 arquivos por avaliação.");
@@ -78,10 +91,10 @@ export function AssessmentDrawer({
         const assessment: Assessment = {
             id: crypto.randomUUID(),
             createdAt: new Date().toISOString(),
-            sessionId,
-            routineId,
-            knowledgeNodeId,
-            projectId,
+            sessionId: contextType === "project" ? (selectedSessionId || undefined) : undefined,
+            routineId: contextType === "routine" ? (selectedRoutineId || undefined) : undefined,
+            knowledgeNodeId: propKnowledgeNodeId,
+            projectId: contextType === "project" ? (selectedProjectId || undefined) : undefined,
             scope,
             classId: scope === "class" ? classId : undefined,
             studentId: scope === "student" ? studentId : undefined,
@@ -98,10 +111,27 @@ export function AssessmentDrawer({
         setRating(undefined);
         setObservations("");
         setAttachments([]);
+        if (!propProjectId) setSelectedProjectId("");
+        if (!propSessionId) setSelectedSessionId("");
+        if (!propRoutineId) setSelectedRoutineId("");
         onOpenChange(false);
     };
 
-    const canSave = observations.trim().length > 0 || rating !== undefined;
+    // Validation: Require rating/obs AND a valid context (session or routine)
+    const hasContext = contextType === "project"
+        ? (selectedProjectId && selectedSessionId)
+        : selectedRoutineId;
+
+    const canSave = (observations.trim().length > 0 || rating !== undefined) && hasContext;
+
+    const isFixedContext = !!propSessionId || !!propRoutineId;
+
+    useEffect(() => {
+        if (!isFixedContext && contextType === "routine" && routines.length > 0 && !selectedRoutineId) {
+            // Pre-select first routine if none selected
+            // setSelectedRoutineId(routines[0].id); // Optional: leave empty for explicit choice
+        }
+    }, [contextType, routines, selectedRoutineId, isFixedContext]);
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
@@ -118,6 +148,58 @@ export function AssessmentDrawer({
                 </DialogHeader>
 
                 <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+
+                    {/* Context Selection (Only if not fixed) */}
+                    {!isFixedContext && (
+                        <div className="space-y-3 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                            <Label className="text-sm font-bold text-slate-700">Contexto da Avaliação</Label>
+
+                            <div className="flex bg-white rounded-lg p-1 border shadow-sm">
+                                <button
+                                    onClick={() => setContextType("project")}
+                                    className={cn(
+                                        "flex-1 py-1.5 text-xs font-medium rounded-md transition-all",
+                                        contextType === "project" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-500 hover:text-slate-700"
+                                    )}
+                                >
+                                    Projeto
+                                </button>
+                                <button
+                                    onClick={() => setContextType("routine")}
+                                    className={cn(
+                                        "flex-1 py-1.5 text-xs font-medium rounded-md transition-all",
+                                        contextType === "routine" ? "bg-emerald-600 text-white shadow-sm" : "text-slate-500 hover:text-slate-700"
+                                    )}
+                                >
+                                    Rotina
+                                </button>
+                            </div>
+
+                            {contextType === "project" ? (
+                                <div className="space-y-2">
+                                    <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+                                        <SelectTrigger className="bg-white"><SelectValue placeholder="Selecione o Projeto" /></SelectTrigger>
+                                        <SelectContent>
+                                            {projects.map(p => <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                    <Select value={selectedSessionId} onValueChange={setSelectedSessionId} disabled={!selectedProjectId}>
+                                        <SelectTrigger className="bg-white"><SelectValue placeholder="Selecione a Sessão" /></SelectTrigger>
+                                        <SelectContent>
+                                            {sessionsForProject.map(s => <SelectItem key={s.id} value={s.id}>{s.title}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            ) : (
+                                <Select value={selectedRoutineId} onValueChange={setSelectedRoutineId}>
+                                    <SelectTrigger className="bg-white"><SelectValue placeholder="Selecione a Atividade da Rotina" /></SelectTrigger>
+                                    <SelectContent>
+                                        {routines.map(r => <SelectItem key={r.id} value={r.id}>{r.title}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            )}
+                        </div>
+                    )}
 
                     {/* Scope selector */}
                     <div className="space-y-3">

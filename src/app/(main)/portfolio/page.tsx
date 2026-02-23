@@ -239,7 +239,7 @@ function ProjectView({
 // View: By Student
 // ────────────────────────────────────────────
 function StudentView({
-    assessments, students, classes, projects, schedule, studentFilter, classFilter, onAvaliacao
+    assessments, students, classes, projects, schedule, studentFilter, classFilter, projectFilter, setProjectFilter, onAvaliacao
 }: {
     assessments: Assessment[];
     students: ReturnType<typeof useAppStore>["students"];
@@ -248,6 +248,8 @@ function StudentView({
     schedule: ReturnType<typeof useAppStore>["schedule"];
     studentFilter: string;
     classFilter: string;
+    projectFilter: string;
+    setProjectFilter: (v: string) => void;
     onAvaliacao: (ctx: Partial<Assessment> & { contextLabel: string }) => void;
 }) {
     const filteredStudents = students.filter(s => {
@@ -444,11 +446,14 @@ export default function PortfolioPage() {
                         </Select>
                     </>
                 )}
-                {view === "project" && projectFilter !== "all" && studentFilter !== "all" && (
-                    <Button size="sm" variant="outline" className="ml-auto text-xs gap-1.5" onClick={() => handleOpenReport(projectFilter, studentFilter)}>
-                        <FileText className="w-3.5 h-3.5" /> Gerar Report Card
-                    </Button>
-                )}
+                {/* Generation button depends on having a project and a student selected (global or local context) */}
+                <div className="ml-auto flex items-center gap-2">
+                    {projectFilter !== "all" && studentFilter !== "all" && (
+                        <Button size="sm" variant="outline" className="text-xs gap-1.5 border-indigo-200 text-indigo-700 hover:bg-indigo-50" onClick={() => handleOpenReport(projectFilter, studentFilter)}>
+                            <FileText className="w-3.5 h-3.5" /> Gerar Report Card do Projeto
+                        </Button>
+                    )}
+                </div>
                 {assessments.length === 0 && (
                     <p className="text-xs text-slate-400 ml-auto">Fa&#xE7;a a primeira avalia&#xE7;&#xE3;o nas Rotinas para come&#xE7;ar!</p>
                 )}
@@ -475,6 +480,8 @@ export default function PortfolioPage() {
                         schedule={schedule}
                         studentFilter={studentFilter}
                         classFilter={classFilter}
+                        projectFilter={projectFilter}
+                        setProjectFilter={setProjectFilter}
                         onAvaliacao={(ctx) => setDrawerCtx(ctx)}
                     />
                 )}
@@ -487,7 +494,7 @@ export default function PortfolioPage() {
                     onOpenChange={(open) => { if (!open) setDrawerCtx(null); }}
                     sessionId={drawerCtx.sessionId}
                     projectId={drawerCtx.projectId}
-                    defaultClassId={drawerCtx.classId ?? (drawerCtx as Record<string, string>).defaultClassId}
+                    defaultClassId={drawerCtx.classId || (drawerCtx as any).defaultClassId}
                     defaultStudentId={drawerCtx.studentId}
                     contextLabel={drawerCtx.contextLabel}
                 />
