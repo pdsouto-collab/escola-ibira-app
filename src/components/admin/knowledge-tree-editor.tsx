@@ -173,6 +173,13 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
             <div className="flex flex-col gap-2 mt-2 ml-4">
                 <div className={`p-3 rounded-lg border ${LEVEL_COLORS[node.level]} relative group transition-all duration-200 hover:shadow-sm`}>
 
+                    {/* Class Identification Badge */}
+                    {node.level === "macro" && (
+                        <div className="absolute -top-2.5 left-3 px-2 py-0.5 bg-slate-600 text-white text-[9px] font-bold rounded uppercase tracking-wider shadow-sm z-20 pointer-events-none">
+                            TURMA: {classes.find(c => c.id === node.classId)?.name || "GERAL/BASE"}
+                        </div>
+                    )}
+
                     {/* Connection Line to parent */}
                     <div className="absolute -left-4 top-6 w-4 h-px bg-slate-200" />
                     <div className="absolute -left-4 -top-2 bottom-6 w-px bg-slate-200" />
