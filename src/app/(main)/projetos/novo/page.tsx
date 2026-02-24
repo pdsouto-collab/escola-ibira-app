@@ -40,7 +40,6 @@ function NewProjectWizardContent() {
 
     const [isEditMode, setIsEditMode] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
-    const [selectedClass, setSelectedClass] = useState<string>("all");
     // Local form state
     const [formData, setFormData] = useState({
         isTemplate: "start_immediately",
@@ -371,7 +370,7 @@ function NewProjectWizardContent() {
                                             variant="outline"
                                             size="sm"
                                             onClick={() => {
-                                                const displayedStudents = selectedClass === "all" ? students : students.filter(s => s.classId === selectedClass);
+                                                const displayedStudents = formData.classes.length === 0 ? students : students.filter(s => formData.classes.includes(s.classId));
                                                 const newIds = displayedStudents.map(s => s.id);
                                                 const mergedSet = new Set([...formData.students, ...newIds]);
                                                 setFormData({ ...formData, students: Array.from(mergedSet) });
@@ -379,19 +378,10 @@ function NewProjectWizardContent() {
                                         >
                                             Selecionar todos
                                         </Button>
-                                        <Select value={selectedClass} onValueChange={setSelectedClass}>
-                                            <SelectTrigger className="w-48 h-9"><SelectValue placeholder="Filtrar por Turma" /></SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="all">Todas as Turmas</SelectItem>
-                                                {classes.map(c => (
-                                                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                    {(selectedClass === "all" ? students : students.filter(s => s.classId === selectedClass)).map(student => (
+                                    {(formData.classes.length === 0 ? students : students.filter(s => formData.classes.includes(s.classId))).map(student => (
                                         <button key={student.id} type="button" onClick={() => {
                                             const newStudents = formData.students.includes(student.id) ? formData.students.filter(id => id !== student.id) : [...formData.students, student.id];
                                             setFormData({ ...formData, students: newStudents });
