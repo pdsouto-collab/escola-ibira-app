@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { KnowledgeNode, KnowledgeLevel } from "@/lib/data";
+import { KnowledgeNode, KnowledgeLevel, Assessment } from "@/lib/data";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface RadialMatrixProps {
     data: KnowledgeNode[]; // Extracted from Admin Panel Tree
     treeType: "skill" | "content";
+    assessments: Assessment[];
+    selectedStudentId: string;
     drilledNodeId?: string;
     onNodeClick?: (node: KnowledgeNode) => void;
     onNodeDoubleClick?: (node: KnowledgeNode) => void;
@@ -66,7 +68,78 @@ const BASE_COLORS = [
     "#06b6d4"  // cyan
 ];
 
-export function RadialMatrix({ data, treeType, drilledNodeId, onNodeClick, onNodeDoubleClick }: RadialMatrixProps) {
+// Helper to get point value from assessment rating
+function getPoints(rating: number | undefined): number {
+    return rating || 0;
+}
+
+// Helper to get saturation level based on Situation 01 (Sum of points from children)
+function getSatLevelSit01(points: number): 0 | 1 | 2 | 3 {
+    if (points >= 11) return 3;
+    if (points >= 6) return 2;
+    if (points >= 1) return 1;
+    return 0;
+}
+
+// Helper to get saturation level based on Situation 02 (Direct assessment)
+function getSatLevelSit02(points: number): 0 | 1 | 2 | 3 {
+    if (points >= 5) return 3;
+    if (points >= 3) return 2;
+    if (points >= 1) return 1;
+    return 0;
+}
+
+function getNodeData(node: KnowledgeNode, assessments: Assessment[], studentId: string): { points: number; sat: number } {
+    // 1. Get direct assessment (most recent) for this student and this node
+    const studentAssessments = assessments.filter(a =>
+        a.knowledgeNodeId === node.id &&
+        a.studentId === studentId &&
+        a.scope === "student"
+    );
+
+    // Sort by date descending
+    const latestRating = studentAssessments.length > 0
+        ? [...studentAssessments].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0].rating
+        : undefined;
+
+    const directPoints = getPoints(latestRating);
+    const directSat = getSatLevelSit02(directPoints);
+
+    // 2. Recursive points from children
+    let childPoints = 0;
+    let childSats: number[] = [];
+
+    if (node.children && node.children.length > 0) {
+        node.children.forEach(child => {
+            const cData = getNodeData(child, assessments, studentId);
+            childPoints += cData.points;
+            childSats.push(cData.sat);
+        });
+    }
+
+    if (node.level === "micro") {
+        // L3: Habilidade ou Conteúdo
+        // Can be evaluated Sit 01 (sum of L4 hijos) or Sit 02 (direct)
+        const recursiveSat = getSatLevelSit01(childPoints);
+        const finalSat = Math.max(directSat, recursiveSat);
+        return { points: directPoints + childPoints, sat: finalSat };
+    }
+
+    if (node.level === "atomico") {
+        // L4: Habilidade específica ou Evidência
+        // Always Sit 02
+        return { points: directPoints, sat: directSat };
+    }
+
+    // L1/L2: Macro/Mesclado
+    // Higher levels usually don't have direct assessments in this flow,
+    // they reflect the progress of their children.
+    // We'll return average saturation of children for visual density.
+    const avgSat = childSats.length > 0 ? childSats.reduce((a, b) => a + b, 0) / childSats.length : 0;
+    return { points: directPoints + childPoints, sat: Math.ceil(avgSat) };
+}
+
+export function RadialMatrix({ data, treeType, assessments, selectedStudentId, drilledNodeId, onNodeClick, onNodeDoubleClick }: RadialMatrixProps) {
     const size = 800;
     const center = size / 2;
     const centerHoleRadius = 80;
@@ -126,7 +199,8 @@ export function RadialMatrix({ data, treeType, drilledNodeId, onNodeClick, onNod
         depth: number, // 0 to maxDepth - 1
         parentColor: string,
         parentIndexOffset: number = 0,
-        parentAngleSpan?: number
+        parentAngleSpan?: number,
+        studentId?: string
     ) => {
         let currentStartAngle = startAngle;
         const elements: React.ReactNode[] = [];
@@ -163,9 +237,34 @@ export function RadialMatrix({ data, treeType, drilledNodeId, onNodeClick, onNod
                 baseColor = BASE_COLORS[(parentIndexOffset + idx) % BASE_COLORS.length];
             }
 
+            const nodeData = studentId && studentId !== "all" ? getNodeData(node, assessments, studentId) : { points: 0, sat: 0 };
+            const satLevel = nodeData.sat;
+
             const effectiveDepth = drilledNodeId ? depth + 1 : depth;
-            const opacity = effectiveDepth === 0 ? 0.3 : (effectiveDepth === 1 ? 0.6 : 0.9);
-            const fillColor = baseColor;
+
+            // Saturation colors
+            let fillColor = baseColor;
+            let opacity = 0;
+            let strokeColor = "white";
+            let strokeWidth = "1.5";
+
+            if (studentId && studentId !== "all") {
+                if (satLevel === 0) {
+                    fillColor = "white";
+                    opacity = 1;
+                    strokeColor = baseColor;
+                    strokeWidth = "2";
+                } else if (satLevel === 1) {
+                    opacity = 0.35;
+                } else if (satLevel === 2) {
+                    opacity = 0.65;
+                } else {
+                    opacity = 1.0;
+                }
+            } else {
+                // Default view (no student selected)
+                opacity = effectiveDepth === 0 ? 0.3 : (effectiveDepth === 1 ? 0.6 : 0.9);
+            }
 
             const rGap = stackRadially && nodes.length > 1 ? 1 : 0;
             const pathData = describeArc(center, center, innerR + rGap, outerR - rGap, currentStartAngle + gap / 2, endAngle - gap / 2);
@@ -179,8 +278,8 @@ export function RadialMatrix({ data, treeType, drilledNodeId, onNodeClick, onNod
                                     d={pathData}
                                     fill={fillColor}
                                     fillOpacity={opacity}
-                                    stroke="white"
-                                    strokeWidth="1.5"
+                                    stroke={strokeColor}
+                                    strokeWidth={strokeWidth}
                                     className="cursor-pointer hover:opacity-100 hover:stroke-slate-300 transition-all drop-shadow-sm"
                                     onClick={(e) => {
                                         e.stopPropagation();
@@ -205,7 +304,7 @@ export function RadialMatrix({ data, treeType, drilledNodeId, onNodeClick, onNod
             );
 
             if (node.children && node.children.length > 0 && depth < maxDepth - 1) {
-                const childElements = renderArcs(node.children, currentStartAngle, depth + 1, baseColor, parentIndexOffset + idx, angleSpan);
+                const childElements = renderArcs(node.children, currentStartAngle, depth + 1, baseColor, parentIndexOffset + idx, angleSpan, studentId);
                 elements.push(...childElements);
             }
 
@@ -264,7 +363,7 @@ export function RadialMatrix({ data, treeType, drilledNodeId, onNodeClick, onNod
                 )}
 
                 {/* Recursive Arcs */}
-                {renderArcs(nodesToRender, 0, 0, "#cbd5e1")}
+                {renderArcs(nodesToRender, 0, 0, "#cbd5e1", 0, undefined, selectedStudentId)}
             </svg>
         </div>
     );

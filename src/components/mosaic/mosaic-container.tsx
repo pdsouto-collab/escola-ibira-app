@@ -13,7 +13,7 @@ import { AssessmentDrawer } from "../assessment/assessment-drawer";
 import { Assessment } from "@/lib/data";
 
 export function MosaicContainer() {
-    const { skillsTree, contentsTree, classes, projects, students, currentUser } = useAppStore();
+    const { skillsTree, contentsTree, classes, projects, students, currentUser, assessments } = useAppStore();
 
     // Core State
     const [activeTab, setActiveTab] = useState<"skill" | "content">("skill");
@@ -169,6 +169,8 @@ export function MosaicContainer() {
                     <RadialMatrix
                         data={dataToRender}
                         treeType={activeTab}
+                        assessments={assessments}
+                        selectedStudentId={selectedStudentId}
                         drilledNodeId={drilledNode?.id}
                         onNodeDoubleClick={(node: KnowledgeNode) => {
                             if (node && node.level === "macro") {
