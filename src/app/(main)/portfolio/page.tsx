@@ -416,10 +416,11 @@ function StudentView({
 
                             {(() => {
                                 // Find projects linked to this student
-                                const studentProjects = projects.filter(p =>
-                                    p.students.includes(student.id) ||
-                                    (p.classes && p.classes.includes(student.classId))
-                                );
+                                const studentProjects = projects.filter(p => {
+                                    const studentMatch = (p.students || []).some(id => String(id) === String(student.id));
+                                    const classMatch = (p.classes || []).some(id => String(id) === String(student.classId));
+                                    return studentMatch || classMatch;
+                                });
 
                                 if (studentProjects.length === 0) return null;
 

@@ -138,7 +138,8 @@ export function AssessmentDrawer({
         ? (!!selectedProjectId && !!selectedSessionId)
         : !!selectedRoutineId);
 
-    const canSave = (observations.trim().length > 0 || rating !== undefined) && hasContext;
+    // If we have a knowledge node (skill/content) and a project, we can save even without a session
+    const canSave = (observations.trim().length > 0 || rating !== undefined) && (hasContext || (!!propKnowledgeNodeId && !!selectedProjectId));
     const isFixedContext = !!propSessionId || !!propRoutineId || !!propKnowledgeNodeId;
 
     useEffect(() => {
