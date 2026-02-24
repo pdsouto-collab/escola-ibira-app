@@ -10,8 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { cn } from "@/lib/utils";
 import {
     BookMarked, Calendar, User, Users, ClipboardList, Pencil, FileText,
-    Image as ImageIcon, File, ChevronRight, FolderKanban, Star
+    Image as ImageIcon, File, ChevronRight, FolderKanban, Star, ListTree
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 // ────────────────────────────────────────────
 // Mini tree indicator (read-only, compact)
@@ -109,7 +110,7 @@ function AssessmentCard({ assessment, onEdit, students, classes }: {
 // View: By Project
 // ────────────────────────────────────────────
 function ProjectView({
-    projectFilter, allProjects, assessments, schedule, students, classes, onAvaliacao
+    projectFilter, allProjects, assessments, schedule, students, classes, skillsTree, contentsTree, onAvaliacao
 }: {
     projectFilter: string;
     allProjects: ReturnType<typeof useAppStore>["projects"];
@@ -117,10 +118,24 @@ function ProjectView({
     schedule: ReturnType<typeof useAppStore>["schedule"];
     students: ReturnType<typeof useAppStore>["students"];
     classes: ReturnType<typeof useAppStore>["classes"];
+    skillsTree: ReturnType<typeof useAppStore>["skillsTree"];
+    contentsTree: ReturnType<typeof useAppStore>["contentsTree"];
     onAvaliacao: (ctx: Partial<Assessment> & { contextLabel: string }) => void;
 }) {
     const [editingAssessment, setEditingAssessment] = useState<Assessment | null>(null);
     const projects = projectFilter === "all" ? allProjects : allProjects.filter(p => p.id === projectFilter);
+
+    // Recursive helper to find node name
+    const findNodeName = (nodes: any[], id: string): string => {
+        for (const node of nodes) {
+            if (node.id === id) return node.name;
+            if (node.children) {
+                const found = findNodeName(node.children, id);
+                if (found) return found;
+            }
+        }
+        return id;
+    };
 
     return (
         <div className="space-y-8">
@@ -148,11 +163,13 @@ function ProjectView({
                             )}
                         </div>
 
-                        <div className="p-6 space-y-6">
+                        <div className="p-6 space-y-8">
                             {/* Sessions */}
                             {sessions.length > 0 && (
                                 <div>
-                                    <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-3">Sess&#xF5;es</h3>
+                                    <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                        <Calendar className="w-4 h-4 text-slate-400" /> Sess&#xF5;es
+                                    </h3>
                                     <div className="space-y-3">
                                         {sessions.map(session => {
                                             const sessionAssessments = projectAssessments.filter(a => a.sessionId === session.id);
@@ -188,6 +205,63 @@ function ProjectView({
                                                             <ClipboardList className="w-3 h-3 mr-1" />Avaliar
                                                         </Button>
                                                     </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Skills & Contents Section */}
+                            {((project.bnccSkillIds && project.bnccSkillIds.length > 0) || (project.contentIds && project.contentIds.length > 0)) && (
+                                <div>
+                                    <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                        <Star className="w-4 h-4 text-amber-500" /> Habilidades & Conte&#xFA;dos
+                                    </h3>
+                                    <div className="grid grid-cols-1 gap-2">
+                                        {project.bnccSkillIds?.map(skillId => {
+                                            const name = findNodeName(skillsTree, skillId);
+                                            return (
+                                                <div key={skillId} className="flex items-center justify-between border rounded-xl px-4 py-2 bg-amber-50/30 hover:bg-amber-50 transition-colors group">
+                                                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                        <Badge variant="outline" className="text-[10px] font-mono bg-white border-amber-200 text-amber-700 shrink-0">Sk</Badge>
+                                                        <p className="text-sm text-slate-700 truncate">{name}</p>
+                                                    </div>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        className="h-7 px-2 text-[10px] text-amber-700 opacity-0 group-hover:opacity-100 hover:bg-amber-100/50"
+                                                        onClick={() => onAvaliacao({
+                                                            knowledgeNodeId: skillId,
+                                                            projectId: project.id,
+                                                            contextLabel: name
+                                                        })}
+                                                    >
+                                                        <ClipboardList className="w-3 h-3 mr-1" />Avaliar
+                                                    </Button>
+                                                </div>
+                                            );
+                                        })}
+                                        {project.contentIds?.map(contentId => {
+                                            const name = findNodeName(contentsTree, contentId);
+                                            return (
+                                                <div key={contentId} className="flex items-center justify-between border rounded-xl px-4 py-2 bg-blue-50/30 hover:bg-blue-50 transition-colors group">
+                                                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                        <Badge variant="outline" className="text-[10px] font-mono bg-white border-blue-200 text-blue-700 shrink-0">Co</Badge>
+                                                        <p className="text-sm text-slate-700 truncate">{name}</p>
+                                                    </div>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        className="h-7 px-2 text-[10px] text-blue-700 opacity-0 group-hover:opacity-100 hover:bg-blue-100/50"
+                                                        onClick={() => onAvaliacao({
+                                                            knowledgeNodeId: contentId,
+                                                            projectId: project.id,
+                                                            contextLabel: name
+                                                        })}
+                                                    >
+                                                        <ClipboardList className="w-3 h-3 mr-1" />Avaliar
+                                                    </Button>
                                                 </div>
                                             );
                                         })}
@@ -233,25 +307,42 @@ function ProjectView({
             )}
         </div>
     );
+
+
 }
+
+// ────────────────────────────────────────────
 
 // ────────────────────────────────────────────
 // View: By Student
 // ────────────────────────────────────────────
 function StudentView({
-    assessments, students, classes, projects, schedule, studentFilter, classFilter, projectFilter, setProjectFilter, onAvaliacao
+    assessments, students, classes, projects, schedule, skillsTree, contentsTree, studentFilter, classFilter, projectFilter, setProjectFilter, onAvaliacao
 }: {
     assessments: Assessment[];
     students: ReturnType<typeof useAppStore>["students"];
     classes: ReturnType<typeof useAppStore>["classes"];
     projects: ReturnType<typeof useAppStore>["projects"];
     schedule: ReturnType<typeof useAppStore>["schedule"];
+    skillsTree: ReturnType<typeof useAppStore>["skillsTree"];
+    contentsTree: ReturnType<typeof useAppStore>["contentsTree"];
     studentFilter: string;
     classFilter: string;
     projectFilter: string;
     setProjectFilter: (v: string) => void;
     onAvaliacao: (ctx: Partial<Assessment> & { contextLabel: string }) => void;
 }) {
+    // Recursive helper to find node name
+    const findNodeName = (nodes: any[], id: string): string => {
+        for (const node of nodes) {
+            if (node.id === id) return node.name;
+            if (node.children) {
+                const found = findNodeName(node.children, id);
+                if (found) return found;
+            }
+        }
+        return id;
+    };
     const filteredStudents = students.filter(s => {
         if (classFilter !== "all" && s.classId !== classFilter) return false;
         if (studentFilter !== "all" && s.id !== studentFilter) return false;
@@ -335,6 +426,59 @@ function StudentView({
                                 <p className="text-slate-400 text-sm text-center py-4 italic">Nenhuma avalia&#xE7;&#xE3;o registrada ainda.</p>
                             )}
 
+                            {/* Project-specific Skills (if filtered) */}
+                            {projectFilter !== "all" && (
+                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 flex flex-col gap-3">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-xs font-bold text-slate-500 uppercase flex items-center gap-2">
+                                            <Star className="w-3.5 h-3.5 text-amber-500" /> Itens do Projeto para {student.name.split(" ")[0]}
+                                        </h3>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                        {projects.find(p => p.id === projectFilter)?.bnccSkillIds?.map(skillId => {
+                                            const name = findNodeName(skillsTree, skillId);
+                                            return (
+                                                <Button
+                                                    key={skillId}
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="justify-between text-xs font-normal border border-dashed border-slate-200 h-auto py-2 px-3 hover:bg-white hover:border-amber-200 group"
+                                                    onClick={() => onAvaliacao({
+                                                        knowledgeNodeId: skillId,
+                                                        projectId: projectFilter,
+                                                        studentId: student.id,
+                                                        contextLabel: `${student.name.split(" ")[0]}: ${name}`
+                                                    })}
+                                                >
+                                                    <span className="truncate flex-1 text-left">{name}</span>
+                                                    <ClipboardList className="w-3 h-3 text-slate-300 group-hover:text-emerald-500 shrink-0 ml-2" />
+                                                </Button>
+                                            );
+                                        })}
+                                        {projects.find(p => p.id === projectFilter)?.contentIds?.map(contentId => {
+                                            const name = findNodeName(contentsTree, contentId);
+                                            return (
+                                                <Button
+                                                    key={contentId}
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="justify-between text-xs font-normal border border-dashed border-slate-200 h-auto py-2 px-3 hover:bg-white hover:border-blue-200 group"
+                                                    onClick={() => onAvaliacao({
+                                                        knowledgeNodeId: contentId,
+                                                        projectId: projectFilter,
+                                                        studentId: student.id,
+                                                        contextLabel: `${student.name.split(" ")[0]}: ${name}`
+                                                    })}
+                                                >
+                                                    <span className="truncate flex-1 text-left">{name}</span>
+                                                    <ClipboardList className="w-3 h-3 text-slate-300 group-hover:text-emerald-500 shrink-0 ml-2" />
+                                                </Button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Photo gallery */}
                             {photos.length > 0 && (
                                 <div>
@@ -371,7 +515,7 @@ function StudentView({
 // Main Portfolio Page
 // ────────────────────────────────────────────
 export default function PortfolioPage() {
-    const { assessments, projects, students, classes, schedule } = useAppStore();
+    const { assessments, projects, students, classes, schedule, skillsTree, contentsTree } = useAppStore();
     const [view, setView] = useState<"project" | "student">("project");
     const [projectFilter, setProjectFilter] = useState("all");
     const [classFilter, setClassFilter] = useState("all");
@@ -469,6 +613,8 @@ export default function PortfolioPage() {
                         schedule={schedule}
                         students={students}
                         classes={classes}
+                        skillsTree={skillsTree}
+                        contentsTree={contentsTree}
                         onAvaliacao={(ctx) => setDrawerCtx(ctx)}
                     />
                 ) : (
@@ -478,6 +624,8 @@ export default function PortfolioPage() {
                         classes={classes}
                         projects={projects}
                         schedule={schedule}
+                        skillsTree={skillsTree}
+                        contentsTree={contentsTree}
                         studentFilter={studentFilter}
                         classFilter={classFilter}
                         projectFilter={projectFilter}
