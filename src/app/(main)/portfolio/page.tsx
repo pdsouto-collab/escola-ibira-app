@@ -441,72 +441,99 @@ function StudentView({
                                                 ]);
 
                                                 return (
-                                                    <div key={project.id} className="border rounded-xl bg-slate-50/50 overflow-hidden">
-                                                        <div className="bg-slate-100/80 px-4 py-2 border-b flex items-center justify-between">
-                                                            <span className="text-xs font-bold text-slate-700">{project.title}</span>
+                                                    <div key={project.id} className="border rounded-xl bg-white overflow-hidden shadow-sm">
+                                                        <div className="bg-slate-50 px-4 py-2.5 border-b flex items-center justify-between">
+                                                            <div className="flex items-center gap-2">
+                                                                <FolderKanban className="w-4 h-4 text-indigo-500" />
+                                                                <span className="text-sm font-bold text-slate-700">{project.title}</span>
+                                                            </div>
                                                             <Badge variant="outline" className="text-[10px] bg-white text-slate-500">{projectSessions.length} sessões</Badge>
                                                         </div>
-                                                        <div className="p-3 space-y-4">
+                                                        <div className="p-4 space-y-6">
                                                             {projectSessions.length > 0 && (
-                                                                <div className="space-y-2">
-                                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">Sessões do Projeto</p>
-                                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                                        {projectSessions.map(session => (
-                                                                            <Button
-                                                                                key={session.id}
-                                                                                variant="ghost"
-                                                                                size="sm"
-                                                                                className="justify-between text-xs font-normal border border-slate-200 h-auto py-2 px-3 bg-white hover:border-emerald-200 group"
-                                                                                onClick={() => onAvaliacao({
-                                                                                    sessionId: session.id,
-                                                                                    projectId: project.id,
-                                                                                    studentId: student.id,
-                                                                                    contextLabel: `${student.name.split(" ")[0]}: ${session.title}`
-                                                                                })}
-                                                                            >
-                                                                                <div className="flex flex-col items-start min-w-0">
-                                                                                    <span className="truncate w-full font-medium">{session.title}</span>
-                                                                                    <span className="text-[10px] text-slate-400">{session.date?.split("-").reverse().join("/")}</span>
+                                                                <div className="space-y-3">
+                                                                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                                                                        <Calendar className="w-3 h-3" /> Sessões do Projeto
+                                                                    </h4>
+                                                                    <div className="space-y-2">
+                                                                        {projectSessions.map(session => {
+                                                                            const sessionAssessment = studentAssessments.find(a => a.sessionId === session.id);
+                                                                            const dateStr = session.date ? (typeof session.date === "string" ? session.date.split("-").reverse().join("/") : "") : "";
+                                                                            return (
+                                                                                <div key={session.id} className="flex items-center justify-between border rounded-xl px-4 py-2.5 bg-slate-50/30 hover:bg-slate-50 transition-colors group">
+                                                                                    <div className="min-w-0">
+                                                                                        <p className="font-semibold text-slate-800 text-xs truncate">{session.title}</p>
+                                                                                        <p className="text-[10px] text-slate-400 mt-0.5">{dateStr} · {session.time}</p>
+                                                                                    </div>
+                                                                                    <div className="flex items-center gap-3 shrink-0">
+                                                                                        {sessionAssessment ? (
+                                                                                            <MiniTree rating={sessionAssessment.rating} />
+                                                                                        ) : (
+                                                                                            <span className="text-[10px] text-slate-400 italic">Sem avaliação</span>
+                                                                                        )}
+                                                                                        <Button
+                                                                                            size="sm"
+                                                                                            variant="outline"
+                                                                                            className="h-7 px-2 text-[10px] text-green-600 border-green-200 hover:bg-green-50"
+                                                                                            onClick={() => onAvaliacao({
+                                                                                                sessionId: session.id,
+                                                                                                projectId: project.id,
+                                                                                                studentId: student.id,
+                                                                                                contextLabel: `${student.name.split(" ")[0]}: ${session.title}`
+                                                                                            })}
+                                                                                        >
+                                                                                            <ClipboardList className="w-3 h-3 mr-1" />Avaliar
+                                                                                        </Button>
+                                                                                    </div>
                                                                                 </div>
-                                                                                <ClipboardList className="w-3 h-3 text-slate-300 group-hover:text-emerald-500 shrink-0 ml-2" />
-                                                                            </Button>
-                                                                        ))}
+                                                                            );
+                                                                        })}
                                                                     </div>
                                                                 </div>
                                                             )}
 
                                                             {projectNodes.length > 0 && (
-                                                                <div className="space-y-2">
-                                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">Habilidades & Evidências</p>
-                                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                                        {projectNodes.map(node => (
-                                                                            <Button
-                                                                                key={node.id}
-                                                                                variant="ghost"
-                                                                                size="sm"
-                                                                                className={cn(
-                                                                                    "justify-between text-xs font-normal border h-auto py-2 px-3 bg-white group",
-                                                                                    node.level === "atomico" ? "border-amber-100 hover:border-amber-300" : "border-slate-200 hover:border-indigo-200"
-                                                                                )}
-                                                                                onClick={() => onAvaliacao({
-                                                                                    knowledgeNodeId: node.id,
-                                                                                    projectId: project.id,
-                                                                                    studentId: student.id,
-                                                                                    contextLabel: `${student.name.split(" ")[0]}: ${node.name}`
-                                                                                })}
-                                                                            >
-                                                                                <div className="flex flex-col items-start min-w-0">
-                                                                                    <div className="flex items-center gap-1">
-                                                                                        {node.level === "atomico" && <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
-                                                                                        <span className="truncate w-full font-medium">{node.name}</span>
+                                                                <div className="space-y-3">
+                                                                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                                                                        <Star className="w-3 h-3 text-amber-500" /> Habilidades & Conteúdos
+                                                                    </h4>
+                                                                    <div className="space-y-2">
+                                                                        {projectNodes.map(node => {
+                                                                            const nodeAssessment = studentAssessments.find(a => a.knowledgeNodeId === node.id);
+                                                                            return (
+                                                                                <div key={node.id} className="flex items-center justify-between border rounded-xl px-4 py-2.5 bg-slate-50/30 hover:bg-slate-50 transition-colors group">
+                                                                                    <div className="flex items-center gap-2 min-w-0">
+                                                                                        <Badge variant="outline" className={cn(
+                                                                                            "text-[9px] font-mono bg-white shrink-0",
+                                                                                            node.level === "atomico" ? "border-amber-200 text-amber-700" : "border-slate-200 text-slate-600"
+                                                                                        )}>
+                                                                                            {node.level === "atomico" ? "Ev" : "Sk"}
+                                                                                        </Badge>
+                                                                                        <p className="text-xs text-slate-700 truncate font-medium">{node.name}</p>
                                                                                     </div>
-                                                                                    <span className="text-[10px] text-slate-400 uppercase letter-spacing-wider">
-                                                                                        {node.level === "atomico" ? "Evidência" : "Habilidade"}
-                                                                                    </span>
+                                                                                    <div className="flex items-center gap-3 shrink-0">
+                                                                                        {nodeAssessment ? (
+                                                                                            <MiniTree rating={nodeAssessment.rating} />
+                                                                                        ) : (
+                                                                                            <span className="text-[10px] text-slate-400 italic">Sem avaliação</span>
+                                                                                        )}
+                                                                                        <Button
+                                                                                            size="sm"
+                                                                                            variant="outline"
+                                                                                            className="h-7 px-2 text-[10px] text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+                                                                                            onClick={() => onAvaliacao({
+                                                                                                knowledgeNodeId: node.id,
+                                                                                                projectId: project.id,
+                                                                                                studentId: student.id,
+                                                                                                contextLabel: `${student.name.split(" ")[0]}: ${node.name}`
+                                                                                            })}
+                                                                                        >
+                                                                                            <ClipboardList className="w-3 h-3 mr-1" />Avaliar
+                                                                                        </Button>
+                                                                                    </div>
                                                                                 </div>
-                                                                                <ClipboardList className="w-3 h-3 text-slate-300 group-hover:text-emerald-500 shrink-0 ml-2" />
-                                                                            </Button>
-                                                                        ))}
+                                                                            );
+                                                                        })}
                                                                     </div>
                                                                 </div>
                                                             )}
