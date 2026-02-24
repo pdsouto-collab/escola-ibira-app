@@ -26,6 +26,11 @@ interface AssessmentDrawerProps {
     // Label shown in header
     contextLabel?: string;
     contextDescription?: string;
+    // Edit mode
+    assessmentId?: string;
+    initialRating?: 1 | 2 | 3 | 4 | 5;
+    initialObservations?: string;
+    initialAttachments?: AssessmentAttachment[];
 }
 
 export function AssessmentDrawer({
@@ -39,8 +44,12 @@ export function AssessmentDrawer({
     defaultStudentId,
     contextLabel,
     contextDescription,
+    assessmentId,
+    initialRating,
+    initialObservations,
+    initialAttachments,
 }: AssessmentDrawerProps) {
-    const { students, classes, projects, schedule, addAssessment, currentUser } = useAppStore();
+    const { students, classes, projects, schedule, addAssessment, updateAssessment, currentUser } = useAppStore();
 
     // Context State
     const [contextType, setContextType] = useState<"project" | "routine">(propRoutineId ? "routine" : "project");
@@ -52,20 +61,18 @@ export function AssessmentDrawer({
     const [scope, setScope] = useState<"class" | "student">(defaultStudentId ? "student" : "class");
     const [classId, setClassId] = useState(defaultClassId || classes[0]?.id || "");
     const [studentId, setStudentId] = useState(defaultStudentId || "");
-    const [rating, setRating] = useState<1 | 2 | 3 | 4 | 5 | undefined>(undefined);
-    const [observations, setObservations] = useState("");
-    const [attachments, setAttachments] = useState<AssessmentAttachment[]>([]);
+    const [rating, setRating] = useState<1 | 2 | 3 | 4 | 5 | undefined>(initialRating);
+    const [observations, setObservations] = useState(initialObservations || "");
+    const [attachments, setAttachments] = useState<AssessmentAttachment[]>(initialAttachments || []);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const studentsInClass = students.filter(s => s.classId === classId);
     const sessionsForProject = schedule.filter(s => s.projectId === selectedProjectId);
 
-    // Filter routines (using schedule for now or a hardcoded list if available in store)
-    // For this context, we'll suggest items that follow the routine pattern (activity/meal/care)
+    // Filter routines
     const routines = schedule.filter(s => !s.projectId && (s.type === "activity" || s.type === "meal" || s.type === "care"));
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        // ... (existing file handling code)
         const files = Array.from(e.target.files || []);
         if (attachments.length + files.length > 3) {
             alert("Máximo de 3 arquivos por avaliação.");
@@ -89,26 +96,6 @@ export function AssessmentDrawer({
         e.target.value = "";
     };
 
-    const handleSave = () => {
-        const assessment: Assessment = {
-            id: crypto.randomUUID(),
-            createdAt: new Date().toISOString(),
-            sessionId: contextType === "project" ? (selectedSessionId || undefined) : undefined,
-            routineId: contextType === "routine" ? (selectedRoutineId || undefined) : undefined,
-            knowledgeNodeId: propKnowledgeNodeId,
-            projectId: contextType === "project" ? (selectedProjectId || undefined) : undefined,
-            scope,
-            classId: scope === "class" ? classId : undefined,
-            studentId: scope === "student" ? studentId : undefined,
-            rating,
-            observations,
-            attachments,
-            ...(currentUser ? { teacherId: currentUser.id } : {}),
-        };
-        addAssessment(assessment);
-        handleClose();
-    };
-
     const handleClose = () => {
         setRating(undefined);
         setObservations("");
@@ -119,30 +106,69 @@ export function AssessmentDrawer({
         onOpenChange(false);
     };
 
-    // Validation: Require rating/obs AND a valid context (session or routine OR knowledgeNode)
+    const handleSave = () => {
+        if (assessmentId) {
+            updateAssessment(assessmentId, {
+                rating,
+                observations,
+                attachments,
+            });
+        } else {
+            const assessment: Assessment = {
+                id: crypto.randomUUID(),
+                createdAt: new Date().toISOString(),
+                sessionId: contextType === "project" ? (selectedSessionId || undefined) : undefined,
+                routineId: contextType === "routine" ? (selectedRoutineId || undefined) : undefined,
+                knowledgeNodeId: propKnowledgeNodeId,
+                projectId: contextType === "project" ? (selectedProjectId || undefined) : undefined,
+                scope,
+                classId: scope === "class" ? classId : undefined,
+                studentId: scope === "student" ? studentId : undefined,
+                rating,
+                observations,
+                attachments,
+                ...(currentUser ? { teacherId: currentUser.id } : {}),
+            };
+            addAssessment(assessment);
+        }
+        handleClose();
+    };
+
     const hasContext = !!propKnowledgeNodeId || (contextType === "project"
         ? (!!selectedProjectId && !!selectedSessionId)
         : !!selectedRoutineId);
 
     const canSave = (observations.trim().length > 0 || rating !== undefined) && hasContext;
-
     const isFixedContext = !!propSessionId || !!propRoutineId || !!propKnowledgeNodeId;
 
     useEffect(() => {
+        if (open) {
+            setRating(initialRating);
+            setObservations(initialObservations || "");
+            setAttachments(initialAttachments || []);
+            if (defaultStudentId) setStudentId(defaultStudentId);
+            if (defaultClassId) setClassId(defaultClassId);
+            if (propProjectId) setSelectedProjectId(propProjectId);
+            if (propSessionId) setSelectedSessionId(propSessionId);
+            if (propRoutineId) setSelectedRoutineId(propRoutineId);
+            if (defaultStudentId) setScope("student");
+            else setScope("class");
+        }
+    }, [open, initialRating, initialObservations, initialAttachments, defaultStudentId, defaultClassId, propProjectId, propSessionId, propRoutineId]);
+
+    useEffect(() => {
         if (!isFixedContext && contextType === "routine" && routines.length > 0 && !selectedRoutineId) {
-            // Pre-select first routine if none selected
-            // setSelectedRoutineId(routines[0].id); // Optional: leave empty for explicit choice
+            // Optional: pre-select first routine
         }
     }, [contextType, routines, selectedRoutineId, isFixedContext]);
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
             <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto flex flex-col gap-0 p-0">
-                {/* Header */}
                 <DialogHeader className="px-6 py-4 border-b bg-gradient-to-r from-green-50 to-emerald-50 rounded-t-lg">
                     <DialogTitle className="text-green-900 flex items-center gap-2">
                         <span className="text-xl">🌱</span>
-                        Avaliação
+                        {assessmentId ? "Editar Avaliação" : "Nova Avaliação"}
                     </DialogTitle>
                     {contextLabel && (
                         <p className="text-sm text-green-700 font-bold">{contextLabel}</p>
@@ -153,12 +179,9 @@ export function AssessmentDrawer({
                 </DialogHeader>
 
                 <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
-
-                    {/* Context Selection (Only if not fixed) */}
                     {!isFixedContext && (
                         <div className="space-y-3 p-4 bg-slate-50 rounded-xl border border-slate-100">
                             <Label className="text-sm font-bold text-slate-700">Contexto da Avaliação</Label>
-
                             <div className="flex bg-white rounded-lg p-1 border shadow-sm">
                                 <button
                                     onClick={() => setContextType("project")}
@@ -179,7 +202,6 @@ export function AssessmentDrawer({
                                     Rotina
                                 </button>
                             </div>
-
                             {contextType === "project" ? (
                                 <div className="space-y-2">
                                     <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
@@ -206,18 +228,19 @@ export function AssessmentDrawer({
                         </div>
                     )}
 
-                    {/* Scope selector */}
                     <div className="space-y-3">
                         <Label className="text-sm font-semibold text-slate-700">Para quem é esta avaliação?</Label>
                         <div className="grid grid-cols-2 gap-2">
                             <button
                                 type="button"
                                 onClick={() => setScope("class")}
+                                disabled={!!assessmentId}
                                 className={cn(
                                     "flex items-center gap-2 border rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
                                     scope === "class"
                                         ? "border-green-500 bg-green-50 text-green-700"
-                                        : "border-slate-200 text-slate-600 hover:border-slate-300"
+                                        : "border-slate-200 text-slate-600 hover:border-slate-300",
+                                    !!assessmentId && "opacity-50 cursor-not-allowed"
                                 )}
                             >
                                 <Users className="w-4 h-4" />
@@ -226,11 +249,13 @@ export function AssessmentDrawer({
                             <button
                                 type="button"
                                 onClick={() => setScope("student")}
+                                disabled={!!assessmentId}
                                 className={cn(
                                     "flex items-center gap-2 border rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
                                     scope === "student"
                                         ? "border-green-500 bg-green-50 text-green-700"
-                                        : "border-slate-200 text-slate-600 hover:border-slate-300"
+                                        : "border-slate-200 text-slate-600 hover:border-slate-300",
+                                    !!assessmentId && "opacity-50 cursor-not-allowed"
                                 )}
                             >
                                 <User className="w-4 h-4" />
@@ -239,7 +264,7 @@ export function AssessmentDrawer({
                         </div>
 
                         {scope === "class" && (
-                            <Select value={classId} onValueChange={setClassId}>
+                            <Select value={classId} onValueChange={setClassId} disabled={!!assessmentId}>
                                 <SelectTrigger><SelectValue placeholder="Selecione a turma" /></SelectTrigger>
                                 <SelectContent>
                                     {classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
@@ -249,13 +274,13 @@ export function AssessmentDrawer({
 
                         {scope === "student" && (
                             <div className="space-y-2">
-                                <Select value={classId} onValueChange={v => { setClassId(v); setStudentId(""); }}>
+                                <Select value={classId} onValueChange={v => { setClassId(v); setStudentId(""); }} disabled={!!assessmentId}>
                                     <SelectTrigger><SelectValue placeholder="Turma" /></SelectTrigger>
                                     <SelectContent>
                                         {classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
-                                <Select value={studentId} onValueChange={setStudentId}>
+                                <Select value={studentId} onValueChange={setStudentId} disabled={!!assessmentId}>
                                     <SelectTrigger><SelectValue placeholder="Selecione o aluno" /></SelectTrigger>
                                     <SelectContent>
                                         {studentsInClass.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
@@ -265,7 +290,6 @@ export function AssessmentDrawer({
                         )}
                     </div>
 
-                    {/* Tree rating */}
                     <div className="space-y-3">
                         <Label className="text-sm font-semibold text-slate-700">Nível de desenvolvimento</Label>
                         <div className="bg-green-50/60 rounded-xl p-4 flex justify-center">
@@ -273,7 +297,6 @@ export function AssessmentDrawer({
                         </div>
                     </div>
 
-                    {/* Observations */}
                     <div className="space-y-2">
                         <Label className="text-sm font-semibold text-slate-700">Observações</Label>
                         <Textarea
@@ -285,13 +308,11 @@ export function AssessmentDrawer({
                         />
                     </div>
 
-                    {/* Attachments */}
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
                             <Label className="text-sm font-semibold text-slate-700">Evidências</Label>
                             <span className="text-xs text-slate-400">{attachments.length}/3 arquivos</span>
                         </div>
-
                         {attachments.length > 0 && (
                             <div className="grid grid-cols-3 gap-2">
                                 {attachments.map(att => (
@@ -316,7 +337,6 @@ export function AssessmentDrawer({
                                 ))}
                             </div>
                         )}
-
                         <input
                             ref={fileInputRef}
                             type="file"
@@ -338,7 +358,6 @@ export function AssessmentDrawer({
                     </div>
                 </div>
 
-                {/* Footer */}
                 <div className="px-6 py-4 border-t bg-white flex gap-3">
                     <Button variant="outline" className="flex-1" onClick={handleClose}>
                         Cancelar
@@ -348,7 +367,7 @@ export function AssessmentDrawer({
                         disabled={!canSave}
                         onClick={handleSave}
                     >
-                        Salvar Avaliação
+                        Salvar {assessmentId ? "Alterações" : "Avaliação"}
                     </Button>
                 </div>
             </DialogContent>

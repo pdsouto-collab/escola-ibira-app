@@ -1,18 +1,31 @@
 "use client";
 
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo } from "react";
 import { useAppStore } from "@/lib/store";
 import { Assessment } from "@/lib/data";
-import { TreeRatingPicker } from "@/components/assessment/tree-rating-picker";
 import { AssessmentDrawer } from "@/components/assessment/assessment-drawer";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import {
     BookMarked, Calendar, User, Users, ClipboardList, Pencil, FileText,
-    Image as ImageIcon, File, ChevronRight, FolderKanban, Star, ListTree
+    Image as ImageIcon, File, FolderKanban, Star
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+
+// ────────────────────────────────────────────
+// Helper: find node name recursively
+// ────────────────────────────────────────────
+const findNodeName = (nodes: any[], id: string): string => {
+    for (const node of nodes) {
+        if (node.id === id) return node.name;
+        if (node.children) {
+            const found = findNodeName(node.children, id);
+            if (found) return found;
+        }
+    }
+    return id;
+};
 
 // ────────────────────────────────────────────
 // Mini tree indicator (read-only, compact)
@@ -60,7 +73,6 @@ function AssessmentCard({ assessment, onEdit, students, classes }: {
 
     return (
         <div className="bg-white border rounded-xl p-4 shadow-sm hover:shadow-md transition-all group">
-            {/* Header */}
             <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2 text-xs text-slate-500">
                     <Calendar className="w-3 h-3" />
@@ -86,15 +98,11 @@ function AssessmentCard({ assessment, onEdit, students, classes }: {
                     </button>
                 </div>
             </div>
-
-            {/* Observations */}
             {assessment.observations && (
                 <p className="text-sm text-slate-700 leading-relaxed mb-3 line-clamp-3">
                     &ldquo;{assessment.observations}&rdquo;
                 </p>
             )}
-
-            {/* Attachments */}
             {assessment.attachments.length > 0 && (
                 <div className="flex gap-1 flex-wrap">
                     {assessment.attachments.map(att => (
@@ -110,7 +118,7 @@ function AssessmentCard({ assessment, onEdit, students, classes }: {
 // View: By Project
 // ────────────────────────────────────────────
 function ProjectView({
-    projectFilter, allProjects, assessments, schedule, students, classes, skillsTree, contentsTree, onAvaliacao
+    projectFilter, allProjects, assessments, schedule, students, classes, skillsTree, contentsTree, onAvaliacao, onEdit
 }: {
     projectFilter: string;
     allProjects: ReturnType<typeof useAppStore>["projects"];
@@ -121,21 +129,9 @@ function ProjectView({
     skillsTree: ReturnType<typeof useAppStore>["skillsTree"];
     contentsTree: ReturnType<typeof useAppStore>["contentsTree"];
     onAvaliacao: (ctx: Partial<Assessment> & { contextLabel: string }) => void;
+    onEdit: (assessment: Assessment) => void;
 }) {
-    const [editingAssessment, setEditingAssessment] = useState<Assessment | null>(null);
     const projects = projectFilter === "all" ? allProjects : allProjects.filter(p => p.id === projectFilter);
-
-    // Recursive helper to find node name
-    const findNodeName = (nodes: any[], id: string): string => {
-        for (const node of nodes) {
-            if (node.id === id) return node.name;
-            if (node.children) {
-                const found = findNodeName(node.children, id);
-                if (found) return found;
-            }
-        }
-        return id;
-    };
 
     return (
         <div className="space-y-8">
@@ -146,29 +142,27 @@ function ProjectView({
 
                 return (
                     <div key={project.id} className="bg-white rounded-2xl border shadow-sm overflow-hidden">
-                        {/* Project Header */}
                         <div className="bg-gradient-to-r from-violet-600 to-indigo-600 px-6 py-4 flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <FolderKanban className="w-5 h-5 text-white/80" />
                                 <div>
                                     <h2 className="text-white font-bold text-lg">{project.title}</h2>
-                                    <p className="text-violet-200 text-sm">{sessions.length} sess&#xF5;es &bull; {projectAssessments.length} avalia&#xE7;&#xF5;es</p>
+                                    <p className="text-violet-200 text-sm">{sessions.length} sessões &bull; {projectAssessments.length} avaliações</p>
                                 </div>
                             </div>
                             {avgRating > 0 && (
                                 <div className="bg-white/20 rounded-xl px-3 py-1.5 text-right">
-                                    <p className="text-[10px] text-white/70 uppercase tracking-wide">M&#xE9;dia</p>
+                                    <p className="text-[10px] text-white/70 uppercase tracking-wide">Média</p>
                                     <p className="text-white font-bold text-sm">{avgRating.toFixed(1)}/5</p>
                                 </div>
                             )}
                         </div>
 
                         <div className="p-6 space-y-8">
-                            {/* Sessions */}
                             {sessions.length > 0 && (
                                 <div>
                                     <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                        <Calendar className="w-4 h-4 text-slate-400" /> Sess&#xF5;es
+                                        <Calendar className="w-4 h-4 text-slate-400" /> Sessões
                                     </h3>
                                     <div className="space-y-3">
                                         {sessions.map(session => {
@@ -183,14 +177,14 @@ function ProjectView({
                                                         <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
                                                             <Calendar className="w-3 h-3" /> {dateStr}
                                                             <span className="text-slate-300">&#xB7;</span>
-                                                            {session.time} &#x2013; {session.endTime}
+                                                            {session.time} – {session.endTime}
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-3">
                                                         {sessionAssessments.length > 0 ? (
                                                             <MiniTree rating={sessionAssessments[sessionAssessments.length - 1]?.rating} />
                                                         ) : (
-                                                            <span className="text-xs text-slate-400 italic">Sem avalia&#xE7;&#xE3;o</span>
+                                                            <span className="text-xs text-slate-400 italic">Sem avaliação</span>
                                                         )}
                                                         <Button
                                                             size="sm"
@@ -212,11 +206,10 @@ function ProjectView({
                                 </div>
                             )}
 
-                            {/* Skills & Contents Section */}
                             {((project.bnccSkillIds && project.bnccSkillIds.length > 0) || (project.contentIds && project.contentIds.length > 0)) && (
                                 <div>
                                     <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                        <Star className="w-4 h-4 text-amber-500" /> Habilidades & Conte&#xFA;dos
+                                        <Star className="w-4 h-4 text-amber-500" /> Habilidades & Conteúdos
                                     </h3>
                                     <div className="grid grid-cols-1 gap-2">
                                         {project.bnccSkillIds?.map(skillId => {
@@ -269,16 +262,15 @@ function ProjectView({
                                 </div>
                             )}
 
-                            {/* Assessments */}
                             {projectAssessments.length > 0 && (
                                 <div>
-                                    <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-3">Avalia&#xE7;&#xF5;es Registradas</h3>
+                                    <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-3">Avaliações Registradas</h3>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         {projectAssessments.map(a => (
                                             <AssessmentCard
                                                 key={a.id}
                                                 assessment={a}
-                                                onEdit={() => setEditingAssessment(a)}
+                                                onEdit={() => onEdit(a)}
                                                 students={students}
                                                 classes={classes}
                                             />
@@ -288,36 +280,21 @@ function ProjectView({
                             )}
 
                             {projectAssessments.length === 0 && sessions.length === 0 && (
-                                <p className="text-slate-400 text-sm text-center py-4">Nenhuma sess&#xE3;o ou avalia&#xE7;&#xE3;o ainda.</p>
+                                <p className="text-slate-400 text-sm text-center py-4">Nenhuma sessão ou avaliação ainda.</p>
                             )}
                         </div>
                     </div>
                 );
             })}
-
-            {editingAssessment && (
-                <AssessmentDrawer
-                    open={!!editingAssessment}
-                    onOpenChange={(open) => { if (!open) setEditingAssessment(null); }}
-                    sessionId={editingAssessment.sessionId}
-                    projectId={editingAssessment.projectId}
-                    defaultClassId={editingAssessment.classId}
-                    contextLabel="Editar avalia&#xE7;&#xE3;o"
-                />
-            )}
         </div>
     );
-
-
 }
-
-// ────────────────────────────────────────────
 
 // ────────────────────────────────────────────
 // View: By Student
 // ────────────────────────────────────────────
 function StudentView({
-    assessments, students, classes, projects, schedule, skillsTree, contentsTree, studentFilter, classFilter, projectFilter, setProjectFilter, onAvaliacao
+    assessments, students, classes, projects, schedule, skillsTree, contentsTree, studentFilter, classFilter, projectFilter, setProjectFilter, onAvaliacao, onEdit
 }: {
     assessments: Assessment[];
     students: ReturnType<typeof useAppStore>["students"];
@@ -331,18 +308,8 @@ function StudentView({
     projectFilter: string;
     setProjectFilter: (v: string) => void;
     onAvaliacao: (ctx: Partial<Assessment> & { contextLabel: string }) => void;
+    onEdit: (assessment: Assessment) => void;
 }) {
-    // Recursive helper to find node name
-    const findNodeName = (nodes: any[], id: string): string => {
-        for (const node of nodes) {
-            if (node.id === id) return node.name;
-            if (node.children) {
-                const found = findNodeName(node.children, id);
-                if (found) return found;
-            }
-        }
-        return id;
-    };
     const filteredStudents = students.filter(s => {
         if (classFilter !== "all" && s.classId !== classFilter) return false;
         if (studentFilter !== "all" && s.id !== studentFilter) return false;
@@ -353,9 +320,7 @@ function StudentView({
         <div className="space-y-8">
             {filteredStudents.map(student => {
                 const studentAssessments = [
-                    // Individual assessments for this student
                     ...assessments.filter(a => a.studentId === student.id),
-                    // Class-wide assessments for this student's class
                     ...assessments.filter(a => a.scope === "class" && a.classId === student.classId),
                 ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
@@ -365,7 +330,6 @@ function StudentView({
 
                 return (
                     <div key={student.id} className="bg-white rounded-2xl border shadow-sm overflow-hidden">
-                        {/* Student Header */}
                         <div className="bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-4 flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-lg">
@@ -373,19 +337,18 @@ function StudentView({
                                 </div>
                                 <div>
                                     <h2 className="text-white font-bold text-lg">{student.name}</h2>
-                                    <p className="text-emerald-100 text-sm">{cls?.name} &bull; {studentAssessments.length} avalia&#xE7;&#xF5;es</p>
+                                    <p className="text-emerald-100 text-sm">{cls?.name} &bull; {studentAssessments.length} avaliações</p>
                                 </div>
                             </div>
                             {avgRating > 0 && (
                                 <div className="bg-white/20 rounded-xl px-3 py-1.5 text-right">
-                                    <p className="text-[10px] text-white/70">M&#xE9;dia geral</p>
+                                    <p className="text-[10px] text-white/70">Média geral</p>
                                     <p className="text-white font-bold text-sm">{avgRating.toFixed(1)}/5</p>
                                 </div>
                             )}
                         </div>
 
                         <div className="p-6 space-y-6">
-                            {/* Timeline of assessments */}
                             {studentAssessments.length > 0 ? (
                                 <div>
                                     <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-3">Linha do Tempo</h3>
@@ -400,13 +363,19 @@ function StudentView({
                                                         <span className="text-xs font-bold text-slate-400 w-10 text-center">{date}</span>
                                                         <div className="w-0.5 flex-1 bg-slate-100 mt-1" />
                                                     </div>
-                                                    <div className="flex-1 bg-slate-50 rounded-xl p-3 mb-1">
+                                                    <button
+                                                        onClick={() => onEdit(a)}
+                                                        className="flex-1 bg-slate-50 rounded-xl p-3 mb-1 text-left hover:bg-slate-100 transition-colors group/item"
+                                                    >
                                                         <div className="flex items-center justify-between mb-1">
                                                             <span className="text-xs font-semibold text-slate-600">
-                                                                {project ? project.title : "Rotina"}
+                                                                {a.knowledgeNodeId ? findNodeName([...skillsTree, ...contentsTree], a.knowledgeNodeId) : (project ? project.title : "Rotina")}
                                                                 {session ? ` · ${session.title}` : ""}
                                                             </span>
-                                                            <MiniTree rating={a.rating} />
+                                                            <div className="flex items-center gap-2">
+                                                                <MiniTree rating={a.rating} />
+                                                                <Pencil className="w-3 h-3 text-slate-300 opacity-0 group-hover/item:opacity-100" />
+                                                            </div>
                                                         </div>
                                                         {a.observations && (
                                                             <p className="text-xs text-slate-600 italic line-clamp-2">&ldquo;{a.observations}&rdquo;</p>
@@ -416,17 +385,16 @@ function StudentView({
                                                                 {a.attachments.map(att => <AttachmentThumb key={att.id} att={att} />)}
                                                             </div>
                                                         )}
-                                                    </div>
+                                                    </button>
                                                 </div>
                                             );
                                         })}
                                     </div>
                                 </div>
                             ) : (
-                                <p className="text-slate-400 text-sm text-center py-4 italic">Nenhuma avalia&#xE7;&#xE3;o registrada ainda.</p>
+                                <p className="text-slate-400 text-sm text-center py-4 italic">Nenhuma avaliação registrada ainda.</p>
                             )}
 
-                            {/* Project-specific Skills (if filtered) */}
                             {projectFilter !== "all" && (
                                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 flex flex-col gap-3">
                                     <div className="flex items-center justify-between">
@@ -479,29 +447,26 @@ function StudentView({
                                 </div>
                             )}
 
-                            {/* Photo gallery */}
                             {photos.length > 0 && (
                                 <div>
                                     <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                        <ImageIcon className="w-4 h-4" /> Galeria de Evid&#xEA;ncias ({photos.length})
+                                        <ImageIcon className="w-4 h-4" /> Galeria de Evidências ({photos.length})
                                     </h3>
                                     <div className="grid grid-cols-4 gap-2">
                                         {photos.map((p, i) => (
-                                            // eslint-disable-next-line @next/next/no-img-element
                                             <img key={i} src={p.url} alt={p.name} className="w-full aspect-square object-cover rounded-lg border" />
                                         ))}
                                     </div>
                                 </div>
                             )}
 
-                            {/* Quick assess button */}
                             <Button
                                 variant="outline"
                                 size="sm"
                                 className="text-green-600 border-green-200 hover:bg-green-50"
-                                onClick={() => onAvaliacao({ studentId: student.id, defaultClassId: student.classId, contextLabel: student.name } as Partial<Assessment> & { contextLabel: string })}
+                                onClick={() => onAvaliacao({ studentId: student.id, classId: student.classId, contextLabel: student.name } as Partial<Assessment> & { contextLabel: string })}
                             >
-                                <ClipboardList className="w-3.5 h-3.5 mr-1.5" /> Nova avalia&#xE7;&#xE3;o para {student.name.split(" ")[0]}
+                                <ClipboardList className="w-3.5 h-3.5 mr-1.5" /> Nova avaliação para {student.name.split(" ")[0]}
                             </Button>
                         </div>
                     </div>
@@ -515,12 +480,13 @@ function StudentView({
 // Main Portfolio Page
 // ────────────────────────────────────────────
 export default function PortfolioPage() {
-    const { assessments, projects, students, classes, schedule, skillsTree, contentsTree } = useAppStore();
+    const { assessments, projects: allProjects, students, classes, schedule, skillsTree, contentsTree } = useAppStore();
     const [view, setView] = useState<"project" | "student">("project");
     const [projectFilter, setProjectFilter] = useState("all");
     const [classFilter, setClassFilter] = useState("all");
     const [studentFilter, setStudentFilter] = useState("all");
     const [drawerCtx, setDrawerCtx] = useState<(Partial<Assessment> & { contextLabel: string }) | null>(null);
+    const [editingAssessment, setEditingAssessment] = useState<Assessment | null>(null);
 
     const studentsInClass = useMemo(
         () => classFilter === "all" ? students : students.filter(s => s.classId === classFilter),
@@ -533,18 +499,16 @@ export default function PortfolioPage() {
 
     return (
         <div className="min-h-screen bg-slate-50">
-            {/* Page Header */}
             <div className="bg-white border-b px-8 py-5 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
                         <BookMarked className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900">Portf&#xF3;lio</h1>
-                        <p className="text-slate-500 text-sm">{assessments.length} avalia&#xE7;&#xF5;es registradas</p>
+                        <h1 className="text-2xl font-bold text-slate-900">Portfólio</h1>
+                        <p className="text-slate-500 text-sm">{assessments.length} avaliações registradas</p>
                     </div>
                 </div>
-                {/* View switcher */}
                 <div className="flex bg-slate-100 rounded-xl p-1 gap-1">
                     <button
                         onClick={() => setView("project")}
@@ -561,14 +525,13 @@ export default function PortfolioPage() {
                 </div>
             </div>
 
-            {/* Filters */}
             <div className="bg-white border-b px-8 py-3 flex items-center gap-3">
                 {view === "project" && (
                     <Select value={projectFilter} onValueChange={setProjectFilter}>
                         <SelectTrigger className="w-56 h-8 text-sm"><SelectValue placeholder="Todos os projetos" /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">Todos os projetos</SelectItem>
-                            {projects.map(p => <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>)}
+                            {allProjects.map(p => <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>)}
                         </SelectContent>
                     </Select>
                 )}
@@ -590,25 +553,30 @@ export default function PortfolioPage() {
                         </Select>
                     </>
                 )}
-                {/* Generation button depends on having a project and a student selected (global or local context) */}
                 <div className="ml-auto flex items-center gap-2">
+                    {studentFilter !== "all" && (
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-xs gap-1.5 border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                            onClick={() => window.open(`/portfolio/report?student=${studentFilter}`, "_blank")}
+                        >
+                            <FileText className="w-3.5 h-3.5" /> Gerar Report Card do Aluno
+                        </Button>
+                    )}
                     {projectFilter !== "all" && studentFilter !== "all" && (
                         <Button size="sm" variant="outline" className="text-xs gap-1.5 border-indigo-200 text-indigo-700 hover:bg-indigo-50" onClick={() => handleOpenReport(projectFilter, studentFilter)}>
                             <FileText className="w-3.5 h-3.5" /> Gerar Report Card do Projeto
                         </Button>
                     )}
                 </div>
-                {assessments.length === 0 && (
-                    <p className="text-xs text-slate-400 ml-auto">Fa&#xE7;a a primeira avalia&#xE7;&#xE3;o nas Rotinas para come&#xE7;ar!</p>
-                )}
             </div>
 
-            {/* Content */}
             <div className="px-8 py-6 max-w-5xl mx-auto">
                 {view === "project" ? (
                     <ProjectView
                         projectFilter={projectFilter}
-                        allProjects={projects}
+                        allProjects={allProjects}
                         assessments={assessments}
                         schedule={schedule}
                         students={students}
@@ -616,13 +584,14 @@ export default function PortfolioPage() {
                         skillsTree={skillsTree}
                         contentsTree={contentsTree}
                         onAvaliacao={(ctx) => setDrawerCtx(ctx)}
+                        onEdit={(a) => setEditingAssessment(a)}
                     />
                 ) : (
                     <StudentView
                         assessments={assessments}
                         students={students}
                         classes={classes}
-                        projects={projects}
+                        projects={allProjects}
                         schedule={schedule}
                         skillsTree={skillsTree}
                         contentsTree={contentsTree}
@@ -631,20 +600,38 @@ export default function PortfolioPage() {
                         projectFilter={projectFilter}
                         setProjectFilter={setProjectFilter}
                         onAvaliacao={(ctx) => setDrawerCtx(ctx)}
+                        onEdit={(a) => setEditingAssessment(a)}
                     />
                 )}
             </div>
 
-            {/* Floating assessment drawer */}
             {drawerCtx && (
                 <AssessmentDrawer
                     open={!!drawerCtx}
                     onOpenChange={(open) => { if (!open) setDrawerCtx(null); }}
+                    knowledgeNodeId={drawerCtx.knowledgeNodeId}
                     sessionId={drawerCtx.sessionId}
                     projectId={drawerCtx.projectId}
-                    defaultClassId={drawerCtx.classId || (drawerCtx as any).defaultClassId}
+                    defaultClassId={drawerCtx.classId}
                     defaultStudentId={drawerCtx.studentId}
                     contextLabel={drawerCtx.contextLabel}
+                />
+            )}
+
+            {editingAssessment && (
+                <AssessmentDrawer
+                    open={!!editingAssessment}
+                    onOpenChange={(open) => { if (!open) setEditingAssessment(null); }}
+                    assessmentId={editingAssessment.id}
+                    initialRating={editingAssessment.rating}
+                    initialObservations={editingAssessment.observations}
+                    initialAttachments={editingAssessment.attachments}
+                    knowledgeNodeId={editingAssessment.knowledgeNodeId}
+                    sessionId={editingAssessment.sessionId}
+                    projectId={editingAssessment.projectId}
+                    defaultClassId={editingAssessment.classId}
+                    defaultStudentId={editingAssessment.studentId}
+                    contextLabel={editingAssessment.knowledgeNodeId ? findNodeName([...skillsTree, ...contentsTree], editingAssessment.knowledgeNodeId) : "Editar avaliação"}
                 />
             )}
         </div>
