@@ -32,13 +32,16 @@ const findEvaluatableNodes = (allNodes: any[], targetIds: string[]): any[] => {
     const results: any[] = [];
     const search = (nodes: any[], active = false) => {
         for (const node of nodes) {
-            const isTarget = active || targetIds.includes(node.id);
+            // Check if node itself is targeted (either by ID or by Library Link)
+            const nodeIsTarget = targetIds.includes(node.id) || (node.libraryItemId && targetIds.includes(node.libraryItemId));
+            const isTargetOrDescendant = active || nodeIsTarget;
+
             // L3 (micro) and L4 (atomico) are assessment-ready
-            if (isTarget && (node.level === "micro" || node.level === "atomico")) {
+            if (isTargetOrDescendant && (node.level === "micro" || node.level === "atomico")) {
                 results.push(node);
             }
             if (node.children) {
-                search(node.children, isTarget);
+                search(node.children, isTargetOrDescendant);
             }
         }
     };
