@@ -25,6 +25,7 @@ interface AssessmentDrawerProps {
     defaultStudentId?: string;
     // Label shown in header
     contextLabel?: string;
+    contextDescription?: string;
 }
 
 export function AssessmentDrawer({
@@ -37,6 +38,7 @@ export function AssessmentDrawer({
     defaultClassId,
     defaultStudentId,
     contextLabel,
+    contextDescription,
 }: AssessmentDrawerProps) {
     const { students, classes, projects, schedule, addAssessment, currentUser } = useAppStore();
 
@@ -117,14 +119,14 @@ export function AssessmentDrawer({
         onOpenChange(false);
     };
 
-    // Validation: Require rating/obs AND a valid context (session or routine)
-    const hasContext = contextType === "project"
-        ? (selectedProjectId && selectedSessionId)
-        : selectedRoutineId;
+    // Validation: Require rating/obs AND a valid context (session or routine OR knowledgeNode)
+    const hasContext = !!propKnowledgeNodeId || (contextType === "project"
+        ? (!!selectedProjectId && !!selectedSessionId)
+        : !!selectedRoutineId);
 
     const canSave = (observations.trim().length > 0 || rating !== undefined) && hasContext;
 
-    const isFixedContext = !!propSessionId || !!propRoutineId;
+    const isFixedContext = !!propSessionId || !!propRoutineId || !!propKnowledgeNodeId;
 
     useEffect(() => {
         if (!isFixedContext && contextType === "routine" && routines.length > 0 && !selectedRoutineId) {
@@ -143,7 +145,10 @@ export function AssessmentDrawer({
                         Avaliação
                     </DialogTitle>
                     {contextLabel && (
-                        <p className="text-sm text-green-700 font-medium">{contextLabel}</p>
+                        <p className="text-sm text-green-700 font-bold">{contextLabel}</p>
+                    )}
+                    {contextDescription && (
+                        <p className="text-sm text-green-600 mt-1 leading-relaxed">{contextDescription}</p>
                     )}
                 </DialogHeader>
 

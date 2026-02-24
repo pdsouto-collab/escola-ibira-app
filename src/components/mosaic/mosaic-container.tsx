@@ -56,8 +56,9 @@ export function MosaicContainer() {
             classId: selectedClassId !== "all" ? selectedClassId : undefined,
             studentId: selectedStudentId !== "all" ? selectedStudentId : undefined,
             scope: selectedStudentId !== "all" ? "student" : "class",
-            contextLabel: node.name
-        });
+            contextLabel: node.name,
+            contextDescription: node.description
+        } as any);
     };
 
     const selectTriggerClass = "h-9 text-xs bg-white border-slate-200 min-w-[160px]";
@@ -197,6 +198,7 @@ export function MosaicContainer() {
                     defaultClassId={drawerCtx.classId}
                     defaultStudentId={drawerCtx.studentId}
                     contextLabel={drawerCtx.contextLabel}
+                    contextDescription={(drawerCtx as any).contextDescription}
                 />
             )}
         </div>
