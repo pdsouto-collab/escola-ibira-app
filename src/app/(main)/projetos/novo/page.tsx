@@ -320,11 +320,56 @@ function NewProjectWizardContent() {
                             <p className="text-slate-500 mb-8">Selecione quais alunos farão parte deste projeto.</p>
 
                             <div className="space-y-6">
-                                <div className="flex items-center justify-between border-b pb-4">
-                                    <h3 className="font-bold text-lg">Alunos</h3>
+                                <div className="border-b pb-6">
+                                    <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                                        <Users className="w-5 h-5 text-indigo-600" />
+                                        Turmas Vinculadas
+                                    </h3>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                        {classes.map(cls => {
+                                            const isSelected = formData.classes.includes(cls.id);
+                                            return (
+                                                <button
+                                                    key={cls.id}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const newClasses = isSelected
+                                                            ? formData.classes.filter(id => id !== cls.id)
+                                                            : [...formData.classes, cls.id];
+                                                        setFormData({ ...formData, classes: newClasses });
+                                                    }}
+                                                    className={cn(
+                                                        "flex items-center gap-2 p-3 border rounded-xl transition-all text-sm font-semibold text-left",
+                                                        isSelected
+                                                            ? "border-indigo-600 bg-indigo-50 text-indigo-700 shadow-sm"
+                                                            : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                                                    )}
+                                                >
+                                                    <div className={cn(
+                                                        "w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0",
+                                                        isSelected ? "bg-indigo-600 border-indigo-600" : "border-slate-300"
+                                                    )}>
+                                                        {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
+                                                    </div>
+                                                    {cls.name}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                    <p className="text-xs text-slate-400 mt-3 italic">
+                                        Vincular uma turma garante que o projeto apareça na seção correta do Banco de Projetos.
+                                    </p>
+                                </div>
+
+                                <div className="flex items-center justify-between border-b pb-4 mt-8">
+                                    <h3 className="font-bold text-lg flex items-center gap-2">
+                                        <Target className="w-5 h-5 text-indigo-600" />
+                                        Alunos Participantes
+                                    </h3>
                                     <div className="flex gap-4">
                                         <Button
                                             variant="outline"
+                                            size="sm"
                                             onClick={() => {
                                                 const displayedStudents = selectedClass === "all" ? students : students.filter(s => s.classId === selectedClass);
                                                 const newIds = displayedStudents.map(s => s.id);
@@ -335,7 +380,7 @@ function NewProjectWizardContent() {
                                             Selecionar todos
                                         </Button>
                                         <Select value={selectedClass} onValueChange={setSelectedClass}>
-                                            <SelectTrigger className="w-48"><SelectValue placeholder="Turma" /></SelectTrigger>
+                                            <SelectTrigger className="w-48 h-9"><SelectValue placeholder="Filtrar por Turma" /></SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="all">Todas as Turmas</SelectItem>
                                                 {classes.map(c => (
@@ -347,15 +392,16 @@ function NewProjectWizardContent() {
                                 </div>
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                     {(selectedClass === "all" ? students : students.filter(s => s.classId === selectedClass)).map(student => (
-                                        <button key={student.id} onClick={() => {
+                                        <button key={student.id} type="button" onClick={() => {
                                             const newStudents = formData.students.includes(student.id) ? formData.students.filter(id => id !== student.id) : [...formData.students, student.id];
                                             setFormData({ ...formData, students: newStudents });
-                                        }} className={cn("flex items-center gap-3 p-3 border rounded-xl text-left transition-all", formData.students.includes(student.id) ? "border-indigo-600 bg-indigo-50/30" : "hover:bg-slate-50")}>
+                                        }} className={cn("flex items-center gap-3 p-3 border rounded-xl text-left transition-all", formData.students.includes(student.id) ? "border-indigo-600 bg-indigo-50/30 shadow-sm" : "hover:bg-slate-50")}>
                                             <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-200">
                                                 {student.photo && <Image src={student.photo} alt="" width={40} height={40} />}
                                             </div>
                                             <div className="flex-1">
-                                                <p className="font-semibold text-sm line-clamp-1">{student.name}</p>
+                                                <p className="font-semibold text-xs line-clamp-1">{student.name}</p>
+                                                <p className="text-[10px] text-slate-400">{classes.find(c => c.id === student.classId)?.name}</p>
                                             </div>
                                             <div className={cn("w-5 h-5 rounded-full border flex flex-shrink-0 items-center justify-center", formData.students.includes(student.id) ? "bg-indigo-600 border-indigo-600" : "border-slate-300")}>
                                                 {formData.students.includes(student.id) && <Check className="w-3 h-3 text-white" />}
