@@ -16,15 +16,40 @@ import { Badge } from "@/components/ui/badge";
 // ────────────────────────────────────────────
 // Helper: find node name recursively
 // ────────────────────────────────────────────
-const findNodeName = (nodes: any[], id: string): string => {
-    for (const node of nodes) {
-        if (node.id === id) return node.name;
-        if (node.children) {
-            const found = findNodeName(node.children, id);
-            if (found) return found;
+const resolveNodeInfo = (id: string, skillsTree: any[], contentsTree: any[], libraryItems: any[]) => {
+    // 1. Search in Knowledge Trees (Skills and Contents)
+    const searchTrees = (nodes: any[]): any | null => {
+        for (const node of nodes) {
+            if (node.id === id || node.libraryItemId === id) return {
+                id: node.id,
+                name: node.name,
+                code: node.code || (node.libraryItemId ? node.libraryItemId : null),
+                description: node.description,
+                level: node.level
+            };
+            if (node.children) {
+                const found = searchTrees(node.children);
+                if (found) return found;
+            }
         }
-    }
-    return id;
+        return null;
+    };
+
+    const treeNode = searchTrees([...skillsTree, ...contentsTree]);
+    if (treeNode) return treeNode;
+
+    // 2. Search in Library Items (Standard BNCC/Custom Library)
+    const libraryItem = libraryItems.find(item => item.id === id || item.code === id);
+    if (libraryItem) return {
+        id: libraryItem.id,
+        name: libraryItem.name,
+        code: libraryItem.code || libraryItem.id,
+        description: libraryItem.description,
+        level: libraryItem.type === "skill" ? "micro" : "atomico" // Default mapping
+    };
+
+    // 3. Fallback
+    return { id, name: id, code: id };
 };
 
 /** Finds all evaluatable nodes (L3/L4) within a given node or set of IDs */
@@ -140,7 +165,7 @@ function AssessmentCard({ assessment, onEdit, students, classes }: {
 // View: By Project
 // ────────────────────────────────────────────
 function ProjectView({
-    projectFilter, allProjects, assessments, schedule, students, classes, skillsTree, contentsTree, onAvaliacao, onEdit
+    projectFilter, allProjects, assessments, schedule, students, classes, skillsTree, contentsTree, libraryItems, onAvaliacao, onEdit
 }: {
     projectFilter: string;
     allProjects: ReturnType<typeof useAppStore>["projects"];
@@ -150,6 +175,7 @@ function ProjectView({
     classes: ReturnType<typeof useAppStore>["classes"];
     skillsTree: ReturnType<typeof useAppStore>["skillsTree"];
     contentsTree: ReturnType<typeof useAppStore>["contentsTree"];
+    libraryItems: ReturnType<typeof useAppStore>["libraryItems"];
     onAvaliacao: (ctx: Partial<Assessment> & { contextLabel: string }) => void;
     onEdit: (assessment: Assessment) => void;
 }) {
@@ -235,48 +261,70 @@ function ProjectView({
                                     </h3>
                                     <div className="grid grid-cols-1 gap-2">
                                         {project.bnccSkillIds?.map(skillId => {
-                                            const name = findNodeName(skillsTree, skillId);
+                                            const info = resolveNodeInfo(skillId, skillsTree, contentsTree, libraryItems);
                                             return (
-                                                <div key={skillId} className="flex items-center justify-between border rounded-xl px-4 py-2 bg-amber-50/30 hover:bg-amber-50 transition-colors group">
-                                                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                                                        <Badge variant="outline" className="text-[10px] font-mono bg-white border-amber-200 text-amber-700 shrink-0">Sk</Badge>
-                                                        <p className="text-sm text-slate-700 truncate">{name}</p>
+                                                <div key={skillId} className="flex flex-col border rounded-xl bg-amber-50/30 hover:bg-amber-50 transition-colors group overflow-hidden">
+                                                    <div className="flex items-center justify-between px-4 py-2">
+                                                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                            <Badge variant="outline" className="text-[10px] font-mono bg-white border-amber-200 text-amber-700 shrink-0">
+                                                                {info.code}
+                                                            </Badge>
+                                                            <p className="text-sm text-slate-700 truncate font-semibold">{info.name}</p>
+                                                        </div>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="ghost"
+                                                            className="h-7 px-2 text-[10px] text-amber-700 opacity-0 group-hover:opacity-100 hover:bg-amber-100/50"
+                                                            onClick={() => onAvaliacao({
+                                                                knowledgeNodeId: skillId,
+                                                                projectId: project.id,
+                                                                contextLabel: info.name
+                                                            })}
+                                                        >
+                                                            <ClipboardList className="w-3 h-3 mr-1" />Avaliar
+                                                        </Button>
                                                     </div>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="ghost"
-                                                        className="h-7 px-2 text-[10px] text-amber-700 opacity-0 group-hover:opacity-100 hover:bg-amber-100/50"
-                                                        onClick={() => onAvaliacao({
-                                                            knowledgeNodeId: skillId,
-                                                            projectId: project.id,
-                                                            contextLabel: name
-                                                        })}
-                                                    >
-                                                        <ClipboardList className="w-3 h-3 mr-1" />Avaliar
-                                                    </Button>
+                                                    {info.description && (
+                                                        <div className="px-4 pb-2 pt-0">
+                                                            <p className="text-[10px] text-slate-500 leading-tight italic pl-1 border-l-2 border-slate-200 ml-2">
+                                                                {info.description}
+                                                            </p>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             );
                                         })}
                                         {project.contentIds?.map(contentId => {
-                                            const name = findNodeName(contentsTree, contentId);
+                                            const info = resolveNodeInfo(contentId, skillsTree, contentsTree, libraryItems);
                                             return (
-                                                <div key={contentId} className="flex items-center justify-between border rounded-xl px-4 py-2 bg-blue-50/30 hover:bg-blue-50 transition-colors group">
-                                                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                                                        <Badge variant="outline" className="text-[10px] font-mono bg-white border-blue-200 text-blue-700 shrink-0">Co</Badge>
-                                                        <p className="text-sm text-slate-700 truncate">{name}</p>
+                                                <div key={contentId} className="flex flex-col border rounded-xl bg-blue-50/30 hover:bg-blue-50 transition-colors group overflow-hidden">
+                                                    <div className="flex items-center justify-between px-4 py-2">
+                                                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                            <Badge variant="outline" className="text-[10px] font-mono bg-white border-blue-200 text-blue-700 shrink-0">
+                                                                {info.code}
+                                                            </Badge>
+                                                            <p className="text-sm text-slate-700 truncate font-semibold">{info.name}</p>
+                                                        </div>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="ghost"
+                                                            className="h-7 px-2 text-[10px] text-blue-700 opacity-0 group-hover:opacity-100 hover:bg-blue-100/50"
+                                                            onClick={() => onAvaliacao({
+                                                                knowledgeNodeId: contentId,
+                                                                projectId: project.id,
+                                                                contextLabel: info.name
+                                                            })}
+                                                        >
+                                                            <ClipboardList className="w-3 h-3 mr-1" />Avaliar
+                                                        </Button>
                                                     </div>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="ghost"
-                                                        className="h-7 px-2 text-[10px] text-blue-700 opacity-0 group-hover:opacity-100 hover:bg-blue-100/50"
-                                                        onClick={() => onAvaliacao({
-                                                            knowledgeNodeId: contentId,
-                                                            projectId: project.id,
-                                                            contextLabel: name
-                                                        })}
-                                                    >
-                                                        <ClipboardList className="w-3 h-3 mr-1" />Avaliar
-                                                    </Button>
+                                                    {info.description && (
+                                                        <div className="px-4 pb-2 pt-0">
+                                                            <p className="text-[10px] text-slate-500 leading-tight italic pl-1 border-l-2 border-slate-200 ml-2">
+                                                                {info.description}
+                                                            </p>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             );
                                         })}
@@ -316,7 +364,7 @@ function ProjectView({
 // View: By Student
 // ────────────────────────────────────────────
 function StudentView({
-    assessments, students, classes, projects, schedule, skillsTree, contentsTree, studentFilter, classFilter, projectFilter, setProjectFilter, onAvaliacao, onEdit
+    assessments, students, classes, projects, schedule, skillsTree, contentsTree, libraryItems, studentFilter, classFilter, projectFilter, setProjectFilter, onAvaliacao, onEdit
 }: {
     assessments: Assessment[];
     students: ReturnType<typeof useAppStore>["students"];
@@ -325,6 +373,7 @@ function StudentView({
     schedule: ReturnType<typeof useAppStore>["schedule"];
     skillsTree: ReturnType<typeof useAppStore>["skillsTree"];
     contentsTree: ReturnType<typeof useAppStore>["contentsTree"];
+    libraryItems: ReturnType<typeof useAppStore>["libraryItems"];
     studentFilter: string;
     classFilter: string;
     projectFilter: string;
@@ -391,7 +440,7 @@ function StudentView({
                                                     >
                                                         <div className="flex items-center justify-between mb-1">
                                                             <span className="text-xs font-semibold text-slate-600">
-                                                                {a.knowledgeNodeId ? findNodeName([...skillsTree, ...contentsTree], a.knowledgeNodeId) : (project ? project.title : "Rotina")}
+                                                                {a.knowledgeNodeId ? resolveNodeInfo(a.knowledgeNodeId, skillsTree, contentsTree, libraryItems).name : (project ? project.title : "Rotina")}
                                                                 {session ? ` · ${session.title}` : ""}
                                                             </span>
                                                             <div className="flex items-center gap-2">
@@ -435,10 +484,38 @@ function StudentView({
                                         <div className="grid grid-cols-1 gap-4">
                                             {studentProjects.map(project => {
                                                 const projectSessions = schedule.filter(s => s.projectId === project.id);
-                                                const projectNodes = findEvaluatableNodes([...skillsTree, ...contentsTree], [
-                                                    ...(project.bnccSkillIds || []),
-                                                    ...(project.contentIds || [])
+                                                // Collect both directly linked items and recursive sub-nodes
+                                                const directSkillIds = project.bnccSkillIds || [];
+                                                const directContentIds = project.contentIds || [];
+
+                                                const recursiveNodes = findEvaluatableNodes([...skillsTree, ...contentsTree], [
+                                                    ...directSkillIds,
+                                                    ...directContentIds
                                                 ]);
+
+                                                // Create a map to avoid duplicate display
+                                                const displayedNodeIds = new Set<string>();
+                                                const itemsToDisplay: any[] = [];
+
+                                                // 1. Add direct skills/contents
+                                                [...directSkillIds, ...directContentIds].forEach(id => {
+                                                    const info = resolveNodeInfo(id, skillsTree, contentsTree, libraryItems);
+                                                    if (!displayedNodeIds.has(info.id)) {
+                                                        itemsToDisplay.push(info);
+                                                        displayedNodeIds.add(info.id);
+                                                    }
+                                                });
+
+                                                // 2. Add recursive evaluatable nodes (if not already displayed)
+                                                recursiveNodes.forEach(node => {
+                                                    if (!displayedNodeIds.has(node.id)) {
+                                                        itemsToDisplay.push({
+                                                            ...node,
+                                                            code: node.code || (node.libraryItemId ? node.libraryItemId : null)
+                                                        });
+                                                        displayedNodeIds.add(node.id);
+                                                    }
+                                                });
 
                                                 return (
                                                     <div key={project.id} className="border rounded-xl bg-white overflow-hidden shadow-sm">
@@ -492,45 +569,54 @@ function StudentView({
                                                                 </div>
                                                             )}
 
-                                                            {projectNodes.length > 0 && (
+                                                            {itemsToDisplay.length > 0 && (
                                                                 <div className="space-y-3">
                                                                     <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
                                                                         <Star className="w-3 h-3 text-amber-500" /> Habilidades & Conteúdos
                                                                     </h4>
                                                                     <div className="space-y-2">
-                                                                        {projectNodes.map(node => {
+                                                                        {itemsToDisplay.map(node => {
                                                                             const nodeAssessment = studentAssessments.find(a => a.knowledgeNodeId === node.id);
                                                                             return (
-                                                                                <div key={node.id} className="flex items-center justify-between border rounded-xl px-4 py-2.5 bg-slate-50/30 hover:bg-slate-50 transition-colors group">
-                                                                                    <div className="flex items-center gap-2 min-w-0">
-                                                                                        <Badge variant="outline" className={cn(
-                                                                                            "text-[9px] font-mono bg-white shrink-0",
-                                                                                            node.level === "atomico" ? "border-amber-200 text-amber-700" : "border-slate-200 text-slate-600"
-                                                                                        )}>
-                                                                                            {node.level === "atomico" ? "Ev" : "Sk"}
-                                                                                        </Badge>
-                                                                                        <p className="text-xs text-slate-700 truncate font-medium">{node.name}</p>
+                                                                                <div key={node.id} className="flex flex-col border rounded-xl bg-slate-50/30 hover:bg-slate-50 transition-colors group overflow-hidden">
+                                                                                    <div className="flex items-center justify-between px-4 py-2.5">
+                                                                                        <div className="flex items-center gap-2 min-w-0">
+                                                                                            <Badge variant="outline" className={cn(
+                                                                                                "text-[9px] font-mono bg-white shrink-0",
+                                                                                                node.level === "atomico" ? "border-amber-200 text-amber-700" : "border-slate-200 text-slate-600"
+                                                                                            )}>
+                                                                                                {node.code || (node.level === "atomico" ? "Ev" : "Sk")}
+                                                                                            </Badge>
+                                                                                            <p className="text-xs text-slate-700 truncate font-semibold">{node.name}</p>
+                                                                                        </div>
+                                                                                        <div className="flex items-center gap-3 shrink-0">
+                                                                                            {nodeAssessment ? (
+                                                                                                <MiniTree rating={nodeAssessment.rating} />
+                                                                                            ) : (
+                                                                                                <span className="text-[10px] text-slate-400 italic">Sem avaliação</span>
+                                                                                            )}
+                                                                                            <Button
+                                                                                                size="sm"
+                                                                                                variant="outline"
+                                                                                                className="h-7 px-2 text-[10px] text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+                                                                                                onClick={() => onAvaliacao({
+                                                                                                    knowledgeNodeId: node.id,
+                                                                                                    projectId: project.id,
+                                                                                                    studentId: student.id,
+                                                                                                    contextLabel: `${student.name.split(" ")[0]}: ${node.name}`
+                                                                                                })}
+                                                                                            >
+                                                                                                <ClipboardList className="w-3 h-3 mr-1" />Avaliar
+                                                                                            </Button>
+                                                                                        </div>
                                                                                     </div>
-                                                                                    <div className="flex items-center gap-3 shrink-0">
-                                                                                        {nodeAssessment ? (
-                                                                                            <MiniTree rating={nodeAssessment.rating} />
-                                                                                        ) : (
-                                                                                            <span className="text-[10px] text-slate-400 italic">Sem avaliação</span>
-                                                                                        )}
-                                                                                        <Button
-                                                                                            size="sm"
-                                                                                            variant="outline"
-                                                                                            className="h-7 px-2 text-[10px] text-indigo-600 border-indigo-200 hover:bg-indigo-50"
-                                                                                            onClick={() => onAvaliacao({
-                                                                                                knowledgeNodeId: node.id,
-                                                                                                projectId: project.id,
-                                                                                                studentId: student.id,
-                                                                                                contextLabel: `${student.name.split(" ")[0]}: ${node.name}`
-                                                                                            })}
-                                                                                        >
-                                                                                            <ClipboardList className="w-3 h-3 mr-1" />Avaliar
-                                                                                        </Button>
-                                                                                    </div>
+                                                                                    {node.description && (
+                                                                                        <div className="px-4 pb-2.5 pt-0">
+                                                                                            <p className="text-[10px] text-slate-500 leading-tight italic pl-1 border-l-2 border-slate-200 ml-2">
+                                                                                                {node.description}
+                                                                                            </p>
+                                                                                        </div>
+                                                                                    )}
                                                                                 </div>
                                                                             );
                                                                         })}
@@ -579,7 +665,7 @@ function StudentView({
 // Main Portfolio Page
 // ────────────────────────────────────────────
 export default function PortfolioPage() {
-    const { assessments, projects: allProjects, students, classes, schedule, skillsTree, contentsTree } = useAppStore();
+    const { assessments, projects: allProjects, students, classes, schedule, skillsTree, contentsTree, libraryItems } = useAppStore();
     const [view, setView] = useState<"project" | "student">("project");
     const [projectFilter, setProjectFilter] = useState("all");
     const [classFilter, setClassFilter] = useState("all");
@@ -682,6 +768,7 @@ export default function PortfolioPage() {
                         classes={classes}
                         skillsTree={skillsTree}
                         contentsTree={contentsTree}
+                        libraryItems={libraryItems}
                         onAvaliacao={(ctx) => setDrawerCtx(ctx)}
                         onEdit={(a) => setEditingAssessment(a)}
                     />
@@ -694,6 +781,7 @@ export default function PortfolioPage() {
                         schedule={schedule}
                         skillsTree={skillsTree}
                         contentsTree={contentsTree}
+                        libraryItems={libraryItems}
                         studentFilter={studentFilter}
                         classFilter={classFilter}
                         projectFilter={projectFilter}
@@ -730,7 +818,7 @@ export default function PortfolioPage() {
                     projectId={editingAssessment.projectId}
                     defaultClassId={editingAssessment.classId}
                     defaultStudentId={editingAssessment.studentId}
-                    contextLabel={editingAssessment.knowledgeNodeId ? findNodeName([...skillsTree, ...contentsTree], editingAssessment.knowledgeNodeId) : "Editar avaliação"}
+                    contextLabel={editingAssessment.knowledgeNodeId ? resolveNodeInfo(editingAssessment.knowledgeNodeId, skillsTree, contentsTree, libraryItems).name : "Editar avaliação"}
                 />
             )}
         </div>
