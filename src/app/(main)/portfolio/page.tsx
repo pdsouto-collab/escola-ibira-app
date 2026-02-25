@@ -74,6 +74,46 @@ const findEvaluatableNodes = (allNodes: any[], targetIds: string[]): any[] => {
     return results;
 };
 
+const getProjectNodes = (project: any, skillsTree: any[], contentsTree: any[], libraryItems: any[]) => {
+    const directSkillIds = project.bnccSkillIds || [];
+    const directContentIds = project.contentIds || [];
+
+    const recursiveNodes = findEvaluatableNodes([...skillsTree, ...contentsTree], [
+        ...directSkillIds,
+        ...directContentIds
+    ]);
+
+    const displayedNodeIds = new Set<string>();
+    const microNodes: any[] = [];
+    const atomicoNodes: any[] = [];
+
+    // 1. Add direct skills/contents
+    [...directSkillIds, ...directContentIds].forEach(id => {
+        const info = resolveNodeInfo(id, skillsTree, contentsTree, libraryItems);
+        if (!displayedNodeIds.has(info.id)) {
+            if (info.level === "atomico") atomicoNodes.push(info);
+            else microNodes.push(info); // Default to micro if unknown
+            displayedNodeIds.add(info.id);
+        }
+    });
+
+    // 2. Add recursive evaluatable nodes (if not already displayed)
+    recursiveNodes.forEach(node => {
+        if (!displayedNodeIds.has(node.id)) {
+            const info = {
+                ...node,
+                code: node.code || (node.libraryItemId ? node.libraryItemId : null)
+            };
+            if (info.level === "atomico") atomicoNodes.push(info);
+            else microNodes.push(info);
+            displayedNodeIds.add(node.id);
+        }
+    });
+
+    return { microNodes, atomicoNodes };
+};
+
+
 // ────────────────────────────────────────────
 // Mini tree indicator (read-only, compact)
 // ────────────────────────────────────────────
@@ -254,83 +294,97 @@ function ProjectView({
                                 </div>
                             )}
 
-                            {((project.bnccSkillIds && project.bnccSkillIds.length > 0) || (project.contentIds && project.contentIds.length > 0)) && (
-                                <div>
-                                    <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                        <Star className="w-4 h-4 text-amber-500" /> Habilidades & Conteúdos
-                                    </h3>
-                                    <div className="grid grid-cols-1 gap-2">
-                                        {project.bnccSkillIds?.map(skillId => {
-                                            const info = resolveNodeInfo(skillId, skillsTree, contentsTree, libraryItems);
-                                            return (
-                                                <div key={skillId} className="flex flex-col border rounded-xl bg-amber-50/30 hover:bg-amber-50 transition-colors group overflow-hidden">
-                                                    <div className="flex items-center justify-between px-4 py-2">
-                                                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                                                            <Badge variant="outline" className="text-[10px] font-mono bg-white border-amber-200 text-amber-700 shrink-0">
-                                                                {info.code}
-                                                            </Badge>
-                                                            <p className="text-sm text-slate-700 truncate font-semibold">{info.name}</p>
+                            {/* Skills/Contents/Atomics block */}
+                            {(() => {
+                                const { microNodes, atomicoNodes } = getProjectNodes(project, skillsTree, contentsTree, libraryItems);
+                                if (microNodes.length === 0 && atomicoNodes.length === 0) return null;
+
+                                return (
+                                    <>
+                                        {microNodes.length > 0 && (
+                                            <div>
+                                                <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                                    <Star className="w-4 h-4 text-amber-500" /> Habilidades & Conteúdos
+                                                </h3>
+                                                <div className="grid grid-cols-1 gap-2">
+                                                    {microNodes.map(node => (
+                                                        <div key={node.id} className="flex flex-col border rounded-xl bg-slate-50/30 hover:bg-slate-50 transition-colors group overflow-hidden">
+                                                            <div className="flex items-center justify-between px-4 py-2">
+                                                                <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                                    <Badge variant="outline" className="text-[10px] font-mono bg-white border-slate-200 text-slate-600 shrink-0">
+                                                                        {node.code || "Sk"}
+                                                                    </Badge>
+                                                                    <p className="text-sm text-slate-700 truncate font-semibold">{node.name}</p>
+                                                                </div>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="ghost"
+                                                                    className="h-7 px-2 text-[10px] text-indigo-700 opacity-0 group-hover:opacity-100 hover:bg-indigo-100/50"
+                                                                    onClick={() => onAvaliacao({
+                                                                        knowledgeNodeId: node.id,
+                                                                        projectId: project.id,
+                                                                        contextLabel: node.name
+                                                                    })}
+                                                                >
+                                                                    <ClipboardList className="w-3 h-3 mr-1" />Avaliar
+                                                                </Button>
+                                                            </div>
+                                                            {node.description && (
+                                                                <div className="px-4 pb-2 pt-0">
+                                                                    <p className="text-[10px] text-slate-500 leading-tight italic pl-1 border-l-2 border-slate-200 ml-2">
+                                                                        {node.description}
+                                                                    </p>
+                                                                </div>
+                                                            )}
                                                         </div>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="ghost"
-                                                            className="h-7 px-2 text-[10px] text-amber-700 opacity-0 group-hover:opacity-100 hover:bg-amber-100/50"
-                                                            onClick={() => onAvaliacao({
-                                                                knowledgeNodeId: skillId,
-                                                                projectId: project.id,
-                                                                contextLabel: info.name
-                                                            })}
-                                                        >
-                                                            <ClipboardList className="w-3 h-3 mr-1" />Avaliar
-                                                        </Button>
-                                                    </div>
-                                                    {info.description && (
-                                                        <div className="px-4 pb-2 pt-0">
-                                                            <p className="text-[10px] text-slate-500 leading-tight italic pl-1 border-l-2 border-slate-200 ml-2">
-                                                                {info.description}
-                                                            </p>
-                                                        </div>
-                                                    )}
+                                                    ))}
                                                 </div>
-                                            );
-                                        })}
-                                        {project.contentIds?.map(contentId => {
-                                            const info = resolveNodeInfo(contentId, skillsTree, contentsTree, libraryItems);
-                                            return (
-                                                <div key={contentId} className="flex flex-col border rounded-xl bg-blue-50/30 hover:bg-blue-50 transition-colors group overflow-hidden">
-                                                    <div className="flex items-center justify-between px-4 py-2">
-                                                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                                                            <Badge variant="outline" className="text-[10px] font-mono bg-white border-blue-200 text-blue-700 shrink-0">
-                                                                {info.code}
-                                                            </Badge>
-                                                            <p className="text-sm text-slate-700 truncate font-semibold">{info.name}</p>
+                                            </div>
+                                        )}
+
+                                        {atomicoNodes.length > 0 && (
+                                            <div className="mt-6">
+                                                <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                                    <Star className="w-4 h-4 text-amber-500" /> Habilidades Específicas & Evidências
+                                                </h3>
+                                                <div className="grid grid-cols-1 gap-2">
+                                                    {atomicoNodes.map(node => (
+                                                        <div key={node.id} className="flex flex-col border rounded-xl bg-amber-50/30 hover:bg-amber-50 transition-colors group overflow-hidden">
+                                                            <div className="flex items-center justify-between px-4 py-2">
+                                                                <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                                    <Badge variant="outline" className="text-[10px] font-mono bg-white border-amber-200 text-amber-700 shrink-0">
+                                                                        {node.code || "Ev"}
+                                                                    </Badge>
+                                                                    <p className="text-sm text-slate-700 truncate font-semibold">{node.name}</p>
+                                                                </div>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="ghost"
+                                                                    className="h-7 px-2 text-[10px] text-amber-700 opacity-0 group-hover:opacity-100 hover:bg-amber-100/50"
+                                                                    onClick={() => onAvaliacao({
+                                                                        knowledgeNodeId: node.id,
+                                                                        projectId: project.id,
+                                                                        contextLabel: node.name
+                                                                    })}
+                                                                >
+                                                                    <ClipboardList className="w-3 h-3 mr-1" />Avaliar
+                                                                </Button>
+                                                            </div>
+                                                            {node.description && (
+                                                                <div className="px-4 pb-2 pt-0">
+                                                                    <p className="text-[10px] text-slate-500 leading-tight italic pl-1 border-l-2 border-slate-200 ml-2">
+                                                                        {node.description}
+                                                                    </p>
+                                                                </div>
+                                                            )}
                                                         </div>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="ghost"
-                                                            className="h-7 px-2 text-[10px] text-blue-700 opacity-0 group-hover:opacity-100 hover:bg-blue-100/50"
-                                                            onClick={() => onAvaliacao({
-                                                                knowledgeNodeId: contentId,
-                                                                projectId: project.id,
-                                                                contextLabel: info.name
-                                                            })}
-                                                        >
-                                                            <ClipboardList className="w-3 h-3 mr-1" />Avaliar
-                                                        </Button>
-                                                    </div>
-                                                    {info.description && (
-                                                        <div className="px-4 pb-2 pt-0">
-                                                            <p className="text-[10px] text-slate-500 leading-tight italic pl-1 border-l-2 border-slate-200 ml-2">
-                                                                {info.description}
-                                                            </p>
-                                                        </div>
-                                                    )}
+                                                    ))}
                                                 </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
+                                            </div>
+                                        )}
+                                    </>
+                                );
+                            })()}
 
                             {projectAssessments.length > 0 && (
                                 <div>
@@ -420,52 +474,6 @@ function StudentView({
                         </div>
 
                         <div className="p-6 space-y-6">
-                            {studentAssessments.length > 0 ? (
-                                <div>
-                                    <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-3">Linha do Tempo</h3>
-                                    <div className="space-y-3">
-                                        {studentAssessments.map(a => {
-                                            const session = a.sessionId ? schedule.find(s => s.id === a.sessionId) : null;
-                                            const project = a.projectId ? projects.find(p => p.id === a.projectId) : null;
-                                            const date = new Date(a.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
-                                            return (
-                                                <div key={a.id} className="flex gap-3 items-start">
-                                                    <div className="flex flex-col items-center">
-                                                        <span className="text-xs font-bold text-slate-400 w-10 text-center">{date}</span>
-                                                        <div className="w-0.5 flex-1 bg-slate-100 mt-1" />
-                                                    </div>
-                                                    <button
-                                                        onClick={() => onEdit(a)}
-                                                        className="flex-1 bg-slate-50 rounded-xl p-3 mb-1 text-left hover:bg-slate-100 transition-colors group/item"
-                                                    >
-                                                        <div className="flex items-center justify-between mb-1">
-                                                            <span className="text-xs font-semibold text-slate-600">
-                                                                {a.knowledgeNodeId ? resolveNodeInfo(a.knowledgeNodeId, skillsTree, contentsTree, libraryItems).name : (project ? project.title : "Rotina")}
-                                                                {session ? ` · ${session.title}` : ""}
-                                                            </span>
-                                                            <div className="flex items-center gap-2">
-                                                                <MiniTree rating={a.rating} />
-                                                                <Pencil className="w-3 h-3 text-slate-300 opacity-0 group-hover/item:opacity-100" />
-                                                            </div>
-                                                        </div>
-                                                        {a.observations && (
-                                                            <p className="text-xs text-slate-600 italic line-clamp-2">&ldquo;{a.observations}&rdquo;</p>
-                                                        )}
-                                                        {a.attachments.length > 0 && (
-                                                            <div className="flex gap-1 mt-2">
-                                                                {a.attachments.map(att => <AttachmentThumb key={att.id} att={att} />)}
-                                                            </div>
-                                                        )}
-                                                    </button>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            ) : (
-                                <p className="text-slate-400 text-sm text-center py-4 italic">Nenhuma avaliação registrada ainda.</p>
-                            )}
-
                             {(() => {
                                 // Find projects linked to this student
                                 const studentProjects = projects.filter(p => {
@@ -484,38 +492,7 @@ function StudentView({
                                         <div className="grid grid-cols-1 gap-4">
                                             {studentProjects.map(project => {
                                                 const projectSessions = schedule.filter(s => s.projectId === project.id);
-                                                // Collect both directly linked items and recursive sub-nodes
-                                                const directSkillIds = project.bnccSkillIds || [];
-                                                const directContentIds = project.contentIds || [];
-
-                                                const recursiveNodes = findEvaluatableNodes([...skillsTree, ...contentsTree], [
-                                                    ...directSkillIds,
-                                                    ...directContentIds
-                                                ]);
-
-                                                // Create a map to avoid duplicate display
-                                                const displayedNodeIds = new Set<string>();
-                                                const itemsToDisplay: any[] = [];
-
-                                                // 1. Add direct skills/contents
-                                                [...directSkillIds, ...directContentIds].forEach(id => {
-                                                    const info = resolveNodeInfo(id, skillsTree, contentsTree, libraryItems);
-                                                    if (!displayedNodeIds.has(info.id)) {
-                                                        itemsToDisplay.push(info);
-                                                        displayedNodeIds.add(info.id);
-                                                    }
-                                                });
-
-                                                // 2. Add recursive evaluatable nodes (if not already displayed)
-                                                recursiveNodes.forEach(node => {
-                                                    if (!displayedNodeIds.has(node.id)) {
-                                                        itemsToDisplay.push({
-                                                            ...node,
-                                                            code: node.code || (node.libraryItemId ? node.libraryItemId : null)
-                                                        });
-                                                        displayedNodeIds.add(node.id);
-                                                    }
-                                                });
+                                                const { microNodes, atomicoNodes } = getProjectNodes(project, skillsTree, contentsTree, libraryItems);
 
                                                 return (
                                                     <div key={project.id} className="border rounded-xl bg-white overflow-hidden shadow-sm">
@@ -569,23 +546,20 @@ function StudentView({
                                                                 </div>
                                                             )}
 
-                                                            {itemsToDisplay.length > 0 && (
+                                                            {microNodes.length > 0 && (
                                                                 <div className="space-y-3">
                                                                     <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
                                                                         <Star className="w-3 h-3 text-amber-500" /> Habilidades & Conteúdos
                                                                     </h4>
                                                                     <div className="space-y-2">
-                                                                        {itemsToDisplay.map(node => {
+                                                                        {microNodes.map(node => {
                                                                             const nodeAssessment = studentAssessments.find(a => a.knowledgeNodeId === node.id);
                                                                             return (
                                                                                 <div key={node.id} className="flex flex-col border rounded-xl bg-slate-50/30 hover:bg-slate-50 transition-colors group overflow-hidden">
                                                                                     <div className="flex items-center justify-between px-4 py-2.5">
                                                                                         <div className="flex items-center gap-2 min-w-0">
-                                                                                            <Badge variant="outline" className={cn(
-                                                                                                "text-[9px] font-mono bg-white shrink-0",
-                                                                                                node.level === "atomico" ? "border-amber-200 text-amber-700" : "border-slate-200 text-slate-600"
-                                                                                            )}>
-                                                                                                {node.code || (node.level === "atomico" ? "Ev" : "Sk")}
+                                                                                            <Badge variant="outline" className="text-[9px] font-mono bg-white shrink-0 border-slate-200 text-slate-600">
+                                                                                                {node.code || "Sk"}
                                                                                             </Badge>
                                                                                             <p className="text-xs text-slate-700 truncate font-semibold">{node.name}</p>
                                                                                         </div>
@@ -599,6 +573,58 @@ function StudentView({
                                                                                                 size="sm"
                                                                                                 variant="outline"
                                                                                                 className="h-7 px-2 text-[10px] text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+                                                                                                onClick={() => onAvaliacao({
+                                                                                                    knowledgeNodeId: node.id,
+                                                                                                    projectId: project.id,
+                                                                                                    studentId: student.id,
+                                                                                                    contextLabel: `${student.name.split(" ")[0]}: ${node.name}`
+                                                                                                })}
+                                                                                            >
+                                                                                                <ClipboardList className="w-3 h-3 mr-1" />Avaliar
+                                                                                            </Button>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    {node.description && (
+                                                                                        <div className="px-4 pb-2.5 pt-0">
+                                                                                            <p className="text-[10px] text-slate-500 leading-tight italic pl-1 border-l-2 border-slate-200 ml-2">
+                                                                                                {node.description}
+                                                                                            </p>
+                                                                                        </div>
+                                                                                    )}
+                                                                                </div>
+                                                                            );
+                                                                        })}
+                                                                    </div>
+                                                                </div>
+                                                            )}
+
+                                                            {atomicoNodes.length > 0 && (
+                                                                <div className="space-y-3">
+                                                                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                                                                        <Star className="w-3 h-3 text-amber-500" /> Habilidades Específicas & Evidências
+                                                                    </h4>
+                                                                    <div className="space-y-2">
+                                                                        {atomicoNodes.map(node => {
+                                                                            const nodeAssessment = studentAssessments.find(a => a.knowledgeNodeId === node.id);
+                                                                            return (
+                                                                                <div key={node.id} className="flex flex-col border rounded-xl bg-amber-50/30 hover:bg-amber-50 transition-colors group overflow-hidden">
+                                                                                    <div className="flex items-center justify-between px-4 py-2.5">
+                                                                                        <div className="flex items-center gap-2 min-w-0">
+                                                                                            <Badge variant="outline" className="text-[9px] font-mono bg-white shrink-0 border-amber-200 text-amber-700">
+                                                                                                {node.code || "Ev"}
+                                                                                            </Badge>
+                                                                                            <p className="text-xs text-slate-700 truncate font-semibold">{node.name}</p>
+                                                                                        </div>
+                                                                                        <div className="flex items-center gap-3 shrink-0">
+                                                                                            {nodeAssessment ? (
+                                                                                                <MiniTree rating={nodeAssessment.rating} />
+                                                                                            ) : (
+                                                                                                <span className="text-[10px] text-slate-400 italic">Sem avaliação</span>
+                                                                                            )}
+                                                                                            <Button
+                                                                                                size="sm"
+                                                                                                variant="outline"
+                                                                                                className="h-7 px-2 text-[10px] text-amber-700 border-amber-200 hover:bg-amber-50"
                                                                                                 onClick={() => onAvaliacao({
                                                                                                     knowledgeNodeId: node.id,
                                                                                                     projectId: project.id,
@@ -645,14 +671,6 @@ function StudentView({
                                 </div>
                             )}
 
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className="text-green-600 border-green-200 hover:bg-green-50"
-                                onClick={() => onAvaliacao({ studentId: student.id, classId: student.classId, contextLabel: student.name } as Partial<Assessment> & { contextLabel: string })}
-                            >
-                                <ClipboardList className="w-3.5 h-3.5 mr-1.5" /> Nova avaliação para {student.name.split(" ")[0]}
-                            </Button>
                         </div>
                     </div>
                 );
