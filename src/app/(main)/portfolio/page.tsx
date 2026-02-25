@@ -685,13 +685,21 @@ export default function PortfolioPage() {
     return (
         <div className="min-h-screen bg-slate-50">
             <div className="bg-white border-b px-8 py-5 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                <div className="flex items-center gap-3 relative">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center relative z-10">
                         <BookMarked className="w-5 h-5 text-white" />
                     </div>
-                    <div>
+                    <div className="relative z-10">
                         <h1 className="text-2xl font-bold text-slate-900">Portfólio</h1>
                         <p className="text-slate-500 text-sm">{assessments.length} avaliações registradas</p>
+                    </div>
+                    {/* Subtle decoration */}
+                    <div className="absolute -top-6 -left-6 w-20 h-20 opacity-10 pointer-events-none -rotate-12">
+                        <img
+                            src="/escola-ibira-app/assets/theme/books.png"
+                            alt=""
+                            className="w-full h-full object-contain"
+                        />
                     </div>
                 </div>
                 <div className="flex bg-slate-100 rounded-xl p-1 gap-1">

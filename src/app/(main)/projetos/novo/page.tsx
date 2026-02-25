@@ -299,8 +299,24 @@ function NewProjectWizardContent() {
                 </div>
             )}
 
-            <div className={cn("flex-1 overflow-y-auto p-4 md:p-8", currentStep === 5 ? "flex items-center justify-center bg-white" : "")}>
-                <div className={cn("mx-auto bg-white rounded-2xl border", currentStep === 3 ? "w-full max-w-7xl" : currentStep === 5 ? "border-none shadow-none max-w-xl" : "max-w-4xl p-8 shadow-sm min-h-[500px]")}>
+            <div className={cn("flex-1 overflow-y-auto p-4 md:p-8 relative", currentStep === 5 ? "flex items-center justify-center bg-white" : "")}>
+                {/* Background Theme Elements */}
+                {currentStep < 5 && (
+                    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none opacity-5">
+                        <img
+                            src="/escola-ibira-app/assets/theme/rocket.png"
+                            alt=""
+                            className="absolute top-40 -left-10 w-48 h-48 -rotate-12"
+                        />
+                        <img
+                            src="/escola-ibira-app/assets/theme/books.png"
+                            alt=""
+                            className="absolute bottom-20 right-10 w-40 h-40 rotate-12"
+                        />
+                    </div>
+                )}
+
+                <div className={cn("mx-auto bg-white rounded-2xl border relative z-10", currentStep === 3 ? "w-full max-w-7xl" : currentStep === 5 ? "border-none shadow-none max-w-xl" : "max-w-4xl p-8 shadow-sm min-h-[500px]")}>
 
                     {/* STEP 1 */}
                     {currentStep === 1 && (

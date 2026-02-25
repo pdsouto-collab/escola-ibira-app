@@ -36,6 +36,15 @@ export function DashboardHero() {
                     </p>
                 </div>
 
+                {/* Theme Illustration Integration */}
+                <div className="hidden md:block absolute right-48 bottom-0 w-32 h-32 opacity-80 z-0">
+                    <img
+                        src="/escola-ibira-app/assets/theme/soccer.png"
+                        alt=""
+                        className="w-full h-full object-contain"
+                    />
+                </div>
+
                 {/* Logo Illustration */}
                 <div className="hidden md:block absolute right-0 bottom-0 opacity-20 md:opacity-100 md:relative md:w-56 md:h-56 translate-y-8 translate-x-4 md:translate-y-6 md:translate-x-0">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
