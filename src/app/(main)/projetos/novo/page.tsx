@@ -9,13 +9,13 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Check, ChevronLeft, Plus, Search, Calendar, Clock, Users, Target, BookOpen, Trash2, PartyPopper, CalendarRange, Pencil, X } from "lucide-react";
+import { Check, ChevronLeft, Plus, Search, Calendar, Clock, Users, Target, BookOpen, Trash2, PartyPopper, CalendarRange, Pencil, X, Upload, ImagePlus } from "lucide-react";
 import { format } from "date-fns";
 import { BulkSessionDialog } from "@/components/projetos/bulk-session-dialog";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAppStore } from "@/lib/store";
-import { Project, ScheduleItem } from "@/lib/data";
+import { Project, ScheduleItem, KnowledgeNode } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 
@@ -35,7 +35,9 @@ function NewProjectWizardContent() {
         libraryItems,
         finalProductTypes,
         students,
-        users
+        users,
+        skillsTree,
+        contentsTree
     } = useAppStore();
 
     const [isEditMode, setIsEditMode] = useState(false);
@@ -97,6 +99,27 @@ function NewProjectWizardContent() {
         }
         updateSchedule([...remaining, ...expanded]);
     };
+
+    // Memoize the IDs of skills and contents that belong to the "Base Tree" of selected classes
+    const selectedClassLibraryItemIds = React.useMemo(() => {
+        const ids = new Set<string>();
+        if (formData.classes.length === 0) return ids;
+
+        const collectIds = (nodes: KnowledgeNode[]) => {
+            nodes.forEach(node => {
+                if (node.libraryItemId) ids.add(node.libraryItemId);
+                if (node.children) collectIds(node.children);
+            });
+        };
+
+        const allTrees = [...skillsTree, ...contentsTree];
+        formData.classes.forEach(classId => {
+            const classRoots = allTrees.filter(node => node.classId === classId);
+            collectIds(classRoots);
+        });
+
+        return ids;
+    }, [formData.classes, skillsTree, contentsTree]);
 
     // SubGroups derived from libraryItems
     const subjects = Array.from(new Set(libraryItems.map(i => i.subGroup || "Geral")));
@@ -174,6 +197,17 @@ function NewProjectWizardContent() {
         }
 
         setCurrentStep(5);
+    };
+
+    const handleLocalImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setFormData(prev => ({ ...prev, imageUrl: reader.result as string }));
+        };
+        reader.readAsDataURL(file);
     };
 
     const steps = [
@@ -283,16 +317,56 @@ function NewProjectWizardContent() {
                                 </div>
 
                                 <div>
-                                    <Label className="font-semibold text-slate-700">Foto do Banner (URL)</Label>
+                                    <Label className="font-semibold text-slate-700">Foto do Banner</Label>
                                     <div className="flex gap-4 mt-2">
-                                        <div className="flex-1">
-                                            <Input
-                                                value={formData.imageUrl}
-                                                onChange={e => setFormData({ ...formData, imageUrl: e.target.value })}
-                                                placeholder="https://exemplo.com/foto.jpg"
-                                            />
-                                            <p className="text-[10px] text-slate-400 mt-1 italic">
-                                                Dica: Use imagens do Unsplash ou links diretos para fotos da escola.
+                                        <div className="flex-1 space-y-4">
+                                            <div>
+                                                <Label htmlFor="image-url" className="text-xs text-slate-500 mb-1 block">Link da Imagem</Label>
+                                                <Input
+                                                    id="image-url"
+                                                    value={formData.imageUrl}
+                                                    onChange={e => setFormData({ ...formData, imageUrl: e.target.value })}
+                                                    placeholder="https://exemplo.com/foto.jpg"
+                                                />
+                                            </div>
+
+                                            <div className="relative">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-[1px] flex-1 bg-slate-200"></div>
+                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ou</span>
+                                                    <div className="h-[1px] flex-1 bg-slate-200"></div>
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <Label htmlFor="image-upload" className="text-xs text-slate-500 mb-1 block">Upload Local</Label>
+                                                <div className="flex items-center gap-2">
+                                                    <Input
+                                                        id="image-upload"
+                                                        type="file"
+                                                        accept="image/*"
+                                                        className="hidden"
+                                                        onChange={handleLocalImageUpload}
+                                                    />
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        className="w-full py-6 border-dashed border-2 hover:border-indigo-400 hover:bg-indigo-50/50 group transition-all"
+                                                        onClick={() => document.getElementById('image-upload')?.click()}
+                                                    >
+                                                        <div className="flex flex-col items-center gap-1">
+                                                            <div className="flex items-center gap-2 text-indigo-600 font-bold">
+                                                                <ImagePlus className="w-4 h-4" />
+                                                                <span>Selecionar Imagem do Computador</span>
+                                                            </div>
+                                                            <span className="text-[10px] text-slate-400 font-normal">JPG, PNG ou GIF (máx. 5MB)</span>
+                                                        </div>
+                                                    </Button>
+                                                </div>
+                                            </div>
+
+                                            <p className="text-[10px] text-slate-400 italic">
+                                                Dica: Use imagens do Unsplash ou fotos da escola para um visual personalizado.
                                             </p>
                                         </div>
                                         {formData.imageUrl && (
@@ -463,10 +537,21 @@ function NewProjectWizardContent() {
                                                         {subjectItems.map(item => {
                                                             const isSelected = formData.bnccSkills.includes(item.id) || formData.customContent.includes(item.id);
                                                             const isBncc = item.isBNCC;
+                                                            const isFromBaseTree = selectedClassLibraryItemIds.has(item.id) || (item.code && selectedClassLibraryItemIds.has(item.code));
+
                                                             return (
                                                                 <div key={item.id} onClick={() => toggleSkill(item.id, isBncc || false)} className={cn("border-2 rounded-xl p-4 cursor-pointer transition-all relative overflow-hidden", isSelected ? "border-indigo-600 shadow-sm" : "border-slate-200 hover:border-indigo-300")}>
                                                                     <div className="flex justify-between items-start mb-2">
-                                                                        <Badge variant="outline" className={cn("text-xs font-bold", isBncc ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-sky-50 text-sky-700 border-sky-200")}>{isBncc ? "BNCC" : "Personalizado"}</Badge>
+                                                                        <div className="flex flex-wrap gap-1">
+                                                                            <Badge variant="outline" className={cn("text-[10px] font-bold h-5 px-1.5", isBncc ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-sky-50 text-sky-700 border-sky-200")}>
+                                                                                {isBncc ? "BNCC" : "Personalizado"}
+                                                                            </Badge>
+                                                                            {isFromBaseTree && (
+                                                                                <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200 text-[10px] font-bold h-5 px-1.5">
+                                                                                    Árvore Base
+                                                                                </Badge>
+                                                                            )}
+                                                                        </div>
                                                                         <div className={cn("w-5 h-5 rounded-full border flex items-center justify-center", isSelected ? "bg-indigo-600 border-indigo-600" : "border-slate-300")}>
                                                                             {isSelected && <Check className="w-3 h-3 text-white" />}
                                                                         </div>

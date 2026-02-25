@@ -24,6 +24,7 @@ export const mockSkillsTree: KnowledgeNode[] = [
         level: "macro",
         type: "skill",
         name: "Linguagens",
+        classId: "jardim-i",
         children: [
             {
                 id: "sk-mesclado-1",
@@ -46,6 +47,14 @@ export const mockSkillsTree: KnowledgeNode[] = [
                                 children: []
                             }
                         ]
+                    },
+                    {
+                        id: "sk-micro-2",
+                        level: "micro",
+                        type: "skill",
+                        name: "O eu, o outro e o nós",
+                        libraryItemId: "EI01EO01",
+                        children: []
                     }
                 ]
             }
@@ -59,6 +68,7 @@ export const mockContentsTree: KnowledgeNode[] = [
         level: "macro",
         type: "content",
         name: "Lógica e Matemática",
+        classId: "jardim-i",
         children: [
             {
                 id: "co-mesclado-1",

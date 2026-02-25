@@ -214,7 +214,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     // Load from LocalStorage on mount
     useEffect(() => {
-        const CURRENT_VERSION = "1.2"; // Increment this to force updates
+        const CURRENT_VERSION = "1.4"; // Increment this to force updates
         const storedVersion = localStorage.getItem("app_version");
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -240,11 +240,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
             // 2. Force update library items to include grades
             setLibraryItems(mockLibraryItems);
-            load("bnccProgress", setBnccProgress, {});
-            load("skillsTree", setSkillsTree, mockSkillsTree);
-            load("contentsTree", setContentsTree, mockContentsTree);
 
-            // 3. Update version
+            // 3. Force update trees to include new class mappings
+            setSkillsTree(mockSkillsTree);
+            setContentsTree(mockContentsTree);
+
+            load("bnccProgress", setBnccProgress, {});
+
+            // 4. Update version
             localStorage.setItem("app_version", CURRENT_VERSION);
         } else {
             // Normal Load
