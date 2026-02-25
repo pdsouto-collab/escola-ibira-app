@@ -1,7 +1,7 @@
 "use client";
 
 import { KnowledgeNode, KnowledgeLevel } from "@/lib/data";
-import { ChevronRight, ExternalLink, History, ListTree, Link as LinkIcon } from "lucide-react";
+import { ChevronRight, ExternalLink, ClipboardList, ListTree, Link as LinkIcon } from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { useAppStore } from "@/lib/store";
@@ -88,7 +88,7 @@ export function MosaicDetailPanel({ node, treeType, onAvaliacao }: MosaicDetailP
                             className="h-7 text-[10px] gap-1 px-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50"
                             onClick={() => onAvaliacao(node)}
                         >
-                            <History className="w-3 h-3" /> Avaliar
+                            <ClipboardList className="w-3 h-3" /> Avaliar
                         </Button>
                     )}
                 </div>
@@ -167,7 +167,7 @@ export function MosaicDetailPanel({ node, treeType, onAvaliacao }: MosaicDetailP
                                                             className="h-7 w-7 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all"
                                                             onClick={() => onAvaliacao(child)}
                                                         >
-                                                            <History className="w-3.5 h-3.5" />
+                                                            <ClipboardList className="w-3.5 h-3.5" />
                                                         </Button>
                                                     )}
                                                 </div>
