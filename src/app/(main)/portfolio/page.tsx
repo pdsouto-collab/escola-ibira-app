@@ -17,16 +17,26 @@ import { Badge } from "@/components/ui/badge";
 // Helper: find node name recursively
 // ────────────────────────────────────────────
 const resolveNodeInfo = (id: string, skillsTree: any[], contentsTree: any[], libraryItems: any[]) => {
+    // Collect possible matching IDs (including codes)
+    const validIds = new Set<string>([id]);
+    const libraryItem = libraryItems.find(item => item.id === id || item.code === id);
+    if (libraryItem) {
+        validIds.add(libraryItem.id);
+        if (libraryItem.code) validIds.add(libraryItem.code);
+    }
+
     // 1. Search in Knowledge Trees (Skills and Contents)
     const searchTrees = (nodes: any[]): any | null => {
         for (const node of nodes) {
-            if (node.id === id || node.libraryItemId === id) return {
-                id: node.id,
-                name: node.name,
-                code: node.code || (node.libraryItemId ? node.libraryItemId : null),
-                description: node.description,
-                level: node.level
-            };
+            if (validIds.has(node.id) || (node.libraryItemId && validIds.has(node.libraryItemId))) {
+                return {
+                    id: node.id,
+                    name: node.name,
+                    code: node.code || (node.libraryItemId ? node.libraryItemId : null),
+                    description: node.description,
+                    level: node.level
+                };
+            }
             if (node.children) {
                 const found = searchTrees(node.children);
                 if (found) return found;
@@ -38,14 +48,13 @@ const resolveNodeInfo = (id: string, skillsTree: any[], contentsTree: any[], lib
     const treeNode = searchTrees([...skillsTree, ...contentsTree]);
     if (treeNode) return treeNode;
 
-    // 2. Search in Library Items (Standard BNCC/Custom Library)
-    const libraryItem = libraryItems.find(item => item.id === id || item.code === id);
+    // 2. Fallback to Library Item
     if (libraryItem) return {
         id: libraryItem.id,
         name: libraryItem.name,
         code: libraryItem.code || libraryItem.id,
         description: libraryItem.description,
-        level: libraryItem.type === "skill" ? "micro" : "atomico" // Default mapping
+        level: libraryItem.type === "skill" ? "micro" : "atomico"
     };
 
     // 3. Fallback
@@ -57,7 +66,6 @@ const findEvaluatableNodes = (allNodes: any[], targetIds: string[]): any[] => {
     const results: any[] = [];
     const search = (nodes: any[], active = false) => {
         for (const node of nodes) {
-            // Check if node itself is targeted (either by ID or by Library Link)
             const nodeIsTarget = targetIds.includes(node.id) || (node.libraryItemId && targetIds.includes(node.libraryItemId));
             const isTargetOrDescendant = active || nodeIsTarget;
 
@@ -78,10 +86,18 @@ const getProjectNodes = (project: any, skillsTree: any[], contentsTree: any[], l
     const directSkillIds = project.bnccSkillIds || [];
     const directContentIds = project.contentIds || [];
 
-    const recursiveNodes = findEvaluatableNodes([...skillsTree, ...contentsTree], [
-        ...directSkillIds,
-        ...directContentIds
-    ]);
+    // Expand search scope by including linked library codes
+    const targetSet = new Set<string>();
+    [...directSkillIds, ...directContentIds].forEach(id => {
+        targetSet.add(id);
+        const li = libraryItems.find(item => item.id === id || item.code === id);
+        if (li) {
+            targetSet.add(li.id);
+            if (li.code) targetSet.add(li.code);
+        }
+    });
+
+    const recursiveNodes = findEvaluatableNodes([...skillsTree, ...contentsTree], Array.from(targetSet));
 
     const displayedNodeIds = new Set<string>();
     const microNodes: any[] = [];
@@ -92,7 +108,7 @@ const getProjectNodes = (project: any, skillsTree: any[], contentsTree: any[], l
         const info = resolveNodeInfo(id, skillsTree, contentsTree, libraryItems);
         if (!displayedNodeIds.has(info.id)) {
             if (info.level === "atomico") atomicoNodes.push(info);
-            else microNodes.push(info); // Default to micro if unknown
+            else microNodes.push(info);
             displayedNodeIds.add(info.id);
         }
     });
