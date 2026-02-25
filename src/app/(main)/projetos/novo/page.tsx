@@ -55,7 +55,8 @@ function NewProjectWizardContent() {
         teachers: [] as string[],
         bnccSkills: [] as string[],
         customContent: [] as string[],
-        projectSchedule: [] as Partial<ScheduleItem>[]
+        projectSchedule: [] as Partial<ScheduleItem>[],
+        imageUrl: ""
     });
 
     // Stable project ID across steps
@@ -131,7 +132,8 @@ function NewProjectWizardContent() {
                     teachers: [],
                     bnccSkills: projectToEdit.bnccSkillIds || [],
                     customContent: projectToEdit.contentIds || [],
-                    projectSchedule: uniqueItems.map(item => ({ ...item }))
+                    projectSchedule: uniqueItems.map(item => ({ ...item })),
+                    imageUrl: projectToEdit.imageUrl || ""
                 });
             }
         }
@@ -156,7 +158,8 @@ function NewProjectWizardContent() {
             bnccSkillIds: formData.bnccSkills,
             contentIds: formData.customContent,
             students: formData.students,
-            classes: formData.classes
+            classes: formData.classes,
+            imageUrl: formData.imageUrl
         };
 
         if (isEditMode) {
@@ -276,6 +279,33 @@ function NewProjectWizardContent() {
                                             <SelectTrigger className="mt-2 text-slate-700"><SelectValue /></SelectTrigger>
                                             <SelectContent><SelectItem value="Project">Projeto</SelectItem><SelectItem value="Workshop">Oficina</SelectItem></SelectContent>
                                         </Select>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <Label className="font-semibold text-slate-700">Foto do Banner (URL)</Label>
+                                    <div className="flex gap-4 mt-2">
+                                        <div className="flex-1">
+                                            <Input
+                                                value={formData.imageUrl}
+                                                onChange={e => setFormData({ ...formData, imageUrl: e.target.value })}
+                                                placeholder="https://exemplo.com/foto.jpg"
+                                            />
+                                            <p className="text-[10px] text-slate-400 mt-1 italic">
+                                                Dica: Use imagens do Unsplash ou links diretos para fotos da escola.
+                                            </p>
+                                        </div>
+                                        {formData.imageUrl && (
+                                            <div className="w-24 h-16 rounded-lg border overflow-hidden bg-slate-100 flex-shrink-0 relative">
+                                                <Image
+                                                    src={formData.imageUrl}
+                                                    alt="Preview"
+                                                    fill
+                                                    className="object-cover"
+                                                    unoptimized
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { KnowledgeNode, KnowledgeLevel, Assessment, Project } from "@/lib/data";
+import { KnowledgeNode, KnowledgeLevel, Assessment, Project, LibraryItem } from "@/lib/data";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface RadialMatrixProps {
@@ -12,6 +12,7 @@ interface RadialMatrixProps {
     selectedStudentId: string;
     selectedClassId: string;
     drilledNodeId?: string;
+    libraryItems?: LibraryItem[];
     onNodeClick?: (node: KnowledgeNode) => void;
     onNodeDoubleClick?: (node: KnowledgeNode) => void;
 }
@@ -96,7 +97,8 @@ function getNodeData(
     assessments: Assessment[],
     projects: Project[],
     studentId: string,
-    classId: string
+    classId: string,
+    libraryItems: LibraryItem[] = []
 ): { points: number; sat: number; isTrabalhado: boolean } {
     // 1. Check if node is "Trabalhado" (linked to a relevant project)
     // A node is trabalhado if it is in an ACTIVE project for this student or class
@@ -117,9 +119,16 @@ function getNodeData(
                 p.contentIds?.includes(n.id) ||
                 (n.libraryItemId && p.bnccSkillIds?.includes(n.libraryItemId)));
 
-            return (p.bnccSkillIds?.includes(n.id) ||
-                p.contentIds?.includes(n.id) ||
-                (n.libraryItemId && p.bnccSkillIds?.includes(n.libraryItemId)));
+            if (isMatch) return true;
+
+            // Name-based fallback for BNCC Fields (Education Infantil)
+            // If the node name matches any of the selected skills' names, it's a match.
+            const projectBnccSkills = (p.bnccSkillIds || []).map(sid => libraryItems.find(li => li.id === sid)).filter(Boolean);
+            const nameMatch = projectBnccSkills.some(skill =>
+                skill?.name?.trim().toLowerCase() === n.name.trim().toLowerCase()
+            );
+
+            return nameMatch;
         });
 
         if (inThisNode) return true;
@@ -152,7 +161,7 @@ function getNodeData(
 
     if (node.children && node.children.length > 0) {
         node.children.forEach(child => {
-            const cData = getNodeData(child, assessments, projects, studentId, classId);
+            const cData = getNodeData(child, assessments, projects, studentId, classId, libraryItems);
             childPoints += cData.points;
             childSats.push(cData.sat);
             if (cData.isTrabalhado) isTrabalhado = true;
@@ -189,6 +198,7 @@ export function RadialMatrix({
     selectedStudentId,
     selectedClassId,
     drilledNodeId,
+    libraryItems,
     onNodeClick,
     onNodeDoubleClick
 }: RadialMatrixProps) {
@@ -291,7 +301,7 @@ export function RadialMatrix({
             }
 
             const nodeData = (studentId && studentId !== "all") || (classId && classId !== "all")
-                ? getNodeData(node, assessments, projects, studentId || "all", classId || "all")
+                ? getNodeData(node, assessments, projects, studentId || "all", classId || "all", libraryItems || [])
                 : { points: 0, sat: 0, isTrabalhado: false };
             const satLevel = nodeData.sat;
             const isTrabalhado = nodeData.isTrabalhado;
