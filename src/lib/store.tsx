@@ -89,6 +89,7 @@ interface AppContextType extends AppState {
     addKnowledgeNode: (treeType: "skill" | "content", parentId: string | null, node: KnowledgeNode) => void;
     updateKnowledgeNode: (treeType: "skill" | "content", id: string, updates: Partial<KnowledgeNode>) => void;
     removeKnowledgeNode: (treeType: "skill" | "content", id: string) => void;
+    duplicateKnowledgeNode: (treeType: "skill" | "content", id: string) => void;
 
     // Final Product Types
     addFinalProductType: (type: FinalProductType) => void;
@@ -490,6 +491,75 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         else setContentsTree(updater);
     };
 
+    const duplicateKnowledgeNode = (treeType: "skill" | "content", id: string) => {
+        const updater = (prev: KnowledgeNode[]): KnowledgeNode[] => {
+            const findAndClone = (nodes: KnowledgeNode[]): { cloned: KnowledgeNode | null; newNodes: KnowledgeNode[] } => {
+                let found: KnowledgeNode | null = null;
+                const updated = nodes.map(n => {
+                    if (n.id === id) {
+                        const cloneNode = (node: KnowledgeNode): KnowledgeNode => {
+                            const newId = `node-${Math.random().toString(36).substr(2, 9)}`;
+                            return {
+                                ...node,
+                                id: newId,
+                                children: node.children ? node.children.map(cloneNode) : []
+                            };
+                        };
+                        found = cloneNode(n);
+                        found.name = `${found.name} (Cópia)`;
+                        return n;
+                    }
+                    if (n.children && n.children.length > 0) {
+                        const { cloned, newNodes } = findAndClone(n.children);
+                        if (cloned) {
+                            found = cloned;
+                            return { ...n, children: newNodes };
+                        }
+                    }
+                    return n;
+                });
+
+                return { cloned: found, newNodes: updated };
+            };
+
+            const { cloned, newNodes } = findAndClone(prev);
+            if (cloned) {
+                // If it was a root node, add it to the list
+                if (prev.some(n => n.id === id)) {
+                    return [...newNodes, cloned];
+                }
+                // If it was nested, findAndClone already updated the tree, but we need to insert the clone next to original?
+                // The current findAndClone doesn't insert next to original for nested nodes well.
+                // Let's refine: duplication usually happens at the same level.
+
+                const insertClone = (nodes: KnowledgeNode[]): KnowledgeNode[] => {
+                    const idx = nodes.findIndex(n => n.id === id);
+                    if (idx !== -1) {
+                        const cloneNode = (node: KnowledgeNode): KnowledgeNode => {
+                            const newId = `node-${Math.random().toString(36).substr(2, 9)}`;
+                            return {
+                                ...node,
+                                id: newId,
+                                children: node.children ? node.children.map(cloneNode) : []
+                            };
+                        };
+                        const clonedNode = cloneNode(nodes[idx]);
+                        clonedNode.name = `${clonedNode.name} (Cópia)`;
+                        const result = [...nodes];
+                        result.splice(idx + 1, 0, clonedNode);
+                        return result;
+                    }
+                    return nodes.map(n => n.children ? { ...n, children: insertClone(n.children) } : n);
+                };
+                return insertClone(prev);
+            }
+            return prev;
+        };
+
+        if (treeType === "skill") setSkillsTree(updater);
+        else setContentsTree(updater);
+    };
+
     return (
         <AppContext.Provider value={{
             students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, currentUser,
@@ -504,7 +574,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             bnccProgress, updateBNCCStatus,
             libraryItems, addLibraryItem, updateLibraryItem, removeLibraryItem,
             renameSubGroup, deleteSubGroup,
-            skillsTree, contentsTree, addKnowledgeNode, updateKnowledgeNode, removeKnowledgeNode,
+            skillsTree, contentsTree, addKnowledgeNode, updateKnowledgeNode, removeKnowledgeNode, duplicateKnowledgeNode,
             finalProductTypes,
             addFinalProductType: (type) => setFinalProductTypes(prev => [...prev, type]),
             updateFinalProductType: (id, updates) => setFinalProductTypes(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t)),

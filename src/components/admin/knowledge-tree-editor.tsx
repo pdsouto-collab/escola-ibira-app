@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useAppStore } from "@/lib/store";
 import { KnowledgeNode, KnowledgeLevel, LibraryItem } from "@/lib/data";
-import { ChevronRight, ChevronDown, Plus, Edit2, Trash2, Link as LinkIcon, BookOpen, Search, X } from "lucide-react";
+import { ChevronRight, ChevronDown, Plus, Edit2, Trash2, Link as LinkIcon, BookOpen, Search, X, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -48,7 +48,7 @@ const LEVEL_COLORS = {
 };
 
 export function KnowledgeTreeEditor({ treeType }: Props) {
-    const { skillsTree, contentsTree, libraryItems, classes, addKnowledgeNode, updateKnowledgeNode, removeKnowledgeNode } = useAppStore();
+    const { skillsTree, contentsTree, libraryItems, classes, addKnowledgeNode, updateKnowledgeNode, removeKnowledgeNode, duplicateKnowledgeNode } = useAppStore();
 
     const treeData = treeType === "skill" ? skillsTree : contentsTree;
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
@@ -224,6 +224,13 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
                                     <Plus className="w-4 h-4" />
                                 </Button>
                             )}
+                            <Button size="sm" variant="ghost" className="h-8 px-2 text-slate-500 hover:text-blue-600" onClick={() => {
+                                if (confirm(`Deseja duplicar este item e todos os seus ${node.children?.length || 0} filhos?`)) {
+                                    duplicateKnowledgeNode(treeType, node.id);
+                                }
+                            }} title="Duplicar">
+                                <Copy className="w-4 h-4" />
+                            </Button>
                             <Button size="sm" variant="ghost" className="h-8 px-2 text-slate-500 hover:text-amber-600" onClick={() => handleEdit(node)}>
                                 <Edit2 className="w-4 h-4" />
                             </Button>
