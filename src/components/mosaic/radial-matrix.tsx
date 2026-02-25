@@ -1,14 +1,16 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { KnowledgeNode, KnowledgeLevel, Assessment } from "@/lib/data";
+import { KnowledgeNode, KnowledgeLevel, Assessment, Project } from "@/lib/data";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface RadialMatrixProps {
     data: KnowledgeNode[]; // Extracted from Admin Panel Tree
     treeType: "skill" | "content";
     assessments: Assessment[];
+    projects: Project[];
     selectedStudentId: string;
+    selectedClassId: string;
     drilledNodeId?: string;
     onNodeClick?: (node: KnowledgeNode) => void;
     onNodeDoubleClick?: (node: KnowledgeNode) => void;
@@ -89,8 +91,47 @@ function getSatLevelSit02(points: number): 0 | 1 | 2 | 3 {
     return 0;
 }
 
-function getNodeData(node: KnowledgeNode, assessments: Assessment[], studentId: string): { points: number; sat: number } {
-    // 1. Get direct assessment (most recent) for this student and this node
+function getNodeData(
+    node: KnowledgeNode,
+    assessments: Assessment[],
+    projects: Project[],
+    studentId: string,
+    classId: string
+): { points: number; sat: number; isTrabalhado: boolean } {
+    // 1. Check if node is "Trabalhado" (linked to a relevant project)
+    // A node is trabalhado if it is in an ACTIVE project for this student or class
+    const relevantProjects = projects.filter(p => p.status === 'active');
+
+    let isTrabalhado = false;
+
+    // Check if node itself or any of its children are in a project
+    const checkInProject = (n: KnowledgeNode): boolean => {
+        const inThisNode = relevantProjects.some(p => {
+            // Check student/class context
+            const studentMatch = studentId && studentId !== "all" ? p.students.includes(studentId) : true;
+            const classMatch = classId && classId !== "all" ? p.classes?.includes(classId) : true;
+
+            if (!studentMatch && !classMatch) return false;
+
+            const isMatch = (p.bnccSkillIds?.includes(n.id) ||
+                p.contentIds?.includes(n.id) ||
+                (n.libraryItemId && p.bnccSkillIds?.includes(n.libraryItemId)));
+
+            return (p.bnccSkillIds?.includes(n.id) ||
+                p.contentIds?.includes(n.id) ||
+                (n.libraryItemId && p.bnccSkillIds?.includes(n.libraryItemId)));
+        });
+
+        if (inThisNode) return true;
+        if (n.children) {
+            return n.children.some(child => checkInProject(child));
+        }
+        return false;
+    };
+
+    isTrabalhado = checkInProject(node);
+
+    // 2. Get direct assessment (most recent) for this student and this node
     const studentAssessments = assessments.filter(a =>
         a.knowledgeNodeId === node.id &&
         a.studentId === studentId &&
@@ -111,9 +152,10 @@ function getNodeData(node: KnowledgeNode, assessments: Assessment[], studentId: 
 
     if (node.children && node.children.length > 0) {
         node.children.forEach(child => {
-            const cData = getNodeData(child, assessments, studentId);
+            const cData = getNodeData(child, assessments, projects, studentId, classId);
             childPoints += cData.points;
             childSats.push(cData.sat);
+            if (cData.isTrabalhado) isTrabalhado = true;
         });
     }
 
@@ -122,13 +164,13 @@ function getNodeData(node: KnowledgeNode, assessments: Assessment[], studentId: 
         // Can be evaluated Sit 01 (sum of L4 hijos) or Sit 02 (direct)
         const recursiveSat = getSatLevelSit01(childPoints);
         const finalSat = Math.max(directSat, recursiveSat);
-        return { points: directPoints + childPoints, sat: finalSat };
+        return { points: directPoints + childPoints, sat: finalSat, isTrabalhado };
     }
 
     if (node.level === "atomico") {
         // L4: Habilidade específica ou Evidência
         // Always Sit 02
-        return { points: directPoints, sat: directSat };
+        return { points: directPoints, sat: directSat, isTrabalhado };
     }
 
     // L1/L2: Macro/Mesclado
@@ -136,10 +178,20 @@ function getNodeData(node: KnowledgeNode, assessments: Assessment[], studentId: 
     // they reflect the progress of their children.
     // We'll return average saturation of children for visual density.
     const avgSat = childSats.length > 0 ? childSats.reduce((a, b) => a + b, 0) / childSats.length : 0;
-    return { points: directPoints + childPoints, sat: Math.ceil(avgSat) };
+    return { points: directPoints + childPoints, sat: Math.ceil(avgSat), isTrabalhado };
 }
 
-export function RadialMatrix({ data, treeType, assessments, selectedStudentId, drilledNodeId, onNodeClick, onNodeDoubleClick }: RadialMatrixProps) {
+export function RadialMatrix({
+    data,
+    treeType,
+    assessments,
+    projects,
+    selectedStudentId,
+    selectedClassId,
+    drilledNodeId,
+    onNodeClick,
+    onNodeDoubleClick
+}: RadialMatrixProps) {
     const size = 800;
     const center = size / 2;
     const centerHoleRadius = 80;
@@ -200,7 +252,8 @@ export function RadialMatrix({ data, treeType, assessments, selectedStudentId, d
         parentColor: string,
         parentIndexOffset: number = 0,
         parentAngleSpan?: number,
-        studentId?: string
+        studentId?: string,
+        classId?: string
     ) => {
         let currentStartAngle = startAngle;
         const elements: React.ReactNode[] = [];
@@ -237,8 +290,11 @@ export function RadialMatrix({ data, treeType, assessments, selectedStudentId, d
                 baseColor = BASE_COLORS[(parentIndexOffset + idx) % BASE_COLORS.length];
             }
 
-            const nodeData = studentId && studentId !== "all" ? getNodeData(node, assessments, studentId) : { points: 0, sat: 0 };
+            const nodeData = (studentId && studentId !== "all") || (classId && classId !== "all")
+                ? getNodeData(node, assessments, projects, studentId || "all", classId || "all")
+                : { points: 0, sat: 0, isTrabalhado: false };
             const satLevel = nodeData.sat;
+            const isTrabalhado = nodeData.isTrabalhado;
 
             const effectiveDepth = drilledNodeId ? depth + 1 : depth;
 
@@ -248,9 +304,9 @@ export function RadialMatrix({ data, treeType, assessments, selectedStudentId, d
             let strokeColor = "white";
             let strokeWidth = "1.5";
 
-            if (studentId && studentId !== "all") {
+            if ((studentId && studentId !== "all") || (classId && classId !== "all")) {
                 if (satLevel === 0) {
-                    fillColor = "white";
+                    fillColor = isTrabalhado ? "url(#diagonalHatch)" : "white";
                     opacity = 1;
                     strokeColor = baseColor;
                     strokeWidth = "2";
@@ -304,7 +360,7 @@ export function RadialMatrix({ data, treeType, assessments, selectedStudentId, d
             );
 
             if (node.children && node.children.length > 0 && depth < maxDepth - 1) {
-                const childElements = renderArcs(node.children, currentStartAngle, depth + 1, baseColor, parentIndexOffset + idx, angleSpan, studentId);
+                const childElements = renderArcs(node.children, currentStartAngle, depth + 1, baseColor, parentIndexOffset + idx, angleSpan, studentId, classId);
                 elements.push(...childElements);
             }
 
@@ -320,6 +376,12 @@ export function RadialMatrix({ data, treeType, assessments, selectedStudentId, d
     return (
         <div className="relative flex justify-center items-center py-4 select-none w-full h-full min-h-[500px]">
             <svg viewBox={`0 0 ${size} ${size}`} className="max-w-full max-h-full h-auto" preserveAspectRatio="xMidYMid meet">
+                <defs>
+                    <pattern id="diagonalHatch" patternUnits="userSpaceOnUse" width="4" height="4" patternTransform="rotate(45 2 2)">
+                        <path d="M -1,2 l 6,0" stroke="#94a3b8" strokeWidth="1" />
+                    </pattern>
+                </defs>
+
                 {/* Center Circle */}
                 <circle
                     cx={center}
@@ -363,7 +425,7 @@ export function RadialMatrix({ data, treeType, assessments, selectedStudentId, d
                 )}
 
                 {/* Recursive Arcs */}
-                {renderArcs(nodesToRender, 0, 0, "#cbd5e1", 0, undefined, selectedStudentId)}
+                {renderArcs(nodesToRender, 0, 0, "#cbd5e1", 0, undefined, selectedStudentId, selectedClassId)}
             </svg>
         </div>
     );

@@ -147,7 +147,7 @@ const initialProjects: Project[] = [
         startDate: "2024-02-01",
         students: ["1", "3", "5"],
         tags: ["Natureza", "Alimentação Saudável"],
-        bnccSkillIds: ["EF02CI04", "EF03CI07", "EF01GE01"],
+        bnccSkillIds: ["EF02CI04", "EF03CI07", "EF01GE01", "sk-micro-1"],
         contentIds: [],
         imageUrl: "https://images.unsplash.com/photo-1592424001844-04149e8eb3f3?auto=format&fit=crop&q=80&w=600&h=300"
     },

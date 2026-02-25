@@ -171,7 +171,9 @@ export function MosaicContainer() {
                         data={dataToRender}
                         treeType={activeTab}
                         assessments={assessments}
+                        projects={projects}
                         selectedStudentId={selectedStudentId}
+                        selectedClassId={selectedClassId}
                         drilledNodeId={drilledNode?.id}
                         onNodeDoubleClick={(node: KnowledgeNode) => {
                             if (node && node.level === "macro") {
