@@ -11,6 +11,7 @@ interface RadialMatrixProps {
     projects: Project[];
     selectedStudentId: string;
     selectedClassId: string;
+    selectedProjectId?: string;
     drilledNodeId?: string;
     libraryItems?: LibraryItem[];
     onNodeClick?: (node: KnowledgeNode) => void;
@@ -98,11 +99,16 @@ function getNodeData(
     projects: Project[],
     studentId: string,
     classId: string,
+    selectedProjectId: string,
     libraryItems: LibraryItem[] = []
 ): { points: number; sat: number; isTrabalhado: boolean } {
     // 1. Check if node is "Trabalhado" (linked to a relevant project)
     // A node is trabalhado if it is in an ACTIVE project for this student or class
-    const relevantProjects = projects.filter(p => p.status === 'active');
+    const relevantProjects = projects.filter(p => {
+        const isActive = p.status === 'active';
+        const matchesFilter = selectedProjectId === "all" || p.id === selectedProjectId;
+        return isActive && matchesFilter;
+    });
 
     let isTrabalhado = false;
 
@@ -161,7 +167,7 @@ function getNodeData(
 
     if (node.children && node.children.length > 0) {
         node.children.forEach(child => {
-            const cData = getNodeData(child, assessments, projects, studentId, classId, libraryItems);
+            const cData = getNodeData(child, assessments, projects, studentId, classId, selectedProjectId, libraryItems);
             childPoints += cData.points;
             childSats.push(cData.sat);
             if (cData.isTrabalhado) isTrabalhado = true;
@@ -197,6 +203,7 @@ export function RadialMatrix({
     projects,
     selectedStudentId,
     selectedClassId,
+    selectedProjectId = "all",
     drilledNodeId,
     libraryItems,
     onNodeClick,
@@ -263,7 +270,8 @@ export function RadialMatrix({
         parentIndexOffset: number = 0,
         parentAngleSpan?: number,
         studentId?: string,
-        classId?: string
+        classId?: string,
+        projectId?: string
     ) => {
         let currentStartAngle = startAngle;
         const elements: React.ReactNode[] = [];
@@ -300,8 +308,10 @@ export function RadialMatrix({
                 baseColor = BASE_COLORS[(parentIndexOffset + idx) % BASE_COLORS.length];
             }
 
-            const nodeData = (studentId && studentId !== "all") || (classId && classId !== "all")
-                ? getNodeData(node, assessments, projects, studentId || "all", classId || "all", libraryItems || [])
+            const isViewingEvaluation = (studentId && studentId !== "all") || (classId && classId !== "all") || (projectId && projectId !== "all");
+
+            const nodeData = isViewingEvaluation
+                ? getNodeData(node, assessments, projects, studentId || "all", classId || "all", projectId || "all", libraryItems || [])
                 : { points: 0, sat: 0, isTrabalhado: false };
             const satLevel = nodeData.sat;
             const isTrabalhado = nodeData.isTrabalhado;
@@ -314,7 +324,7 @@ export function RadialMatrix({
             let strokeColor = "white";
             let strokeWidth = "1.5";
 
-            if ((studentId && studentId !== "all") || (classId && classId !== "all")) {
+            if (isViewingEvaluation) {
                 if (satLevel === 0) {
                     fillColor = isTrabalhado ? "url(#diagonalHatch)" : "white";
                     opacity = 1;
@@ -370,7 +380,7 @@ export function RadialMatrix({
             );
 
             if (node.children && node.children.length > 0 && depth < maxDepth - 1) {
-                const childElements = renderArcs(node.children, currentStartAngle, depth + 1, baseColor, parentIndexOffset + idx, angleSpan, studentId, classId);
+                const childElements = renderArcs(node.children, currentStartAngle, depth + 1, baseColor, parentIndexOffset + idx, angleSpan, studentId, classId, projectId);
                 elements.push(...childElements);
             }
 
@@ -435,7 +445,7 @@ export function RadialMatrix({
                 )}
 
                 {/* Recursive Arcs */}
-                {renderArcs(nodesToRender, 0, 0, "#cbd5e1", 0, undefined, selectedStudentId, selectedClassId)}
+                {renderArcs(nodesToRender, 0, 0, "#cbd5e1", 0, undefined, selectedStudentId, selectedClassId, selectedProjectId)}
             </svg>
         </div>
     );

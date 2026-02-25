@@ -175,6 +175,7 @@ export function MosaicContainer() {
                         libraryItems={libraryItems}
                         selectedStudentId={selectedStudentId}
                         selectedClassId={selectedClassId}
+                        selectedProjectId={selectedProjectId}
                         drilledNodeId={drilledNode?.id}
                         onNodeDoubleClick={(node: KnowledgeNode) => {
                             if (node && node.level === "macro") {
