@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 interface TreeRatingPickerProps {
     value?: 1 | 2 | 3 | 4 | 5;
-    onChange?: (rating: 1 | 2 | 3 | 4 | 5) => void;
+    onChange?: (rating?: 1 | 2 | 3 | 4 | 5) => void;
     readOnly?: boolean;
     size?: "sm" | "md" | "lg";
 }
@@ -120,7 +120,7 @@ export function TreeRatingPicker({ value, onChange, readOnly = false, size = "md
                             key={rating}
                             type="button"
                             disabled={readOnly}
-                            onClick={() => onChange?.(rating)}
+                            onClick={() => onChange?.(isSelected ? undefined : rating)}
                             className={cn(
                                 sizeClasses[size],
                                 "flex flex-col items-center gap-0.5 rounded-lg p-1 transition-all duration-200",

@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { TreeRatingPicker } from "@/components/assessment/tree-rating-picker";
 import { useAppStore } from "@/lib/store";
 import { Assessment, AssessmentAttachment } from "@/lib/data";
-import { Camera, FileUp, X, Users, User } from "lucide-react";
+import { Camera, FileUp, X, Users, User, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AssessmentDrawerProps {
@@ -49,7 +49,7 @@ export function AssessmentDrawer({
     initialObservations,
     initialAttachments,
 }: AssessmentDrawerProps) {
-    const { students, classes, projects, schedule, addAssessment, updateAssessment, currentUser } = useAppStore();
+    const { students, classes, projects, schedule, addAssessment, updateAssessment, removeAssessment, currentUser } = useAppStore();
 
     // Context State
     const [contextType, setContextType] = useState<"project" | "routine">(propRoutineId ? "routine" : "project");
@@ -132,6 +132,13 @@ export function AssessmentDrawer({
             addAssessment(assessment);
         }
         handleClose();
+    };
+
+    const handleDelete = () => {
+        if (assessmentId && confirm("Tem certeza que deseja apagar (zerar) esta avaliação?")) {
+            removeAssessment(assessmentId);
+            handleClose();
+        }
     };
 
     const hasContext = !!propKnowledgeNodeId || (contextType === "project"
@@ -360,6 +367,16 @@ export function AssessmentDrawer({
                 </div>
 
                 <div className="px-6 py-4 border-t bg-white flex gap-3">
+                    {assessmentId && (
+                        <Button
+                            variant="outline"
+                            className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 hover:border-red-300"
+                            onClick={handleDelete}
+                            title="Zerar Avaliação"
+                        >
+                            <Trash2 className="w-5 h-5" />
+                        </Button>
+                    )}
                     <Button variant="outline" className="flex-1" onClick={handleClose}>
                         Cancelar
                     </Button>

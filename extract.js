@@ -3,7 +3,7 @@ const pdf = require('pdf-parse');
 
 let dataBuffer = fs.readFileSync('teste gil.pdf');
 
-const parser = pdf.default || pdf;
+const parser = pdf;
 
 parser(dataBuffer).then(function (data) {
     fs.writeFileSync('pdf_text.txt', data.text);
