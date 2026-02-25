@@ -199,6 +199,39 @@ function NewProjectWizardContent() {
         setCurrentStep(5);
     };
 
+    const handleSaveDraft = () => {
+        const projectData: Project = {
+            id: projectId,
+            title: formData.title || "(Projeto sem título)",
+            description: formData.description,
+            status: "draft",
+            startDate: new Date().toISOString(),
+            guidingQuestion: formData.guidingQuestion,
+            type: formData.type,
+            summary: formData.summary,
+            objectives: formData.objectives,
+            finalProduct: formData.finalProduct,
+            tags: [],
+            bnccSkillIds: formData.bnccSkills,
+            contentIds: formData.customContent,
+            students: formData.students,
+            classes: formData.classes,
+            imageUrl: formData.imageUrl
+        };
+
+        if (isEditMode) {
+            updateProject(projectId, projectData);
+        } else {
+            addProject(projectData);
+        }
+
+        if (formData.projectSchedule.length > 0) {
+            persistSessionsToStore(formData.projectSchedule);
+        }
+
+        router.push("/projetos");
+    };
+
     const handleLocalImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -252,8 +285,15 @@ function NewProjectWizardContent() {
                         })}
                     </div>
                     <div className="flex gap-2">
+                        <Button
+                            variant="outline"
+                            className="text-slate-600 border-slate-200 hover:bg-slate-50"
+                            onClick={handleSaveDraft}
+                        >
+                            Salvar Rascunho
+                        </Button>
                         <Link href="/projetos">
-                            <Button variant="ghost" className="text-slate-500 hover:text-slate-800">Cancelar</Button>
+                            <Button variant="ghost" className="text-slate-400 hover:text-slate-600">Cancelar</Button>
                         </Link>
                     </div>
                 </div>
