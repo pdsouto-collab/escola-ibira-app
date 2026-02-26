@@ -7,12 +7,14 @@ import { useAppStore } from "@/lib/store";
 import { Menu, MenuItem } from "@/lib/data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Utensils, Edit, Copy, ChevronLeft, ChevronRight, Apple } from "lucide-react";
+import { Utensils, Edit, Copy, ChevronLeft, ChevronRight, Apple, MoreVertical, Calendar } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+
 import { Badge } from "@/components/ui/badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export function MenuWeekView() {
     const { menus, addMenu, updateMenu, removeMenu, currentUser } = useAppStore();
@@ -103,6 +105,30 @@ export function MenuWeekView() {
         }
     };
 
+    const handleCopyFromDate = (targetDate: Date, offsetDays: number) => {
+        const sourceDate = addDays(targetDate, offsetDays);
+        const sourceMenu = getMenuForDate(sourceDate);
+        if (!sourceMenu) {
+            alert(`Nenhum cardápio encontrado no dia ${format(sourceDate, "dd/MM")}`);
+            return;
+        }
+
+        const targetDateStr = format(targetDate, "yyyy-MM-dd");
+        const existingTarget = getMenuForDate(targetDate);
+
+        const newMenu: Menu = {
+            ...sourceMenu,
+            id: existingTarget ? existingTarget.id : `menu-${Date.now()}`,
+            date: targetDateStr
+        };
+
+        if (existingTarget) {
+            updateMenu(existingTarget.id, newMenu);
+        } else {
+            addMenu(newMenu);
+        }
+    };
+
     // Render 5 days
     const weekDays = Array.from({ length: 5 }).map((_, i) => addDays(weekStart, i));
 
@@ -147,9 +173,29 @@ export function MenuWeekView() {
                                     </div>
                                 </div>
                                 {isNutritionist && (
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white" onClick={() => handleEdit(menu, day)}>
-                                        <Edit className="h-4 w-4 text-slate-400" />
-                                    </Button>
+                                    <div className="flex gap-1">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white" title="Mais Opções">
+                                                    <MoreVertical className="h-4 w-4 text-slate-400" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuItem onClick={() => handleCopyFromDate(day, -7)} className="cursor-pointer">
+                                                    Copiar semana passada
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleCopyFromDate(day, -1)} className="cursor-pointer">
+                                                    Copiar dia anterior
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleCopyFromDate(day, 1)} className="cursor-pointer">
+                                                    Copiar dia seguinte
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white" onClick={() => handleEdit(menu, day)} title="Editar Cardápio">
+                                            <Edit className="h-4 w-4 text-slate-400" />
+                                        </Button>
+                                    </div>
                                 )}
                             </CardHeader>
                             <CardContent className="p-4 flex-1">
