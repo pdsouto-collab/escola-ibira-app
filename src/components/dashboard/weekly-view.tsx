@@ -41,7 +41,8 @@ export function WeeklyView() {
     const getItemsForDay = (dateStr: string) => {
         return schedule
             .filter(item => {
-                if (item.date !== dateStr) return false;
+                const itemDateMatches = item.date ? item.date === dateStr : true;
+                if (!itemDateMatches) return false;
                 // Show items for the selected class, or items with no class (school-wide)
                 return item.classId === selectedClassId || !item.classId;
             })
