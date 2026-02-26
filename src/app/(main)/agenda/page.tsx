@@ -350,6 +350,7 @@ export default function AgendaPage() {
             />
 
             <BulkPortfolioDialog
+                key={`bulk-port-${format(currentDate, "yyyy-MM-dd")}-${selectedClassId}`}
                 open={isBulkPortfolioOpen}
                 onOpenChange={setIsBulkPortfolioOpen}
                 date={currentDate}

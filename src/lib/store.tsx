@@ -285,6 +285,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             load("contentsTree", setContentsTree, mockContentsTree);
             load("menus", setMenus, mockMenus);
             load("portfolioEntries", setPortfolioEntries, mockPortfolio);
+            load("assessments", setAssessments, mockAssessments);
         }
 
         setIsLoaded(true);
@@ -307,7 +308,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem("app_bnccProgress", JSON.stringify(bnccProgress));
         localStorage.setItem("app_skillsTree", JSON.stringify(skillsTree));
         localStorage.setItem("app_contentsTree", JSON.stringify(contentsTree));
-    }, [students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, mosaicData, libraryItems, bnccProgress, skillsTree, contentsTree, isLoaded]);
+        localStorage.setItem("app_menus", JSON.stringify(menus));
+        localStorage.setItem("app_portfolioEntries", JSON.stringify(portfolioEntries));
+        localStorage.setItem("app_assessments", JSON.stringify(assessments));
+    }, [students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, mosaicData, libraryItems, bnccProgress, skillsTree, contentsTree, menus, portfolioEntries, assessments, isLoaded]);
 
     // Actions
     const addStudent = (student: Student) => setStudents(prev => [...prev, student]);

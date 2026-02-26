@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useAppStore } from "@/lib/store";
 import { PortfolioEntry, Student } from "@/lib/data";
 import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ImagePlus, Images, Sparkles, Trash2 } from "lucide-react";
@@ -43,15 +44,14 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classId }: BulkP
     // 3. Individualização
     const [forms, setForms] = useState<Record<string, StudentPortfolioForm>>({});
 
-    const classStudents = students.filter(s => s.classId === classId);
     const dateStr = format(date, "yyyy-MM-dd");
 
     useEffect(() => {
         if (!open) return;
 
         // Find existing entries for this class and date
-        const existingEntries = portfolioEntries.filter(e =>
-            e.date === dateStr && classStudents.some(s => s.id === e.studentId)
+        const existingEntries = portfolioEntries.filter((e: PortfolioEntry) =>
+            e.date === dateStr && students.some((s: Student) => s.id === e.studentId && s.classId === classId)
         );
 
         if (existingEntries.length > 0) {
@@ -66,19 +66,21 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classId }: BulkP
         }
 
         const initialForms: Record<string, StudentPortfolioForm> = {};
-        classStudents.forEach(student => {
-            const existing = existingEntries.find(e => e.studentId === student.id);
+        const currentClassStudents = students.filter((s: Student) => s.classId === classId);
+
+        currentClassStudents.forEach((student: Student) => {
+            const existing = existingEntries.find((e: PortfolioEntry) => e.studentId === student.id);
             initialForms[student.id] = {
                 id: existing?.id,
                 studentId: student.id,
-                selected: !!existing || existingEntries.length === 0, // Select all if new, else only existing
+                selected: !!existing || existingEntries.length === 0,
                 individualNote: existing?.description || ""
             };
         });
 
         setForms(initialForms);
         setBaseNarrative("");
-    }, [open, classId, dateStr, portfolioEntries.length]); // Re-run if entries change length while open (unlikely but safer)
+    }, [open, classId, dateStr, portfolioEntries, students]);
 
     const updateForm = (studentId: string, updates: Partial<StudentPortfolioForm>) => {
         setForms(prev => ({
@@ -127,8 +129,9 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classId }: BulkP
         }
 
         const tagsArray = tagsInput.split(",").map(t => t.trim()).filter(t => t.length > 0);
+        const currentClassStudents = students.filter((s: Student) => s.classId === classId);
 
-        classStudents.forEach(student => {
+        currentClassStudents.forEach((student: Student) => {
             const form = forms[student.id];
             if (!form) return;
 
@@ -172,7 +175,8 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classId }: BulkP
 
     const handleDeleteAll = () => {
         if (confirm("Tem certeza que deseja apagar todos os registros desta vivência para esta turma e data?")) {
-            classStudents.forEach(student => {
+            const currentClassStudents = students.filter((s: Student) => s.classId === classId);
+            currentClassStudents.forEach((student: Student) => {
                 const form = forms[student.id];
                 if (form?.id) {
                     removePortfolioEntry(form.id);
@@ -183,6 +187,7 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classId }: BulkP
     };
 
     const hasAnyExisting = Object.values(forms).some(f => !!f.id);
+    const currentClassStudents = students.filter((s: Student) => s.classId === classId);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -195,7 +200,7 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classId }: BulkP
                                 Registro de Vivência em Lote
                             </DialogTitle>
                             <DialogDescription>
-                                {format(date, "EEEE, dd 'de' MMMM", { locale: require("date-fns/locale/pt-BR").default })}
+                                {format(date, "EEEE, dd 'de' MMMM", { locale: ptBR })}
                             </DialogDescription>
                         </div>
                         <Button
@@ -289,13 +294,13 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classId }: BulkP
                         <div className="px-6 py-4 border-b bg-white flex justify-between items-center shadow-sm z-10">
                             <Label className="text-sm font-bold text-slate-700">Preenchimento Individual</Label>
                             <span className="text-xs text-slate-500 font-medium bg-slate-100 px-2 py-1 rounded-md">
-                                {Object.values(forms).filter(f => f.selected).length} de {classStudents.length} alunos
+                                {Object.values(forms).filter(f => f.selected).length} de {currentClassStudents.length} alunos
                             </span>
                         </div>
 
                         <ScrollArea className="flex-1 p-6">
                             <div className="space-y-4">
-                                {classStudents.map(student => {
+                                {currentClassStudents.map((student: Student) => {
                                     const form = forms[student.id];
                                     if (!form) return null;
 
