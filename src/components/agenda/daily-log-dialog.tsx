@@ -39,7 +39,7 @@ interface StudentLogForm {
 }
 
 export function DailyLogDialog({ open, onOpenChange, date, classId }: DailyLogDialogProps) {
-    const { students, schedule, addDailyLog, dailyLogs, updateDailyLog } = useAppStore();
+    const { students, schedule, addDailyLog, dailyLogs, updateDailyLog, removeDailyLog } = useAppStore();
 
     const [forms, setForms] = useState<Record<string, StudentLogForm>>({});
     const [selectedActivities, setSelectedActivities] = useState<Record<string, boolean>>({});
@@ -121,7 +121,12 @@ export function DailyLogDialog({ open, onOpenChange, date, classId }: DailyLogDi
 
         classStudents.forEach(student => {
             const form = forms[student.id];
-            if (!form || !form.present) return; // Skip absent students
+            const existingLog = existingLogs.find(l => l.studentId === student.id);
+
+            if (!form || !form.present) {
+                if (existingLog) removeDailyLog(existingLog.id);
+                return; // Skip absent students
+            }
 
             const logData: DailyLog = {
                 id: `log-${Date.now()}-${student.id}`,
@@ -141,7 +146,6 @@ export function DailyLogDialog({ open, onOpenChange, date, classId }: DailyLogDi
                 notes: form.notes,
             };
 
-            const existingLog = existingLogs.find(l => l.studentId === student.id);
             if (existingLog) {
                 updateDailyLog(existingLog.id, logData);
             } else {
