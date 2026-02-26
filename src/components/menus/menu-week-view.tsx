@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 
 export function MenuWeekView() {
     const { menus, addMenu, updateMenu, removeMenu, currentUser } = useAppStore();
-    const isNutritionist = currentUser?.role === "nutritionist" || currentUser?.role === "admin";
+    const isNutritionist = currentUser?.role === "nutritionist" || currentUser?.role === "admin" || currentUser?.role === "director";
 
     const [currentDate, setCurrentDate] = useState(new Date());
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 }); // Monday
