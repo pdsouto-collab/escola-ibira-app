@@ -12,6 +12,7 @@ import { ScheduleDialog } from "@/components/agenda/schedule-dialog";
 import { BulkRoutineDialog, BulkRoutineConfig } from "@/components/agenda/bulk-routine-dialog";
 import { RoutineManagerDialog } from "@/components/agenda/routine-manager-dialog";
 import { DailyLogDialog } from "@/components/agenda/daily-log-dialog";
+import { BulkPortfolioDialog } from "@/components/portfolio/bulk-portfolio-dialog";
 import { ScheduleItem } from "@/lib/data";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -36,6 +37,7 @@ export default function AgendaPage() {
     const [bulkConfig, setBulkConfig] = useState<BulkRoutineConfig | undefined>();
     const [editingRoutineId, setEditingRoutineId] = useState<string | null>(null);
     const [isDailyLogOpen, setIsDailyLogOpen] = useState(false);
+    const [isBulkPortfolioOpen, setIsBulkPortfolioOpen] = useState(false);
 
     // Filter Logic
     const availableClasses = currentUser?.role === "teacher"
@@ -249,14 +251,25 @@ export default function AgendaPage() {
                         {selectedClassId !== "all" && <span className="text-slate-500 text-base font-normal">- {classes.find(c => c.id === selectedClassId)?.name}</span>}
                     </h2>
                     {canEdit && (
-                        <Button
-                            variant="default"
-                            disabled={selectedClassId === "all"}
-                            onClick={() => setIsDailyLogOpen(true)}
-                            title={selectedClassId === "all" ? "Selecione uma turma específica para preencher o diário" : "Preencher Diário da Turma"}
-                        >
-                            📝 Preencher Diário de Bordo
-                        </Button>
+                        <div className="flex gap-2">
+                            <Button
+                                variant="outline"
+                                disabled={selectedClassId === "all"}
+                                onClick={() => setIsBulkPortfolioOpen(true)}
+                                className="border-indigo-200 text-indigo-700 bg-indigo-50 hover:bg-indigo-100"
+                                title={selectedClassId === "all" ? "Selecione uma turma específica para registrar vivência" : "Nova Vivência em Lote"}
+                            >
+                                🌟 Registrar Vivência
+                            </Button>
+                            <Button
+                                variant="default"
+                                disabled={selectedClassId === "all"}
+                                onClick={() => setIsDailyLogOpen(true)}
+                                title={selectedClassId === "all" ? "Selecione uma turma específica para preencher o diário" : "Preencher Diário da Turma"}
+                            >
+                                📝 Preencher Diário de Bordo
+                            </Button>
+                        </div>
                     )}
                 </div>
 
@@ -332,6 +345,13 @@ export default function AgendaPage() {
             <DailyLogDialog
                 open={isDailyLogOpen}
                 onOpenChange={setIsDailyLogOpen}
+                date={currentDate}
+                classId={selectedClassId}
+            />
+
+            <BulkPortfolioDialog
+                open={isBulkPortfolioOpen}
+                onOpenChange={setIsBulkPortfolioOpen}
                 date={currentDate}
                 classId={selectedClassId}
             />

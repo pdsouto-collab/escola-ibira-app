@@ -1,6 +1,6 @@
 "use client";
 
-import { mockPortfolio } from "@/lib/data";
+import { useAppStore } from "@/lib/store";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "lucide-react";
@@ -10,7 +10,8 @@ interface PortfolioReportProps {
 }
 
 export function PortfolioReport({ studentId }: PortfolioReportProps) {
-    const entries = mockPortfolio.filter(p => p.studentId === studentId);
+    const { portfolioEntries } = useAppStore();
+    const entries = portfolioEntries.filter(p => p.studentId === studentId);
 
     if (entries.length === 0) {
         return (

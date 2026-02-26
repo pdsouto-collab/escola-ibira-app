@@ -13,7 +13,8 @@ import {
     LibraryItem, mockLibraryItems,
     KnowledgeNode, mockSkillsTree, mockContentsTree,
     FinalProductType, mockFinalProductTypes,
-    Assessment, mockAssessments, Menu, mockMenus
+    Assessment, mockAssessments, Menu, mockMenus,
+    PortfolioEntry, mockPortfolio
 } from "@/lib/data";
 
 interface AppState {
@@ -35,6 +36,7 @@ interface AppState {
     finalProductTypes: FinalProductType[];
     assessments: Assessment[];
     menus: Menu[];
+    portfolioEntries: PortfolioEntry[];
 }
 
 interface AppContextType extends AppState {
@@ -105,6 +107,11 @@ interface AppContextType extends AppState {
     addMenu: (menu: Menu) => void;
     updateMenu: (id: string, updates: Partial<Menu>) => void;
     removeMenu: (id: string) => void;
+
+    // Portfolio
+    addPortfolioEntry: (entry: PortfolioEntry) => void;
+    updatePortfolioEntry: (id: string, updates: Partial<PortfolioEntry>) => void;
+    removePortfolioEntry: (id: string) => void;
 
     // Assessments
     addAssessment: (assessment: Assessment) => void;
@@ -220,6 +227,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [finalProductTypes, setFinalProductTypes] = useState<FinalProductType[]>(mockFinalProductTypes);
     const [assessments, setAssessments] = useState<Assessment[]>(mockAssessments);
     const [menus, setMenus] = useState<Menu[]>(mockMenus);
+    const [portfolioEntries, setPortfolioEntries] = useState<PortfolioEntry[]>(mockPortfolio);
 
     const [isLoaded, setIsLoaded] = useState(false);
 
@@ -276,6 +284,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             load("skillsTree", setSkillsTree, mockSkillsTree);
             load("contentsTree", setContentsTree, mockContentsTree);
             load("menus", setMenus, mockMenus);
+            load("portfolioEntries", setPortfolioEntries, mockPortfolio);
         }
 
         setIsLoaded(true);
@@ -602,6 +611,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             addMenu: (menu) => setMenus(prev => [...prev, menu]),
             updateMenu: (id, updates) => setMenus(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m)),
             removeMenu: (id) => setMenus(prev => prev.filter(m => m.id !== id)),
+
+            portfolioEntries,
+            addPortfolioEntry: (entry) => setPortfolioEntries(prev => [...prev, entry]),
+            updatePortfolioEntry: (id, updates) => setPortfolioEntries(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p)),
+            removePortfolioEntry: (id) => setPortfolioEntries(prev => prev.filter(p => p.id !== id)),
 
             assessments,
             addAssessment: (a) => setAssessments(prev => [...prev, a]),
