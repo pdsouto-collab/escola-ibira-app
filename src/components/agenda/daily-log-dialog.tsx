@@ -68,6 +68,7 @@ export function DailyLogDialog({ open, onOpenChange, date, classId }: DailyLogDi
 
         // Find existing logs for today
         const existingLogs = dailyLogs.filter(log => log.date === dateStr);
+        const hasLogsForToday = existingLogs.length > 0;
 
         classStudents.forEach(student => {
             const existing = existingLogs.find(l => l.studentId === student.id);
@@ -87,7 +88,7 @@ export function DailyLogDialog({ open, onOpenChange, date, classId }: DailyLogDi
             } else {
                 newForms[student.id] = {
                     studentId: student.id,
-                    present: true, // Default to present
+                    present: !hasLogsForToday, // If logs exist for today but not for this student, they were marked absent
                     mood: "happy",
                     breakfast: "all",
                     lunch: "all",
