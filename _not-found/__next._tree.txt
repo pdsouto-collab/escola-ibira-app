@@ -1,3 +1,3 @@
 :HL["/escola-ibira-app/_next/static/chunks/2473c16c0c2f6b5f.css","style"]
-:HL["/escola-ibira-app/_next/static/chunks/b33a9693913c0536.css","style"]
-0:{"buildId":"tkrt0bYsRLUrZxDMzzxAw","tree":{"name":"","paramType":null,"paramKey":"","hasRuntimePrefetch":false,"slots":{"children":{"name":"/_not-found","paramType":null,"paramKey":"/_not-found","hasRuntimePrefetch":false,"slots":{"children":{"name":"__PAGE__","paramType":null,"paramKey":"__PAGE__","hasRuntimePrefetch":false,"slots":null,"isRootLayout":false}},"isRootLayout":false}},"isRootLayout":true},"staleTime":300}
+:HL["/escola-ibira-app/_next/static/chunks/3878a6fc40942203.css","style"]
+0:{"buildId":"a3c965jJAHKmG49PcVW7g","tree":{"name":"","paramType":null,"paramKey":"","hasRuntimePrefetch":false,"slots":{"children":{"name":"/_not-found","paramType":null,"paramKey":"/_not-found","hasRuntimePrefetch":false,"slots":{"children":{"name":"__PAGE__","paramType":null,"paramKey":"__PAGE__","hasRuntimePrefetch":false,"slots":null,"isRootLayout":false}},"isRootLayout":false}},"isRootLayout":true},"staleTime":300}
