@@ -11,6 +11,7 @@ import Link from "next/link";
 import { RadialMatrix } from "@/components/mosaic/radial-matrix";
 import { Badge } from "@/components/ui/badge";
 import { ProgressChart, ProgressChartData } from "@/components/assessment/progress-chart";
+import { CalendarIcon } from "lucide-react";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Node Resolvers
@@ -157,7 +158,7 @@ function ReportCard({
     studentId: string;
     projectId?: string | null;
 }) {
-    const { projects, students, classes, assessments, schedule, skillsTree, contentsTree, libraryItems } = useAppStore();
+    const { projects, students, classes, assessments, schedule, skillsTree, contentsTree, libraryItems, dailyLogs } = useAppStore();
 
     const student = students.find(s => s.id === studentId);
     if (!student) {
@@ -241,6 +242,88 @@ function ReportCard({
             )}
 
             <div className="px-10 py-8 space-y-8">
+
+                {(() => {
+                    const studentLogs = dailyLogs.filter(l => l.studentId === studentId).sort((a, b) => b.date.localeCompare(a.date));
+                    if (studentLogs.length === 0) return null;
+                    return (
+                        <section>
+                            <h2 className="text-sm font-bold uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2">
+                                <span className="inline-block w-4 h-0.5 bg-slate-300"></span>
+                                Rotina e Atividades do Dia
+                            </h2>
+                            <div className="space-y-4">
+                                {studentLogs.map((log) => {
+                                    const [y, m, d] = log.date.split("-");
+                                    const dtStr = `${d}/${m}/${y}`;
+                                    const moodEmoji = { happy: "😊", excited: "🤩", neutral: "😐", tired: "🥱", sad: "😢" }[log.mood];
+                                    const mealTrans = { all: "Tudo", most: "Maioria", some: "Pouco", none: "Nada" };
+                                    const mealColor = { all: "bg-green-100 text-green-700 border-green-200", most: "bg-blue-100 text-blue-700 border-blue-200", some: "bg-orange-100 text-orange-700 border-orange-200", none: "bg-red-100 text-red-700 border-red-200" };
+
+                                    return (
+                                        <div key={log.id} className="border border-slate-200 rounded-2xl p-6 bg-white shadow-sm">
+                                            <div className="flex justify-between items-center mb-6">
+                                                <h3 className="font-bold flex items-center gap-2">
+                                                    <CalendarIcon className="w-5 h-5 text-slate-400" />
+                                                    Diário de {dtStr}
+                                                </h3>
+                                                <div className="flex items-center gap-2 text-sm font-semibold text-slate-500 bg-slate-50 py-1 px-3 rounded-full border">
+                                                    HUMOR: <span className="text-xl leading-none">{moodEmoji}</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="mb-6">
+                                                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2 mb-3">
+                                                    🍴 Alimentação
+                                                </h4>
+                                                <div className="flex gap-4">
+                                                    <div className="flex-1 flex flex-col items-center justify-center p-3 border rounded-xl bg-slate-50/50">
+                                                        <span className="text-[10px] text-slate-400 font-semibold uppercase mb-1">Lanche Manhã</span>
+                                                        <span className={`text-xs px-3 py-1 rounded-full font-bold border bg-white ${mealColor[log.meals.breakfast]}`}>{mealTrans[log.meals.breakfast]}</span>
+                                                    </div>
+                                                    <div className="flex-1 flex flex-col items-center justify-center p-3 border rounded-xl bg-slate-50/50">
+                                                        <span className="text-[10px] text-slate-400 font-semibold uppercase mb-1">Almoço</span>
+                                                        <span className={`text-xs px-3 py-1 rounded-full font-bold border bg-white ${mealColor[log.meals.lunch]}`}>{mealTrans[log.meals.lunch]}</span>
+                                                    </div>
+                                                    <div className="flex-1 flex flex-col items-center justify-center p-3 border rounded-xl bg-slate-50/50">
+                                                        <span className="text-[10px] text-slate-400 font-semibold uppercase mb-1">Lanche Tarde</span>
+                                                        <span className={`text-xs px-3 py-1 rounded-full font-bold border bg-white ${mealColor[log.meals.snack]}`}>{mealTrans[log.meals.snack]}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {(log.nap.start || log.nap.end) && (
+                                                <div className="mb-6 flex flex-col md:flex-row gap-4 md:items-center bg-indigo-50/50 p-4 rounded-xl border border-indigo-100">
+                                                    <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
+                                                        💤 Sono / Descanso
+                                                    </h4>
+                                                    <p className="text-sm font-medium text-indigo-900 md:ml-auto">
+                                                        {log.nap.start ? `Dorme: ${log.nap.start}` : "Dorme"} {log.nap.end ? `às ${log.nap.end}` : ""}
+                                                    </p>
+                                                </div>
+                                            )}
+
+                                            {log.activities.length > 0 && (
+                                                <div className="mb-6">
+                                                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Atividades Realizadas</h4>
+                                                    <ul className="list-disc list-inside text-sm text-slate-700 space-y-1 ml-1">
+                                                        {log.activities.map((act, i) => <li key={i}>{act}</li>)}
+                                                    </ul>
+                                                </div>
+                                            )}
+
+                                            {log.notes && (
+                                                <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
+                                                    <p className="text-sm text-amber-900 italic">&ldquo;{log.notes}&rdquo;</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </section>
+                    )
+                })()}
 
                 {sessions.length > 0 && (
                     <section>

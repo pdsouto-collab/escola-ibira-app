@@ -96,6 +96,11 @@ interface AppContextType extends AppState {
     updateFinalProductType: (id: string, updates: Partial<FinalProductType>) => void;
     removeFinalProductType: (id: string) => void;
 
+    // Daily Logs
+    addDailyLog: (log: DailyLog) => void;
+    updateDailyLog: (id: string, updates: Partial<DailyLog>) => void;
+    removeDailyLog: (id: string) => void;
+
     // Assessments
     addAssessment: (assessment: Assessment) => void;
     updateAssessment: (id: string, updates: Partial<Assessment>) => void;
@@ -582,6 +587,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             addFinalProductType: (type) => setFinalProductTypes(prev => [...prev, type]),
             updateFinalProductType: (id, updates) => setFinalProductTypes(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t)),
             removeFinalProductType: (id) => setFinalProductTypes(prev => prev.filter(t => t.id !== id)),
+            addDailyLog: (log) => setDailyLogs(prev => [...prev, log]),
+            updateDailyLog: (id, updates) => setDailyLogs(prev => prev.map(l => l.id === id ? { ...l, ...updates } : l)),
+            removeDailyLog: (id) => setDailyLogs(prev => prev.filter(l => l.id !== id)),
             assessments,
             addAssessment: (a) => setAssessments(prev => [...prev, a]),
             updateAssessment: (id, updates) => setAssessments(prev => prev.map(a => a.id === id ? { ...a, ...updates } : a)),

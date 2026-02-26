@@ -11,6 +11,7 @@ import { Plus, ChevronLeft, ChevronRight, Calendar as CalendarIcon, Copy, Settin
 import { ScheduleDialog } from "@/components/agenda/schedule-dialog";
 import { BulkRoutineDialog, BulkRoutineConfig } from "@/components/agenda/bulk-routine-dialog";
 import { RoutineManagerDialog } from "@/components/agenda/routine-manager-dialog";
+import { DailyLogDialog } from "@/components/agenda/daily-log-dialog";
 import { ScheduleItem } from "@/lib/data";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -34,6 +35,7 @@ export default function AgendaPage() {
     const [editingItem, setEditingItem] = useState<ScheduleItem | null>(null);
     const [bulkConfig, setBulkConfig] = useState<BulkRoutineConfig | undefined>();
     const [editingRoutineId, setEditingRoutineId] = useState<string | null>(null);
+    const [isDailyLogOpen, setIsDailyLogOpen] = useState(false);
 
     // Filter Logic
     const availableClasses = currentUser?.role === "teacher"
@@ -241,10 +243,22 @@ export default function AgendaPage() {
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 min-h-[500px]">
-                <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-                    Agenda do Dia
-                    {selectedClassId !== "all" && <span className="text-slate-500 text-base font-normal">- {classes.find(c => c.id === selectedClassId)?.name}</span>}
-                </h2>
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl font-semibold flex items-center gap-2">
+                        Agenda do Dia
+                        {selectedClassId !== "all" && <span className="text-slate-500 text-base font-normal">- {classes.find(c => c.id === selectedClassId)?.name}</span>}
+                    </h2>
+                    {canEdit && (
+                        <Button
+                            variant="default"
+                            disabled={selectedClassId === "all"}
+                            onClick={() => setIsDailyLogOpen(true)}
+                            title={selectedClassId === "all" ? "Selecione uma turma específica para preencher o diário" : "Preencher Diário da Turma"}
+                        >
+                            📝 Preencher Diário de Bordo
+                        </Button>
+                    )}
+                </div>
 
                 {filteredSchedule.length > 0 ? (
                     <DailySchedule items={filteredSchedule.sort((a, b) => a.time.localeCompare(b.time))} onEdit={canEdit ? handleEdit : undefined} onDelete={canEdit ? handleDelete : undefined} />
@@ -313,6 +327,13 @@ export default function AgendaPage() {
                     }
                     updateSchedule([...remaining, ...newSessions]);
                 }}
+            />
+
+            <DailyLogDialog
+                open={isDailyLogOpen}
+                onOpenChange={setIsDailyLogOpen}
+                date={currentDate}
+                classId={selectedClassId}
             />
         </div>
     );
