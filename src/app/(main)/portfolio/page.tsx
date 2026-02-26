@@ -12,6 +12,7 @@ import {
     Image as ImageIcon, File, FolderKanban, Star
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 
 // ────────────────────────────────────────────
 // Helper: find node name recursively
@@ -517,7 +518,14 @@ function StudentView({
                                                                 <FolderKanban className="w-4 h-4 text-indigo-500" />
                                                                 <span className="text-sm font-bold text-slate-700">{project.title}</span>
                                                             </div>
-                                                            <Badge variant="outline" className="text-[10px] bg-white text-slate-500">{projectSessions.length} sessões</Badge>
+                                                            <div className="flex items-center gap-3">
+                                                                <Badge variant="outline" className="text-[10px] bg-white text-slate-500">{projectSessions.length} sessões</Badge>
+                                                                <Link href={`/portfolio/report?project=${project.id}&student=${student.id}`}>
+                                                                    <Button size="sm" variant="outline" className="h-7 text-[10px] gap-1.5 text-emerald-700 border-emerald-200 hover:bg-emerald-50">
+                                                                        <FileText className="w-3 h-3" /> Relatório
+                                                                    </Button>
+                                                                </Link>
+                                                            </div>
                                                         </div>
                                                         <div className="p-4 space-y-6">
                                                             {projectSessions.length > 0 && (

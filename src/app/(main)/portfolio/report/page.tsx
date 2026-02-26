@@ -6,8 +6,111 @@ import { useAppStore } from "@/lib/store";
 import { Assessment } from "@/lib/data";
 import { TreeRatingPicker } from "@/components/assessment/tree-rating-picker";
 import { Button } from "@/components/ui/button";
-import { Printer, Download, ChevronLeft } from "lucide-react";
+import { Printer, Download, ChevronLeft, Star, Target, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
+import { RadialMatrix } from "@/components/mosaic/radial-matrix";
+import { Badge } from "@/components/ui/badge";
+
+// ─────────────────────────────────────────────────────────────────────────
+// Node Resolvers
+// ─────────────────────────────────────────────────────────────────────────
+const resolveNodeInfo = (id: string, skillsTree: any[], contentsTree: any[], libraryItems: any[]) => {
+    const validIds = new Set<string>([id]);
+    const libraryItem = libraryItems.find(item => item.id === id || item.code === id);
+    if (libraryItem) {
+        validIds.add(libraryItem.id);
+        if (libraryItem.code) validIds.add(libraryItem.code);
+    }
+    const searchTrees = (nodes: any[]): any | null => {
+        for (const node of nodes) {
+            if (validIds.has(node.id) || (node.libraryItemId && validIds.has(node.libraryItemId))) {
+                return {
+                    id: node.id,
+                    name: node.name,
+                    code: node.code || (node.libraryItemId ? node.libraryItemId : null),
+                    description: node.description,
+                    level: node.level
+                };
+            }
+            if (node.children) {
+                const found = searchTrees(node.children);
+                if (found) return found;
+            }
+        }
+        return null;
+    };
+    const treeNode = searchTrees([...skillsTree, ...contentsTree]);
+    if (treeNode) return treeNode;
+    if (libraryItem) return {
+        id: libraryItem.id,
+        name: libraryItem.name,
+        code: libraryItem.code || libraryItem.id,
+        description: libraryItem.description,
+        level: libraryItem.type === "skill" ? "micro" : "atomico"
+    };
+    return { id, name: id, code: id };
+};
+
+const findEvaluatableNodes = (allNodes: any[], targetIds: string[]): any[] => {
+    const results: any[] = [];
+    const search = (nodes: any[], active = false) => {
+        for (const node of nodes) {
+            const nodeIsTarget = targetIds.includes(node.id) || (node.libraryItemId && targetIds.includes(node.libraryItemId));
+            const isTargetOrDescendant = active || nodeIsTarget;
+            if (isTargetOrDescendant && (node.level === "micro" || node.level === "atomico")) {
+                results.push(node);
+            }
+            if (node.children) {
+                search(node.children, isTargetOrDescendant);
+            }
+        }
+    };
+    search(allNodes);
+    return results;
+};
+
+const getProjectNodes = (project: any, skillsTree: any[], contentsTree: any[], libraryItems: any[]) => {
+    const directSkillIds = project.bnccSkillIds || [];
+    const directContentIds = project.contentIds || [];
+    const targetSet = new Set<string>();
+    [...directSkillIds, ...directContentIds].forEach(id => {
+        targetSet.add(id);
+        const li = libraryItems.find(item => item.id === id || item.code === id);
+        if (li) {
+            targetSet.add(li.id);
+            if (li.code) targetSet.add(li.code);
+        }
+    });
+
+    const recursiveNodes = findEvaluatableNodes([...skillsTree, ...contentsTree], Array.from(targetSet));
+
+    const displayedNodeIds = new Set<string>();
+    const microNodes: any[] = [];
+    const atomicoNodes: any[] = [];
+
+    [...directSkillIds, ...directContentIds].forEach(id => {
+        const info = resolveNodeInfo(id, skillsTree, contentsTree, libraryItems);
+        if (!displayedNodeIds.has(info.id)) {
+            if (info.level === "atomico") atomicoNodes.push(info);
+            else microNodes.push(info);
+            displayedNodeIds.add(info.id);
+        }
+    });
+
+    recursiveNodes.forEach(node => {
+        if (!displayedNodeIds.has(node.id)) {
+            const info = {
+                ...node,
+                code: node.code || (node.libraryItemId ? node.libraryItemId : null)
+            };
+            if (info.level === "atomico") atomicoNodes.push(info);
+            else microNodes.push(info);
+            displayedNodeIds.add(node.id);
+        }
+    });
+
+    return { microNodes, atomicoNodes };
+};
 
 // ─────────────────────────────────────────────────────────────────────────
 // Helper: average rating
@@ -50,7 +153,7 @@ function ReportCard({
     projectId: string;
     studentId: string | null;
 }) {
-    const { projects, students, classes, assessments, schedule } = useAppStore();
+    const { projects, students, classes, assessments, schedule, skillsTree, contentsTree, libraryItems } = useAppStore();
 
     const project = projects.find(p => p.id === projectId);
     const student = studentId ? students.find(s => s.id === studentId) : null;
@@ -206,16 +309,81 @@ function ReportCard({
                     </section>
                 )}
 
-                {/* ── MATRIZ CIRCULAR PLACEHOLDER ────────────────────── */}
-                <section>
+                {/* ── TRABALHADO VS DESENVOLVIDO ───────────────────── */}
+                {(() => {
+                    const { microNodes, atomicoNodes } = getProjectNodes(project, skillsTree, contentsTree, libraryItems);
+                    const allNodes = [...microNodes, ...atomicoNodes];
+
+                    if (allNodes.length === 0) return null;
+
+                    return (
+                        <section className="break-inside-avoid">
+                            <h2 className="text-sm font-bold uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2">
+                                <span className="inline-block w-4 h-0.5 bg-slate-300"></span>
+                                Trabalhado vs Desenvolvido
+                            </h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {allNodes.map(node => {
+                                    const nodeAssessment = relevantAssessments.find(a => a.knowledgeNodeId === node.id);
+                                    const isDeveloped = nodeAssessment && (nodeAssessment.rating ?? 0) >= 3;
+                                    const hasRating = nodeAssessment && nodeAssessment.rating;
+
+                                    return (
+                                        <div key={node.id} className="border rounded-xl p-4 bg-slate-50 flex flex-col justify-between">
+                                            <div className="flex items-start gap-3">
+                                                <Badge variant="outline" className="text-[10px] bg-white text-slate-500 shrink-0">
+                                                    {node.code || "Sk"}
+                                                </Badge>
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="text-sm font-semibold text-slate-700 leading-snug">{node.name}</p>
+                                                    {node.description && <p className="text-[10px] text-slate-500 mt-1 line-clamp-2">{node.description}</p>}
+                                                </div>
+                                            </div>
+                                            <div className="mt-3 flex items-center justify-between border-t border-slate-200 pt-3">
+                                                <div className="flex items-center gap-1.5">
+                                                    {isDeveloped ? (
+                                                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                                                    ) : (
+                                                        <Target className="w-4 h-4 text-slate-400" />
+                                                    )}
+                                                    <span className="text-xs font-semibold text-slate-600">
+                                                        {isDeveloped ? "Desenvolvido" : "Trabalhado"}
+                                                    </span>
+                                                </div>
+                                                {hasRating && (
+                                                    <div className="text-right">
+                                                        <span className="text-sm">{"🌱🌿🌳🌲🍎"[nodeAssessment.rating! - 1]}</span>
+                                                        <span className="ml-1 text-xs font-bold text-slate-500">{nodeAssessment.rating}/5</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </section>
+                    );
+                })()}
+
+                {/* ── MATRIZ CIRCULAR ────────────────────── */}
+                <section className="break-inside-avoid page-break-inside-avoid" style={{ pageBreakInside: "avoid" }}>
                     <h2 className="text-sm font-bold uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2">
                         <span className="inline-block w-4 h-0.5 bg-slate-300"></span>
                         Matriz Circular de Habilidades
                     </h2>
-                    <div className="border-2 border-dashed border-emerald-200 rounded-2xl p-8 text-center bg-emerald-50/30">
-                        <div className="text-5xl mb-3">🌀</div>
-                        <p className="text-slate-500 text-sm font-medium">A Matriz Circular com as habilidades desenvolvidas neste projeto ser&#xE1; exibida aqui.</p>
-                        <p className="text-slate-400 text-xs mt-1">Integra&#xE7;&#xE3;o com a Matriz Circular em desenvolvimento.</p>
+                    <div className="border border-slate-200 rounded-2xl p-4 bg-white flex justify-center items-center print:border-none print:shadow-none min-h-[500px]">
+                        <div className="w-[600px] h-[600px] print:w-[500px] print:h-[500px] flex items-center justify-center">
+                            <RadialMatrix
+                                data={skillsTree}
+                                treeType="skill"
+                                assessments={relevantAssessments}
+                                projects={[project]}
+                                selectedProjectId={project.id}
+                                selectedStudentId={studentId || "all"}
+                                selectedClassId={student?.classId || "all"}
+                                libraryItems={libraryItems}
+                            />
+                        </div>
                     </div>
                 </section>
 
