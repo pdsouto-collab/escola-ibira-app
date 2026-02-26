@@ -14,7 +14,8 @@ import {
     KnowledgeNode, mockSkillsTree, mockContentsTree,
     FinalProductType, mockFinalProductTypes,
     Assessment, mockAssessments, Menu, mockMenus,
-    PortfolioEntry, mockPortfolio
+    PortfolioEntry, mockPortfolio,
+    Invoice, mockInvoices
 } from "@/lib/data";
 
 interface AppState {
@@ -37,6 +38,7 @@ interface AppState {
     assessments: Assessment[];
     menus: Menu[];
     portfolioEntries: PortfolioEntry[];
+    invoices: Invoice[];
 }
 
 interface AppContextType extends AppState {
@@ -117,6 +119,11 @@ interface AppContextType extends AppState {
     addAssessment: (assessment: Assessment) => void;
     updateAssessment: (id: string, updates: Partial<Assessment>) => void;
     removeAssessment: (id: string) => void;
+
+    // Finance / Invoices
+    addInvoice: (invoice: Invoice) => void;
+    updateInvoice: (id: string, updates: Partial<Invoice>) => void;
+    removeInvoice: (id: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -228,6 +235,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [assessments, setAssessments] = useState<Assessment[]>(mockAssessments);
     const [menus, setMenus] = useState<Menu[]>(mockMenus);
     const [portfolioEntries, setPortfolioEntries] = useState<PortfolioEntry[]>(mockPortfolio);
+    const [invoices, setInvoices] = useState<Invoice[]>(mockInvoices);
 
     const [isLoaded, setIsLoaded] = useState(false);
 
@@ -286,6 +294,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             load("menus", setMenus, mockMenus);
             load("portfolioEntries", setPortfolioEntries, mockPortfolio);
             load("assessments", setAssessments, mockAssessments);
+            load("invoices", setInvoices, mockInvoices);
         }
 
         setIsLoaded(true);
@@ -311,7 +320,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem("app_menus", JSON.stringify(menus));
         localStorage.setItem("app_portfolioEntries", JSON.stringify(portfolioEntries));
         localStorage.setItem("app_assessments", JSON.stringify(assessments));
-    }, [students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, mosaicData, libraryItems, bnccProgress, skillsTree, contentsTree, menus, portfolioEntries, assessments, isLoaded]);
+        localStorage.setItem("app_invoices", JSON.stringify(invoices));
+    }, [students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, mosaicData, libraryItems, bnccProgress, skillsTree, contentsTree, menus, portfolioEntries, assessments, invoices, isLoaded]);
 
     // Actions
     const addStudent = (student: Student) => setStudents(prev => [...prev, student]);
@@ -625,6 +635,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             addAssessment: (a) => setAssessments(prev => [...prev, a]),
             updateAssessment: (id, updates) => setAssessments(prev => prev.map(a => a.id === id ? { ...a, ...updates } : a)),
             removeAssessment: (id) => setAssessments(prev => prev.filter(a => a.id !== id)),
+
+            invoices,
+            addInvoice: (inv) => setInvoices(prev => [...prev, inv]),
+            updateInvoice: (id, updates) => setInvoices(prev => prev.map(inv => inv.id === id ? { ...inv, ...updates } : inv)),
+            removeInvoice: (id) => setInvoices(prev => prev.filter(inv => inv.id !== id)),
         }}>
             {children}
         </AppContext.Provider>

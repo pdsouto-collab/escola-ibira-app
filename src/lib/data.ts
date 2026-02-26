@@ -348,6 +348,50 @@ export interface Student {
     }
 }
 
+export interface Invoice {
+    id: string;
+    studentId: string;
+    description: string;
+    amount: number;
+    dueDate: string; // YYYY-MM-DD
+    status: "pendente" | "pago" | "atrasado" | "cancelado";
+    paymentDate?: string;
+    paymentMethod?: "boleto" | "pix" | "cartao";
+    bankId?: string; // Itaú ID if registered
+    barcode?: string;
+    pixCode?: string;
+    pdfUrl?: string;
+}
+
+export const mockInvoices: Invoice[] = [
+    {
+        id: "inv-1",
+        studentId: "1",
+        description: "Mensalidade - Fevereiro 2024",
+        amount: 2500.00,
+        dueDate: "2024-02-10",
+        status: "pago",
+        paymentDate: "2024-02-08",
+        paymentMethod: "boleto"
+    },
+    {
+        id: "inv-2",
+        studentId: "1",
+        description: "Mensalidade - Março 2024",
+        amount: 2500.00,
+        dueDate: "2024-03-10",
+        status: "pendente"
+    },
+    {
+        id: "inv-3",
+        studentId: "2",
+        description: "Mensalidade - Março 2024",
+        amount: 2300.00,
+        dueDate: "2024-03-10",
+        status: "pendente"
+    }
+];
+
 export const mockStudents: Student[] = [
     {
         id: "1",

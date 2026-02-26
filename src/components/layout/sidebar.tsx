@@ -20,7 +20,8 @@ import {
     RefreshCw,
     Aperture,
     BookMarked,
-    Utensils
+    Utensils,
+    Wallet
 } from "lucide-react";
 import { SchoolLogo } from "@/components/ui/school-logo";
 
@@ -38,6 +39,7 @@ const navigation = [
     { name: "Relatórios e Dashboards", href: "/relatorios", icon: BarChart3 },
     { name: "Cardápio da Semana", href: "/cardapio", icon: Utensils },
     { name: "Alunos / Turmas", href: "/alunos", icon: Users, roles: ["director", "admin", "teacher"] },
+    { name: "Financeiro", href: "/financeiro", icon: Wallet, roles: ["director", "admin"] },
     // Restricted Routes
     { name: "Professores", href: "/professores", icon: GraduationCap, roles: ["director", "admin"] },
     { name: "Painel Admin", href: "/admin-panel", icon: Settings, roles: ["director", "admin"] },
