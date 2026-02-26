@@ -13,7 +13,7 @@ import {
     LibraryItem, mockLibraryItems,
     KnowledgeNode, mockSkillsTree, mockContentsTree,
     FinalProductType, mockFinalProductTypes,
-    Assessment, mockAssessments
+    Assessment, mockAssessments, Menu, mockMenus
 } from "@/lib/data";
 
 interface AppState {
@@ -34,6 +34,7 @@ interface AppState {
     contentsTree: KnowledgeNode[];
     finalProductTypes: FinalProductType[];
     assessments: Assessment[];
+    menus: Menu[];
 }
 
 interface AppContextType extends AppState {
@@ -100,6 +101,10 @@ interface AppContextType extends AppState {
     addDailyLog: (log: DailyLog) => void;
     updateDailyLog: (id: string, updates: Partial<DailyLog>) => void;
     removeDailyLog: (id: string) => void;
+    // Menus
+    addMenu: (menu: Menu) => void;
+    updateMenu: (id: string, updates: Partial<Menu>) => void;
+    removeMenu: (id: string) => void;
 
     // Assessments
     addAssessment: (assessment: Assessment) => void;
@@ -214,6 +219,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [contentsTree, setContentsTree] = useState<KnowledgeNode[]>(mockContentsTree);
     const [finalProductTypes, setFinalProductTypes] = useState<FinalProductType[]>(mockFinalProductTypes);
     const [assessments, setAssessments] = useState<Assessment[]>(mockAssessments);
+    const [menus, setMenus] = useState<Menu[]>(mockMenus);
 
     const [isLoaded, setIsLoaded] = useState(false);
 
@@ -269,6 +275,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             load("bnccProgress", setBnccProgress, {});
             load("skillsTree", setSkillsTree, mockSkillsTree);
             load("contentsTree", setContentsTree, mockContentsTree);
+            load("menus", setMenus, mockMenus);
         }
 
         setIsLoaded(true);
@@ -590,6 +597,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             addDailyLog: (log) => setDailyLogs(prev => [...prev, log]),
             updateDailyLog: (id, updates) => setDailyLogs(prev => prev.map(l => l.id === id ? { ...l, ...updates } : l)),
             removeDailyLog: (id) => setDailyLogs(prev => prev.filter(l => l.id !== id)),
+
+            menus,
+            addMenu: (menu) => setMenus(prev => [...prev, menu]),
+            updateMenu: (id, updates) => setMenus(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m)),
+            removeMenu: (id) => setMenus(prev => prev.filter(m => m.id !== id)),
+
             assessments,
             addAssessment: (a) => setAssessments(prev => [...prev, a]),
             updateAssessment: (id, updates) => setAssessments(prev => prev.map(a => a.id === id ? { ...a, ...updates } : a)),

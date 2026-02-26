@@ -19,7 +19,8 @@ import {
     GraduationCap,
     RefreshCw,
     Aperture,
-    BookMarked
+    BookMarked,
+    Utensils
 } from "lucide-react";
 import { SchoolLogo } from "@/components/ui/school-logo";
 
@@ -35,6 +36,7 @@ const navigation = [
     { name: "Banco de Projetos", href: "/projetos", icon: FolderOpen },
     { name: "Portfólio", href: "/portfolio", icon: BookMarked },
     { name: "Relatórios e Dashboards", href: "/relatorios", icon: BarChart3 },
+    { name: "Cardápio da Semana", href: "/cardapio", icon: Utensils },
     { name: "Alunos / Turmas", href: "/alunos", icon: Users },
     // Restricted Routes
     { name: "Professores", href: "/professores", icon: GraduationCap, roles: ["director", "admin"] },
