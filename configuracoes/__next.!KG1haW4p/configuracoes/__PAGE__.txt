@@ -1,9 +1,9 @@
 1:"$Sreact.fragment"
-2:I[47257,["/escola-ibira-app/_next/static/chunks/ff1a16fafef87110.js","/escola-ibira-app/_next/static/chunks/d2be314c3ece3fbe.js"],"ClientPageRoot"]
+2:I[47257,["/escola-ibira-app/_next/static/chunks/ff1a16fafef87110.js","/escola-ibira-app/_next/static/chunks/a2dfb6fc5208ab9b.js"],"ClientPageRoot"]
 3:I[30650,["/escola-ibira-app/_next/static/chunks/6b806c851f2de108.js","/escola-ibira-app/_next/static/chunks/4f375c646d89a927.js","/escola-ibira-app/_next/static/chunks/1e9f768250e0891c.js","/escola-ibira-app/_next/static/chunks/3f1e520ff66c0605.js"],"default"]
-6:I[97367,["/escola-ibira-app/_next/static/chunks/ff1a16fafef87110.js","/escola-ibira-app/_next/static/chunks/d2be314c3ece3fbe.js"],"OutletBoundary"]
+6:I[97367,["/escola-ibira-app/_next/static/chunks/ff1a16fafef87110.js","/escola-ibira-app/_next/static/chunks/a2dfb6fc5208ab9b.js"],"OutletBoundary"]
 7:"$Sreact.suspense"
-0:{"buildId":"_4s5DmhKsWvG1CanQzdeJ","rsc":["$","$1","c",{"children":[["$","$L2",null,{"Component":"$3","serverProvidedParams":{"searchParams":{},"params":{},"promises":["$@4","$@5"]}}],[["$","script","script-0",{"src":"/escola-ibira-app/_next/static/chunks/3f1e520ff66c0605.js","async":true}]],["$","$L6",null,{"children":["$","$7",null,{"name":"Next.MetadataOutlet","children":"$@8"}]}]]}],"loading":null,"isPartial":false}
+0:{"buildId":"0vrknKnBZoTDSwyEr8kOA","rsc":["$","$1","c",{"children":[["$","$L2",null,{"Component":"$3","serverProvidedParams":{"searchParams":{},"params":{},"promises":["$@4","$@5"]}}],[["$","script","script-0",{"src":"/escola-ibira-app/_next/static/chunks/3f1e520ff66c0605.js","async":true}]],["$","$L6",null,{"children":["$","$7",null,{"name":"Next.MetadataOutlet","children":"$@8"}]}]]}],"loading":null,"isPartial":false}
 4:{}
 5:{}
 8:null
