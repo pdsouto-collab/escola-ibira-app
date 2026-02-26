@@ -10,13 +10,15 @@ interface DailyLogReportProps {
 
 export function DailyLogReport({ studentId }: DailyLogReportProps) {
     const { dailyLogs } = useAppStore();
-    // Determine today's date or filter by available log. For mock purposes, we get the first log for the student or null.
-    const log = dailyLogs.find(l => l.studentId === studentId);
 
-    if (!log) {
+    const logs = dailyLogs
+        .filter(l => l.studentId === studentId)
+        .sort((a, b) => b.date.localeCompare(a.date));
+
+    if (logs.length === 0) {
         return (
             <div className="text-center py-10 text-slate-500">
-                <p>Nenhum registro diário encontrado para hoje.</p>
+                <p>Nenhum registro diário encontrado para este aluno.</p>
             </div>
         );
     }
@@ -32,56 +34,66 @@ export function DailyLogReport({ studentId }: DailyLogReportProps) {
 
     return (
         <div className="space-y-6 max-w-3xl mx-auto">
-            <Card className="border-l-4 border-l-primary">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="flex items-center gap-2 text-xl">
-                        <CalendarDays className="w-5 h-5 text-primary" />
-                        Diário de {log.date.split("-").reverse().join("/")}
-                    </CardTitle>
-                    <div className="flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-full">
-                        <span className="text-sm font-medium uppercase text-slate-600">Humor:</span>
-                        {getMoodIcon(log.mood)}
-                    </div>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    {/* Meals Section */}
-                    <div>
-                        <h3 className="text-sm font-semibold text-slate-500 uppercase mb-3 flex items-center gap-2">
-                            <Utensils className="w-4 h-4" /> Alimentação
-                        </h3>
-                        <div className="grid grid-cols-3 gap-4">
-                            <MealCard title="Lanche Manhã" status={log.meals.breakfast} />
-                            <MealCard title="Almoço" status={log.meals.lunch} />
-                            <MealCard title="Lanche Tarde" status={log.meals.snack} />
+            {logs.map(log => (
+                <Card key={log.id} className="border-l-4 border-l-primary">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="flex items-center gap-2 text-xl">
+                            <CalendarDays className="w-5 h-5 text-primary" />
+                            Diário de {log.date.split("-").reverse().join("/")}
+                        </CardTitle>
+                        <div className="flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-full">
+                            <span className="text-sm font-medium uppercase text-slate-600">Humor:</span>
+                            {getMoodIcon(log.mood)}
                         </div>
-                    </div>
-
-                    {/* Nap Section */}
-                    <div>
-                        <h3 className="text-sm font-semibold text-slate-500 uppercase mb-3 flex items-center gap-2">
-                            <Moon className="w-4 h-4" /> Sono / Descanso
-                        </h3>
-                        <div className="bg-blue-50 p-4 rounded-lg flex items-center gap-4 text-blue-800">
-                            <span className="font-semibold">Dorme:</span> {log.nap.start} às {log.nap.end}
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        {/* Meals Section */}
+                        <div>
+                            <h3 className="text-sm font-semibold text-slate-500 uppercase mb-3 flex items-center gap-2">
+                                <Utensils className="w-4 h-4" /> Alimentação
+                            </h3>
+                            <div className="grid grid-cols-3 gap-4">
+                                <MealCard title="Lanche Manhã" status={log.meals.breakfast} />
+                                <MealCard title="Almoço" status={log.meals.lunch} />
+                                <MealCard title="Lanche Tarde" status={log.meals.snack} />
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Activities */}
-                    <div>
-                        <h3 className="text-sm font-semibold text-slate-500 uppercase mb-3 text-slate-600">Atividades Realizadas</h3>
-                        <ul className="list-disc pl-5 space-y-1 text-slate-700">
-                            {log.activities.map((act, i) => (
-                                <li key={i}>{act}</li>
-                            ))}
-                        </ul>
-                    </div>
+                        {/* Nap Section */}
+                        {(log.nap.start || log.nap.end) && (
+                            <div>
+                                <h3 className="text-sm font-semibold text-slate-500 uppercase mb-3 flex items-center gap-2">
+                                    <Moon className="w-4 h-4" /> Sono / Descanso
+                                </h3>
+                                <div className="bg-blue-50 p-4 rounded-lg flex items-center gap-4 text-blue-800">
+                                    <span className="font-semibold">Dorme:</span> {log.nap.start ? log.nap.start : "--:--"} às {log.nap.end ? log.nap.end : "--:--"}
+                                </div>
+                            </div>
+                        )}
 
-                    {/* Notes */}
-                    <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100 text-yellow-900 italic">
-                        &quot;{log.notes}&quot;
-                    </div>
-                </CardContent>
-            </Card>
+                        {/* Activities */}
+                        {log.activities.length > 0 && (
+                            <div>
+                                <h3 className="text-sm font-semibold text-slate-500 uppercase mb-3 flex items-center gap-2">
+                                    <Sparkles className="w-4 h-4 text-slate-500" /> Atividades Realizadas
+                                </h3>
+                                <ul className="list-disc pl-5 space-y-1 text-slate-700">
+                                    {log.activities.map((act, i) => (
+                                        <li key={i}>{act}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
+                        {/* Notes */}
+                        {log.notes && (
+                            <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100 text-yellow-900 italic">
+                                &quot;{log.notes}&quot;
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            ))}
         </div>
     );
 }
