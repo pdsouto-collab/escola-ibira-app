@@ -147,33 +147,33 @@ function RatingRow({ label, rating, obs }: { label: string; rating?: number; obs
 // Report Card Component (printable)
 // ─────────────────────────────────────────────────────────────────────────
 function ReportCard({
-    projectId,
     studentId,
 }: {
-    projectId: string;
-    studentId: string | null;
+    studentId: string;
 }) {
     const { projects, students, classes, assessments, schedule, skillsTree, contentsTree, libraryItems } = useAppStore();
 
-    const project = projects.find(p => p.id === projectId);
-    const student = studentId ? students.find(s => s.id === studentId) : null;
-    const cls = student ? classes.find(c => c.id === student.classId) : null;
-
-    if (!project) {
-        return <div className="text-center py-20 text-slate-400">Projeto n&#xE3;o encontrado.</div>;
+    const student = students.find(s => s.id === studentId);
+    if (!student) {
+        return <div className="text-center py-20 text-slate-400">Aluno n&#xE3;o encontrado.</div>;
     }
+    const cls = classes.find(c => c.id === student.classId);
+
+    const studentProjects = projects.filter(p => {
+        const studentMatch = (p.students || []).some(id => String(id) === String(student.id));
+        const classMatch = (p.classes || []).some(id => String(id) === String(student.classId));
+        return studentMatch || classMatch;
+    });
 
     // Get relevant assessments
     const relevantAssessments = assessments.filter(a => {
-        if (a.projectId !== projectId) return false;
-        if (studentId) {
-            return a.studentId === studentId || (a.scope === "class" && a.classId === student?.classId);
-        }
-        return true;
+        return a.studentId === studentId || (a.scope === "class" && a.classId === student.classId);
     });
 
-    // Get sessions for this project
-    const sessions = schedule.filter(s => s.projectId === projectId);
+    // Get sessions across all projects
+    const sessions = schedule
+        .filter(s => studentProjects.some(p => p.id === s.projectId))
+        .sort((a, b) => (a.date ?? "").localeCompare(b.date ?? ""));
 
     const overallAvg = avgRating(relevantAssessments);
     const overallRating = overallAvg > 0 ? Math.round(overallAvg) as 1 | 2 | 3 | 4 | 5 : undefined;
@@ -201,31 +201,28 @@ function ReportCard({
                 </div>
 
                 <div>
-                    <p className="text-emerald-200 text-sm font-medium uppercase tracking-widest mb-1">Projeto</p>
-                    <h1 className="text-3xl font-bold">{project.title}</h1>
-                    {project.guidingQuestion && (
-                        <p className="text-emerald-100 text-sm mt-2 italic">&ldquo;{project.guidingQuestion}&rdquo;</p>
-                    )}
+                    <p className="text-emerald-200 text-sm font-medium uppercase tracking-widest mb-1">Aluno(a)</p>
+                    <h1 className="text-3xl font-bold">{student.name}</h1>
+                    {cls && <p className="text-emerald-100 text-sm mt-2 font-medium">{cls.name}</p>}
                 </div>
 
-                {student && (
-                    <div className="mt-5 pt-5 border-t border-white/20 flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-xl font-bold">
-                            {student.name.charAt(0)}
+                <div className="mt-5 pt-5 border-t border-white/20 flex flex-wrap gap-2">
+                    <p className="w-full text-emerald-200 text-xs font-semibold uppercase mb-1">Projetos Participados</p>
+                    {studentProjects.map(p => (
+                        <div key={p.id} className="bg-white/20 rounded-full px-3 py-1 text-xs font-medium border border-white/20">
+                            {p.title}
                         </div>
-                        <div>
-                            <p className="text-emerald-200 text-xs">Aluno(a)</p>
-                            <p className="font-bold text-xl">{student.name}</p>
-                            {cls && <p className="text-emerald-200 text-sm">{cls.name}</p>}
-                        </div>
-                    </div>
-                )}
+                    ))}
+                    {studentProjects.length === 0 && (
+                        <span className="text-sm italic text-emerald-100">Nenhum projeto registrado.</span>
+                    )}
+                </div>
             </div>
 
             {/* ── OVERALL RATING ────────────────────────────────────── */}
             {overallRating && (
                 <div className="bg-gradient-to-b from-green-50 to-white px-10 py-6 flex flex-col items-center text-center border-b">
-                    <p className="text-xs uppercase tracking-widest text-slate-500 mb-3">Desenvolvimento Geral no Projeto</p>
+                    <p className="text-xs uppercase tracking-widest text-slate-500 mb-3">Desenvolvimento Geral do Aluno</p>
                     <TreeRatingPicker value={overallRating} readOnly size="lg" />
                     <p className="text-slate-500 text-sm mt-3">
                         M&#xE9;dia: <span className="font-bold text-slate-800">{overallAvg.toFixed(1)}/5</span> &bull; {relevantAssessments.length} avalia&#xE7;&#xF5;es
@@ -235,12 +232,11 @@ function ReportCard({
 
             <div className="px-10 py-8 space-y-8">
 
-                {/* ── SESSIONS ───────────────────────────────────────── */}
                 {sessions.length > 0 && (
                     <section>
                         <h2 className="text-sm font-bold uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2">
                             <span className="inline-block w-4 h-0.5 bg-slate-300"></span>
-                            Sess&#xF5;es do Projeto
+                            Sess&#xF5;es Registradas
                         </h2>
                         <div className="space-y-1">
                             {sessions.map(session => {
@@ -250,10 +246,12 @@ function ReportCard({
                                 const dateStr = session.date
                                     ? (typeof session.date === "string" ? session.date.split("-").reverse().join("/") : "")
                                     : "";
+                                const p = studentProjects.find(pr => pr.id === session.projectId);
+
                                 return (
                                     <RatingRow
                                         key={session.id}
-                                        label={`${session.title}${dateStr ? ` · ${dateStr}` : ""}`}
+                                        label={`${session.title}${p ? ` [${p.title}]` : ""}${dateStr ? ` · ${dateStr}` : ""}`}
                                         rating={lastRating}
                                         obs={lastObs}
                                     />
@@ -311,8 +309,18 @@ function ReportCard({
 
                 {/* ── TRABALHADO VS DESENVOLVIDO ───────────────────── */}
                 {(() => {
-                    const { microNodes, atomicoNodes } = getProjectNodes(project, skillsTree, contentsTree, libraryItems);
-                    const allNodes = [...microNodes, ...atomicoNodes];
+                    const allMicro: any[] = [];
+                    const allAtomico: any[] = [];
+                    studentProjects.forEach(p => {
+                        const { microNodes, atomicoNodes } = getProjectNodes(p, skillsTree, contentsTree, libraryItems);
+                        allMicro.push(...microNodes);
+                        allAtomico.push(...atomicoNodes);
+                    });
+
+                    // Deduplicate
+                    const map = new Map();
+                    [...allMicro, ...allAtomico].forEach(n => map.set(n.id, n));
+                    const allNodes = Array.from(map.values());
 
                     if (allNodes.length === 0) return null;
 
@@ -377,10 +385,10 @@ function ReportCard({
                                 data={skillsTree}
                                 treeType="skill"
                                 assessments={relevantAssessments}
-                                projects={[project]}
-                                selectedProjectId={project.id}
-                                selectedStudentId={studentId || "all"}
-                                selectedClassId={student?.classId || "all"}
+                                projects={studentProjects}
+                                selectedProjectId={"all"}
+                                selectedStudentId={student.id}
+                                selectedClassId={student.classId}
                                 libraryItems={libraryItems}
                             />
                         </div>
@@ -405,10 +413,13 @@ function ReportCard({
 // ─────────────────────────────────────────────────────────────────────────
 function ReportCardContent() {
     const searchParams = useSearchParams();
-    const projectId = searchParams.get("project") ?? "";
-    const studentId = searchParams.get("student") ?? null;
+    const studentId = searchParams.get("student");
 
     const handlePrint = () => window.print();
+
+    if (!studentId) {
+        return <div className="text-center py-20 text-slate-400">Parâmetro de aluno ausente.</div>;
+    }
 
     return (
         <>
@@ -439,7 +450,7 @@ function ReportCardContent() {
 
             {/* Report content */}
             <div className="min-h-screen bg-slate-100 py-8 px-4 print:p-0 print:bg-white no-print-padding">
-                <ReportCard projectId={projectId} studentId={studentId} />
+                <ReportCard studentId={studentId} />
             </div>
         </>
     );

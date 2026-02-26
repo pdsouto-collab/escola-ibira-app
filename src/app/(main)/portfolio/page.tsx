@@ -482,12 +482,19 @@ function StudentView({
                                     <p className="text-emerald-100 text-sm">{cls?.name} &bull; {studentAssessments.length} avaliações</p>
                                 </div>
                             </div>
-                            {avgRating > 0 && (
-                                <div className="bg-white/20 rounded-xl px-3 py-1.5 text-right">
-                                    <p className="text-[10px] text-white/70">Média geral</p>
-                                    <p className="text-white font-bold text-sm">{avgRating.toFixed(1)}/5</p>
-                                </div>
-                            )}
+                            <div className="flex items-center gap-3">
+                                {avgRating > 0 && (
+                                    <div className="bg-white/20 rounded-xl px-3 py-1.5 text-right">
+                                        <p className="text-[10px] text-white/70">Média geral</p>
+                                        <p className="text-white font-bold text-sm">{avgRating.toFixed(1)}/5</p>
+                                    </div>
+                                )}
+                                <Link href={`/portfolio/report?student=${student.id}`}>
+                                    <Button size="sm" variant="outline" className="h-9 gap-1.5 bg-white/10 text-white border-white/20 hover:bg-white/20 hover:text-white transition-colors">
+                                        <FileText className="w-4 h-4" /> Relatório
+                                    </Button>
+                                </Link>
+                            </div>
                         </div>
 
                         <div className="p-6 space-y-6">
@@ -520,11 +527,6 @@ function StudentView({
                                                             </div>
                                                             <div className="flex items-center gap-3">
                                                                 <Badge variant="outline" className="text-[10px] bg-white text-slate-500">{projectSessions.length} sessões</Badge>
-                                                                <Link href={`/portfolio/report?project=${project.id}&student=${student.id}`}>
-                                                                    <Button size="sm" variant="outline" className="h-7 text-[10px] gap-1.5 text-emerald-700 border-emerald-200 hover:bg-emerald-50">
-                                                                        <FileText className="w-3 h-3" /> Relatório
-                                                                    </Button>
-                                                                </Link>
                                                             </div>
                                                         </div>
                                                         <div className="p-4 space-y-6">
