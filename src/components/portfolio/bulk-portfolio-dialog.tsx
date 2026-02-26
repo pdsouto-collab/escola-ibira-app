@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -29,6 +29,7 @@ interface StudentPortfolioForm {
 
 export function BulkPortfolioDialog({ open, onOpenChange, date, classId }: BulkPortfolioDialogProps) {
     const { students, addPortfolioEntry } = useAppStore();
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // 1. Contexto e Mídia Comum
     const [title, setTitle] = useState("");
@@ -70,6 +71,21 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classId }: BulkP
             ...prev,
             [studentId]: { ...prev[studentId], ...updates }
         }));
+    };
+
+    const handleImageClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImageUrl(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
     };
 
     const handleAutoFill = () => {
@@ -180,7 +196,17 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classId }: BulkP
                             {/* Foto Principal */}
                             <div>
                                 <Label className="text-xs font-bold text-slate-500 uppercase mb-2 block">Foto / Evidência Central</Label>
-                                <div className="border-2 border-dashed border-slate-200 rounded-lg p-1 bg-slate-50 relative group cursor-pointer hover:border-indigo-300 transition-colors">
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    className="hidden"
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                />
+                                <div
+                                    onClick={handleImageClick}
+                                    className="border-2 border-dashed border-slate-200 rounded-lg p-1 bg-slate-50 relative group cursor-pointer hover:border-indigo-300 transition-colors"
+                                >
                                     <img
                                         src={imageUrl}
                                         alt="Preview"
