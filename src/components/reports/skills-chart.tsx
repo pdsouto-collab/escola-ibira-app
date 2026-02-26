@@ -1,110 +1,186 @@
 "use client";
 
 import { useAppStore } from "@/lib/store";
-import { mockBNCCData } from "@/lib/data";
-import { cn } from "@/lib/utils";
+import { ProgressChart, ProgressChartData } from "@/components/assessment/progress-chart";
 import { Info } from "lucide-react";
-// Removed unused Tooltip imports for now to avoid complexity if not used
-// import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-export function SkillsChart() {
-    const { projects, bnccProgress } = useAppStore();
+// ────────────────────────────────────────────
+// Helper: find node name recursively
+// ────────────────────────────────────────────
+const resolveNodeInfo = (id: string, skillsTree: any[], contentsTree: any[], libraryItems: any[]) => {
+    // Collect possible matching IDs (including codes)
+    const validIds = new Set<string>([id]);
+    const libraryItem = libraryItems.find(item => item.id === id || item.code === id);
+    if (libraryItem) {
+        validIds.add(libraryItem.id);
+        if (libraryItem.code) validIds.add(libraryItem.code);
+    }
 
-    // Calculate Stats per Subject
-    const stats = mockBNCCData.map(subject => {
-        const totalSkills = subject.skills.length;
+    // 1. Search in Knowledge Trees (Skills and Contents)
+    const searchTrees = (nodes: any[], rootName?: string): any | null => {
+        for (const node of nodes) {
+            const currentRootName = node.level === "macro" ? node.name : rootName;
+            if (validIds.has(node.id) || (node.libraryItemId && validIds.has(node.libraryItemId))) {
+                return {
+                    id: node.id,
+                    name: node.name,
+                    code: node.code || (node.libraryItemId ? node.libraryItemId : null),
+                    description: node.description,
+                    level: node.level,
+                    subject: currentRootName || libraryItem?.subGroup || "Outros"
+                };
+            }
+            if (node.children) {
+                const found = searchTrees(node.children, currentRootName);
+                if (found) return found;
+            }
+        }
+        return null;
+    };
 
-        // Count Worked (In Active or Completed Projects)
-        // A skill is "worked" if it appears in at least one project that is NOT "planning" (unless we want to count planning too)
-        // Let's count Active/Completed as "Trabalhado".
-        const workedCount = subject.skills.filter(skill =>
-            projects.some(p =>
-                (p.status === "active" || p.status === "completed") &&
-                p.bnccSkillIds?.includes(skill.code)
-            )
-        ).length;
+    const treeNode = searchTrees([...skillsTree, ...contentsTree]);
+    if (treeNode) return treeNode;
 
-        // Count Developed (Achieved)
-        const developedCount = subject.skills.filter(skill =>
-            bnccProgress[skill.code]?.status === "achieved"
-        ).length;
+    // 2. Fallback to Library Item
+    if (libraryItem) return {
+        id: libraryItem.id,
+        name: libraryItem.name,
+        code: libraryItem.code || libraryItem.id,
+        description: libraryItem.description,
+        level: libraryItem.type === "skill" ? "micro" : "atomico",
+        subject: libraryItem.subGroup || "Outros"
+    };
 
-        return {
-            id: subject.id,
-            name: subject.name,
-            total: totalSkills,
-            worked: workedCount,
-            developed: developedCount,
-            workedPct: totalSkills > 0 ? (workedCount / totalSkills) * 100 : 0,
-            developedPct: totalSkills > 0 ? (developedCount / totalSkills) * 100 : 0,
-            color: subject.id === "ciencias" ? "bg-green-500" :
-                subject.id === "matematica" ? "bg-blue-500" :
-                    subject.id === "portugues" ? "bg-purple-500" :
-                        subject.id === "historia" ? "bg-orange-500" :
-                            "bg-yellow-500"
-        };
+    // 3. Fallback
+    return { id, name: id, code: id, subject: "Outros" };
+};
+
+/** Finds all evaluatable nodes (L3/L4) within a given node or set of IDs */
+const findEvaluatableNodes = (allNodes: any[], targetIds: string[]): any[] => {
+    const results: any[] = [];
+    const search = (nodes: any[], active = false) => {
+        for (const node of nodes) {
+            const nodeIsTarget = targetIds.includes(node.id) || (node.libraryItemId && targetIds.includes(node.libraryItemId));
+            const isTargetOrDescendant = active || nodeIsTarget;
+
+            // L3 (micro) and L4 (atomico) are assessment-ready
+            if (isTargetOrDescendant && (node.level === "micro" || node.level === "atomico")) {
+                results.push(node);
+            }
+            if (node.children) {
+                search(node.children, isTargetOrDescendant);
+            }
+        }
+    };
+    search(allNodes);
+    return results;
+};
+
+const getProjectNodes = (project: any, skillsTree: any[], contentsTree: any[], libraryItems: any[]) => {
+    const directSkillIds = project.bnccSkillIds || [];
+    const directContentIds = project.contentIds || [];
+
+    // Expand search scope by including linked library codes
+    const targetSet = new Set<string>();
+    [...directSkillIds, ...directContentIds].forEach(id => {
+        targetSet.add(id);
+        const li = libraryItems.find(item => item.id === id || item.code === id);
+        if (li) {
+            targetSet.add(li.id);
+            if (li.code) targetSet.add(li.code);
+        }
     });
+
+    const recursiveNodes = findEvaluatableNodes([...skillsTree, ...contentsTree], Array.from(targetSet));
+
+    const displayedNodeIds = new Set<string>();
+    const microNodes: any[] = [];
+    const atomicoNodes: any[] = [];
+
+    // 1. Add direct skills/contents
+    [...directSkillIds, ...directContentIds].forEach(id => {
+        const info = resolveNodeInfo(id, skillsTree, contentsTree, libraryItems);
+        if (!displayedNodeIds.has(info.id)) {
+            if (info.level === "atomico") atomicoNodes.push(info);
+            else microNodes.push(info);
+            displayedNodeIds.add(info.id);
+        }
+    });
+
+    // 2. Add recursive evaluatable nodes (if not already displayed)
+    recursiveNodes.forEach(node => {
+        if (!displayedNodeIds.has(node.id)) {
+            const info = {
+                ...node,
+                code: node.code || (node.libraryItemId ? node.libraryItemId : null)
+            };
+            if (info.level === "atomico") atomicoNodes.push(info);
+            else microNodes.push(info);
+            displayedNodeIds.add(node.id);
+        }
+    });
+
+    return { microNodes, atomicoNodes };
+};
+
+export function SkillsChart({ studentId }: { studentId?: string }) {
+    const { projects, students, assessments, skillsTree, contentsTree, libraryItems } = useAppStore();
+
+    if (!studentId) {
+        return (
+            <div className="bg-white p-6 rounded-xl border shadow-sm text-center text-slate-400">
+                Selecione um aluno para exibir o gráfico.
+            </div>
+        );
+    }
+
+    const student = students.find(s => s.id === studentId);
+    if (!student) return null;
+
+    // Find projects linked to this student
+    const studentProjects = projects.filter(p => {
+        const studentMatch = (p.students || []).some(id => String(id) === String(student.id));
+        const classMatch = (p.classes || []).some(id => String(id) === String(student.classId));
+        return studentMatch || classMatch;
+    });
+
+    const studentAssessments = assessments.filter(a => a.studentId === studentId || (a.scope === "class" && a.classId === student.classId));
+
+    const allMicro: any[] = [];
+    const allAtomico: any[] = [];
+    studentProjects.forEach(p => {
+        const { microNodes, atomicoNodes } = getProjectNodes(p, skillsTree, contentsTree, libraryItems);
+        allMicro.push(...microNodes);
+        allAtomico.push(...atomicoNodes);
+    });
+
+    const map = new Map();
+    [...allMicro, ...allAtomico].forEach(n => map.set(n.id, n));
+    const allNodes = Array.from(map.values());
+
+    const chartDataMap = new Map<string, ProgressChartData>();
+    allNodes.forEach(node => {
+        const subject = node.subject || "Outros";
+        if (!chartDataMap.has(subject)) {
+            chartDataMap.set(subject, { subject, trabalhado: 0, desenvolvido: 0, total: 0 });
+        }
+        const data = chartDataMap.get(subject)!;
+        data.trabalhado += 1;
+        data.total += 1;
+        const nodeAssessment = studentAssessments.find(a => a.knowledgeNodeId === node.id);
+        if (nodeAssessment && (nodeAssessment.rating ?? 0) >= 3) {
+            data.desenvolvido += 1;
+        }
+    });
+
+    const chartData = Array.from(chartDataMap.values()).sort((a, b) => a.subject.localeCompare(b.subject));
 
     return (
         <div className="bg-white p-6 rounded-xl border shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-                <div>
-                    <h3 className="text-lg font-bold text-slate-800">Trabalhado vs. Desenvolvido</h3>
-                    <p className="text-sm text-slate-500">Comparativo entre o que foi planejado/executado em projetos e o que foi consolidado pela criança.</p>
-                </div>
-                <div className="flex gap-4 text-xs font-medium">
-                    <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-amber-400" />
-                        <span>Trabalhado (Projetos)</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                        <span>Desenvolvido (Conquistado)</span>
-                    </div>
-                </div>
-            </div>
+            <h3 className="text-lg font-bold text-slate-800">Trabalhado vs. Desenvolvido</h3>
+            <p className="text-sm text-slate-500 mb-6">Comparativo entre o que foi planejado/executado em projetos e o que foi consolidado pela criança.</p>
 
-            <div className="space-y-6">
-                {stats.map(subject => (
-                    <div key={subject.id} className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                            <span className="font-semibold text-slate-700">{subject.name}</span>
-                            <span className="text-slate-400 text-xs">{subject.total} habilidades totais</span>
-                        </div>
-
-                        {/* Bar Container */}
-                        <div className="relative h-8 bg-slate-100 rounded-full overflow-hidden flex items-center">
-                            {/* Worked Bar (Background layer) */}
-                            <div
-                                className="absolute top-0 bottom-0 left-0 bg-amber-400/80 transition-all duration-1000 ease-out"
-                                style={{ width: `${subject.workedPct}%` }}
-                            />
-                            {/* Developed Bar (Foreground layer, usually subset of worked but represents success) */}
-                            {/* We render it slightly narrower or overlapping? 
-                                 Standard logic: Developed is a state of the skill. Worked is exposure.
-                                 They might overlap. If Developed > Worked (e.g. external learning), bar shows it.
-                             */}
-                            <div
-                                className="absolute top-1 bottom-1 left-0 bg-emerald-500 shadow-sm rounded-r-full transition-all duration-1000 ease-out z-10"
-                                style={{ width: `${subject.developedPct}%` }}
-                            />
-
-                            {/* Labels inside bars if wide enough */}
-                            {subject.workedPct > 10 && subject.worked > 0 && (
-                                <span className="absolute z-0 text-[10px] font-bold text-amber-900 right-2 top-1/2 -translate-y-1/2"
-                                    style={{ left: `${subject.workedPct}%`, transform: 'translateX(-110%) translateY(-50%)' }}>
-                                    {subject.worked}
-                                </span>
-                            )}
-                            {subject.developedPct > 10 && subject.developed > 0 && (
-                                <span className="absolute z-20 text-[10px] font-bold text-white left-2 top-1/2 -translate-y-1/2">
-                                    {subject.developed}
-                                </span>
-                            )}
-                        </div>
-                    </div>
-                ))}
-            </div>
+            <ProgressChart data={chartData} />
 
             <div className="mt-6 p-4 bg-slate-50 rounded-lg text-xs text-slate-500 flex gap-2">
                 <Info className="w-4 h-4 text-slate-400 flex-shrink-0" />

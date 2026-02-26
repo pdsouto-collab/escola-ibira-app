@@ -117,7 +117,7 @@ export default function ReportsPage() {
                             <p className="text-slate-500 mb-6">Visualização do desenvolvimento da criança em relação aos conteúdos e habilidades.</p>
                             {selectedStudent ? (
                                 <div className="space-y-8">
-                                    <SkillsChart />
+                                    <SkillsChart studentId={effectiveStudentId} />
                                     <MilestoneReport studentId={effectiveStudentId} />
                                 </div>
                             ) : (
