@@ -3,13 +3,15 @@
 import { useAppStore } from "@/lib/store";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar } from "lucide-react";
+import { Calendar, Edit2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface PortfolioReportProps {
     studentId: string;
+    onEdit?: (date: string) => void;
 }
 
-export function PortfolioReport({ studentId }: PortfolioReportProps) {
+export function PortfolioReport({ studentId, onEdit }: PortfolioReportProps) {
     const { portfolioEntries } = useAppStore();
     const entries = portfolioEntries.filter(p => p.studentId === studentId);
 
@@ -38,8 +40,18 @@ export function PortfolioReport({ studentId }: PortfolioReportProps) {
                             {entry.date.split("-").reverse().join("/")}
                         </div>
                     </div>
-                    <CardHeader className="pb-2">
+                    <CardHeader className="pb-2 flex flex-row items-start justify-between space-y-0">
                         <h3 className="font-bold text-lg leading-tight">{entry.title}</h3>
+                        {onEdit && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
+                                onClick={() => onEdit(entry.date)}
+                            >
+                                <Edit2 className="h-4 w-4" />
+                            </Button>
+                        )}
                     </CardHeader>
                     <CardContent>
                         <p className="text-sm text-slate-600 line-clamp-3">

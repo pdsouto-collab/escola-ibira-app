@@ -7,6 +7,9 @@ import { DailyLogReport } from "@/components/reports/daily-log-report";
 import { PortfolioReport } from "@/components/reports/portfolio-report";
 import { SkillsChart } from "@/components/reports/skills-chart";
 import { User } from "lucide-react";
+import { BulkPortfolioDialog } from "@/components/portfolio/bulk-portfolio-dialog";
+import { DailyLogDialog } from "@/components/agenda/daily-log-dialog";
+import { parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import {
     Select,
@@ -42,6 +45,21 @@ export default function ReportsPage() {
     const showMilestones = currentUser?.role !== "nutritionist";
     const showPortfolio = currentUser?.role !== "nutritionist";
     const showDaily = true;
+
+    // Edit Modal State
+    const [isPortfolioEditOpen, setIsPortfolioEditOpen] = useState(false);
+    const [isDailyLogEditOpen, setIsDailyLogEditOpen] = useState(false);
+    const [editDate, setEditDate] = useState<Date>(new Date());
+
+    const handleEditPortfolio = (dateStr: string) => {
+        setEditDate(parseISO(dateStr));
+        setIsPortfolioEditOpen(true);
+    };
+
+    const handleEditDailyLog = (dateStr: string) => {
+        setEditDate(parseISO(dateStr));
+        setIsDailyLogEditOpen(true);
+    };
 
     if (!selectedStudent && visibleStudents.length === 0) {
         return <div className="p-8 text-center text-slate-500">Nenhum aluno encontrado ou permissão insuficiente.</div>;
@@ -148,7 +166,7 @@ export default function ReportsPage() {
                         <h2 className="text-xl font-semibold text-slate-700 mb-2">Rotina e Atividades do Dia</h2>
                         <p className="text-slate-500 mb-6">Resumo diário da alimentação, sono e experiências vivenciadas.</p>
                         {selectedStudent ? (
-                            <DailyLogReport studentId={effectiveStudentId} />
+                            <DailyLogReport studentId={effectiveStudentId} onEdit={currentUser?.role !== "guardian" ? handleEditDailyLog : undefined} />
                         ) : (
                             <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
                         )}
@@ -161,7 +179,7 @@ export default function ReportsPage() {
                             <h2 className="text-xl font-semibold text-slate-700 mb-2">Galeria de Vivências</h2>
                             <p className="text-slate-500 mb-6">Registros fotográficos e observações de momentos significativos.</p>
                             {selectedStudent ? (
-                                <PortfolioReport studentId={effectiveStudentId} />
+                                <PortfolioReport studentId={effectiveStudentId} onEdit={currentUser?.role !== "guardian" ? handleEditPortfolio : undefined} />
                             ) : (
                                 <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
                             )}
@@ -169,6 +187,25 @@ export default function ReportsPage() {
                     </TabsContent>
                 )}
             </Tabs>
+
+            {selectedStudent && (
+                <>
+                    <BulkPortfolioDialog
+                        key={`edit-port-${editDate.toISOString()}-${selectedStudent.classId}`}
+                        open={isPortfolioEditOpen}
+                        onOpenChange={setIsPortfolioEditOpen}
+                        date={editDate}
+                        classId={selectedStudent.classId}
+                    />
+                    <DailyLogDialog
+                        key={`edit-log-${editDate.toISOString()}-${selectedStudent.classId}`}
+                        open={isDailyLogEditOpen}
+                        onOpenChange={setIsDailyLogEditOpen}
+                        date={editDate}
+                        classId={selectedStudent.classId}
+                    />
+                </>
+            )}
         </div>
     );
 }

@@ -2,13 +2,15 @@
 
 import { useAppStore } from "@/lib/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarDays, Utensils, Moon, Smile, Meh, Frown, Sparkles } from "lucide-react";
+import { CalendarDays, Utensils, Moon, Smile, Meh, Frown, Sparkles, Edit2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface DailyLogReportProps {
     studentId: string;
+    onEdit?: (date: string) => void;
 }
 
-export function DailyLogReport({ studentId }: DailyLogReportProps) {
+export function DailyLogReport({ studentId, onEdit }: DailyLogReportProps) {
     const { dailyLogs, menus } = useAppStore();
 
     const logs = dailyLogs
@@ -41,9 +43,21 @@ export function DailyLogReport({ studentId }: DailyLogReportProps) {
                             <CalendarDays className="w-5 h-5 text-primary" />
                             Diário de {log.date.split("-").reverse().join("/")}
                         </CardTitle>
-                        <div className="flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-full">
-                            <span className="text-sm font-medium uppercase text-slate-600">Humor:</span>
-                            {getMoodIcon(log.mood)}
+                        <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-full">
+                                <span className="text-sm font-medium uppercase text-slate-600">Humor:</span>
+                                {getMoodIcon(log.mood)}
+                            </div>
+                            {onEdit && (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
+                                    onClick={() => onEdit(log.date)}
+                                >
+                                    <Edit2 className="h-4 w-4" />
+                                </Button>
+                            )}
                         </div>
                     </CardHeader>
                     <CardContent className="space-y-6">
