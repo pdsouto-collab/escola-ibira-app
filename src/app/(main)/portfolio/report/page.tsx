@@ -10,6 +10,7 @@ import { Printer, Download, ChevronLeft, Star, Target, CheckCircle2 } from "luci
 import Link from "next/link";
 import { RadialMatrix } from "@/components/mosaic/radial-matrix";
 import { Badge } from "@/components/ui/badge";
+import { ProgressChart, ProgressChartData } from "@/components/assessment/progress-chart";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Node Resolvers
@@ -21,19 +22,21 @@ const resolveNodeInfo = (id: string, skillsTree: any[], contentsTree: any[], lib
         validIds.add(libraryItem.id);
         if (libraryItem.code) validIds.add(libraryItem.code);
     }
-    const searchTrees = (nodes: any[]): any | null => {
+    const searchTrees = (nodes: any[], rootName?: string): any | null => {
         for (const node of nodes) {
+            const currentRootName = node.level === "macro" ? node.name : rootName;
             if (validIds.has(node.id) || (node.libraryItemId && validIds.has(node.libraryItemId))) {
                 return {
                     id: node.id,
                     name: node.name,
                     code: node.code || (node.libraryItemId ? node.libraryItemId : null),
                     description: node.description,
-                    level: node.level
+                    level: node.level,
+                    subject: currentRootName || libraryItem?.subGroup || "Outros"
                 };
             }
             if (node.children) {
-                const found = searchTrees(node.children);
+                const found = searchTrees(node.children, currentRootName);
                 if (found) return found;
             }
         }
@@ -46,9 +49,10 @@ const resolveNodeInfo = (id: string, skillsTree: any[], contentsTree: any[], lib
         name: libraryItem.name,
         code: libraryItem.code || libraryItem.id,
         description: libraryItem.description,
-        level: libraryItem.type === "skill" ? "micro" : "atomico"
+        level: libraryItem.type === "skill" ? "micro" : "atomico",
+        subject: libraryItem.subGroup || "Outros"
     };
-    return { id, name: id, code: id };
+    return { id, name: id, code: id, subject: "Outros" };
 };
 
 const findEvaluatableNodes = (allNodes: any[], targetIds: string[]): any[] => {
@@ -148,8 +152,10 @@ function RatingRow({ label, rating, obs }: { label: string; rating?: number; obs
 // ─────────────────────────────────────────────────────────────────────────
 function ReportCard({
     studentId,
+    projectId,
 }: {
     studentId: string;
+    projectId?: string | null;
 }) {
     const { projects, students, classes, assessments, schedule, skillsTree, contentsTree, libraryItems } = useAppStore();
 
@@ -159,11 +165,15 @@ function ReportCard({
     }
     const cls = classes.find(c => c.id === student.classId);
 
-    const studentProjects = projects.filter(p => {
+    let studentProjects = projects.filter(p => {
         const studentMatch = (p.students || []).some(id => String(id) === String(student.id));
         const classMatch = (p.classes || []).some(id => String(id) === String(student.classId));
         return studentMatch || classMatch;
     });
+
+    if (projectId && projectId !== "all") {
+        studentProjects = studentProjects.filter(p => p.id === projectId);
+    }
 
     // Get relevant assessments
     const relevantAssessments = assessments.filter(a => {
@@ -324,50 +334,36 @@ function ReportCard({
 
                     if (allNodes.length === 0) return null;
 
+                    // Group by subject for chart
+                    const chartDataMap = new Map<string, ProgressChartData>();
+
+                    allNodes.forEach(node => {
+                        const subject = node.subject || "Outros";
+                        if (!chartDataMap.has(subject)) {
+                            chartDataMap.set(subject, { subject, trabalhado: 0, desenvolvido: 0, total: 0 });
+                        }
+
+                        const data = chartDataMap.get(subject)!;
+                        data.trabalhado += 1; // It is worked on because it's in a project
+                        data.total += 1;
+
+                        const nodeAssessment = relevantAssessments.find(a => a.knowledgeNodeId === node.id);
+                        if (nodeAssessment && (nodeAssessment.rating ?? 0) >= 3) {
+                            data.desenvolvido += 1; // Conquistado
+                        }
+                    });
+
+                    const chartData = Array.from(chartDataMap.values()).sort((a, b) => a.subject.localeCompare(b.subject));
+
                     return (
                         <section className="break-inside-avoid">
                             <h2 className="text-sm font-bold uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2">
                                 <span className="inline-block w-4 h-0.5 bg-slate-300"></span>
-                                Trabalhado vs Desenvolvido
+                                Progresso por Áreas da BNCC
                             </h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {allNodes.map(node => {
-                                    const nodeAssessment = relevantAssessments.find(a => a.knowledgeNodeId === node.id);
-                                    const isDeveloped = nodeAssessment && (nodeAssessment.rating ?? 0) >= 3;
-                                    const hasRating = nodeAssessment && nodeAssessment.rating;
-
-                                    return (
-                                        <div key={node.id} className="border rounded-xl p-4 bg-slate-50 flex flex-col justify-between">
-                                            <div className="flex items-start gap-3">
-                                                <Badge variant="outline" className="text-[10px] bg-white text-slate-500 shrink-0">
-                                                    {node.code || "Sk"}
-                                                </Badge>
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="text-sm font-semibold text-slate-700 leading-snug">{node.name}</p>
-                                                    {node.description && <p className="text-[10px] text-slate-500 mt-1 line-clamp-2">{node.description}</p>}
-                                                </div>
-                                            </div>
-                                            <div className="mt-3 flex items-center justify-between border-t border-slate-200 pt-3">
-                                                <div className="flex items-center gap-1.5">
-                                                    {isDeveloped ? (
-                                                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                                                    ) : (
-                                                        <Target className="w-4 h-4 text-slate-400" />
-                                                    )}
-                                                    <span className="text-xs font-semibold text-slate-600">
-                                                        {isDeveloped ? "Desenvolvido" : "Trabalhado"}
-                                                    </span>
-                                                </div>
-                                                {hasRating && (
-                                                    <div className="text-right">
-                                                        <span className="text-sm">{"🌱🌿🌳🌲🍎"[nodeAssessment.rating! - 1]}</span>
-                                                        <span className="ml-1 text-xs font-bold text-slate-500">{nodeAssessment.rating}/5</span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                            <p className="text-sm text-slate-500 mb-6 font-medium">Visualização do desenvolvimento no aluno em relação aos conteúdos e habilidades trabalhados em projetos.</p>
+                            <div className="bg-white border rounded-2xl shadow-sm p-2">
+                                <ProgressChart data={chartData} />
                             </div>
                         </section>
                     );
@@ -414,6 +410,7 @@ function ReportCard({
 function ReportCardContent() {
     const searchParams = useSearchParams();
     const studentId = searchParams.get("student");
+    const projectId = searchParams.get("project");
 
     const handlePrint = () => window.print();
 
@@ -450,7 +447,7 @@ function ReportCardContent() {
 
             {/* Report content */}
             <div className="min-h-screen bg-slate-100 py-8 px-4 print:p-0 print:bg-white no-print-padding">
-                <ReportCard studentId={studentId} />
+                <ReportCard studentId={studentId} projectId={projectId} />
             </div>
         </>
     );

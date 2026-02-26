@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { ProgressChart, ProgressChartData } from "@/components/assessment/progress-chart";
 
 // ────────────────────────────────────────────
 // Helper: find node name recursively
@@ -27,19 +28,21 @@ const resolveNodeInfo = (id: string, skillsTree: any[], contentsTree: any[], lib
     }
 
     // 1. Search in Knowledge Trees (Skills and Contents)
-    const searchTrees = (nodes: any[]): any | null => {
+    const searchTrees = (nodes: any[], rootName?: string): any | null => {
         for (const node of nodes) {
+            const currentRootName = node.level === "macro" ? node.name : rootName;
             if (validIds.has(node.id) || (node.libraryItemId && validIds.has(node.libraryItemId))) {
                 return {
                     id: node.id,
                     name: node.name,
                     code: node.code || (node.libraryItemId ? node.libraryItemId : null),
                     description: node.description,
-                    level: node.level
+                    level: node.level,
+                    subject: currentRootName || libraryItem?.subGroup || "Outros"
                 };
             }
             if (node.children) {
-                const found = searchTrees(node.children);
+                const found = searchTrees(node.children, currentRootName);
                 if (found) return found;
             }
         }
@@ -55,11 +58,12 @@ const resolveNodeInfo = (id: string, skillsTree: any[], contentsTree: any[], lib
         name: libraryItem.name,
         code: libraryItem.code || libraryItem.id,
         description: libraryItem.description,
-        level: libraryItem.type === "skill" ? "micro" : "atomico"
+        level: libraryItem.type === "skill" ? "micro" : "atomico",
+        subject: libraryItem.subGroup || "Outros"
     };
 
     // 3. Fallback
-    return { id, name: id, code: id };
+    return { id, name: id, code: id, subject: "Outros" };
 };
 
 /** Finds all evaluatable nodes (L3/L4) within a given node or set of IDs */
@@ -509,176 +513,114 @@ function StudentView({
                                 if (studentProjects.length === 0) return null;
 
                                 return (
-                                    <div className="space-y-4">
-                                        <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-2">
-                                            <FolderKanban className="w-4 h-4 text-indigo-500" /> Projetos & Planos de Aula
-                                        </h3>
-                                        <div className="grid grid-cols-1 gap-4">
-                                            {studentProjects.map(project => {
-                                                const projectSessions = schedule.filter(s => s.projectId === project.id);
-                                                const { microNodes, atomicoNodes } = getProjectNodes(project, skillsTree, contentsTree, libraryItems);
+                                    <div className="space-y-8">
+                                        {/* Chart Section */}
+                                        {(() => {
+                                            const allMicro: any[] = [];
+                                            const allAtomico: any[] = [];
+                                            studentProjects.forEach(p => {
+                                                const { microNodes, atomicoNodes } = getProjectNodes(p, skillsTree, contentsTree, libraryItems);
+                                                allMicro.push(...microNodes);
+                                                allAtomico.push(...atomicoNodes);
+                                            });
 
-                                                return (
-                                                    <div key={project.id} className="border rounded-xl bg-white overflow-hidden shadow-sm">
-                                                        <div className="bg-slate-50 px-4 py-2.5 border-b flex items-center justify-between">
-                                                            <div className="flex items-center gap-2">
-                                                                <FolderKanban className="w-4 h-4 text-indigo-500" />
-                                                                <span className="text-sm font-bold text-slate-700">{project.title}</span>
-                                                            </div>
-                                                            <div className="flex items-center gap-3">
-                                                                <Badge variant="outline" className="text-[10px] bg-white text-slate-500">{projectSessions.length} sessões</Badge>
-                                                            </div>
-                                                        </div>
-                                                        <div className="p-4 space-y-6">
-                                                            {projectSessions.length > 0 && (
-                                                                <div className="space-y-3">
-                                                                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                                                                        <Calendar className="w-3 h-3" /> Sessões do Projeto
-                                                                    </h4>
-                                                                    <div className="space-y-2">
-                                                                        {projectSessions.map(session => {
-                                                                            const sessionAssessment = studentAssessments.find(a => a.sessionId === session.id);
-                                                                            const dateStr = session.date ? (typeof session.date === "string" ? session.date.split("-").reverse().join("/") : "") : "";
-                                                                            return (
-                                                                                <div key={session.id} className="flex items-center justify-between border rounded-xl px-4 py-2.5 bg-slate-50/30 hover:bg-slate-50 transition-colors group">
-                                                                                    <div className="min-w-0">
-                                                                                        <p className="font-semibold text-slate-800 text-xs truncate">{session.title}</p>
-                                                                                        <p className="text-[10px] text-slate-400 mt-0.5">{dateStr} · {session.time}</p>
-                                                                                    </div>
-                                                                                    <div className="flex items-center gap-3 shrink-0">
-                                                                                        {sessionAssessment ? (
-                                                                                            <MiniTree rating={sessionAssessment.rating} />
-                                                                                        ) : (
-                                                                                            <span className="text-[10px] text-slate-400 italic">Sem avaliação</span>
-                                                                                        )}
-                                                                                        <Button
-                                                                                            size="sm"
-                                                                                            variant="outline"
-                                                                                            className="h-7 px-2 text-[10px] text-green-600 border-green-200 hover:bg-green-50"
-                                                                                            onClick={() => onAvaliacao({
-                                                                                                sessionId: session.id,
-                                                                                                projectId: project.id,
-                                                                                                studentId: student.id,
-                                                                                                contextLabel: `${student.name.split(" ")[0]}: ${session.title}`
-                                                                                            })}
-                                                                                        >
-                                                                                            <ClipboardList className="w-3 h-3 mr-1" />Avaliar
-                                                                                        </Button>
-                                                                                    </div>
-                                                                                </div>
-                                                                            );
-                                                                        })}
-                                                                    </div>
+                                            const map = new Map();
+                                            [...allMicro, ...allAtomico].forEach(n => map.set(n.id, n));
+                                            const allNodes = Array.from(map.values());
+
+                                            if (allNodes.length === 0) return null;
+
+                                            const chartDataMap = new Map<string, ProgressChartData>();
+                                            allNodes.forEach(node => {
+                                                const subject = node.subject || "Outros";
+                                                if (!chartDataMap.has(subject)) {
+                                                    chartDataMap.set(subject, { subject, trabalhado: 0, desenvolvido: 0, total: 0 });
+                                                }
+                                                const data = chartDataMap.get(subject)!;
+                                                data.trabalhado += 1;
+                                                data.total += 1;
+                                                const nodeAssessment = studentAssessments.find(a => a.knowledgeNodeId === node.id);
+                                                if (nodeAssessment && (nodeAssessment.rating ?? 0) >= 3) {
+                                                    data.desenvolvido += 1;
+                                                }
+                                            });
+                                            const chartData = Array.from(chartDataMap.values()).sort((a, b) => a.subject.localeCompare(b.subject));
+
+                                            return (
+                                                <div className="border rounded-2xl bg-white p-2 shadow-sm mb-6">
+                                                    <ProgressChart data={chartData} />
+                                                </div>
+                                            );
+                                        })()}
+
+                                        {/* Projects Section */}
+                                        <div className="space-y-4">
+                                            <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-2">
+                                                <FolderKanban className="w-4 h-4 text-indigo-500" /> Projetos & Planos de Aula
+                                            </h3>
+                                            <div className="grid grid-cols-1 gap-4">
+                                                {studentProjects.map(project => {
+                                                    const projectSessions = schedule.filter(s => s.projectId === project.id);
+                                                    const { microNodes, atomicoNodes } = getProjectNodes(project, skillsTree, contentsTree, libraryItems);
+
+                                                    return (
+                                                        <div key={project.id} className="border rounded-xl bg-white overflow-hidden shadow-sm">
+                                                            <div className="bg-slate-50 px-4 py-2.5 border-b flex items-center justify-between">
+                                                                <div className="flex items-center gap-2">
+                                                                    <FolderKanban className="w-4 h-4 text-indigo-500" />
+                                                                    <span className="text-sm font-bold text-slate-700">{project.title}</span>
                                                                 </div>
-                                                            )}
-
-                                                            {microNodes.length > 0 && (
-                                                                <div className="space-y-3">
-                                                                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                                                                        <Star className="w-3 h-3 text-amber-500" /> Habilidades & Conteúdos
-                                                                    </h4>
-                                                                    <div className="space-y-2">
-                                                                        {microNodes.map(node => {
-                                                                            const nodeAssessment = studentAssessments.find(a => a.knowledgeNodeId === node.id);
-                                                                            return (
-                                                                                <div key={node.id} className="flex flex-col border rounded-xl bg-slate-50/30 hover:bg-slate-50 transition-colors group overflow-hidden">
-                                                                                    <div className="flex items-center justify-between px-4 py-2.5">
-                                                                                        <div className="flex items-center gap-2 min-w-0">
-                                                                                            <Badge variant="outline" className="text-[9px] font-mono bg-white shrink-0 border-slate-200 text-slate-600">
-                                                                                                {node.code || "Sk"}
-                                                                                            </Badge>
-                                                                                            <p className="text-xs text-slate-700 truncate font-semibold">{node.name}</p>
+                                                                <div className="flex items-center gap-3">
+                                                                    <Badge variant="outline" className="text-[10px] bg-white text-slate-500">{projectSessions.length} sessões</Badge>
+                                                                </div>
+                                                            </div>
+                                                            <div className="p-4 space-y-6">
+                                                                {projectSessions.length > 0 && (
+                                                                    <div className="space-y-3">
+                                                                        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                                                                            <Calendar className="w-3 h-3" /> Sessões do Projeto
+                                                                        </h4>
+                                                                        <div className="space-y-2">
+                                                                            {projectSessions.map(session => {
+                                                                                const sessionAssessment = studentAssessments.find(a => a.sessionId === session.id);
+                                                                                const dateStr = session.date ? (typeof session.date === "string" ? session.date.split("-").reverse().join("/") : "") : "";
+                                                                                return (
+                                                                                    <div key={session.id} className="flex items-center justify-between border rounded-xl px-4 py-2.5 bg-slate-50/30 hover:bg-slate-50 transition-colors group">
+                                                                                        <div className="min-w-0">
+                                                                                            <p className="font-semibold text-slate-800 text-xs truncate">{session.title}</p>
+                                                                                            <p className="text-[10px] text-slate-400 mt-0.5">{dateStr} · {session.time}</p>
                                                                                         </div>
                                                                                         <div className="flex items-center gap-3 shrink-0">
-                                                                                            {nodeAssessment ? (
-                                                                                                <MiniTree rating={nodeAssessment.rating} />
+                                                                                            {sessionAssessment ? (
+                                                                                                <MiniTree rating={sessionAssessment.rating} />
                                                                                             ) : (
                                                                                                 <span className="text-[10px] text-slate-400 italic">Sem avaliação</span>
                                                                                             )}
                                                                                             <Button
                                                                                                 size="sm"
                                                                                                 variant="outline"
-                                                                                                className="h-7 px-2 text-[10px] text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+                                                                                                className="h-7 px-2 text-[10px] text-green-600 border-green-200 hover:bg-green-50"
                                                                                                 onClick={() => onAvaliacao({
-                                                                                                    knowledgeNodeId: node.id,
+                                                                                                    sessionId: session.id,
                                                                                                     projectId: project.id,
                                                                                                     studentId: student.id,
-                                                                                                    contextLabel: `${student.name.split(" ")[0]}: ${node.name}`
+                                                                                                    contextLabel: `${student.name.split(" ")[0]}: ${session.title}`
                                                                                                 })}
                                                                                             >
                                                                                                 <ClipboardList className="w-3 h-3 mr-1" />Avaliar
                                                                                             </Button>
                                                                                         </div>
                                                                                     </div>
-                                                                                    {node.description && (
-                                                                                        <div className="px-4 pb-2.5 pt-0">
-                                                                                            <p className="text-[10px] text-slate-500 leading-tight italic pl-1 border-l-2 border-slate-200 ml-2">
-                                                                                                {node.description}
-                                                                                            </p>
-                                                                                        </div>
-                                                                                    )}
-                                                                                </div>
-                                                                            );
-                                                                        })}
+                                                                                );
+                                                                            })}
+                                                                        </div>
                                                                     </div>
-                                                                </div>
-                                                            )}
-
-                                                            {atomicoNodes.length > 0 && (
-                                                                <div className="space-y-3">
-                                                                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                                                                        <Star className="w-3 h-3 text-amber-500" /> Habilidades Específicas & Evidências
-                                                                    </h4>
-                                                                    <div className="space-y-2">
-                                                                        {atomicoNodes.map(node => {
-                                                                            const nodeAssessment = studentAssessments.find(a => a.knowledgeNodeId === node.id);
-                                                                            return (
-                                                                                <div key={node.id} className="flex flex-col border rounded-xl bg-amber-50/30 hover:bg-amber-50 transition-colors group overflow-hidden">
-                                                                                    <div className="flex items-center justify-between px-4 py-2.5">
-                                                                                        <div className="flex items-center gap-2 min-w-0">
-                                                                                            <Badge variant="outline" className="text-[9px] font-mono bg-white shrink-0 border-amber-200 text-amber-700">
-                                                                                                {node.code || "Ev"}
-                                                                                            </Badge>
-                                                                                            <p className="text-xs text-slate-700 truncate font-semibold">{node.name}</p>
-                                                                                        </div>
-                                                                                        <div className="flex items-center gap-3 shrink-0">
-                                                                                            {nodeAssessment ? (
-                                                                                                <MiniTree rating={nodeAssessment.rating} />
-                                                                                            ) : (
-                                                                                                <span className="text-[10px] text-slate-400 italic">Sem avaliação</span>
-                                                                                            )}
-                                                                                            <Button
-                                                                                                size="sm"
-                                                                                                variant="outline"
-                                                                                                className="h-7 px-2 text-[10px] text-amber-700 border-amber-200 hover:bg-amber-50"
-                                                                                                onClick={() => onAvaliacao({
-                                                                                                    knowledgeNodeId: node.id,
-                                                                                                    projectId: project.id,
-                                                                                                    studentId: student.id,
-                                                                                                    contextLabel: `${student.name.split(" ")[0]}: ${node.name}`
-                                                                                                })}
-                                                                                            >
-                                                                                                <ClipboardList className="w-3 h-3 mr-1" />Avaliar
-                                                                                            </Button>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    {node.description && (
-                                                                                        <div className="px-4 pb-2.5 pt-0">
-                                                                                            <p className="text-[10px] text-slate-500 leading-tight italic pl-1 border-l-2 border-slate-200 ml-2">
-                                                                                                {node.description}
-                                                                                            </p>
-                                                                                        </div>
-                                                                                    )}
-                                                                                </div>
-                                                                            );
-                                                                        })}
-                                                                    </div>
-                                                                </div>
-                                                            )}
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                );
-                                            })}
+                                                    );
+                                                })}
+                                            </div>
                                         </div>
                                     </div>
                                 );
@@ -696,7 +638,6 @@ function StudentView({
                                     </div>
                                 </div>
                             )}
-
                         </div>
                     </div>
                 );
