@@ -53,10 +53,12 @@ export function DailyLogDialog({ open, onOpenChange, date, classId }: DailyLogDi
     // We get activities that match the selected date. Note: generic routine items in `mockSchedule` may not have a date.
     // For this mock, we'll consider ANY activity in schedule as "today's routine" if date is null, or matching date.
     // In a real app, schedule items with dates are used. Let's pull everything that matches classId.
-    const todaysActivities = schedule.filter(item =>
-        (item.classId === classId || !item.classId) &&
-        (item.type === "activity" || item.type === "project") // Only activities/projects, not meals/care
-    );
+    const todaysActivities = schedule.filter(item => {
+        const matchesClass = item.classId === classId || !item.classId;
+        const matchesType = item.type === "activity" || item.type === "project"; // Only activities/projects, not meals/care
+        const matchesDate = !item.date || item.date === dateStr;
+        return matchesClass && matchesType && matchesDate;
+    });
 
     // Form initialization and merging with existing logs for today
     useEffect(() => {
