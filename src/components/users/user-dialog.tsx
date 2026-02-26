@@ -106,6 +106,7 @@ export function UserDialog({ open, onOpenChange, user, onSave, fixedRole }: User
                                         <SelectItem value="admin">Administrador(a)</SelectItem>
                                         <SelectItem value="teacher">Professor(a)</SelectItem>
                                         <SelectItem value="guardian">Responsável</SelectItem>
+                                        <SelectItem value="nutritionist">Nutricionista</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>

@@ -39,7 +39,7 @@ interface StudentLogForm {
 }
 
 export function DailyLogDialog({ open, onOpenChange, date, classId }: DailyLogDialogProps) {
-    const { students, schedule, addDailyLog, dailyLogs, updateDailyLog, removeDailyLog } = useAppStore();
+    const { students, schedule, addDailyLog, dailyLogs, updateDailyLog, removeDailyLog, menus } = useAppStore();
 
     const [forms, setForms] = useState<Record<string, StudentLogForm>>({});
     const [selectedActivities, setSelectedActivities] = useState<Record<string, boolean>>({});
@@ -59,6 +59,11 @@ export function DailyLogDialog({ open, onOpenChange, date, classId }: DailyLogDi
         const matchesDate = !item.date || item.date === dateStr;
         return matchesClass && matchesType && matchesDate;
     });
+
+    const todaysMenu = menus.find(m => m.date === dateStr);
+    const getMenuDescription = (title: string) => {
+        return todaysMenu?.items.find(item => item.title === title)?.description || "";
+    };
 
     // Form initialization and merging with existing logs for today
     useEffect(() => {
@@ -307,15 +312,24 @@ export function DailyLogDialog({ open, onOpenChange, date, classId }: DailyLogDi
                                             {/* Meals */}
                                             <div className="md:col-span-5 grid grid-cols-1 gap-2 border-l border-r px-4 border-slate-100">
                                                 <div>
-                                                    <Label className="text-[10px] text-muted-foreground">Lanche da Manhã</Label>
+                                                    <div className="flex flex-col mb-1">
+                                                        <Label className="text-[10px] text-indigo-600 font-bold uppercase">Lanche da Manhã</Label>
+                                                        <p className="text-[9px] text-slate-400 leading-tight">{getMenuDescription("Lanche da Manhã") || "Cardápio não definido"}</p>
+                                                    </div>
                                                     {renderMealSelector(student.id, "breakfast", form.breakfast)}
                                                 </div>
                                                 <div>
-                                                    <Label className="text-[10px] text-muted-foreground">Almoço</Label>
+                                                    <div className="flex flex-col mb-1">
+                                                        <Label className="text-[10px] text-indigo-600 font-bold uppercase">Almoço</Label>
+                                                        <p className="text-[9px] text-slate-400 leading-tight">{getMenuDescription("Almoço") || "Cardápio não definido"}</p>
+                                                    </div>
                                                     {renderMealSelector(student.id, "lunch", form.lunch)}
                                                 </div>
                                                 <div>
-                                                    <Label className="text-[10px] text-muted-foreground">Lanche da Tarde</Label>
+                                                    <div className="flex flex-col mb-1">
+                                                        <Label className="text-[10px] text-indigo-600 font-bold uppercase">Lanche da Tarde</Label>
+                                                        <p className="text-[9px] text-slate-400 leading-tight">{getMenuDescription("Lanche da Tarde") || "Cardápio não definido"}</p>
+                                                    </div>
                                                     {renderMealSelector(student.id, "snack", form.snack)}
                                                 </div>
                                             </div>

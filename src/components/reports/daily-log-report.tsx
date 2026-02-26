@@ -9,7 +9,7 @@ interface DailyLogReportProps {
 }
 
 export function DailyLogReport({ studentId }: DailyLogReportProps) {
-    const { dailyLogs } = useAppStore();
+    const { dailyLogs, menus } = useAppStore();
 
     const logs = dailyLogs
         .filter(l => l.studentId === studentId)
@@ -52,11 +52,17 @@ export function DailyLogReport({ studentId }: DailyLogReportProps) {
                             <h3 className="text-sm font-semibold text-slate-500 uppercase mb-3 flex items-center gap-2">
                                 <Utensils className="w-4 h-4" /> Alimentação
                             </h3>
-                            <div className="grid grid-cols-3 gap-4">
-                                <MealCard title="Lanche Manhã" status={log.meals.breakfast} />
-                                <MealCard title="Almoço" status={log.meals.lunch} />
-                                <MealCard title="Lanche Tarde" status={log.meals.snack} />
-                            </div>
+                            {(() => {
+                                const currentMenu = menus.find(m => m.date === log.date);
+                                const getDesc = (t: string) => currentMenu?.items.find(i => i.title === t)?.description || "";
+                                return (
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <MealCard title="Lanche Manhã" description={getDesc("Lanche da Manhã")} status={log.meals.breakfast} />
+                                        <MealCard title="Almoço" description={getDesc("Almoço")} status={log.meals.lunch} />
+                                        <MealCard title="Lanche Tarde" description={getDesc("Lanche da Tarde")} status={log.meals.snack} />
+                                    </div>
+                                );
+                            })()}
                         </div>
 
                         {/* Nap Section */}
@@ -98,7 +104,7 @@ export function DailyLogReport({ studentId }: DailyLogReportProps) {
     );
 }
 
-function MealCard({ title, status }: { title: string, status: string }) {
+function MealCard({ title, description, status }: { title: string, description: string, status: string }) {
     const getStatusText = (s: string) => {
         const map: Record<string, string> = { "all": "Tudo", "most": "Maioria", "some": "Pouco", "none": "Nada" };
         return map[s] || s;
@@ -110,9 +116,14 @@ function MealCard({ title, status }: { title: string, status: string }) {
     };
 
     return (
-        <div className="text-center p-3 rounded-lg border bg-white">
-            <div className="text-xs text-slate-500 mb-1">{title}</div>
-            <div className={`text-sm font-bold px-2 py-1 rounded-full inline-block ${getStatusColor(status)}`}>
+        <div className="text-center p-3 rounded-xl border bg-white flex flex-col items-center">
+            <div className="text-xs font-bold text-slate-500 uppercase mb-1">{title}</div>
+            {description && (
+                <div className="text-[10px] text-slate-400 leading-tight mb-2 italic">
+                    {description}
+                </div>
+            )}
+            <div className={`text-xs font-bold px-3 py-1 rounded-full ${getStatusColor(status)}`}>
                 {getStatusText(status)}
             </div>
         </div>

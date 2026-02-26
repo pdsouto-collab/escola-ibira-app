@@ -7,6 +7,7 @@ import { DailyLogReport } from "@/components/reports/daily-log-report";
 import { PortfolioReport } from "@/components/reports/portfolio-report";
 import { SkillsChart } from "@/components/reports/skills-chart";
 import { User } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
     Select,
     SelectContent,
@@ -18,7 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function ReportsPage() {
-    const { students, classes } = useAppStore();
+    const { students, classes, currentUser } = useAppStore();
 
     // Class Filter State
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
@@ -26,21 +27,24 @@ export default function ReportsPage() {
     // Default to the first student if available
     const [manualSelection, setManualSelection] = useState<string>("");
 
-    // Filter students based on class
-    const filteredStudents = selectedClassId === "all"
-        ? students
-        : students.filter(s => s.classId === selectedClassId);
+    // Filter students based on class and role
+    const visibleStudents = currentUser?.role === "guardian"
+        ? students.filter(s => currentUser.linkedStudentIds?.includes(s.id))
+        : (selectedClassId === "all" ? students : students.filter(s => s.classId === selectedClassId));
 
     // Use manual selection or default to first student in the filtered list
-    // If the manual selection is not in the filtered list (e.g. changed class), reset or pick first
-    const effectiveStudentId = (manualSelection && filteredStudents.find(s => s.id === manualSelection))
+    const effectiveStudentId = (manualSelection && visibleStudents.find(s => s.id === manualSelection))
         ? manualSelection
-        : (filteredStudents.length > 0 ? filteredStudents[0].id : "");
+        : (visibleStudents.length > 0 ? visibleStudents[0].id : "");
 
     const selectedStudent = students.find(s => s.id === effectiveStudentId);
 
-    if (!selectedStudent && students.length === 0) {
-        return <div className="p-8 text-center text-slate-500">Nenhum aluno encontrado. Cadastre alunos na aba &apos;Estudantes&apos;.</div>;
+    const showMilestones = currentUser?.role !== "nutritionist";
+    const showPortfolio = currentUser?.role !== "nutritionist";
+    const showDaily = true;
+
+    if (!selectedStudent && visibleStudents.length === 0) {
+        return <div className="p-8 text-center text-slate-500">Nenhum aluno encontrado ou permissão insuficiente.</div>;
     }
 
     return (
@@ -52,80 +56,92 @@ export default function ReportsPage() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-end sm:items-center gap-4">
-                    {/* Class Filter */}
-                    <Select value={selectedClassId} onValueChange={(val) => {
-                        setSelectedClassId(val);
-                        setManualSelection(""); // Reset student selection when class changes
-                    }}>
-                        <SelectTrigger className="w-[200px] bg-white">
-                            <SelectValue placeholder="Filtrar por turma" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">Todas as Turmas</SelectItem>
-                            {classes.map((c) => (
-                                <SelectItem key={c.id} value={c.id}>
-                                    {c.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    {/* Class Filter - Hide for Guardians */}
+                    {currentUser?.role !== "guardian" && (
+                        <Select value={selectedClassId} onValueChange={(val) => {
+                            setSelectedClassId(val);
+                            setManualSelection(""); // Reset student selection when class changes
+                        }}>
+                            <SelectTrigger className="w-[200px] bg-white">
+                                <SelectValue placeholder="Filtrar por turma" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Todas as Turmas</SelectItem>
+                                {classes.map((c) => (
+                                    <SelectItem key={c.id} value={c.id}>
+                                        {c.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    )}
 
-                    {/* Student Selector */}
-                    <div className="flex items-center gap-4 bg-white p-2 rounded-xl border shadow-sm">
-                        {selectedStudent ? (
+                    {/* Student Selector - Hide if only one student visible */}
+                    {visibleStudents.length > 1 && (
+                        <div className="flex items-center gap-4 bg-white p-2 rounded-xl border shadow-sm">
+                            {selectedStudent ? (
+                                <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
+                                    <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedStudent.name}`} />
+                                    <AvatarFallback>{selectedStudent.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                                </Avatar>
+                            ) : (
+                                <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                                    <User className="h-5 w-5" />
+                                </div>
+                            )}
+                            <Select value={effectiveStudentId} onValueChange={setManualSelection}>
+                                <SelectTrigger className="w-[200px] border-none shadow-none focus:ring-0">
+                                    <SelectValue placeholder="Selecione um aluno" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {visibleStudents.map((student) => (
+                                        <SelectItem key={student.id} value={student.id}>
+                                            {student.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
+
+                    {/* Simple badge if only one student visible */}
+                    {visibleStudents.length === 1 && selectedStudent && (
+                        <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl border shadow-sm">
                             <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
                                 <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedStudent.name}`} />
                                 <AvatarFallback>{selectedStudent.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                             </Avatar>
-                        ) : (
-                            <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-                                <User className="h-5 w-5" />
-                            </div>
-                        )}
-                        <Select value={effectiveStudentId} onValueChange={setManualSelection}>
-                            <SelectTrigger className="w-[200px] border-none shadow-none focus:ring-0">
-                                <SelectValue placeholder="Selecione um aluno" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {filteredStudents.map((student) => (
-                                    <SelectItem key={student.id} value={student.id}>
-                                        {student.name}
-                                    </SelectItem>
-                                ))}
-                                {filteredStudents.length === 0 && (
-                                    <div className="p-2 text-sm text-slate-500 text-center">
-                                        Nenhum aluno nesta turma
-                                    </div>
-                                )}
-                            </SelectContent>
-                        </Select>
-                    </div>
+                            <span className="font-semibold text-slate-700">{selectedStudent.name}</span>
+                        </div>
+                    )}
                 </div>
             </div>
 
-            <Tabs defaultValue="milestones" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 mb-8">
-                    <TabsTrigger value="milestones">Marcos de Desenvolvimento</TabsTrigger>
+            <Tabs defaultValue={showMilestones ? "milestones" : "daily"} className="w-full">
+                <TabsList className={cn("grid w-full mb-8", showMilestones && showPortfolio ? "grid-cols-3" : "grid-cols-1")}>
+                    {showMilestones && <TabsTrigger value="milestones">Marcos de Desenvolvimento</TabsTrigger>}
                     <TabsTrigger value="daily">Diário de Bordo</TabsTrigger>
-                    <TabsTrigger value="portfolio">Portfólio de Aprendizagem</TabsTrigger>
+                    {showPortfolio && <TabsTrigger value="portfolio">Portfólio de Aprendizagem</TabsTrigger>}
                 </TabsList>
 
-                <TabsContent value="milestones" className="animate-in fade-in-50 duration-500 slide-in-from-bottom-2">
-                    <div className="mb-4 space-y-8">
-                        <div>
-                            <h2 className="text-xl font-semibold text-slate-700 mb-2">Progresso por Áreas da BNCC</h2>
-                            <p className="text-slate-500 mb-6">Visualização do desenvolvimento da criança em relação aos conteúdos e habilidades.</p>
-                            {selectedStudent ? (
-                                <div className="space-y-8">
-                                    <SkillsChart studentId={effectiveStudentId} />
-                                    <MilestoneReport studentId={effectiveStudentId} />
-                                </div>
-                            ) : (
-                                <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
-                            )}
+                {showMilestones && (
+                    <TabsContent value="milestones" className="animate-in fade-in-50 duration-500 slide-in-from-bottom-2">
+                        <div className="mb-4 space-y-8">
+                            <div>
+                                <h2 className="text-xl font-semibold text-slate-700 mb-2">Progresso por Áreas da BNCC</h2>
+                                <p className="text-slate-500 mb-6">Visualização do desenvolvimento da criança em relação aos conteúdos e habilidades.</p>
+                                {selectedStudent ? (
+                                    <div className="space-y-8">
+                                        <SkillsChart studentId={effectiveStudentId} />
+                                        <MilestoneReport studentId={effectiveStudentId} />
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                </TabsContent>
+                    </TabsContent>
+                )}
 
                 <TabsContent value="daily" className="animate-in fade-in-50 duration-500 slide-in-from-bottom-2">
                     <div className="mb-4">
@@ -139,17 +155,19 @@ export default function ReportsPage() {
                     </div>
                 </TabsContent>
 
-                <TabsContent value="portfolio" className="animate-in fade-in-50 duration-500 slide-in-from-bottom-2">
-                    <div className="mb-4">
-                        <h2 className="text-xl font-semibold text-slate-700 mb-2">Galeria de Vivências</h2>
-                        <p className="text-slate-500 mb-6">Registros fotográficos e observações de momentos significativos.</p>
-                        {selectedStudent ? (
-                            <PortfolioReport studentId={effectiveStudentId} />
-                        ) : (
-                            <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
-                        )}
-                    </div>
-                </TabsContent>
+                {showPortfolio && (
+                    <TabsContent value="portfolio" className="animate-in fade-in-50 duration-500 slide-in-from-bottom-2">
+                        <div className="mb-4">
+                            <h2 className="text-xl font-semibold text-slate-700 mb-2">Galeria de Vivências</h2>
+                            <p className="text-slate-500 mb-6">Registros fotográficos e observações de momentos significativos.</p>
+                            {selectedStudent ? (
+                                <PortfolioReport studentId={effectiveStudentId} />
+                            ) : (
+                                <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
+                            )}
+                        </div>
+                    </TabsContent>
+                )}
             </Tabs>
         </div>
     );

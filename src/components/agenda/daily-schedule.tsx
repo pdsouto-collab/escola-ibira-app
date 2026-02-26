@@ -6,6 +6,7 @@ import { Utensils, Moon, BookOpen, Clock, Pencil, Trash2, FolderKanban, Clipboar
 import { Button } from "@/components/ui/button";
 import { AssessmentDrawer } from "@/components/assessment/assessment-drawer";
 import { useState } from "react";
+import { useAppStore } from "@/lib/store";
 
 interface DailyScheduleProps {
     items: ScheduleItem[];
@@ -32,7 +33,14 @@ function getColors(type: ScheduleItem["type"]) {
 }
 
 export function DailySchedule({ items, onEdit, onDelete }: DailyScheduleProps) {
+    const { menus } = useAppStore();
     const [assessingItem, setAssessingItem] = useState<ScheduleItem | null>(null);
+
+    const getMenuDescription = (itemTitle: string, itemDate?: string) => {
+        if (!itemDate) return "";
+        const menu = menus.find(m => m.date === itemDate);
+        return menu?.items.find(mi => mi.title === itemTitle)?.description || "";
+    };
 
     return (
         <>
@@ -71,8 +79,14 @@ export function DailySchedule({ items, onEdit, onDelete }: DailyScheduleProps) {
                                                 </span>
                                             )}
                                             <h3 className="font-semibold text-slate-800">{item.title}</h3>
-                                            {item.description && (
-                                                <p className="mt-1 text-sm text-slate-500">{item.description}</p>
+                                            {item.type === "meal" ? (
+                                                <p className="mt-1 text-sm text-green-600 font-medium italic">
+                                                    {getMenuDescription(item.title, item.date) || item.description || "Cardápio não definido"}
+                                                </p>
+                                            ) : (
+                                                item.description && (
+                                                    <p className="mt-1 text-sm text-slate-500">{item.description}</p>
+                                                )
                                             )}
                                         </div>
                                         <div className={cn("p-2 rounded-full shrink-0", colors.icon)}>

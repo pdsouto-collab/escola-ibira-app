@@ -28,16 +28,16 @@ import { BookOpen } from "lucide-react";
 
 const navigation = [
     { name: "Início", href: "/", icon: LayoutDashboard },
-    { name: "Matriz Circular", href: "/mosaico", icon: Aperture },
-    { name: "Pendências", href: "/pendencias", icon: CheckCircle2 },
+    { name: "Matriz Circular", href: "/mosaico", icon: Aperture, roles: ["director", "admin", "teacher"] },
+    { name: "Pendências", href: "/pendencias", icon: CheckCircle2, roles: ["director", "admin", "teacher"] },
     { name: "Mural de Eventos", href: "/mural", icon: PartyPopper },
     { name: "Rotinas", href: "/agenda", icon: CalendarDays },
     { name: "Conversas", href: "/conversas", icon: MessageCircle },
-    { name: "Banco de Projetos", href: "/projetos", icon: FolderOpen },
+    { name: "Banco de Projetos", href: "/projetos", icon: FolderOpen, roles: ["director", "admin", "teacher"] },
     { name: "Portfólio", href: "/portfolio", icon: BookMarked },
     { name: "Relatórios e Dashboards", href: "/relatorios", icon: BarChart3 },
     { name: "Cardápio da Semana", href: "/cardapio", icon: Utensils },
-    { name: "Alunos / Turmas", href: "/alunos", icon: Users },
+    { name: "Alunos / Turmas", href: "/alunos", icon: Users, roles: ["director", "admin", "teacher"] },
     // Restricted Routes
     { name: "Professores", href: "/professores", icon: GraduationCap, roles: ["director", "admin"] },
     { name: "Painel Admin", href: "/admin-panel", icon: Settings, roles: ["director", "admin"] },
