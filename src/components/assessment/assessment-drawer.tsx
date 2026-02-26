@@ -49,7 +49,9 @@ export function AssessmentDrawer({
     initialObservations,
     initialAttachments,
 }: AssessmentDrawerProps) {
-    const { students, classes, projects, schedule, addAssessment, updateAssessment, removeAssessment, currentUser } = useAppStore();
+    const { students, classes, projects, schedule, addAssessment, updateAssessment, removeAssessment, currentUser, assessments } = useAppStore();
+
+    const [activeAssessmentId, setActiveAssessmentId] = useState<string | undefined>(assessmentId);
 
     // Context State
     const [contextType, setContextType] = useState<"project" | "routine">(propRoutineId ? "routine" : "project");
@@ -107,8 +109,8 @@ export function AssessmentDrawer({
     };
 
     const handleSave = () => {
-        if (assessmentId) {
-            updateAssessment(assessmentId, {
+        if (activeAssessmentId) {
+            updateAssessment(activeAssessmentId, {
                 rating,
                 observations,
                 attachments,
@@ -135,8 +137,8 @@ export function AssessmentDrawer({
     };
 
     const handleDelete = () => {
-        if (assessmentId && confirm("Tem certeza que deseja apagar (zerar) esta avaliação?")) {
-            removeAssessment(assessmentId);
+        if (activeAssessmentId && confirm("Tem certeza que deseja apagar (zerar) esta avaliação?")) {
+            removeAssessment(activeAssessmentId);
             handleClose();
         }
     };
@@ -151,9 +153,6 @@ export function AssessmentDrawer({
 
     useEffect(() => {
         if (open) {
-            setRating(initialRating);
-            setObservations(initialObservations || "");
-            setAttachments(initialAttachments || []);
             if (defaultStudentId) setStudentId(defaultStudentId);
             if (defaultClassId) setClassId(defaultClassId);
             if (propProjectId) setSelectedProjectId(propProjectId);
@@ -162,7 +161,49 @@ export function AssessmentDrawer({
             if (defaultStudentId) setScope("student");
             else setScope("class");
         }
-    }, [open, initialRating, initialObservations, initialAttachments, defaultStudentId, defaultClassId, propProjectId, propSessionId, propRoutineId]);
+    }, [open, defaultStudentId, defaultClassId, propProjectId, propSessionId, propRoutineId]);
+
+    // Hydrate existing assessments based on current context
+    useEffect(() => {
+        if (!open) return;
+
+        if (assessmentId) {
+            setActiveAssessmentId(assessmentId);
+            setRating(initialRating);
+            setObservations(initialObservations || "");
+            setAttachments(initialAttachments || []);
+            return;
+        }
+
+        const found = assessments.find(a => {
+            const matchScope = a.scope === scope;
+            const matchClass = scope === "class" ? a.classId === classId && !a.studentId : a.studentId === studentId;
+            const matchNode = propKnowledgeNodeId ? a.knowledgeNodeId === propKnowledgeNodeId : !a.knowledgeNodeId;
+
+            let matchContext = true;
+            if (contextType === "project") {
+                matchContext = a.projectId === (selectedProjectId || undefined) &&
+                    a.sessionId === (selectedSessionId || undefined);
+            } else {
+                matchContext = a.routineId === (selectedRoutineId || undefined);
+            }
+
+            return matchScope && matchClass && matchNode && matchContext;
+        });
+
+        if (found) {
+            setActiveAssessmentId(found.id);
+            setRating(found.rating);
+            setObservations(found.observations || "");
+            setAttachments(found.attachments || []);
+        } else {
+            setActiveAssessmentId(undefined);
+            setRating(undefined);
+            setObservations("");
+            setAttachments([]);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open, assessmentId, scope, classId, studentId, propKnowledgeNodeId, contextType, selectedProjectId, selectedSessionId, selectedRoutineId]);
 
     useEffect(() => {
         if (!isFixedContext && contextType === "routine" && routines.length > 0 && !selectedRoutineId) {
@@ -176,7 +217,7 @@ export function AssessmentDrawer({
                 <DialogHeader className="px-6 py-4 border-b bg-gradient-to-r from-green-50 to-emerald-50 rounded-t-lg">
                     <DialogTitle className="text-green-900 flex items-center gap-2">
                         <span className="text-xl">🌱</span>
-                        {assessmentId ? "Editar Avaliação" : "Nova Avaliação"}
+                        {activeAssessmentId ? "Editar Avaliação" : "Nova Avaliação"}
                     </DialogTitle>
                     {contextLabel && (
                         <p className="text-sm text-green-700 font-bold">{contextLabel}</p>
@@ -242,7 +283,7 @@ export function AssessmentDrawer({
                             <button
                                 type="button"
                                 onClick={() => setScope("class")}
-                                disabled={!!assessmentId}
+                                disabled={!!activeAssessmentId && !!assessmentId}
                                 className={cn(
                                     "flex items-center gap-2 border rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
                                     scope === "class"
@@ -257,7 +298,7 @@ export function AssessmentDrawer({
                             <button
                                 type="button"
                                 onClick={() => setScope("student")}
-                                disabled={!!assessmentId}
+                                disabled={!!activeAssessmentId && !!assessmentId}
                                 className={cn(
                                     "flex items-center gap-2 border rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
                                     scope === "student"
@@ -367,7 +408,7 @@ export function AssessmentDrawer({
                 </div>
 
                 <div className="px-6 py-4 border-t bg-white flex gap-3">
-                    {assessmentId && (
+                    {activeAssessmentId && (
                         <Button
                             variant="outline"
                             className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 hover:border-red-300"
@@ -385,7 +426,7 @@ export function AssessmentDrawer({
                         disabled={!canSave}
                         onClick={handleSave}
                     >
-                        Salvar {assessmentId ? "Alterações" : "Avaliação"}
+                        Salvar {activeAssessmentId ? "Alterações" : "Avaliação"}
                     </Button>
                 </div>
             </DialogContent>
