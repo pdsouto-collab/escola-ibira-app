@@ -10,7 +10,7 @@ import { PortfolioEntry, Student } from "@/lib/data";
 import { format } from "date-fns";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ImagePlus, Images, Sparkles } from "lucide-react";
+import { ImagePlus, Images, Sparkles, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -22,13 +22,14 @@ interface BulkPortfolioDialogProps {
 }
 
 interface StudentPortfolioForm {
+    id?: string;
     studentId: string;
     selected: boolean;
     individualNote: string;
 }
 
 export function BulkPortfolioDialog({ open, onOpenChange, date, classId }: BulkPortfolioDialogProps) {
-    const { students, addPortfolioEntry } = useAppStore();
+    const { students, portfolioEntries, addPortfolioEntry, updatePortfolioEntry, removePortfolioEntry } = useAppStore();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // 1. Contexto e Mídia Comum
@@ -48,23 +49,36 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classId }: BulkP
     useEffect(() => {
         if (!open) return;
 
-        // Reset forms when dialog opens
+        // Find existing entries for this class and date
+        const existingEntries = portfolioEntries.filter(e =>
+            e.date === dateStr && classStudents.some(s => s.id === e.studentId)
+        );
+
+        if (existingEntries.length > 0) {
+            const lead = existingEntries[0];
+            setTitle(lead.title);
+            setTagsInput(lead.tags?.join(", ") || "");
+            setImageUrl(lead.imageUrl || "https://images.unsplash.com/photo-1544717297-fa95b6ee9643?q=80&w=600&auto=format&fit=crop");
+        } else {
+            setTitle("");
+            setTagsInput("");
+            setImageUrl("https://images.unsplash.com/photo-1544717297-fa95b6ee9643?q=80&w=600&auto=format&fit=crop");
+        }
+
         const initialForms: Record<string, StudentPortfolioForm> = {};
         classStudents.forEach(student => {
+            const existing = existingEntries.find(e => e.studentId === student.id);
             initialForms[student.id] = {
+                id: existing?.id,
                 studentId: student.id,
-                selected: true,
-                individualNote: ""
+                selected: !!existing || existingEntries.length === 0, // Select all if new, else only existing
+                individualNote: existing?.description || ""
             };
         });
 
         setForms(initialForms);
-        setTitle("");
-        setTagsInput("");
         setBaseNarrative("");
-        setImageUrl("https://images.unsplash.com/photo-1544717297-fa95b6ee9643?q=80&w=600&auto=format&fit=crop");
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [open, classId, dateStr]);
+    }, [open, classId, dateStr, portfolioEntries.length]); // Re-run if entries change length while open (unlikely but safer)
 
     const updateForm = (studentId: string, updates: Partial<StudentPortfolioForm>) => {
         setForms(prev => ({
@@ -116,27 +130,59 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classId }: BulkP
 
         classStudents.forEach(student => {
             const form = forms[student.id];
-            if (!form || !form.selected) return; // Skip if visually unchecked
+            if (!form) return;
 
             const entryContent = form.individualNote.trim() || baseNarrative.trim();
 
-            if (!entryContent) return; // Skip if no content written at all for this student
+            // If it was selected but now isn't, and it existed, remove it
+            if (!form.selected) {
+                if (form.id) {
+                    removePortfolioEntry(form.id);
+                }
+                return;
+            }
 
-            const entryData: PortfolioEntry = {
-                id: `port-${Date.now()}-${student.id}`,
-                studentId: student.id,
-                date: dateStr,
-                title: title.trim(),
-                description: entryContent,
-                imageUrl: imageUrl,
-                tags: tagsArray
-            };
+            if (!entryContent) return;
 
-            addPortfolioEntry(entryData);
+            if (form.id) {
+                // Update
+                updatePortfolioEntry(form.id, {
+                    title: title.trim(),
+                    description: entryContent,
+                    imageUrl: imageUrl,
+                    tags: tagsArray
+                });
+            } else {
+                // Add new
+                const entryData: PortfolioEntry = {
+                    id: `port-${Date.now()}-${student.id}`,
+                    studentId: student.id,
+                    date: dateStr,
+                    title: title.trim(),
+                    description: entryContent,
+                    imageUrl: imageUrl,
+                    tags: tagsArray
+                };
+                addPortfolioEntry(entryData);
+            }
         });
 
         onOpenChange(false);
     };
+
+    const handleDeleteAll = () => {
+        if (confirm("Tem certeza que deseja apagar todos os registros desta vivência para esta turma e data?")) {
+            classStudents.forEach(student => {
+                const form = forms[student.id];
+                if (form?.id) {
+                    removePortfolioEntry(form.id);
+                }
+            });
+            onOpenChange(false);
+        }
+    };
+
+    const hasAnyExisting = Object.values(forms).some(f => !!f.id);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -295,11 +341,19 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classId }: BulkP
                     </div>
                 </div>
 
-                <DialogFooter className="p-4 bg-white border-t shrink-0">
-                    <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-                    <Button onClick={handleSave} className="bg-indigo-600 hover:bg-indigo-700 text-white">
-                        Salvar Vivência no Portfólio
-                    </Button>
+                <DialogFooter className="p-4 bg-white border-t shrink-0 flex items-center justify-between sm:justify-between w-full">
+                    {hasAnyExisting ? (
+                        <Button variant="ghost" className="text-red-500 hover:text-red-600 hover:bg-red-50" onClick={handleDeleteAll}>
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Apagar Tudo
+                        </Button>
+                    ) : <div />}
+                    <div className="flex gap-2">
+                        <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+                        <Button onClick={handleSave} className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                            {hasAnyExisting ? "Atualizar Registros" : "Salvar Vivência no Portfólio"}
+                        </Button>
+                    </div>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
