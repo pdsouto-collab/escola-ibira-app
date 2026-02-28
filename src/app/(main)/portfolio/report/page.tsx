@@ -292,13 +292,13 @@ function ReportCard({
                                                 </div>
                                             </div>
 
-                                            {(log.nap.start || log.nap.end) && (
-                                                <div className="mb-6 flex flex-col md:flex-row gap-4 md:items-center bg-indigo-50/50 p-4 rounded-xl border border-indigo-100">
-                                                    <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
+                                            {(log.nap.start || log.nap.end || log.nap.didNotNap) && (
+                                                <div className={`mb-6 flex flex-col md:flex-row gap-4 md:items-center p-4 rounded-xl border ${log.nap.didNotNap ? 'bg-slate-50 border-slate-100 text-slate-500 italic' : 'bg-indigo-50/50 border-indigo-100'}`}>
+                                                    <h4 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${log.nap.didNotNap ? 'text-slate-400' : 'text-indigo-400'}`}>
                                                         💤 Sono / Descanso
                                                     </h4>
-                                                    <p className="text-sm font-medium text-indigo-900 md:ml-auto">
-                                                        {log.nap.start ? `Dorme: ${log.nap.start}` : "Dorme"} {log.nap.end ? `às ${log.nap.end}` : ""}
+                                                    <p className={`text-sm font-medium md:ml-auto ${log.nap.didNotNap ? 'text-slate-500' : 'text-indigo-900'}`}>
+                                                        {log.nap.didNotNap ? "Não dormiu hoje." : `${log.nap.start ? `Dorme: ${log.nap.start}` : "Dorme"} ${log.nap.end ? `às ${log.nap.end}` : ""}`}
                                                     </p>
                                                 </div>
                                             )}

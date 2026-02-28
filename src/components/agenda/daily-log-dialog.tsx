@@ -35,6 +35,7 @@ interface StudentLogForm {
     snack: MealAmount;
     napStart: string;
     napEnd: string;
+    didNotNap: boolean;
     notes: string;
 }
 
@@ -88,6 +89,7 @@ export function DailyLogDialog({ open, onOpenChange, date, classId }: DailyLogDi
                     snack: existing.meals.snack,
                     napStart: existing.nap.start,
                     napEnd: existing.nap.end,
+                    didNotNap: !!existing.nap.didNotNap,
                     notes: existing.notes,
                 };
             } else {
@@ -100,6 +102,7 @@ export function DailyLogDialog({ open, onOpenChange, date, classId }: DailyLogDi
                     snack: "all",
                     napStart: "13:00",
                     napEnd: "14:30",
+                    didNotNap: false,
                     notes: "",
                 };
             }
@@ -145,8 +148,9 @@ export function DailyLogDialog({ open, onOpenChange, date, classId }: DailyLogDi
                     snack: form.snack,
                 },
                 nap: {
-                    start: form.napStart,
-                    end: form.napEnd,
+                    start: form.didNotNap ? "" : form.napStart,
+                    end: form.didNotNap ? "" : form.napEnd,
+                    didNotNap: form.didNotNap,
                 },
                 activities: checkedActivities,
                 notes: form.notes,
@@ -336,15 +340,30 @@ export function DailyLogDialog({ open, onOpenChange, date, classId }: DailyLogDi
 
                                             {/* Sono & Observações */}
                                             <div className="md:col-span-5 flex flex-col gap-2">
-                                                <div className="flex gap-2">
-                                                    <div className="flex-1">
-                                                        <Label className="text-[10px] text-muted-foreground block">Sono (Início)</Label>
-                                                        <Input type="time" className="h-7 text-xs px-2" value={form.napStart} onChange={(e) => updateForm(student.id, { napStart: e.target.value })} />
+                                                <div className="flex flex-col gap-1.5">
+                                                    <div className="flex items-center justify-between">
+                                                        <Label className="text-[10px] text-muted-foreground">Sono</Label>
+                                                        <div className="flex items-center gap-1">
+                                                            <Checkbox
+                                                                id={`nonap-${student.id}`}
+                                                                checked={form.didNotNap}
+                                                                onCheckedChange={(c) => updateForm(student.id, { didNotNap: !!c })}
+                                                            />
+                                                            <Label htmlFor={`nonap-${student.id}`} className="text-[10px] text-slate-500 cursor-pointer">Não dormiu</Label>
+                                                        </div>
                                                     </div>
-                                                    <div className="flex-1">
-                                                        <Label className="text-[10px] text-muted-foreground block">Sono (Fim)</Label>
-                                                        <Input type="time" className="h-7 text-xs px-2" value={form.napEnd} onChange={(e) => updateForm(student.id, { napEnd: e.target.value })} />
-                                                    </div>
+                                                    {!form.didNotNap && (
+                                                        <div className="flex gap-2">
+                                                            <div className="flex-1">
+                                                                <Label className="text-[10px] text-muted-foreground block">Início</Label>
+                                                                <Input type="time" className="h-7 text-xs px-2" value={form.napStart} onChange={(e) => updateForm(student.id, { napStart: e.target.value })} />
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <Label className="text-[10px] text-muted-foreground block">Fim</Label>
+                                                                <Input type="time" className="h-7 text-xs px-2" value={form.napEnd} onChange={(e) => updateForm(student.id, { napEnd: e.target.value })} />
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <Input

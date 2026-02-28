@@ -714,6 +714,7 @@ export interface DailyLog {
     nap: {
         start: string;
         end: string;
+        didNotNap?: boolean;
     };
     activities: string[];
     notes: string;

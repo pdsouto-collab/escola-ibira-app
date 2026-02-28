@@ -80,13 +80,15 @@ export function DailyLogReport({ studentId, onEdit }: DailyLogReportProps) {
                         </div>
 
                         {/* Nap Section */}
-                        {(log.nap.start || log.nap.end) && (
+                        {(log.nap.start || log.nap.end || log.nap.didNotNap) && (
                             <div>
                                 <h3 className="text-sm font-semibold text-slate-500 uppercase mb-3 flex items-center gap-2">
                                     <Moon className="w-4 h-4" /> Sono / Descanso
                                 </h3>
-                                <div className="bg-blue-50 p-4 rounded-lg flex items-center gap-4 text-blue-800">
-                                    <span className="font-semibold">Dorme:</span> {log.nap.start ? log.nap.start : "--:--"} às {log.nap.end ? log.nap.end : "--:--"}
+                                <div className={`p-4 rounded-lg flex items-center gap-4 ${log.nap.didNotNap ? 'bg-slate-50 text-slate-500 border border-slate-100 italic' : 'bg-blue-50 text-blue-800'}`}>
+                                    <span className="font-semibold">
+                                        {log.nap.didNotNap ? "Não dormiu hoje." : `Dormiu das ${log.nap.start || "--:--"} às ${log.nap.end || "--:--"}`}
+                                    </span>
                                 </div>
                             </div>
                         )}
