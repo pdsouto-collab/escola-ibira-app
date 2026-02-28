@@ -964,6 +964,20 @@ export interface User {
     role: UserRole;
     avatar?: string;
     email: string;
+
+    // Additional Profile Fields
+    cpf?: string;
+    phone?: string;
+    birthDate?: string;
+    address?: string;
+
+    // Professional/Admin Fields
+    hiringDate?: string;
+    education?: string;
+    specialization?: string[];
+    bio?: string;
+    status: "active" | "inactive";
+
     assignedClassIds?: string[]; // For teachers: IDs of classes they teach
     linkedStudentIds?: string[]; // For guardians: IDs of students they are responsible for
 }
@@ -974,7 +988,11 @@ export const mockUsers: User[] = [
         name: "Ana Pereira",
         role: "director",
         email: "ana.diretora@escolaibira.com.br",
-        avatar: "https://github.com/shadcn.png"
+        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ana",
+        status: "active",
+        cpf: "123.456.789-00",
+        phone: "(11) 98765-4321",
+        hiringDate: "2010-01-15"
     },
     {
         id: "u2",
@@ -982,29 +1000,38 @@ export const mockUsers: User[] = [
         role: "teacher",
         email: "claudia.prof@escolaibira.com.br",
         assignedClassIds: ["jardim-i", "jardim-ii"],
-        avatar: "https://github.com/shadcn.png"
+        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia",
+        status: "active",
+        cpf: "234.567.890-11",
+        phone: "(11) 99887-7665",
+        hiringDate: "2015-05-10",
+        education: "Pedagogia - USP",
+        specialization: ["Infantil", "BNCC", "Lúdico"]
     },
     {
         id: "u3",
         name: "Mariana Silva",
         role: "guardian",
-        email: "mariana.responsavel@escolaibira.com.br", // Standardized email
-        linkedStudentIds: ["1"], // Alice Souza
-        avatar: "https://github.com/shadcn.png"
+        email: "mariana.mae@email.com",
+        linkedStudentIds: ["s1"],
+        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mariana",
+        status: "active"
     },
     {
         id: "u4",
         name: "Carlos Admin",
         role: "admin",
         email: "admin@escolaibira.com.br",
-        avatar: "https://github.com/shadcn.png"
+        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Carlos",
+        status: "active",
     },
     {
         id: "u5",
         name: "Juliana Nutri",
         role: "nutritionist",
         email: "juliana.nutri@escolaibira.com.br",
-        avatar: "https://github.com/shadcn.png"
+        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Juliana",
+        status: "active",
     }
 ];
 

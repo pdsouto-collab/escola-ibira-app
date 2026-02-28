@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import { useAppStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { UserPlus, MoreVertical, Edit2, Trash2, Mail } from "lucide-react";
+import { UserPlus, MoreVertical, Edit2, Trash2, Mail, Phone, Calendar, MapPin, Briefcase } from "lucide-react";
 import { User } from "@/lib/data";
-import { UserDialog } from "@/components/users/user-dialog";
+import { TeacherDialog } from "@/components/users/teacher-dialog";
+import { Badge } from "@/components/ui/badge";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -51,7 +52,7 @@ export default function TeachersPage() {
     };
 
     const handleDeleteTeacher = (teacher: User) => {
-         
+
         if (confirm(`Tem certeza que deseja remover o registro de ${teacher.name}?`)) {
             removeUser(teacher.id);
         }
@@ -102,17 +103,50 @@ export default function TeachersPage() {
                                     <Mail className="h-3.5 w-3.5 flex-shrink-0" />
                                     {teacher.email}
                                 </div>
-                                <div className="mt-2 flex flex-wrap gap-1">
+                                <div className="flex items-center gap-1.5 mt-1 text-xs text-slate-500 truncate">
+                                    <Phone className="h-3.5 w-3.5 flex-shrink-0" />
+                                    {teacher.phone || "(s/ telefone)"}
+                                </div>
+                                <div className="mt-3 flex flex-wrap gap-1">
                                     {teacher.assignedClassIds && teacher.assignedClassIds.length > 0 ? (
                                         teacher.assignedClassIds.map(classId => (
-                                            <span key={classId} className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700">
+                                            <Badge key={classId} variant="secondary" className="text-[9px] px-1.5 py-0 bg-blue-50 text-blue-700 hover:bg-blue-100 border-none">
                                                 {classId}
-                                            </span>
+                                            </Badge>
                                         ))
                                     ) : (
-                                        <span className="text-[10px] text-slate-400 italic">Sem turmas atribuídas</span>
+                                        <span className="text-[10px] text-slate-400 italic">Sem turmas</span>
                                     )}
                                 </div>
+
+                                <div className="mt-4 pt-3 border-t border-slate-100 space-y-2">
+                                    {teacher.education && (
+                                        <div className="flex items-center gap-1.5 text-[10px] text-slate-500">
+                                            <Briefcase className="h-3 w-3 flex-shrink-0" />
+                                            {teacher.education}
+                                        </div>
+                                    )}
+                                    {teacher.hiringDate && (
+                                        <div className="flex items-center gap-1.5 text-[10px] text-slate-400 italic">
+                                            <Calendar className="h-3 w-3 flex-shrink-0" />
+                                            Desde {new Date(teacher.hiringDate + "T12:00:00").toLocaleDateString('pt-BR')}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {teacher.specialization && teacher.specialization.length > 0 && (
+                                    <div className="mt-3 flex flex-wrap gap-1">
+                                        {teacher.specialization.map(spec => (
+                                            <span key={spec} className="text-[9px] bg-slate-100 text-slate-600 px-1.5 rounded-full border border-slate-200">
+                                                {spec}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {teacher.status === "inactive" && (
+                                    <Badge variant="destructive" className="mt-2 text-[9px] py-0 absolute top-2 left-2">Inativo</Badge>
+                                )}
                             </div>
 
                             <DropdownMenu>
@@ -137,13 +171,12 @@ export default function TeachersPage() {
                 ))}
             </div>
 
-            <UserDialog
-                key={editingUser?.id || 'new-user'}
+            <TeacherDialog
+                key={editingUser?.id || 'new-teacher'}
                 open={isDialogOpen}
                 onOpenChange={setIsDialogOpen}
                 user={editingUser}
                 onSave={handleSaveTeacher}
-                fixedRole="teacher"
             />
 
             <Dialog open={!!createdCredentials} onOpenChange={(open) => !open && setCreatedCredentials(null)}>
