@@ -107,10 +107,10 @@ export function TeacherDialog({ open, onOpenChange, user, onSave }: TeacherDialo
                         <div className="px-6 py-2 bg-white border-b">
                             <TabsList className="grid w-full grid-cols-3 bg-slate-100/50">
                                 <TabsTrigger value="personal" className="gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                                    <UserCircle className="w-4 h-4" /> Personal
+                                    <UserCircle className="w-4 h-4" /> Pessoal
                                 </TabsTrigger>
                                 <TabsTrigger value="professional" className="gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                                    <Briefcase className="w-4 h-4" /> Professional
+                                    <Briefcase className="w-4 h-4" /> Profissional
                                 </TabsTrigger>
                                 <TabsTrigger value="classes" className="gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
                                     <BookOpen className="w-4 h-4" /> Turmas
