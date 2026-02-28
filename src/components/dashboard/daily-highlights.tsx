@@ -149,7 +149,7 @@ export function DailyHighlights() {
                             </Button>
                         </Link>
                         <Button variant="outline" size="sm" className="h-8 text-xs gap-2" onClick={() => setIsAddDialogOpen(true)}>
-                            Adicionar nova
+                            Adicionar novo
                         </Button>
                     </div>
                 </div>
