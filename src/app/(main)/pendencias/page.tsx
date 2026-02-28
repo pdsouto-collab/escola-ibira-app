@@ -94,22 +94,12 @@ export default function PendenciasPage() {
                         Visão geral de suas responsabilidades e ações prioritárias.
                     </p>
                 </div>
-                <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => window.location.href = '/agenda'} className="hidden sm:flex gap-2">
-                        <Calendar className="h-4 w-4" />
-                        Ver Agenda
-                    </Button>
-                    <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2">
-                        <Plus className="h-4 w-4" />
-                        Nova Tarefa
-                    </Button>
-                </div>
             </div>
 
             {/* Ações Estratégicas / Quick Actions */}
             {isTeacher && teacherClasses.length > 0 && (
                 <div className="space-y-4">
-                    <h2 className="text-xl font-bold text-slate-800">Atividades Pendentes</h2>
+                    <h2 className="text-xl font-bold text-slate-800">Tarefas e Mensagens</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {/* Diário de Bordo Card */}
                         <div className="col-span-1 md:col-span-2 lg:col-span-1 bg-gradient-to-br from-[#2E798A] to-[#256370] rounded-xl p-5 text-white shadow-lg overflow-hidden relative group">
@@ -177,15 +167,27 @@ export default function PendenciasPage() {
                         </Link>
                     </div>
                 </div>
-            )}
+            )
+            }
 
             <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                    <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                        <Info className="w-4 h-4" />
-                        Lembretes
-                    </h2>
-                    <div className="h-px bg-slate-100 flex-1" />
+                <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-2 flex-1">
+                        <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                            <Info className="w-4 h-4" />
+                            Lembretes
+                        </h2>
+                        <div className="h-px bg-slate-100 flex-1" />
+                    </div>
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 text-xs gap-2 border-slate-200 hover:bg-slate-50 shrink-0"
+                        onClick={() => setIsAddDialogOpen(true)}
+                    >
+                        <Plus className="w-3.5 h-3.5" />
+                        Adicionar Novo
+                    </Button>
                 </div>
 
                 <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
@@ -390,6 +392,6 @@ export default function PendenciasPage() {
                     />
                 )}
             </div>
-        </div>
+        </div >
     );
 }
