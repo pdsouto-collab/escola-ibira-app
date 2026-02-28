@@ -89,7 +89,7 @@ export function DailyLogDialog({ open, onOpenChange, date, classId }: DailyLogDi
                     snack: existing.meals.snack,
                     napStart: existing.nap.start,
                     napEnd: existing.nap.end,
-                    didNotNap: !!existing.nap.didNotNap,
+                    didNotNap: existing.nap.didNotNap !== undefined ? existing.nap.didNotNap : true,
                     notes: existing.notes,
                 };
             } else {
