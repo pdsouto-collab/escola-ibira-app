@@ -88,7 +88,7 @@ export default function PendenciasPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-                        Painel Estratégico
+                        Atividades Pendentes
                     </h1>
                     <p className="text-slate-500">
                         Visão geral de suas responsabilidades e ações prioritárias.
@@ -109,7 +109,7 @@ export default function PendenciasPage() {
             {/* Ações Estratégicas / Quick Actions */}
             {isTeacher && teacherClasses.length > 0 && (
                 <div className="space-y-4">
-                    <h2 className="text-xl font-bold text-slate-800">Tarefas e Pendências</h2>
+                    <h2 className="text-xl font-bold text-slate-800">Atividades Pendentes</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {/* Diário de Bordo Card */}
                         <div className="col-span-1 md:col-span-2 lg:col-span-1 bg-gradient-to-br from-[#2E798A] to-[#256370] rounded-xl p-5 text-white shadow-lg overflow-hidden relative group">
@@ -160,7 +160,7 @@ export default function PendenciasPage() {
                         </Link>
 
                         {/* Performance/Evaluations Card */}
-                        <Link href="/mosaico" className="block h-full">
+                        <Link href={`/portfolio${teacherClasses[0] ? `?classId=${teacherClasses[0].id}` : ""}`} className="block h-full">
                             <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow h-full">
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="p-2 bg-emerald-50 rounded-lg">
@@ -171,7 +171,7 @@ export default function PendenciasPage() {
                                 <h3 className="font-bold text-slate-800 mb-1">Avaliações</h3>
                                 <p className="text-slate-500 text-sm mb-4">5 alunos do {teacherClasses[0]?.name || 'Jardim'} ainda possuem evidências pendentes este mês.</p>
                                 <Button variant="outline" size="sm" className="w-full text-emerald-600 border-emerald-100 hover:bg-emerald-50">
-                                    Ver Mosaico
+                                    Ver Portfólio
                                 </Button>
                             </div>
                         </Link>

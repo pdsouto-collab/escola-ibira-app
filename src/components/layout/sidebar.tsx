@@ -30,7 +30,7 @@ import { BookOpen } from "lucide-react";
 const navigation = [
     { name: "Início", href: "/", icon: LayoutDashboard },
     { name: "Matriz Circular", href: "/mosaico", icon: Aperture, roles: ["director", "admin", "teacher"] },
-    { name: "Pendências", href: "/pendencias", icon: CheckCircle2, roles: ["director", "admin", "teacher"] },
+    { name: "Atividades Pendentes", href: "/pendencias", icon: CheckCircle2, roles: ["director", "admin", "teacher"] },
     { name: "Mural de Eventos", href: "/mural", icon: PartyPopper },
     { name: "Rotinas", href: "/agenda", icon: CalendarDays },
     { name: "Conversas", href: "/conversas", icon: MessageCircle },

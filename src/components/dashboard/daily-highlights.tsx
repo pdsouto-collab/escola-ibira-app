@@ -75,7 +75,7 @@ export function DailyHighlights() {
             {/* Strategic Quick Actions for Teachers */}
             {isTeacher && (
                 <div className="space-y-4">
-                    <h2 className="text-xl font-bold text-slate-800">Tarefas e Pendências</h2>
+                    <h2 className="text-xl font-bold text-slate-800">Atividades Pendentes</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="col-span-1 md:col-span-2 bg-gradient-to-br from-[#2E798A] to-[#256370] rounded-2xl p-6 text-white shadow-lg relative overflow-hidden group">
                             <NotebookPen className="absolute -right-6 -top-6 w-32 h-32 text-white/10 group-hover:rotate-12 transition-transform" />
@@ -122,7 +122,7 @@ export function DailyHighlights() {
                                 </div>
                             </Link>
 
-                            <Link href="/mosaico" className="block">
+                            <Link href={`/portfolio${teacherClasses[0] ? `?classId=${teacherClasses[0].id}` : ""}`} className="block">
                                 <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:border-emerald-200 transition-colors cursor-pointer group">
                                     <div className="flex items-center justify-between mb-3">
                                         <div className="p-2 bg-emerald-50 rounded-lg group-hover:bg-emerald-100 transition-colors">
@@ -131,7 +131,7 @@ export function DailyHighlights() {
                                         <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">Meta: 80%</Badge>
                                     </div>
                                     <h3 className="font-bold text-slate-800">Avaliações</h3>
-                                    <p className="text-xs text-slate-500">Mapeamento de competências da turma.</p>
+                                    <p className="text-xs text-slate-500">Gestão de evidências e portfólio da turma.</p>
                                 </div>
                             </Link>
                         </div>

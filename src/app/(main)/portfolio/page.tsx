@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useAppStore } from "@/lib/store";
 import { Assessment } from "@/lib/data";
 import { AssessmentDrawer } from "@/components/assessment/assessment-drawer";
@@ -708,14 +709,25 @@ function StudentView({
 // ────────────────────────────────────────────
 // Main Portfolio Page
 // ────────────────────────────────────────────
-export default function PortfolioPage() {
+function PortfolioContent() {
     const { assessments, projects: allProjects, students, classes, schedule, skillsTree, contentsTree, libraryItems } = useAppStore();
-    const [view, setView] = useState<"project" | "student">("project");
+    const searchParams = useSearchParams();
+    const initialClassId = searchParams.get("classId");
+
+    const [view, setView] = useState<"project" | "student">(initialClassId ? "student" : "project");
     const [projectFilter, setProjectFilter] = useState("all");
-    const [classFilter, setClassFilter] = useState("all");
+    const [classFilter, setClassFilter] = useState(initialClassId || "all");
     const [studentFilter, setStudentFilter] = useState("all");
     const [drawerCtx, setDrawerCtx] = useState<(Partial<Assessment> & { contextLabel: string }) | null>(null);
     const [editingAssessment, setEditingAssessment] = useState<Assessment | null>(null);
+
+    // Sync class filter if search param changes
+    useEffect(() => {
+        if (initialClassId) {
+            setClassFilter(initialClassId);
+            setView("student");
+        }
+    }, [initialClassId]);
 
     const studentsInClass = useMemo(
         () => classFilter === "all" ? students : students.filter(s => s.classId === classFilter),
@@ -862,9 +874,16 @@ export default function PortfolioPage() {
                     projectId={editingAssessment.projectId}
                     defaultClassId={editingAssessment.classId}
                     defaultStudentId={editingAssessment.studentId}
-                    contextLabel={editingAssessment.knowledgeNodeId ? resolveNodeInfo(editingAssessment.knowledgeNodeId, skillsTree, contentsTree, libraryItems).name : "Editar avaliação"}
                 />
             )}
         </div>
+    );
+}
+
+export default function PortfolioPage() {
+    return (
+        <Suspense fallback={<div className="p-8 text-center">Carregando portfólio...</div>}>
+            <PortfolioContent />
+        </Suspense>
     );
 }
