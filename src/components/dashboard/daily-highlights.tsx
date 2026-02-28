@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import { useAppStore } from "@/lib/store";
 import {
     ArrowRight, BookOpen, Calendar, Calculator, FlaskConical,
@@ -108,27 +109,31 @@ export function DailyHighlights() {
                         </div>
 
                         <div className="space-y-4">
-                            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:border-[#2E798A]/30 transition-colors cursor-pointer group" onClick={() => window.location.href = '/mensagens'}>
-                                <div className="flex items-center justify-between mb-3">
-                                    <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-[#2E798A]/10 transition-colors">
-                                        <MessageSquare className="w-5 h-5 text-[#2E798A]" />
+                            <Link href="/conversas" className="block">
+                                <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:border-[#2E798A]/30 transition-all cursor-pointer group">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-[#2E798A]/10 transition-colors">
+                                            <MessageSquare className="w-5 h-5 text-[#2E798A]" />
+                                        </div>
+                                        <Badge variant="secondary" className="bg-[#2E798A]/10 text-[#2E798A]">3 pendentes</Badge>
                                     </div>
-                                    <Badge variant="secondary" className="bg-[#2E798A]/10 text-[#2E798A]">3 pendentes</Badge>
+                                    <h3 className="font-bold text-slate-800">Mensagens</h3>
+                                    <p className="text-xs text-slate-500">Novos recados de pais e responsáveis.</p>
                                 </div>
-                                <h3 className="font-bold text-slate-800">Mensagens</h3>
-                                <p className="text-xs text-slate-500">Novos recados de pais e responsáveis.</p>
-                            </div>
+                            </Link>
 
-                            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:border-emerald-200 transition-colors cursor-pointer group" onClick={() => window.location.href = '/mosaico'}>
-                                <div className="flex items-center justify-between mb-3">
-                                    <div className="p-2 bg-emerald-50 rounded-lg group-hover:bg-emerald-100 transition-colors">
-                                        <Star className="w-5 h-5 text-emerald-600" />
+                            <Link href="/mosaico" className="block">
+                                <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:border-emerald-200 transition-colors cursor-pointer group">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className="p-2 bg-emerald-50 rounded-lg group-hover:bg-emerald-100 transition-colors">
+                                            <Star className="w-5 h-5 text-emerald-600" />
+                                        </div>
+                                        <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">Meta: 80%</Badge>
                                     </div>
-                                    <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">Meta: 80%</Badge>
+                                    <h3 className="font-bold text-slate-800">Avaliações</h3>
+                                    <p className="text-xs text-slate-500">Mapeamento de competências da turma.</p>
                                 </div>
-                                <h3 className="font-bold text-slate-800">Avaliações</h3>
-                                <p className="text-xs text-slate-500">Mapeamento de competências da turma.</p>
-                            </div>
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -138,9 +143,11 @@ export function DailyHighlights() {
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-xl font-bold text-slate-800">Lembretes</h2>
                     <div className="flex gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => window.location.href = '/pendencias'} className="text-[#2E798A] hover:text-[#256370] text-xs gap-1">
-                            Ver todas <ArrowRight className="w-3 h-3" />
-                        </Button>
+                        <Link href="/pendencias">
+                            <Button variant="ghost" size="sm" className="text-[#2E798A] hover:text-[#256370] text-xs gap-1">
+                                Ver todas <ArrowRight className="w-3 h-3" />
+                            </Button>
+                        </Link>
                         <Button variant="outline" size="sm" className="h-8 text-xs gap-2" onClick={() => setIsAddDialogOpen(true)}>
                             Adicionar nova
                         </Button>

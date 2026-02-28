@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
     Plus, Trash2, CheckCircle2, Circle, FlaskConical, Calculator,
     BookOpen, Clock, AlertCircle, MessageSquare, GraduationCap,
@@ -142,34 +143,38 @@ export default function PendenciasPage() {
                         </div>
 
                         {/* Messages/Communication Card */}
-                        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md hover:border-[#2E798A]/30 transition-all">
-                            <div className="flex items-start justify-between mb-4">
-                                <div className="p-2 bg-blue-50 rounded-lg">
-                                    <MessageSquare className="w-5 h-5 text-[#2E798A]" />
+                        <Link href="/conversas" className="block h-full">
+                            <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md hover:border-[#2E798A]/30 transition-all h-full">
+                                <div className="flex items-start justify-between mb-4">
+                                    <div className="p-2 bg-blue-50 rounded-lg">
+                                        <MessageSquare className="w-5 h-5 text-[#2E798A]" />
+                                    </div>
+                                    <Badge variant="secondary" className="bg-[#2E798A]/10 text-[#2E798A]">3 Não Lidas</Badge>
                                 </div>
-                                <Badge variant="secondary" className="bg-[#2E798A]/10 text-[#2E798A]">3 Não Lidas</Badge>
+                                <h3 className="font-bold text-slate-800 mb-1">Comunicação</h3>
+                                <p className="text-slate-500 text-sm mb-4">Há novas mensagens de responsáveis que precisam de atenção.</p>
+                                <Button variant="outline" size="sm" className="w-full text-[#2E798A] border-[#2E798A]/20 hover:bg-[#2E798A]/5">
+                                    Ir para Mensagens
+                                </Button>
                             </div>
-                            <h3 className="font-bold text-slate-800 mb-1">Comunicação</h3>
-                            <p className="text-slate-500 text-sm mb-4">Há novas mensagens de responsáveis que precisam de atenção.</p>
-                            <Button variant="outline" size="sm" className="w-full text-[#2E798A] border-[#2E798A]/20 hover:bg-[#2E798A]/5" onClick={() => window.location.href = '/mensagens'}>
-                                Ir para Mensagens
-                            </Button>
-                        </div>
+                        </Link>
 
                         {/* Performance/Evaluations Card */}
-                        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex items-start justify-between mb-4">
-                                <div className="p-2 bg-emerald-50 rounded-lg">
-                                    <Star className="w-5 h-5 text-emerald-600" />
+                        <Link href="/mosaico" className="block h-full">
+                            <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow h-full">
+                                <div className="flex items-start justify-between mb-4">
+                                    <div className="p-2 bg-emerald-50 rounded-lg">
+                                        <Star className="w-5 h-5 text-emerald-600" />
+                                    </div>
+                                    <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">80% Meta</Badge>
                                 </div>
-                                <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">80% Meta</Badge>
+                                <h3 className="font-bold text-slate-800 mb-1">Avaliações</h3>
+                                <p className="text-slate-500 text-sm mb-4">5 alunos do {teacherClasses[0]?.name || 'Jardim'} ainda possuem evidências pendentes este mês.</p>
+                                <Button variant="outline" size="sm" className="w-full text-emerald-600 border-emerald-100 hover:bg-emerald-50">
+                                    Ver Mosaico
+                                </Button>
                             </div>
-                            <h3 className="font-bold text-slate-800 mb-1">Avaliações</h3>
-                            <p className="text-slate-500 text-sm mb-4">5 alunos do {teacherClasses[0]?.name || 'Jardim'} ainda possuem evidências pendentes este mês.</p>
-                            <Button variant="outline" size="sm" className="w-full text-emerald-600 border-emerald-100 hover:bg-emerald-50" onClick={() => window.location.href = '/mosaico'}>
-                                Ver Mosaico
-                            </Button>
-                        </div>
+                        </Link>
                     </div>
                 </div>
             )}
