@@ -102,7 +102,7 @@ export function DailyLogDialog({ open, onOpenChange, date, classId }: DailyLogDi
                     snack: "all",
                     napStart: "13:00",
                     napEnd: "14:30",
-                    didNotNap: false,
+                    didNotNap: true,
                     notes: "",
                 };
             }
@@ -176,7 +176,8 @@ export function DailyLogDialog({ open, onOpenChange, date, classId }: DailyLogDi
                         mood: "happy",
                         breakfast: "all",
                         lunch: "all",
-                        snack: "all"
+                        snack: "all",
+                        didNotNap: true,
                     };
                 }
             });
