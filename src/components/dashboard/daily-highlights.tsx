@@ -73,59 +73,62 @@ export function DailyHighlights() {
         <section className="mb-10 space-y-6">
             {/* Strategic Quick Actions for Teachers */}
             {isTeacher && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="col-span-1 md:col-span-2 bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden group">
-                        <NotebookPen className="absolute -right-6 -top-6 w-32 h-32 text-white/10 group-hover:rotate-12 transition-transform" />
-                        <div className="relative z-10 flex flex-col h-full">
-                            <div className="flex items-center gap-2 mb-4">
-                                <Badge className="bg-white/20 hover:bg-white/30 text-white border-none">AÇÃO PRIORITÁRIA</Badge>
-                                <span className="text-xs text-indigo-100 flex items-center gap-1">
-                                    <Clock className="w-3 h-3" /> Hoje, {new Date().toLocaleDateString('pt-BR')}
-                                </span>
-                            </div>
-                            <h2 className="text-2xl font-bold mb-2">Diário de Bordo</h2>
-                            <p className="text-indigo-100 text-sm mb-6 max-w-md">Não esqueça de registrar as vivências e a rotina das suas turmas para manter as famílias conectadas.</p>
+                <div className="space-y-4">
+                    <h2 className="text-xl font-bold text-slate-800">Tarefas e Pendências</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="col-span-1 md:col-span-2 bg-gradient-to-br from-[#2E798A] to-[#256370] rounded-2xl p-6 text-white shadow-lg relative overflow-hidden group">
+                            <NotebookPen className="absolute -right-6 -top-6 w-32 h-32 text-white/10 group-hover:rotate-12 transition-transform" />
+                            <div className="relative z-10 flex flex-col h-full">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <Badge className="bg-white/20 hover:bg-white/30 text-white border-none">AÇÃO PRIORITÁRIA</Badge>
+                                    <span className="text-xs text-cyan-100 flex items-center gap-1">
+                                        <Clock className="w-3 h-3" /> Hoje, {new Date().toLocaleDateString('pt-BR')}
+                                    </span>
+                                </div>
+                                <h2 className="text-2xl font-bold mb-2">Diário de Bordo</h2>
+                                <p className="text-cyan-50 text-sm mb-6 max-w-md">Não esqueça de registrar as vivências e a rotina das suas turmas para manter as famílias conectadas.</p>
 
-                            <div className="mt-auto flex flex-wrap gap-2">
-                                {teacherClasses.map(c => (
-                                    <Button
-                                        key={c.id}
-                                        onClick={() => {
-                                            setActiveClassId(c.id);
-                                            setIsDailyLogOpen(true);
-                                        }}
-                                        variant="secondary"
-                                        className="bg-white/10 border-white/20 text-white hover:bg-white/20 gap-2 h-9"
-                                    >
-                                        Registrar {c.name}
-                                        <ChevronRight className="w-4 h-4" />
-                                    </Button>
-                                ))}
+                                <div className="mt-auto flex flex-wrap gap-2">
+                                    {teacherClasses.map(c => (
+                                        <Button
+                                            key={c.id}
+                                            onClick={() => {
+                                                setActiveClassId(c.id);
+                                                setIsDailyLogOpen(true);
+                                            }}
+                                            variant="secondary"
+                                            className="bg-white/10 border-white/20 text-white hover:bg-white/20 gap-2 h-9"
+                                        >
+                                            Registrar {c.name}
+                                            <ChevronRight className="w-4 h-4" />
+                                        </Button>
+                                    ))}
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="space-y-4">
-                        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:border-indigo-200 transition-colors cursor-pointer group" onClick={() => window.location.href = '/mensagens'}>
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
-                                    <MessageSquare className="w-5 h-5 text-blue-600" />
+                        <div className="space-y-4">
+                            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:border-[#2E798A]/30 transition-colors cursor-pointer group" onClick={() => window.location.href = '/mensagens'}>
+                                <div className="flex items-center justify-between mb-3">
+                                    <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-[#2E798A]/10 transition-colors">
+                                        <MessageSquare className="w-5 h-5 text-[#2E798A]" />
+                                    </div>
+                                    <Badge variant="secondary" className="bg-[#2E798A]/10 text-[#2E798A]">3 pendentes</Badge>
                                 </div>
-                                <Badge variant="secondary" className="bg-blue-100 text-blue-700">3 pendentes</Badge>
+                                <h3 className="font-bold text-slate-800">Mensagens</h3>
+                                <p className="text-xs text-slate-500">Novos recados de pais e responsáveis.</p>
                             </div>
-                            <h3 className="font-bold text-slate-800">Mensagens</h3>
-                            <p className="text-xs text-slate-500">Novos recados de pais e responsáveis.</p>
-                        </div>
 
-                        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:border-emerald-200 transition-colors cursor-pointer group" onClick={() => window.location.href = '/mosaico'}>
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="p-2 bg-emerald-50 rounded-lg group-hover:bg-emerald-100 transition-colors">
-                                    <Star className="w-5 h-5 text-emerald-600" />
+                            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:border-emerald-200 transition-colors cursor-pointer group" onClick={() => window.location.href = '/mosaico'}>
+                                <div className="flex items-center justify-between mb-3">
+                                    <div className="p-2 bg-emerald-50 rounded-lg group-hover:bg-emerald-100 transition-colors">
+                                        <Star className="w-5 h-5 text-emerald-600" />
+                                    </div>
+                                    <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">Meta: 80%</Badge>
                                 </div>
-                                <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">Meta: 80%</Badge>
+                                <h3 className="font-bold text-slate-800">Avaliações</h3>
+                                <p className="text-xs text-slate-500">Mapeamento de competências da turma.</p>
                             </div>
-                            <h3 className="font-bold text-slate-800">Avaliações</h3>
-                            <p className="text-xs text-slate-500">Mapeamento de competências da turma.</p>
                         </div>
                     </div>
                 </div>
@@ -133,9 +136,9 @@ export function DailyHighlights() {
 
             <div className="pt-2">
                 <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-bold text-slate-800">Tarefas e Pendências</h2>
+                    <h2 className="text-xl font-bold text-slate-800">Lembretes</h2>
                     <div className="flex gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => window.location.href = '/pendencias'} className="text-indigo-600 hover:text-indigo-700 text-xs gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => window.location.href = '/pendencias'} className="text-[#2E798A] hover:text-[#256370] text-xs gap-1">
                             Ver todas <ArrowRight className="w-3 h-3" />
                         </Button>
                         <Button variant="outline" size="sm" className="h-8 text-xs gap-2" onClick={() => setIsAddDialogOpen(true)}>

@@ -107,66 +107,69 @@ export default function PendenciasPage() {
 
             {/* Ações Estratégicas / Quick Actions */}
             {isTeacher && teacherClasses.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {/* Diário de Bordo Card */}
-                    <div className="col-span-1 md:col-span-2 lg:col-span-1 bg-gradient-to-br from-indigo-600 to-violet-700 rounded-xl p-5 text-white shadow-lg overflow-hidden relative group">
-                        <NotebookPen className="absolute -right-4 -top-4 w-24 h-24 text-white/10 group-hover:rotate-12 transition-transform" />
-                        <div className="relative z-10">
-                            <div className="flex items-center gap-2 mb-3">
-                                <Badge className="bg-white/20 hover:bg-white/30 text-white border-none text-[10px]">ROTINA DIÁRIA</Badge>
-                                <span className="text-[10px] text-indigo-100 flex items-center gap-1">
-                                    <Clock className="w-3 h-3" /> {new Date().toLocaleDateString('pt-BR')}
-                                </span>
-                            </div>
-                            <h2 className="text-xl font-bold mb-1">Diário de Bordo</h2>
-                            <p className="text-indigo-100 text-sm mb-4">Registre as vivências, humor e rotina das suas turmas hoje.</p>
+                <div className="space-y-4">
+                    <h2 className="text-xl font-bold text-slate-800">Tarefas e Pendências</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {/* Diário de Bordo Card */}
+                        <div className="col-span-1 md:col-span-2 lg:col-span-1 bg-gradient-to-br from-[#2E798A] to-[#256370] rounded-xl p-5 text-white shadow-lg overflow-hidden relative group">
+                            <NotebookPen className="absolute -right-4 -top-4 w-24 h-24 text-white/10 group-hover:rotate-12 transition-transform" />
+                            <div className="relative z-10">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <Badge className="bg-white/20 hover:bg-white/30 text-white border-none text-[10px]">ROTINA DIÁRIA</Badge>
+                                    <span className="text-[10px] text-cyan-100 flex items-center gap-1">
+                                        <Clock className="w-3 h-3" /> {new Date().toLocaleDateString('pt-BR')}
+                                    </span>
+                                </div>
+                                <h2 className="text-xl font-bold mb-1">Diário de Bordo</h2>
+                                <p className="text-cyan-50 text-sm mb-4">Registre as vivências, humor e rotina das suas turmas hoje.</p>
 
-                            <div className="space-y-2">
-                                {teacherClasses.map(c => (
-                                    <button
-                                        key={c.id}
-                                        onClick={() => {
-                                            setActiveClassId(c.id);
-                                            setIsDailyLogOpen(true);
-                                        }}
-                                        className="w-full bg-white/10 hover:bg-white/20 py-2 px-3 rounded-lg text-sm flex items-center justify-between transition-colors border border-white/10"
-                                    >
-                                        <span className="font-medium">Registrar para {c.name}</span>
-                                        <ChevronRight className="w-4 h-4" />
-                                    </button>
-                                ))}
+                                <div className="space-y-2">
+                                    {teacherClasses.map(c => (
+                                        <button
+                                            key={c.id}
+                                            onClick={() => {
+                                                setActiveClassId(c.id);
+                                                setIsDailyLogOpen(true);
+                                            }}
+                                            className="w-full bg-white/10 hover:bg-white/20 py-2 px-3 rounded-lg text-sm flex items-center justify-between transition-colors border border-white/10"
+                                        >
+                                            <span className="font-medium">Registrar para {c.name}</span>
+                                            <ChevronRight className="w-4 h-4" />
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Messages/Communication Card */}
-                    <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="flex items-start justify-between mb-4">
-                            <div className="p-2 bg-blue-50 rounded-lg">
-                                <MessageSquare className="w-5 h-5 text-blue-600" />
+                        {/* Messages/Communication Card */}
+                        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md hover:border-[#2E798A]/30 transition-all">
+                            <div className="flex items-start justify-between mb-4">
+                                <div className="p-2 bg-blue-50 rounded-lg">
+                                    <MessageSquare className="w-5 h-5 text-[#2E798A]" />
+                                </div>
+                                <Badge variant="secondary" className="bg-[#2E798A]/10 text-[#2E798A]">3 Não Lidas</Badge>
                             </div>
-                            <Badge variant="secondary" className="bg-blue-100 text-blue-700">3 Não Lidas</Badge>
+                            <h3 className="font-bold text-slate-800 mb-1">Comunicação</h3>
+                            <p className="text-slate-500 text-sm mb-4">Há novas mensagens de responsáveis que precisam de atenção.</p>
+                            <Button variant="outline" size="sm" className="w-full text-[#2E798A] border-[#2E798A]/20 hover:bg-[#2E798A]/5" onClick={() => window.location.href = '/mensagens'}>
+                                Ir para Mensagens
+                            </Button>
                         </div>
-                        <h3 className="font-bold text-slate-800 mb-1">Comunicação</h3>
-                        <p className="text-slate-500 text-sm mb-4">Há novas mensagens de responsáveis que precisam de atenção.</p>
-                        <Button variant="outline" size="sm" className="w-full text-blue-600 border-blue-100 hover:bg-blue-50" onClick={() => window.location.href = '/mensagens'}>
-                            Ir para Mensagens
-                        </Button>
-                    </div>
 
-                    {/* Performance/Evaluations Card */}
-                    <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="flex items-start justify-between mb-4">
-                            <div className="p-2 bg-emerald-50 rounded-lg">
-                                <Star className="w-5 h-5 text-emerald-600" />
+                        {/* Performance/Evaluations Card */}
+                        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+                            <div className="flex items-start justify-between mb-4">
+                                <div className="p-2 bg-emerald-50 rounded-lg">
+                                    <Star className="w-5 h-5 text-emerald-600" />
+                                </div>
+                                <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">80% Meta</Badge>
                             </div>
-                            <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">80% Meta</Badge>
+                            <h3 className="font-bold text-slate-800 mb-1">Avaliações</h3>
+                            <p className="text-slate-500 text-sm mb-4">5 alunos do {teacherClasses[0]?.name || 'Jardim'} ainda possuem evidências pendentes este mês.</p>
+                            <Button variant="outline" size="sm" className="w-full text-emerald-600 border-emerald-100 hover:bg-emerald-50" onClick={() => window.location.href = '/mosaico'}>
+                                Ver Mosaico
+                            </Button>
                         </div>
-                        <h3 className="font-bold text-slate-800 mb-1">Avaliações</h3>
-                        <p className="text-slate-500 text-sm mb-4">5 alunos do {teacherClasses[0]?.name || 'Jardim'} ainda possuem evidências pendentes este mês.</p>
-                        <Button variant="outline" size="sm" className="w-full text-emerald-600 border-emerald-100 hover:bg-emerald-50" onClick={() => window.location.href = '/mosaico'}>
-                            Ver Mosaico
-                        </Button>
                     </div>
                 </div>
             )}
@@ -175,7 +178,7 @@ export default function PendenciasPage() {
                 <div className="flex items-center gap-2">
                     <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
                         <Info className="w-4 h-4" />
-                        Lista de Tarefas Administrativas
+                        Lembretes
                     </h2>
                     <div className="h-px bg-slate-100 flex-1" />
                 </div>
