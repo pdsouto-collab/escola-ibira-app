@@ -75,7 +75,7 @@ export function DailyHighlights() {
             {/* Strategic Quick Actions for Teachers */}
             {isTeacher && (
                 <div className="space-y-4">
-                    <h2 className="text-xl font-bold text-slate-800">Atividades Pendentes</h2>
+                    <h2 className="text-xl font-bold text-slate-800">Tarefas e Mensagens</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="col-span-1 md:col-span-2 bg-gradient-to-br from-[#2E798A] to-[#256370] rounded-2xl p-6 text-white shadow-lg relative overflow-hidden group">
                             <NotebookPen className="absolute -right-6 -top-6 w-32 h-32 text-white/10 group-hover:rotate-12 transition-transform" />
