@@ -1,0 +1,1 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,1661,r=>{"use strict";var i=r.i(43476),e=r.i(41447);function o({children:r}){return(0,i.jsx)(e.AppProvider,{children:r})}r.s(["Providers",()=>o])}]);
