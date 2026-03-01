@@ -376,7 +376,7 @@ export function RadialMatrix({
                             <p className="font-semibold text-sm">{node.name}</p>
                             {node.description && <p className="text-xs text-slate-500 line-clamp-2 mt-1">{node.description}</p>}
                             <p className="text-[10px] text-slate-400 mt-2 uppercase tracking-wide">
-                                Nível: {node.level} • Dê 2 cliques para Focar
+                                Nível: {node.level === 'macro' ? '1' : node.level === 'mesclado' ? '2' : node.level === 'micro' ? '3' : '4'} • Dê 2 cliques para Focar
                             </p>
                         </TooltipContent>
                     </Tooltip>
