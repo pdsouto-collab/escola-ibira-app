@@ -398,7 +398,7 @@ export function RadialMatrix({
 
 
     return (
-        <div className="relative flex justify-center items-center py-4 select-none w-full h-full min-h-[500px]">
+        <div className="relative flex justify-center items-center py-4 select-none w-full h-full">
             <svg viewBox={`0 0 ${size} ${size}`} className="max-w-full max-h-full h-auto" preserveAspectRatio="xMidYMid meet">
                 <defs>
                     <pattern id="diagonalHatch" patternUnits="userSpaceOnUse" width="4" height="4" patternTransform="rotate(45 2 2)">

@@ -166,7 +166,7 @@ export function MosaicContainer() {
                 )}
 
                 {/* Chart Area */}
-                <div className="flex-1 overflow-auto bg-slate-50 flex flex-col items-center p-0">
+                <div className="flex-1 overflow-hidden bg-slate-50 flex flex-col items-center p-0">
                     <div className="w-full bg-white border-b py-2 px-6 flex justify-center">
                         {activeTab === "skill" ? (
                             <div className="text-blue-700 font-bold tracking-widest uppercase text-[10px] opacity-80">
@@ -178,7 +178,7 @@ export function MosaicContainer() {
                             </div>
                         )}
                     </div>
-                    <div className="flex-1 w-full flex items-center justify-center p-0">
+                    <div className="flex-1 w-full min-h-0 flex items-center justify-center p-0">
                         <RadialMatrix
                             data={dataToRender}
                             treeType={activeTab}
