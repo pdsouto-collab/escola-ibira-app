@@ -359,9 +359,14 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
                                                         libraryItems
                                                             .filter(i => i.type === treeType)
                                                             .map(i => treeType === "skill" ? i.grade : i.subGroup)
-                                                            .filter(g => g && g !== "all")
-                                                    )).sort((a, b) => a!.localeCompare(b!)).map(grade => (
-                                                        <SelectItem key={grade} value={grade!}>
+                                                            .filter(g => g && g.trim().toLowerCase() !== "all")
+                                                    )).sort((a, b) => {
+                                                        const aNum = parseInt(a || "");
+                                                        const bNum = parseInt(b || "");
+                                                        if (!isNaN(aNum) && !isNaN(bNum)) return aNum - bNum;
+                                                        return (a || "").localeCompare(b || "");
+                                                    }).map(grade => (
+                                                        <SelectItem key={`tree-filter-${grade}`} value={grade!}>
                                                             {treeType === "skill" ? (
                                                                 grade === 'infantil' ? 'Educação Infantil' :
                                                                     grade?.endsWith('ano') ? `${grade.replace('ano', '')}º Ano` : grade

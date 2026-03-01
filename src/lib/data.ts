@@ -811,9 +811,14 @@ export const mockLibraryItems: LibraryItem[] = [
     { id: "lib-cg-22", type: "content", name: "Autonomia e Tomada de Decisão", description: "Capacidade de agir com independência e responsabilidade.", isBNCC: false, subGroup: "Responsabilidade e Cidadania", grade: "Responsabilidade e Cidadania" },
     { id: "lib-cg-23", type: "content", name: "Consciência Socioambiental", description: "Atuação focada no bem comum e na sustentabilidade.", isBNCC: false, subGroup: "Responsabilidade e Cidadania", grade: "Responsabilidade e Cidadania" },
 
+    // --- EDUCAÇÃO INFANTIL DATA ---
+    { id: "EI01EO01", type: "skill", name: "O eu, o outro e o nós", description: "Demonstrar empatia pelos outros, percebendo que as pessoas têm diferentes sentimentos.", isBNCC: true, subGroup: "Socioemocional", grade: "infantil" },
+    { id: "EI01CG01", type: "skill", name: "Corpo, gestos e movimentos", description: "Movimentar as partes do corpo para exprimir corporalmente emoções.", isBNCC: true, subGroup: "Educação Física", grade: "infantil" },
+    { id: "EI01TS01", type: "skill", name: "Traços, sons, cores e formas", description: "Explorar sons produzidos com o próprio corpo e com objetos do cotidiano.", isBNCC: true, subGroup: "Artes", grade: "infantil" },
+
     // --- CUSTOM CATEGORY EXAMPLES ---
-    { id: "lib-custom-sk-01", type: "skill", name: "Inteligência Emocional", description: "Identificar e nomear as próprias emoções em situações de conflito no parquinho.", isBNCC: false, subGroup: "Sócio-Emocional", grade: "all" },
-    { id: "lib-custom-co-01", type: "content", name: "Horta Comunitária", description: "Técnicas de plantio e cuidado diário com hortaliças no ambiente escolar.", isBNCC: false, subGroup: "Projetos Especiais", grade: "all" }
+    { id: "lib-custom-sk-01", type: "skill", name: "Inteligência Emocional", description: "Identificar e nomear as próprias emoções em situações de conflito no parquinho.", isBNCC: false, subGroup: "Sócio-Emocional", grade: "infantil" },
+    { id: "lib-custom-co-01", type: "content", name: "Horta Comunitária", description: "Técnicas de plantio e cuidado diário com hortaliças no ambiente escolar.", isBNCC: false, subGroup: "Projetos Especiais", grade: "infantil" }
 ];
 
 export const mockPortfolio: PortfolioEntry[] = [

@@ -584,9 +584,14 @@ function NewProjectWizardContent() {
                                                             libraryItems
                                                                 .filter(i => i.isBNCC)
                                                                 .map(i => i.grade)
-                                                                .filter(g => g && g !== "all")
-                                                        )).sort((a, b) => a!.localeCompare(b!)).map(grade => (
-                                                            <SelectItem key={grade} value={grade!}>
+                                                                .filter(g => g && g.trim().toLowerCase() !== "all")
+                                                        )).sort((a, b) => {
+                                                            const aNum = parseInt(a || "");
+                                                            const bNum = parseInt(b || "");
+                                                            if (!isNaN(aNum) && !isNaN(bNum)) return aNum - bNum;
+                                                            return (a || "").localeCompare(b || "");
+                                                        }).map(grade => (
+                                                            <SelectItem key={`bncc-grade-${grade}`} value={grade!}>
                                                                 {grade === 'infantil' ? 'Educação Infantil' :
                                                                     grade?.endsWith('ano') ? `${grade.replace('ano', '')}º Ano` : grade}
                                                             </SelectItem>
@@ -673,9 +678,9 @@ function NewProjectWizardContent() {
                                                             libraryItems
                                                                 .filter(i => !i.isBNCC)
                                                                 .map(i => i.subGroup)
-                                                                .filter(g => g && g !== "all")
+                                                                .filter(g => g && g.trim().toLowerCase() !== "all")
                                                         )).sort((a, b) => a.localeCompare(b)).map(group => (
-                                                            <SelectItem key={group} value={group}>
+                                                            <SelectItem key={`comp-group-${group}`} value={group}>
                                                                 {group}
                                                             </SelectItem>
                                                         ))}
