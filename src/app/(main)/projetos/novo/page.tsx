@@ -592,12 +592,12 @@ function NewProjectWizardContent() {
                                         </div>
 
                                         <Accordion type="multiple" className="space-y-4">
-                                            {Array.from(new Set(libraryItems.filter(i => i.isBNCC).map(i => i.subGroup || "Geral"))).sort().map(subject => {
+                                            {Array.from(new Set(libraryItems.filter(i => i.isBNCC).map(i => i.subGroup || "Geral"))).sort((a, b) => a.localeCompare(b)).map(subject => {
                                                 const subjectItems = libraryItems.filter(i =>
                                                     i.subGroup === subject &&
                                                     i.isBNCC &&
                                                     (gradeFilterBNCC === "all" || i.grade === gradeFilterBNCC || i.grade === "all")
-                                                );
+                                                ).sort((a, b) => a.name.localeCompare(b.name));
 
                                                 if (subjectItems.length === 0) return null;
 
@@ -680,12 +680,12 @@ function NewProjectWizardContent() {
                                         </div>
 
                                         <Accordion type="multiple" className="space-y-4">
-                                            {Array.from(new Set(libraryItems.filter(i => !i.isBNCC).map(i => i.subGroup || "Geral"))).sort().map(subject => {
+                                            {Array.from(new Set(libraryItems.filter(i => !i.isBNCC).map(i => i.subGroup || "Geral"))).sort((a, b) => a.localeCompare(b)).map(subject => {
                                                 const subjectItems = libraryItems.filter(i =>
                                                     i.subGroup === subject &&
                                                     !i.isBNCC &&
                                                     (gradeFilterCompetencias === "all" || i.grade === gradeFilterCompetencias || i.grade === "all")
-                                                );
+                                                ).sort((a, b) => a.name.localeCompare(b.name));
 
                                                 if (subjectItems.length === 0) return null;
 
