@@ -361,6 +361,8 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
                                                             .map(i => treeType === "skill" ? i.grade : i.subGroup)
                                                             .filter(g => g && g.trim().toLowerCase() !== "all")
                                                     )).sort((a, b) => {
+                                                        if (a === "infantil") return -1;
+                                                        if (b === "infantil") return 1;
                                                         const aNum = parseInt(a || "");
                                                         const bNum = parseInt(b || "");
                                                         if (!isNaN(aNum) && !isNaN(bNum)) return aNum - bNum;

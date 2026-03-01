@@ -811,10 +811,13 @@ export const mockLibraryItems: LibraryItem[] = [
     { id: "lib-cg-22", type: "content", name: "Autonomia e Tomada de Decisão", description: "Capacidade de agir com independência e responsabilidade.", isBNCC: false, subGroup: "Responsabilidade e Cidadania", grade: "Responsabilidade e Cidadania" },
     { id: "lib-cg-23", type: "content", name: "Consciência Socioambiental", description: "Atuação focada no bem comum e na sustentabilidade.", isBNCC: false, subGroup: "Responsabilidade e Cidadania", grade: "Responsabilidade e Cidadania" },
 
-    // --- EDUCAÇÃO INFANTIL DATA ---
-    { id: "EI01EO01", type: "skill", name: "O eu, o outro e o nós", description: "Demonstrar empatia pelos outros, percebendo que as pessoas têm diferentes sentimentos.", isBNCC: true, subGroup: "Socioemocional", grade: "infantil" },
-    { id: "EI01CG01", type: "skill", name: "Corpo, gestos e movimentos", description: "Movimentar as partes do corpo para exprimir corporalmente emoções.", isBNCC: true, subGroup: "Educação Física", grade: "infantil" },
-    { id: "EI01TS01", type: "skill", name: "Traços, sons, cores e formas", description: "Explorar sons produzidos com o próprio corpo e com objetos do cotidiano.", isBNCC: true, subGroup: "Artes", grade: "infantil" },
+    // --- EDUCAÇÃO INFANTIL DATA (BNCC) ---
+    { id: "EI01EO01", type: "skill", code: "EI01EO01", name: "O eu, o outro e o nós", description: "Demonstrar empatia pelos outros, percebendo que as pessoas têm diferentes sentimentos.", isBNCC: true, subGroup: "Socioemocional", grade: "infantil" },
+    { id: "EI01CG01", type: "skill", code: "EI01CG01", name: "Corpo, gestos e movimentos", description: "Movimentar as partes do corpo para exprimir corporalmente emoções.", isBNCC: true, subGroup: "Educação Física", grade: "infantil" },
+    { id: "EI01TS01", type: "skill", code: "EI01TS01", name: "Traços, sons, cores e formas", description: "Explorar sons produzidos com o próprio corpo e com objetos do cotidiano.", isBNCC: true, subGroup: "Artes", grade: "infantil" },
+    { id: "EI02EO01", type: "skill", code: "EI02EO01", name: "O eu, o outro e o nós", description: "Demonstrar atitudes de cuidado e solidariedade na interação com crianças e adultos.", isBNCC: true, subGroup: "Socioemocional", grade: "infantil" },
+    { id: "EI02EF01", type: "skill", code: "EI02EF01", name: "Escuta, fala, pensamento e imaginação", description: "Dialogar com crianças e adultos, expressando seus desejos, necessidades, sentimentos e opiniões.", isBNCC: true, subGroup: "Língua Portuguesa", grade: "infantil" },
+    { id: "EI03ET01", type: "skill", code: "EI03ET01", name: "Espaços, tempos e transformações", description: "Estabelecer relações de comparação entre objetos, observando suas propriedades.", isBNCC: true, subGroup: "Ciências", grade: "infantil" },
 
     // --- CUSTOM CATEGORY EXAMPLES ---
     { id: "lib-custom-sk-01", type: "skill", name: "Inteligência Emocional", description: "Identificar e nomear as próprias emoções em situações de conflito no parquinho.", isBNCC: false, subGroup: "Sócio-Emocional", grade: "infantil" },

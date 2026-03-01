@@ -116,6 +116,8 @@ export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all"
                                     .map(i => i.grade)
                                     .filter(g => g && g.trim().toLowerCase() !== "all")
                             )).sort((a, b) => {
+                                if (a === "infantil") return -1;
+                                if (b === "infantil") return 1;
                                 const aNum = parseInt(a || "");
                                 const bNum = parseInt(b || "");
                                 if (!isNaN(aNum) && !isNaN(bNum)) return aNum - bNum;
@@ -134,7 +136,11 @@ export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all"
                                     .filter(i => i.type === "content")
                                     .map(i => i.subGroup)
                                     .filter(g => g && g.trim().toLowerCase() !== "all")
-                            )).sort((a, b) => a.localeCompare(b)).map(group => (
+                            )).sort((a, b) => {
+                                if (a === "infantil") return -1;
+                                if (b === "infantil") return 1;
+                                return a.localeCompare(b);
+                            }).map(group => (
                                 <SelectItem key={`group-${group}`} value={group}>
                                     {group}
                                 </SelectItem>
