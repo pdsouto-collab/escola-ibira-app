@@ -78,6 +78,8 @@ function NewProjectWizardContent() {
     const [editingSessionData, setEditingSessionData] = useState<Partial<typeof newSession>>({})
     const [gradeFilterBNCC, setGradeFilterBNCC] = useState<string>("all");
     const [gradeFilterCompetencias, setGradeFilterCompetencias] = useState<string>("all");
+    const [searchTermBNCC, setSearchTermBNCC] = useState("");
+    const [searchTermCompetencias, setSearchTermCompetencias] = useState("");
 
     // Immediately write sessions to store (expanded per selected classes)
     const persistSessionsToStore = (updatedSessions: Partial<ScheduleItem>[]) => {
@@ -573,6 +575,15 @@ function NewProjectWizardContent() {
                                                 <h3 className="text-xl font-bold text-slate-800">Habilidades BNCC</h3>
                                             </div>
                                             <div className="flex items-center gap-3">
+                                                <div className="relative">
+                                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                                    <Input
+                                                        placeholder="Buscar por código ou nome..."
+                                                        className="pl-9 w-[280px] h-9 bg-white"
+                                                        value={searchTermBNCC}
+                                                        onChange={(e) => setSearchTermBNCC(e.target.value)}
+                                                    />
+                                                </div>
                                                 <span className="text-sm font-medium text-slate-500">Filtrar por Etapa:</span>
                                                 <Select value={gradeFilterBNCC} onValueChange={setGradeFilterBNCC}>
                                                     <SelectTrigger className="w-[180px] bg-white h-9">
@@ -608,7 +619,13 @@ function NewProjectWizardContent() {
                                                 const subjectItems = libraryItems.filter(i =>
                                                     i.subGroup === subject &&
                                                     i.isBNCC &&
-                                                    (gradeFilterBNCC === "all" || i.grade === gradeFilterBNCC || i.grade === "all")
+                                                    (gradeFilterBNCC === "all" || i.grade === gradeFilterBNCC || i.grade === "all") &&
+                                                    (searchTermBNCC === "" ||
+                                                        i.name.toLowerCase().includes(searchTermBNCC.toLowerCase()) ||
+                                                        (i.code && i.code.toLowerCase().includes(searchTermBNCC.toLowerCase())) ||
+                                                        i.description.toLowerCase().includes(searchTermBNCC.toLowerCase()) ||
+                                                        subject.toLowerCase().includes(searchTermBNCC.toLowerCase())
+                                                    )
                                                 ).sort((a, b) => a.name.localeCompare(b.name));
 
                                                 if (subjectItems.length === 0) return null;
@@ -669,6 +686,15 @@ function NewProjectWizardContent() {
                                                 <h3 className="text-xl font-bold text-slate-800">Competências</h3>
                                             </div>
                                             <div className="flex items-center gap-3">
+                                                <div className="relative">
+                                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                                    <Input
+                                                        placeholder="Buscar competência..."
+                                                        className="pl-9 w-[280px] h-9 bg-white"
+                                                        value={searchTermCompetencias}
+                                                        onChange={(e) => setSearchTermCompetencias(e.target.value)}
+                                                    />
+                                                </div>
                                                 <span className="text-sm font-medium text-slate-500">Filtrar por Etapa:</span>
                                                 <Select value={gradeFilterCompetencias} onValueChange={setGradeFilterCompetencias}>
                                                     <SelectTrigger className="w-[180px] bg-white h-9">
@@ -700,7 +726,12 @@ function NewProjectWizardContent() {
                                                 const subjectItems = libraryItems.filter(i =>
                                                     i.subGroup === subject &&
                                                     !i.isBNCC &&
-                                                    (gradeFilterCompetencias === "all" || i.grade === gradeFilterCompetencias || i.subGroup === gradeFilterCompetencias || i.grade === "all")
+                                                    (gradeFilterCompetencias === "all" || i.grade === gradeFilterCompetencias || i.subGroup === gradeFilterCompetencias || i.grade === "all") &&
+                                                    (searchTermCompetencias === "" ||
+                                                        i.name.toLowerCase().includes(searchTermCompetencias.toLowerCase()) ||
+                                                        i.description.toLowerCase().includes(searchTermCompetencias.toLowerCase()) ||
+                                                        subject.toLowerCase().includes(searchTermCompetencias.toLowerCase())
+                                                    )
                                                 ).sort((a, b) => a.name.localeCompare(b.name));
 
                                                 if (subjectItems.length === 0) return null;

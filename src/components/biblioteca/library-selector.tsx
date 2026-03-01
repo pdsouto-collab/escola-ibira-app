@@ -2,12 +2,11 @@
 
 import { useState } from "react";
 import { useAppStore } from "@/lib/store";
-import { Search } from "lucide-react";
+import { Search, BookOpen, Layers, Filter, Check } from "lucide-react";
 import { Input } from "../ui/input";
 import { Badge } from "../ui/badge";
 import { Switch } from "../ui/switch";
 import { cn } from "@/lib/utils";
-import { BookOpen, Layers, Filter } from "lucide-react";
 import {
     Select,
     SelectContent,
@@ -58,19 +57,14 @@ export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all"
 
         if (showOnlySelected && !currentSelection.includes(item.id)) return false;
 
-        const matchesGrade = selectedGrade === "all" ||
-            item.grade === selectedGrade ||
-            item.subGroup === selectedGrade ||
-            item.grade === "all";
-        if (!matchesGrade) return false;
+        const matchesGrade = (selectedGrade === "all" || item.grade === selectedGrade || item.subGroup === selectedGrade || item.grade === "all");
+        const matchesSearch = (searchTerm === "" ||
+            item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (item.code && item.code.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            item.description.toLowerCase().includes(searchTerm.toLowerCase())
+        );
 
-        const query = searchTerm.toLowerCase();
-        if (query) {
-            return item.name.toLowerCase().includes(query) ||
-                item.description.toLowerCase().includes(query) ||
-                (item.code && item.code.toLowerCase().includes(query));
-        }
-        return true;
+        return matchesGrade && matchesSearch;
     });
 
     const skills = filteredItems.filter(i => i.type === "skill");
@@ -99,16 +93,24 @@ export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all"
 
             {/* Controls */}
             <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-slate-50 p-4 rounded-xl border">
-                <div className="flex items-center gap-3 flex-1 w-full">
+                <div className="flex flex-col sm:flex-row items-center gap-3 flex-1 w-full">
+                    <div className="relative flex-1 max-w-md">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Input
+                            placeholder="Buscar habilidade ou competência..."
+                            className="pl-9 bg-white"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
                     <Select value={selectedGrade} onValueChange={setSelectedGrade}>
-                        <SelectTrigger className="w-[180px] bg-white">
+                        <SelectTrigger className="w-[200px] bg-white">
                             <Filter className="w-4 h-4 mr-2 text-slate-400" />
                             <SelectValue placeholder="Filtrar por Etapa" />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                             <SelectItem value="all">Todas as Etapas e Categorias</SelectItem>
 
-                            {/* Dynamic Skill grades (Stages) */}
                             <div className="px-2 py-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider">Etapas (BNCC)</div>
                             {Array.from(new Set(
                                 libraryItems
@@ -129,7 +131,6 @@ export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all"
                                 </SelectItem>
                             ))}
 
-                            {/* Dynamic Content subgroups (Categories) */}
                             <div className="px-2 py-1.5 mt-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">Categorias (Competências)</div>
                             {Array.from(new Set(
                                 libraryItems
@@ -139,24 +140,14 @@ export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all"
                             )).sort((a, b) => {
                                 if (a === "infantil") return -1;
                                 if (b === "infantil") return 1;
-                                return a.localeCompare(b);
+                                return (a || "").localeCompare(b || "");
                             }).map(group => (
-                                <SelectItem key={`group-${group}`} value={group}>
+                                <SelectItem key={`group-${group}`} value={group!}>
                                     {group}
                                 </SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
-
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                        <Input
-                            placeholder="Buscar habilidades ou conteúdos..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-9 bg-white"
-                        />
-                    </div>
                 </div>
                 <div className="flex items-center gap-2 px-2 whitespace-nowrap">
                     <Switch
@@ -171,8 +162,7 @@ export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all"
             </div>
 
             {/* List */}
-            <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-
+            <div className="space-y-6 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                 {skills.length > 0 && (
                     <div className="space-y-3">
                         <h3 className="font-semibold text-sm text-slate-500 uppercase tracking-wider sticky top-0 bg-white/90 backdrop-blur pb-2 z-10">
@@ -190,7 +180,14 @@ export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all"
                                     </AccordionTrigger>
                                     <AccordionContent className="px-4 pb-4 pt-1">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                            {groupedSkills[group].map((item: any) => <LibraryItemCard key={item.id} item={item} isSelected={currentSelection.includes(item.id)} onClick={() => toggleItem(item.id)} />)}
+                                            {groupedSkills[group].map((item: any) => (
+                                                <LibraryItemCard
+                                                    key={item.id}
+                                                    item={item}
+                                                    isSelected={currentSelection.includes(item.id)}
+                                                    onClick={() => toggleItem(item.id)}
+                                                />
+                                            ))}
                                         </div>
                                     </AccordionContent>
                                 </AccordionItem>
@@ -216,7 +213,14 @@ export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all"
                                     </AccordionTrigger>
                                     <AccordionContent className="px-4 pb-4 pt-1">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                            {groupedContents[group].map((item: any) => <LibraryItemCard key={item.id} item={item} isSelected={currentSelection.includes(item.id)} onClick={() => toggleItem(item.id)} />)}
+                                            {groupedContents[group].map((item: any) => (
+                                                <LibraryItemCard
+                                                    key={item.id}
+                                                    item={item}
+                                                    isSelected={currentSelection.includes(item.id)}
+                                                    onClick={() => toggleItem(item.id)}
+                                                />
+                                            ))}
                                         </div>
                                     </AccordionContent>
                                 </AccordionItem>
@@ -255,13 +259,11 @@ function LibraryItemCard({ item, isSelected, onClick }: { item: any, isSelected:
                     )}
                     {item.code && <span className="text-xs font-mono font-bold text-slate-400">{item.code}</span>}
                 </div>
-
-                {/* Checkbox circle indicator */}
                 <div className={cn(
                     "w-5 h-5 rounded-full border flex items-center justify-center transition-colors",
                     isSelected ? "bg-primary border-primary" : "border-slate-300 group-hover:border-primary/50"
                 )}>
-                    {isSelected && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                    {isSelected && <Check className="w-3 h-3 text-white" />}
                 </div>
             </div>
 
