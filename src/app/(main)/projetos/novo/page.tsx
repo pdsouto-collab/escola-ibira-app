@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Check, ChevronLeft, Plus, Search, Calendar, Clock, Users, Target, BookOpen, Trash2, PartyPopper, CalendarRange, Pencil, X, Upload, ImagePlus } from "lucide-react";
+import { Check, ChevronLeft, Plus, Search, Calendar, Clock, Users, Target, BookOpen, Layers, Trash2, PartyPopper, CalendarRange, Pencil, X, Upload, ImagePlus } from "lucide-react";
 import { format } from "date-fns";
 import { BulkSessionDialog } from "@/components/projetos/bulk-session-dialog";
 import Link from "next/link";
@@ -76,6 +76,8 @@ function NewProjectWizardContent() {
     const [bulkSessionOpen, setBulkSessionOpen] = useState(false);
     const [editingSessionIdx, setEditingSessionIdx] = useState<number | null>(null);
     const [editingSessionData, setEditingSessionData] = useState<Partial<typeof newSession>>({})
+    const [gradeFilterBNCC, setGradeFilterBNCC] = useState<string>("all");
+    const [gradeFilterCompetencias, setGradeFilterCompetencias] = useState<string>("all");
 
     // Immediately write sessions to store (expanded per selected classes)
     const persistSessionsToStore = (updatedSessions: Partial<ScheduleItem>[]) => {
@@ -246,7 +248,7 @@ function NewProjectWizardContent() {
     const steps = [
         { id: 1, label: "Detalhes do Projeto" },
         { id: 2, label: "Participantes" },
-        { id: 3, label: "Conteúdos e Habilidades" },
+        { id: 3, label: "Habilidades BNCC e Competências" },
         { id: 4, label: "Planejamento" }
     ];
 
@@ -557,57 +559,181 @@ function NewProjectWizardContent() {
                         <div className="flex h-full min-h-[600px] animate-in fade-in duration-300">
                             {/* Main Selection Area */}
                             <div className="flex-1 p-8">
-                                <h2 className="text-2xl font-bold text-slate-800 mb-2">Conteúdos e Habilidades</h2>
-                                <p className="text-slate-500 mb-8">Clique em uma disciplina para expandir e associar habilidades e conteúdos ao projeto.</p>
+                                <h2 className="text-2xl font-bold text-slate-800 mb-2">Habilidades BNCC e Competências</h2>
+                                <p className="text-slate-500 mb-8">Clique em uma categoria para expandir e associar habilidades e competências ao projeto.</p>
 
-                                <Accordion type="multiple" className="space-y-4">
-                                    {subjects.map(subject => {
-                                        const subjectItems = libraryItems.filter(i => i.subGroup === subject);
-                                        const selectedCount = subjectItems.filter(i => formData.bnccSkills.includes(i.id) || formData.customContent.includes(i.id)).length;
-                                        return (
-                                            <AccordionItem key={subject} value={subject} className="border rounded-xl bg-white px-4">
-                                                <AccordionTrigger className="hover:no-underline py-4">
-                                                    <div className="flex items-center justify-between w-full pr-4">
-                                                        <span className="font-bold text-lg text-slate-800">{subject}</span>
-                                                        {selectedCount > 0 && <Badge className="bg-indigo-100 text-indigo-700">{selectedCount} selecionados</Badge>}
-                                                    </div>
-                                                </AccordionTrigger>
-                                                <AccordionContent className="pt-2 pb-4">
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-2">
-                                                        {subjectItems.map(item => {
-                                                            const isSelected = formData.bnccSkills.includes(item.id) || formData.customContent.includes(item.id);
-                                                            const isBncc = item.isBNCC;
-                                                            const isFromBaseTree = selectedClassLibraryItemIds.has(item.id) || (item.code && selectedClassLibraryItemIds.has(item.code));
+                                <div className="space-y-12">
+                                    {/* SECTION 1: BNCC SKILLS */}
+                                    <div className="space-y-6">
+                                        <div className="flex items-center justify-between border-b pb-4">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                                                    <BookOpen className="w-5 h-5 text-emerald-600" />
+                                                </div>
+                                                <h3 className="text-xl font-bold text-slate-800">Habilidades BNCC</h3>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-sm font-medium text-slate-500">Filtrar por Etapa:</span>
+                                                <Select value={gradeFilterBNCC} onValueChange={setGradeFilterBNCC}>
+                                                    <SelectTrigger className="w-[180px] bg-white h-9">
+                                                        <SelectValue placeholder="Todas as Etapas" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="all">Todas as Etapas</SelectItem>
+                                                        <SelectItem value="infantil">Educação Infantil</SelectItem>
+                                                        <SelectItem value="1ano">1º Ano</SelectItem>
+                                                        <SelectItem value="2ano">2º Ano</SelectItem>
+                                                        <SelectItem value="3ano">3º Ano</SelectItem>
+                                                        <SelectItem value="4ano">4º Ano</SelectItem>
+                                                        <SelectItem value="5ano">5º Ano</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        </div>
 
-                                                            return (
-                                                                <div key={item.id} onClick={() => toggleSkill(item.id, isBncc || false)} className={cn("border-2 rounded-xl p-4 cursor-pointer transition-all relative overflow-hidden", isSelected ? "border-indigo-600 shadow-sm" : "border-slate-200 hover:border-indigo-300")}>
-                                                                    <div className="flex justify-between items-start mb-2">
-                                                                        <div className="flex flex-wrap gap-1">
-                                                                            <Badge variant="outline" className={cn("text-[10px] font-bold h-5 px-1.5", isBncc ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-sky-50 text-sky-700 border-sky-200")}>
-                                                                                {isBncc ? "BNCC" : "Personalizado"}
-                                                                            </Badge>
-                                                                            {isFromBaseTree && (
-                                                                                <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200 text-[10px] font-bold h-5 px-1.5">
-                                                                                    Árvore Base
-                                                                                </Badge>
-                                                                            )}
+                                        <Accordion type="multiple" className="space-y-4">
+                                            {Array.from(new Set(libraryItems.filter(i => i.isBNCC).map(i => i.subGroup || "Geral"))).sort().map(subject => {
+                                                const subjectItems = libraryItems.filter(i =>
+                                                    i.subGroup === subject &&
+                                                    i.isBNCC &&
+                                                    (gradeFilterBNCC === "all" || i.grade === gradeFilterBNCC || i.grade === "all")
+                                                );
+
+                                                if (subjectItems.length === 0) return null;
+
+                                                const selectedCount = subjectItems.filter(i => formData.bnccSkills.includes(i.id)).length;
+                                                return (
+                                                    <AccordionItem key={subject} value={subject} className="border rounded-xl bg-white px-4">
+                                                        <AccordionTrigger className="hover:no-underline py-4">
+                                                            <div className="flex items-center justify-between w-full pr-4">
+                                                                <span className="font-bold text-lg text-slate-800">{subject}</span>
+                                                                {selectedCount > 0 && <Badge className="bg-emerald-100 text-emerald-700">{selectedCount} selecionados</Badge>}
+                                                            </div>
+                                                        </AccordionTrigger>
+                                                        <AccordionContent className="pt-2 pb-4">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-2">
+                                                                {subjectItems.map(item => {
+                                                                    const isSelected = formData.bnccSkills.includes(item.id);
+                                                                    const isFromBaseTree = selectedClassLibraryItemIds.has(item.id) || (item.code && selectedClassLibraryItemIds.has(item.code));
+
+                                                                    return (
+                                                                        <div key={item.id} onClick={() => toggleSkill(item.id, true)} className={cn("border-2 rounded-xl p-4 cursor-pointer transition-all relative overflow-hidden", isSelected ? "border-emerald-600 shadow-sm" : "border-slate-200 hover:border-emerald-300")}>
+                                                                            <div className="flex justify-between items-start mb-2">
+                                                                                <div className="flex flex-wrap gap-1">
+                                                                                    <Badge variant="outline" className="text-[10px] font-bold h-5 px-1.5 bg-emerald-50 text-emerald-700 border-emerald-200">
+                                                                                        BNCC
+                                                                                    </Badge>
+                                                                                    {isFromBaseTree && (
+                                                                                        <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200 text-[10px] font-bold h-5 px-1.5">
+                                                                                            Árvore Base
+                                                                                        </Badge>
+                                                                                    )}
+                                                                                </div>
+                                                                                <div className={cn("w-5 h-5 rounded-full border flex items-center justify-center", isSelected ? "bg-emerald-600 border-emerald-600" : "border-slate-300")}>
+                                                                                    {isSelected && <Check className="w-3 h-3 text-white" />}
+                                                                                </div>
+                                                                            </div>
+                                                                            {item.code && <p className="text-emerald-700 font-mono text-[10px] mb-1 font-bold">{item.code}</p>}
+                                                                            <h4 className="font-bold text-slate-800 text-sm mb-1">{item.name}</h4>
+                                                                            <p className="text-slate-500 text-xs line-clamp-3 leading-relaxed">{item.description}</p>
                                                                         </div>
-                                                                        <div className={cn("w-5 h-5 rounded-full border flex items-center justify-center", isSelected ? "bg-indigo-600 border-indigo-600" : "border-slate-300")}>
-                                                                            {isSelected && <Check className="w-3 h-3 text-white" />}
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </AccordionContent>
+                                                    </AccordionItem>
+                                                );
+                                            })}
+                                        </Accordion>
+                                    </div>
+
+                                    {/* SECTION 2: COMPETÊNCIAS */}
+                                    <div className="space-y-6">
+                                        <div className="flex items-center justify-between border-b pb-4">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-8 h-8 rounded-lg bg-sky-100 flex items-center justify-center">
+                                                    <Layers className="w-5 h-5 text-sky-600" />
+                                                </div>
+                                                <h3 className="text-xl font-bold text-slate-800">Competências</h3>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-sm font-medium text-slate-500">Filtrar por Etapa:</span>
+                                                <Select value={gradeFilterCompetencias} onValueChange={setGradeFilterCompetencias}>
+                                                    <SelectTrigger className="w-[180px] bg-white h-9">
+                                                        <SelectValue placeholder="Todas as Etapas" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="all">Todas as Etapas</SelectItem>
+                                                        <SelectItem value="Conhecimento">Conhecimento</SelectItem>
+                                                        <SelectItem value="Pensamento Científico, Crítico e Criativo">Pensamento Científico...</SelectItem>
+                                                        <SelectItem value="Repertório Cultural">Repertório Cultural</SelectItem>
+                                                        <SelectItem value="Comunicação">Comunicação</SelectItem>
+                                                        <SelectItem value="Cultura Digital">Cultura Digital</SelectItem>
+                                                        <SelectItem value="Trabalho e Projeto de Vida">Trabalho e Projeto de Vida</SelectItem>
+                                                        <SelectItem value="Argumentação">Argumentação</SelectItem>
+                                                        <SelectItem value="Autoconhecimento e Autocuidado">Autoconhecimento...</SelectItem>
+                                                        <SelectItem value="Empatia e Cooperação">Empatia e Cooperação</SelectItem>
+                                                        <SelectItem value="Responsabilidade e Cidadania">Responsabilidade...</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        </div>
+
+                                        <Accordion type="multiple" className="space-y-4">
+                                            {Array.from(new Set(libraryItems.filter(i => !i.isBNCC).map(i => i.subGroup || "Geral"))).sort().map(subject => {
+                                                const subjectItems = libraryItems.filter(i =>
+                                                    i.subGroup === subject &&
+                                                    !i.isBNCC &&
+                                                    (gradeFilterCompetencias === "all" || i.grade === gradeFilterCompetencias || i.grade === "all")
+                                                );
+
+                                                if (subjectItems.length === 0) return null;
+
+                                                const selectedCount = subjectItems.filter(i => formData.customContent.includes(i.id)).length;
+                                                return (
+                                                    <AccordionItem key={subject} value={subject} className="border rounded-xl bg-white px-4">
+                                                        <AccordionTrigger className="hover:no-underline py-4">
+                                                            <div className="flex items-center justify-between w-full pr-4">
+                                                                <span className="font-bold text-lg text-slate-800">{subject}</span>
+                                                                {selectedCount > 0 && <Badge className="bg-sky-100 text-sky-700">{selectedCount} selecionados</Badge>}
+                                                            </div>
+                                                        </AccordionTrigger>
+                                                        <AccordionContent className="pt-2 pb-4">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-2">
+                                                                {subjectItems.map(item => {
+                                                                    const isSelected = formData.customContent.includes(item.id);
+                                                                    const isFromBaseTree = selectedClassLibraryItemIds.has(item.id) || (item.code && selectedClassLibraryItemIds.has(item.code));
+
+                                                                    return (
+                                                                        <div key={item.id} onClick={() => toggleSkill(item.id, false)} className={cn("border-2 rounded-xl p-4 cursor-pointer transition-all relative overflow-hidden", isSelected ? "border-sky-600 shadow-sm" : "border-slate-200 hover:border-sky-300")}>
+                                                                            <div className="flex justify-between items-start mb-2">
+                                                                                <div className="flex flex-wrap gap-1">
+                                                                                    <Badge variant="outline" className="text-[10px] font-bold h-5 px-1.5 bg-sky-50 text-sky-700 border-sky-200">
+                                                                                        Escola
+                                                                                    </Badge>
+                                                                                    {isFromBaseTree && (
+                                                                                        <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200 text-[10px] font-bold h-5 px-1.5">
+                                                                                            Árvore Base
+                                                                                        </Badge>
+                                                                                    )}
+                                                                                </div>
+                                                                                <div className={cn("w-5 h-5 rounded-full border flex items-center justify-center", isSelected ? "bg-sky-600 border-sky-600" : "border-slate-300")}>
+                                                                                    {isSelected && <Check className="w-3 h-3 text-white" />}
+                                                                                </div>
+                                                                            </div>
+                                                                            <h4 className="font-bold text-slate-800 text-sm mb-1">{item.name}</h4>
+                                                                            <p className="text-slate-500 text-xs line-clamp-3 leading-relaxed">{item.description}</p>
                                                                         </div>
-                                                                    </div>
-                                                                    {isBncc && item.code && <p className="text-emerald-700 font-mono text-[10px] mb-1 font-bold">{item.code}</p>}
-                                                                    <h4 className="font-bold text-slate-800 text-sm mb-1">{item.name}</h4>
-                                                                    <p className="text-slate-500 text-xs line-clamp-3 leading-relaxed">{item.description}</p>
-                                                                </div>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                </AccordionContent>
-                                            </AccordionItem>
-                                        );
-                                    })}
-                                </Accordion>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </AccordionContent>
+                                                    </AccordionItem>
+                                                );
+                                            })}
+                                        </Accordion>
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Sidebar Summary */}
