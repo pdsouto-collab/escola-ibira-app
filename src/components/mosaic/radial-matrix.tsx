@@ -77,11 +77,13 @@ function getPoints(rating: number | undefined): number {
     return rating || 0;
 }
 
-// Helper to get saturation level based on Situation 01 (Sum of points from children)
-function getSatLevelSit01(points: number): 0 | 1 | 2 | 3 {
-    if (points >= 11) return 3;
-    if (points >= 6) return 2;
-    if (points >= 1) return 1;
+// Helper to get saturation level based on Situation 01 (Percentage of points from children)
+function getSatLevelSit01(points: number, maxPoints: number): 0 | 1 | 2 | 3 {
+    if (maxPoints === 0 || points === 0) return 0;
+    const percentage = points / maxPoints;
+    if (percentage > 0.80) return 3; // 81% to 100%
+    if (percentage > 0.40) return 2; // 41% to 80%
+    if (percentage > 0) return 1;    // 1% to 40%
     return 0;
 }
 
@@ -101,7 +103,7 @@ function getNodeData(
     classId: string,
     selectedProjectId: string,
     libraryItems: LibraryItem[] = []
-): { points: number; sat: number; isTrabalhado: boolean } {
+): { points: number; maxPoints: number; sat: number; isTrabalhado: boolean } {
     // 1. Check if node is "Trabalhado" (linked to a relevant project)
     // A node is trabalhado if it is in an ACTIVE project for this student or class
     const relevantProjects = projects.filter(p => {
@@ -163,12 +165,14 @@ function getNodeData(
 
     // 2. Recursive points from children
     let childPoints = 0;
+    let childMaxPoints = 0;
     let childSats: number[] = [];
 
     if (node.children && node.children.length > 0) {
         node.children.forEach(child => {
             const cData = getNodeData(child, assessments, projects, studentId, classId, selectedProjectId, libraryItems);
             childPoints += cData.points;
+            childMaxPoints += cData.maxPoints;
             childSats.push(cData.sat);
             if (cData.isTrabalhado) isTrabalhado = true;
         });
@@ -177,15 +181,15 @@ function getNodeData(
     if (node.level === "micro") {
         // L3: Habilidade ou Conteúdo
         // Can be evaluated Sit 01 (sum of L4 hijos) or Sit 02 (direct)
-        const recursiveSat = getSatLevelSit01(childPoints);
+        const recursiveSat = getSatLevelSit01(childPoints, childMaxPoints);
         const finalSat = Math.max(directSat, recursiveSat);
-        return { points: directPoints + childPoints, sat: finalSat, isTrabalhado };
+        return { points: directPoints + childPoints, maxPoints: 5 + childMaxPoints, sat: finalSat, isTrabalhado };
     }
 
     if (node.level === "atomico") {
         // L4: Habilidade específica ou Evidência
         // Always Sit 02
-        return { points: directPoints, sat: directSat, isTrabalhado };
+        return { points: directPoints, maxPoints: 5, sat: directSat, isTrabalhado };
     }
 
     // L1/L2: Macro/Mesclado
@@ -193,7 +197,7 @@ function getNodeData(
     // they reflect the progress of their children.
     // We'll return average saturation of children for visual density.
     const avgSat = childSats.length > 0 ? childSats.reduce((a, b) => a + b, 0) / childSats.length : 0;
-    return { points: directPoints + childPoints, sat: Math.ceil(avgSat), isTrabalhado };
+    return { points: directPoints + childPoints, maxPoints: 5 + childMaxPoints, sat: Math.ceil(avgSat), isTrabalhado };
 }
 
 export function RadialMatrix({
@@ -312,7 +316,7 @@ export function RadialMatrix({
 
             const nodeData = isViewingEvaluation
                 ? getNodeData(node, assessments, projects, studentId || "all", classId || "all", projectId || "all", libraryItems || [])
-                : { points: 0, sat: 0, isTrabalhado: false };
+                : { points: 0, maxPoints: 0, sat: 0, isTrabalhado: false };
             const satLevel = nodeData.sat;
             const isTrabalhado = nodeData.isTrabalhado;
 
