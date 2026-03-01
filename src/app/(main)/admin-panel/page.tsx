@@ -16,7 +16,7 @@ export default function AdminPanelPage() {
                     <div>
                         <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">Painel Administrativo</h1>
                         <p className="text-slate-500 mt-2">
-                            Gerencie a curadoria das Árvores de Conhecimento e configure as trilhas de aprendizagem.
+                            Gerencie a curadoria das Estruturas Pedagógicas e configure as trilhas de aprendizagem.
                         </p>
                     </div>
                 </div>
@@ -31,11 +31,11 @@ export default function AdminPanelPage() {
                                 </TabsTrigger>
                                 <TabsTrigger value="skills" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 flex items-center gap-2 transition-all">
                                     <BookOpen className="w-4 h-4" />
-                                    Árvore de Habilidades
+                                    Habilidades BNCC (O lado Acadêmico/Curricular)
                                 </TabsTrigger>
                                 <TabsTrigger value="contents" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 flex items-center gap-2 transition-all">
                                     <Layers className="w-4 h-4" />
-                                    Árvore de Conteúdos
+                                    Competências Gerais (O lado Comportamental/Cognitivo)
                                 </TabsTrigger>
                                 <TabsTrigger value="products" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 flex items-center gap-2 transition-all">
                                     <PackagePlus className="w-4 h-4" />
@@ -50,10 +50,16 @@ export default function AdminPanelPage() {
                             </TabsContent>
 
                             <TabsContent value="skills" className="m-0 border-none outline-none focus-visible:ring-0">
+                                <div className="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
+                                    <h2 className="text-blue-900 font-bold tracking-wider uppercase text-sm">VISÃO ACADÊMICA / CURRICULAR (habilidades bncc)</h2>
+                                </div>
                                 <KnowledgeTreeEditor treeType="skill" />
                             </TabsContent>
 
                             <TabsContent value="contents" className="m-0 border-none outline-none focus-visible:ring-0">
+                                <div className="mb-6 p-4 bg-indigo-50 border-l-4 border-indigo-500 rounded-r-lg">
+                                    <h2 className="text-indigo-900 font-bold tracking-wider uppercase text-sm">VISÃO COMPORTAMENTAL / COGNITIVA (competências gerais)</h2>
+                                </div>
                                 <KnowledgeTreeEditor treeType="content" />
                             </TabsContent>
 

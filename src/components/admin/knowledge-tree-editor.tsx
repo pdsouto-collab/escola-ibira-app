@@ -257,7 +257,7 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
             <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-200 border-dashed">
                 <div className="flex items-center gap-4">
                     <div className="text-sm text-slate-600 max-w-md">
-                        Construa as ramificações hierárquicas, começando pelas <strong>Áreas/Eixos</strong> até as <strong>Evidências</strong> atômicas.
+                        Construa as ramificações hierárquicas para a <strong>{treeType === "skill" ? "Visão Acadêmica" : "Visão Comportamental"}</strong>.
                     </div>
                     <div className="h-8 w-px bg-slate-200" />
                     <div className="flex items-center gap-2">

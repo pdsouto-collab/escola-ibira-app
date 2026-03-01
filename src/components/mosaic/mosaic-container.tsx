@@ -129,13 +129,13 @@ export function MosaicContainer() {
                             onClick={() => { setActiveTab("skill"); setDrilledNode(null); setSelectedNode(null); }}
                             className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === "skill" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
                         >
-                            Habilidades
+                            BNCC
                         </button>
                         <button
                             onClick={() => { setActiveTab("content"); setDrilledNode(null); setSelectedNode(null); }}
                             className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === "content" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
                         >
-                            Conteúdos
+                            Gerais
                         </button>
                     </div>
 
@@ -166,29 +166,42 @@ export function MosaicContainer() {
                 )}
 
                 {/* Chart Area */}
-                <div className="flex-1 overflow-auto bg-slate-50 flex items-center justify-center p-0">
-                    <RadialMatrix
-                        data={dataToRender}
-                        treeType={activeTab}
-                        assessments={assessments}
-                        projects={projects}
-                        libraryItems={libraryItems}
-                        selectedStudentId={selectedStudentId}
-                        selectedClassId={selectedClassId}
-                        selectedProjectId={selectedProjectId}
-                        drilledNodeId={drilledNode?.id}
-                        onNodeDoubleClick={(node: KnowledgeNode) => {
-                            if (node && node.level === "macro") {
-                                setDrilledNode(node);
-                                setSelectedNode(null);
-                            } else if (!node) {
-                                setDrilledNode(null);
-                            }
-                        }}
-                        onNodeClick={(node: KnowledgeNode) => {
-                            setSelectedNode(node);
-                        }}
-                    />
+                <div className="flex-1 overflow-auto bg-slate-50 flex flex-col items-center p-0">
+                    <div className="w-full bg-white border-b py-2 px-6 flex justify-center">
+                        {activeTab === "skill" ? (
+                            <div className="text-blue-700 font-bold tracking-widest uppercase text-[10px] opacity-80">
+                                VISÃO ACADÊMICA / CURRICULAR (habilidades bncc)
+                            </div>
+                        ) : (
+                            <div className="text-indigo-700 font-bold tracking-widest uppercase text-[10px] opacity-80">
+                                VISÃO COMPORTAMENTAL / COGNITIVA (competências gerais)
+                            </div>
+                        )}
+                    </div>
+                    <div className="flex-1 w-full flex items-center justify-center p-0">
+                        <RadialMatrix
+                            data={dataToRender}
+                            treeType={activeTab}
+                            assessments={assessments}
+                            projects={projects}
+                            libraryItems={libraryItems}
+                            selectedStudentId={selectedStudentId}
+                            selectedClassId={selectedClassId}
+                            selectedProjectId={selectedProjectId}
+                            drilledNodeId={drilledNode?.id}
+                            onNodeDoubleClick={(node: KnowledgeNode) => {
+                                if (node && node.level === "macro") {
+                                    setDrilledNode(node);
+                                    setSelectedNode(null);
+                                } else if (!node) {
+                                    setDrilledNode(null);
+                                }
+                            }}
+                            onNodeClick={(node: KnowledgeNode) => {
+                                setSelectedNode(node);
+                            }}
+                        />
+                    </div>
                 </div>
             </div>
 
