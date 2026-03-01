@@ -177,12 +177,29 @@ export function BibliotecaEditor() {
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
                             <SelectItem value="all">Todas as Etapas</SelectItem>
-                            <SelectItem value="infantil">Educação Infantil</SelectItem>
-                            <SelectItem value="1ano">1º Ano</SelectItem>
-                            <SelectItem value="2ano">2º Ano</SelectItem>
-                            <SelectItem value="3ano">3º Ano</SelectItem>
-                            <SelectItem value="4ano">4º Ano</SelectItem>
-                            <SelectItem value="5ano">5º Ano</SelectItem>
+                            {activeTab === 'skill' ? (
+                                <>
+                                    <SelectItem value="infantil">Educação Infantil</SelectItem>
+                                    <SelectItem value="1ano">1º Ano</SelectItem>
+                                    <SelectItem value="2ano">2º Ano</SelectItem>
+                                    <SelectItem value="3ano">3º Ano</SelectItem>
+                                    <SelectItem value="4ano">4º Ano</SelectItem>
+                                    <SelectItem value="5ano">5º Ano</SelectItem>
+                                </>
+                            ) : (
+                                <>
+                                    <SelectItem value="Conhecimento">Conhecimento</SelectItem>
+                                    <SelectItem value="Pensamento Científico, Crítico e Criativo">Pensamento Científico...</SelectItem>
+                                    <SelectItem value="Repertório Cultural">Repertório Cultural</SelectItem>
+                                    <SelectItem value="Comunicação">Comunicação</SelectItem>
+                                    <SelectItem value="Cultura Digital">Cultura Digital</SelectItem>
+                                    <SelectItem value="Trabalho e Projeto de Vida">Trabalho e Projeto de Vida</SelectItem>
+                                    <SelectItem value="Argumentação">Argumentação</SelectItem>
+                                    <SelectItem value="Autoconhecimento e Autocuidado">Autoconhecimento...</SelectItem>
+                                    <SelectItem value="Empatia e Cooperação">Empatia e Cooperação</SelectItem>
+                                    <SelectItem value="Responsabilidade e Cidadania">Responsabilidade...</SelectItem>
+                                </>
+                            )}
                         </SelectContent>
                     </Select>
 
@@ -339,12 +356,29 @@ export function BibliotecaEditor() {
                                 </SelectTrigger>
                                 <SelectContent className="z-[9999]">
                                     <SelectItem value="all">Todas as Etapas (Geral)</SelectItem>
-                                    <SelectItem value="infantil">Educação Infantil</SelectItem>
-                                    <SelectItem value="1ano">1º Ano</SelectItem>
-                                    <SelectItem value="2ano">2º Ano</SelectItem>
-                                    <SelectItem value="3ano">3º Ano</SelectItem>
-                                    <SelectItem value="4ano">4º Ano</SelectItem>
-                                    <SelectItem value="5ano">5º Ano</SelectItem>
+                                    {formData.type === 'skill' ? (
+                                        <>
+                                            <SelectItem value="infantil">Educação Infantil</SelectItem>
+                                            <SelectItem value="1ano">1º Ano</SelectItem>
+                                            <SelectItem value="2ano">2º Ano</SelectItem>
+                                            <SelectItem value="3ano">3º Ano</SelectItem>
+                                            <SelectItem value="4ano">4º Ano</SelectItem>
+                                            <SelectItem value="5ano">5º Ano</SelectItem>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <SelectItem value="Conhecimento">Conhecimento</SelectItem>
+                                            <SelectItem value="Pensamento Científico, Crítico e Criativo">Pensamento Científico, Crítico e Criativo</SelectItem>
+                                            <SelectItem value="Repertório Cultural">Repertório Cultural</SelectItem>
+                                            <SelectItem value="Comunicação">Comunicação</SelectItem>
+                                            <SelectItem value="Cultura Digital">Cultura Digital</SelectItem>
+                                            <SelectItem value="Trabalho e Projeto de Vida">Trabalho e Projeto de Vida</SelectItem>
+                                            <SelectItem value="Argumentação">Argumentação</SelectItem>
+                                            <SelectItem value="Autoconhecimento e Autocuidado">Autoconhecimento e Autocuidado</SelectItem>
+                                            <SelectItem value="Empatia e Cooperação">Empatia e Cooperação</SelectItem>
+                                            <SelectItem value="Responsabilidade e Cidadania">Responsabilidade e Cidadania</SelectItem>
+                                        </>
+                                    )}
                                 </SelectContent>
                             </Select>
                         </div>

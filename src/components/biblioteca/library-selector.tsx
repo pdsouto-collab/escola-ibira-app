@@ -7,7 +7,14 @@ import { Input } from "../ui/input";
 import { Badge } from "../ui/badge";
 import { Switch } from "../ui/switch";
 import { cn } from "@/lib/utils";
-import { BookOpen, Layers } from "lucide-react";
+import { BookOpen, Layers, Filter } from "lucide-react";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import {
     Accordion,
     AccordionContent,
@@ -24,6 +31,7 @@ interface LibrarySelectorProps {
 export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all" }: LibrarySelectorProps) {
     const { libraryItems } = useAppStore();
     const [searchTerm, setSearchTerm] = useState("");
+    const [selectedGrade, setSelectedGrade] = useState<string>("all");
     const [showOnlySelected, setShowOnlySelected] = useState(false);
 
     // Keep internal state if not controlled
@@ -49,6 +57,9 @@ export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all"
         if (typeFilter !== "all" && item.type !== typeFilter) return false;
 
         if (showOnlySelected && !currentSelection.includes(item.id)) return false;
+
+        const matchesGrade = selectedGrade === "all" || item.grade === selectedGrade || item.grade === "all";
+        if (!matchesGrade) return false;
 
         const query = searchTerm.toLowerCase();
         if (query) {
@@ -85,16 +96,46 @@ export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all"
 
             {/* Controls */}
             <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-slate-50 p-4 rounded-xl border">
-                <div className="relative flex-1 w-full">
-                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                    <Input
-                        placeholder="Buscar por código, nome ou descrição..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-9 bg-white"
-                    />
+                <div className="flex items-center gap-3 flex-1 w-full">
+                    <Select value={selectedGrade} onValueChange={setSelectedGrade}>
+                        <SelectTrigger className="w-[180px] bg-white">
+                            <Filter className="w-4 h-4 mr-2 text-slate-400" />
+                            <SelectValue placeholder="Filtrar por Etapa" />
+                        </SelectTrigger>
+                        <SelectContent className="z-[9999]">
+                            <SelectItem value="all">Todas as Etapas</SelectItem>
+                            {/* Skill grades */}
+                            <SelectItem value="infantil">Educação Infantil</SelectItem>
+                            <SelectItem value="1ano">1º Ano</SelectItem>
+                            <SelectItem value="2ano">2º Ano</SelectItem>
+                            <SelectItem value="3ano">3º Ano</SelectItem>
+                            <SelectItem value="4ano">4º Ano</SelectItem>
+                            <SelectItem value="5ano">5º Ano</SelectItem>
+                            {/* Content grades */}
+                            <SelectItem value="Conhecimento">Conhecimento</SelectItem>
+                            <SelectItem value="Pensamento Científico, Crítico e Criativo">Pensamento Científico...</SelectItem>
+                            <SelectItem value="Repertório Cultural">Repertório Cultural</SelectItem>
+                            <SelectItem value="Comunicação">Comunicação</SelectItem>
+                            <SelectItem value="Cultura Digital">Cultura Digital</SelectItem>
+                            <SelectItem value="Trabalho e Projeto de Vida">Trabalho e Projeto de Vida</SelectItem>
+                            <SelectItem value="Argumentação">Argumentação</SelectItem>
+                            <SelectItem value="Autoconhecimento e Autocuidado">Autoconhecimento...</SelectItem>
+                            <SelectItem value="Empatia e Cooperação">Empatia e Cooperação</SelectItem>
+                            <SelectItem value="Responsabilidade e Cidadania">Responsabilidade...</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                        <Input
+                            placeholder="Buscar habilidades ou conteúdos..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-9 bg-white"
+                        />
+                    </div>
                 </div>
-                <div className="flex items-center gap-2 px-2">
+                <div className="flex items-center gap-2 px-2 whitespace-nowrap">
                     <Switch
                         id="show-selected"
                         checked={showOnlySelected}
