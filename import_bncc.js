@@ -4,9 +4,7 @@ const path = require('path');
 // Helper to escape special chars for string literals
 function escape(str) {
     if (!str) return '';
-    // Remove extra quotes that might be coming from CSV
     let cleaned = str.replace(/^"|"$/g, '').replace(/""/g, '"').trim();
-    // Escape backslashes first, then single quotes, then double quotes
     return cleaned
         .replace(/\\/g, '\\\\')
         .replace(/'/g, "\\'")
@@ -17,14 +15,18 @@ function escape(str) {
 
 // Function to read and parse CSV (semicolon delimited)
 function parseCSV(filePath) {
-    const content = fs.readFileSync(filePath, 'utf8');
-    const lines = content.split('\n').filter(l => l.trim() !== '');
+    const rawContent = fs.readFileSync(filePath, 'utf8');
+    // Remove BOM if present
+    const content = rawContent.replace(/^\uFEFF/, '');
+    const lines = content.split(/\r?\n/).filter(l => l.trim() !== '');
+
     const headers = lines[0].split(';').map(h => h.trim().replace(/^"|"$/g, ''));
+
     return lines.slice(1).map(line => {
         const values = line.split(';');
         const obj = {};
         headers.forEach((h, i) => {
-            obj[h] = values[i] ? values[i].trim() : '';
+            obj[h] = values[i] ? values[i].trim().replace(/^"|"$/g, '') : '';
         });
         return obj;
     });
@@ -40,43 +42,39 @@ export const bnccData: LibraryItem[] = [
 
 // Map Infantil
 infantilItems.forEach((item, idx) => {
-    let grade = "infantil";
-
-    // Slop matching for headers
     const codeRaw = item['C¢digo'] || item['Código'] || '';
-    const code = codeRaw.replace(/^"|"$/g, '').trim();
-
     const campoRaw = item['Campo de Experiˆncia'] || item['Campo de Experiência'] || '';
-    const campo = campoRaw.replace(/^"|"$/g, '').trim();
-
     const descRaw = item['Objetivo de Aprendizagem'] || '';
-    const desc = descRaw.replace(/^"|"$/g, '').trim();
 
-    if (!code || code === 'C¢digo' || code === 'Código') return;
+    if (!codeRaw || codeRaw === 'C¢digo' || codeRaw === 'Código') return;
 
-    output += `    { id: "bncc-ei-${code.toLowerCase().replace(/[^a-z0-9]/g, '-')}", type: "skill", code: "${code}", name: "${escape(campo)}", description: "${escape(desc)}", isBNCC: true, subGroup: "Educação Infantil", grade: "infantil" },\n`;
+    output += `    { id: "bncc-ei-${codeRaw.toLowerCase().replace(/[^a-z0-9]/g, '-')}", type: "skill", code: "${codeRaw}", name: "${escape(campoRaw)}", description: "${escape(descRaw)}", isBNCC: true, subGroup: "Educação Infantil", grade: "infantil" },\n`;
 });
 
 // Map Fundamental
 fundamentalItems.forEach((item, idx) => {
-    const disc = (item['Disciplina'] || '').replace(/^"|"$/g, '').trim();
-    const anoRaw = (item['Ano'] || '').replace(/^"|"$/g, '').trim();
+    const disc = item['Disciplina'] || '';
+    const anoRaw = item['Ano'] || '';
     const unidadeRaw = item['Unidade Tem tica'] || item['Unidade Temática'] || '';
-    const unidade = unidadeRaw.replace(/^"|"$/g, '').trim();
-    const habRaw = (item['Habilidade'] || '').replace(/^"|"$/g, '').trim();
+    const habRaw = item['Habilidade'] || '';
 
     if (!habRaw || disc === 'Disciplina') return;
 
-    // Pattern for codes like EF01LP01 or (EF01LP01)
+    // The Habilidade field contains " (CODE) DESCRIPTION "
+    // Note: The screenshot shows (EF01MA01) inside the 'Habilidade' column.
+    // Our previous regex was match(/^\(?([A-Z0-9]{7,})\)?[\s:-]*(.*)/i)
+    // But if there's a leading space or it's formatted differently, it might fail.
+
     let code = "";
     let desc = habRaw;
 
-    const match = habRaw.match(/^\(?([A-Z0-9]{7,})\)?[\s:-]*(.*)/i);
-    if (match) {
-        code = match[1].toUpperCase();
-        desc = match[2].trim();
+    // Looking for EFXXLLXX or similar patterns
+    const codeMatch = habRaw.match(/EF\d{2}[A-Z]{2}\d{2}/i);
+    if (codeMatch) {
+        code = codeMatch[0].toUpperCase();
+        // Remove the code part from the description
+        desc = habRaw.replace(new RegExp(`\\(?${code}\\)?[:\\s-]*`, 'i'), '').trim();
     } else {
-        // Fallback if no code detected
         code = `HAB-${idx}`;
     }
 
@@ -87,7 +85,7 @@ fundamentalItems.forEach((item, idx) => {
     else if (anoRaw.includes('4')) grade = "4ano";
     else if (anoRaw.includes('5')) grade = "5ano";
 
-    output += `    { id: "bncc-ef-${code.toLowerCase().replace(/[^a-z0-9]/g, '-')}", type: "skill", code: "${code}", name: "${escape(unidade || disc)}", description: "${escape(desc)}", isBNCC: true, subGroup: "${escape(disc)}", grade: "${grade}" },\n`;
+    output += `    { id: "bncc-ef-${code.toLowerCase()}-${idx}", type: "skill", code: "${code}", name: "${escape(unidadeRaw || disc)}", description: "${escape(desc)}", isBNCC: true, subGroup: "${escape(disc)}", grade: "${grade}" },\n`;
 });
 
 output += `];\n`;
