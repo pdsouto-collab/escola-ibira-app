@@ -361,7 +361,12 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
                                                             .map(i => treeType === "skill" ? i.grade : i.subGroup)
                                                             .filter(g => g && g !== "all")
                                                     )).sort((a, b) => a!.localeCompare(b!)).map(grade => (
-                                                        <SelectItem key={grade} value={grade!}>{grade}</SelectItem>
+                                                        <SelectItem key={grade} value={grade!}>
+                                                            {treeType === "skill" ? (
+                                                                grade === 'infantil' ? 'Educação Infantil' :
+                                                                    grade?.endsWith('ano') ? `${grade.replace('ano', '')}º Ano` : grade
+                                                            ) : grade}
+                                                        </SelectItem>
                                                     ))}
                                                 </SelectContent>
                                             </Select>

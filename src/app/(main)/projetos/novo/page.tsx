@@ -584,7 +584,7 @@ function NewProjectWizardContent() {
                                                             libraryItems
                                                                 .filter(i => i.isBNCC)
                                                                 .map(i => i.grade)
-                                                                .filter(Boolean)
+                                                                .filter(g => g && g !== "all")
                                                         )).sort((a, b) => a!.localeCompare(b!)).map(grade => (
                                                             <SelectItem key={grade} value={grade!}>
                                                                 {grade === 'infantil' ? 'Educação Infantil' :
@@ -673,7 +673,7 @@ function NewProjectWizardContent() {
                                                             libraryItems
                                                                 .filter(i => !i.isBNCC)
                                                                 .map(i => i.subGroup)
-                                                                .filter(Boolean)
+                                                                .filter(g => g && g !== "all")
                                                         )).sort((a, b) => a.localeCompare(b)).map(group => (
                                                             <SelectItem key={group} value={group}>
                                                                 {group}

@@ -185,7 +185,7 @@ export function BibliotecaEditor() {
                                     libraryItems
                                         .filter(i => i.type === 'skill')
                                         .map(i => i.grade)
-                                        .filter(Boolean)
+                                        .filter(g => g && g !== "all")
                                 )).sort((a, b) => a!.localeCompare(b!)).map(grade => (
                                     <SelectItem key={grade} value={grade!}>
                                         {grade === 'infantil' ? 'Educação Infantil' :
@@ -197,7 +197,7 @@ export function BibliotecaEditor() {
                                     libraryItems
                                         .filter(i => i.type === 'content')
                                         .map(i => i.subGroup)
-                                        .filter(Boolean)
+                                        .filter(g => g && g !== "all")
                                 )).sort((a, b) => a.localeCompare(b)).map(group => (
                                     <SelectItem key={group} value={group}>
                                         {group}
