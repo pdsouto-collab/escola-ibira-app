@@ -79,7 +79,7 @@ export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all"
         <div className="w-full space-y-6">
             {/* Header Content */}
             <div>
-                <h2 className="text-2xl font-bold text-slate-800 mb-2">Biblioteca de Habilidades e Conteúdos</h2>
+                <h2 className="text-2xl font-bold text-slate-800 mb-2">Biblioteca de Habilidades BNCC e Competências Gerais</h2>
                 <p className="text-slate-500">Selecione os itens da BNCC ou personalizados da escola para este projeto.</p>
             </div>
 
@@ -112,7 +112,7 @@ export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all"
                 {skills.length > 0 && (
                     <div className="space-y-3">
                         <h3 className="font-semibold text-sm text-slate-500 uppercase tracking-wider sticky top-0 bg-white/90 backdrop-blur pb-2 z-10">
-                            Habilidades ({skills.length})
+                            Habilidades BNCC ({skills.length})
                         </h3>
                         <Accordion type="multiple" className="w-full space-y-3" defaultValue={sortedSkillKeys}>
                             {sortedSkillKeys.map(group => (
@@ -138,7 +138,7 @@ export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all"
                 {contents.length > 0 && (
                     <div className="space-y-3 pt-4">
                         <h3 className="font-semibold text-sm text-slate-500 uppercase tracking-wider sticky top-0 bg-white/90 backdrop-blur pb-2 z-10">
-                            Conteúdos ({contents.length})
+                            Competências Gerais ({contents.length})
                         </h3>
                         <Accordion type="multiple" className="w-full space-y-3" defaultValue={sortedContentKeys}>
                             {sortedContentKeys.map(group => (

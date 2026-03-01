@@ -129,13 +129,13 @@ export function MosaicContainer() {
                             onClick={() => { setActiveTab("skill"); setDrilledNode(null); setSelectedNode(null); }}
                             className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === "skill" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
                         >
-                            BNCC
+                            Habilidades BNCC
                         </button>
                         <button
                             onClick={() => { setActiveTab("content"); setDrilledNode(null); setSelectedNode(null); }}
                             className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === "content" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
                         >
-                            Gerais
+                            Competências Gerais
                         </button>
                     </div>
 

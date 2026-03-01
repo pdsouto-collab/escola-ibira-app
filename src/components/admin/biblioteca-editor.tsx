@@ -167,7 +167,7 @@ export function BibliotecaEditor() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Biblioteca</h1>
-                    <p className="text-slate-500 mt-1">Gerencie habilidades da BNCC e conteúdos personalizados da escola.</p>
+                    <p className="text-slate-500 mt-1">Gerencie habilidades da BNCC e competências gerais da escola.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <Select value={selectedGrade} onValueChange={setSelectedGrade}>
@@ -216,14 +216,14 @@ export function BibliotecaEditor() {
                             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-2 py-3 text-base font-medium text-slate-500 data-[state=active]:text-primary transition-all flex items-center gap-2"
                         >
                             <BookOpen className="w-4 h-4" />
-                            Habilidades
+                            Habilidades BNCC
                         </TabsTrigger>
                         <TabsTrigger
                             value="content"
                             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-2 py-3 text-base font-medium text-slate-500 data-[state=active]:text-primary transition-all flex items-center gap-2"
                         >
                             <Layers className="w-4 h-4" />
-                            Conteúdos
+                            Competências Gerais
                         </TabsTrigger>
                     </TabsList>
                 </div>
@@ -323,8 +323,8 @@ export function BibliotecaEditor() {
                                     <SelectValue placeholder="Selecione o tipo" />
                                 </SelectTrigger>
                                 <SelectContent className="z-[9999]">
-                                    <SelectItem value="skill">Habilidades</SelectItem>
-                                    <SelectItem value="content">Conteúdos</SelectItem>
+                                    <SelectItem value="skill">Habilidades BNCC</SelectItem>
+                                    <SelectItem value="content">Competências Gerais</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -425,7 +425,7 @@ export function BibliotecaEditor() {
                     <DialogHeader>
                         <DialogTitle>Gerenciar Grupos</DialogTitle>
                         <DialogDescription>
-                            Renomeie ou exclua os grupos existentes na aba atual ({activeTab === 'skill' ? 'Habilidades' : 'Conteúdos'}).<br />
+                            Renomeie ou exclua os grupos existentes na aba atual ({activeTab === 'skill' ? 'Habilidades BNCC' : 'Competências Gerais'}).<br />
                             Itens da BNCC de um grupo excluído irão para a categoria "BNCC Sem Grupo".
                         </DialogDescription>
                     </DialogHeader>

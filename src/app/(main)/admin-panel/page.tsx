@@ -31,11 +31,11 @@ export default function AdminPanelPage() {
                                 </TabsTrigger>
                                 <TabsTrigger value="skills" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 flex items-center gap-2 transition-all">
                                     <BookOpen className="w-4 h-4" />
-                                    Habilidades BNCC (O lado Acadêmico/Curricular)
+                                    Habilidades BNCC
                                 </TabsTrigger>
                                 <TabsTrigger value="contents" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 flex items-center gap-2 transition-all">
                                     <Layers className="w-4 h-4" />
-                                    Competências Gerais (O lado Comportamental/Cognitivo)
+                                    Competências Gerais
                                 </TabsTrigger>
                                 <TabsTrigger value="products" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 flex items-center gap-2 transition-all">
                                     <PackagePlus className="w-4 h-4" />
