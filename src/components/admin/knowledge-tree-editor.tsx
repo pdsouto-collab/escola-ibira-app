@@ -19,16 +19,16 @@ interface Props {
 
 const LEVEL_LABELS = {
     skill: {
-        macro: "Eixo",
-        mesclado: "Competência",
-        micro: "Habilidade",
-        atomico: "Habilidade Específica"
+        macro: "Eixo do Saber",
+        mesclado: "Componente Curricular",
+        micro: "Habilidade BNCC",
+        atomico: "Evidência da Habilidade"
     },
     content: {
-        macro: "Área do Saber",
+        macro: "Eixo Comportamental/Cognitivo",
         mesclado: "Tópico",
-        micro: "Conteúdo",
-        atomico: "Evidência de Conteúdo"
+        micro: "Competência",
+        atomico: "Evidência de Competência"
     }
 };
 
@@ -277,7 +277,7 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
                 </div>
                 <Button onClick={handleAddRoot} className="gap-2">
                     <Plus className="w-4 h-4" />
-                    Criar Nível Macro
+                    Criar Nível 1
                 </Button>
             </div>
 
