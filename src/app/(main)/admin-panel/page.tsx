@@ -23,25 +23,40 @@ export default function AdminPanelPage() {
 
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <Tabs defaultValue="biblioteca" className="w-full">
-                        <div className="border-b px-6 py-4 bg-slate-50/50 flex justify-between items-center">
-                            <TabsList className="bg-slate-200/50 p-1 flex-wrap h-auto">
-                                <TabsTrigger value="biblioteca" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 flex items-center gap-2 transition-all">
-                                    <Library className="w-4 h-4" />
-                                    Biblioteca
-                                </TabsTrigger>
-                                <TabsTrigger value="skills" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 flex items-center gap-2 transition-all">
-                                    <BookOpen className="w-4 h-4" />
-                                    Habilidades BNCC
-                                </TabsTrigger>
-                                <TabsTrigger value="contents" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 flex items-center gap-2 transition-all">
-                                    <Layers className="w-4 h-4" />
-                                    Competências Gerais
-                                </TabsTrigger>
-                                <TabsTrigger value="products" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 flex items-center gap-2 transition-all">
-                                    <PackagePlus className="w-4 h-4" />
-                                    Produtos Finais
-                                </TabsTrigger>
-                            </TabsList>
+                        <div className="border-b px-6 py-4 bg-slate-50/50 flex flex-col gap-3">
+                            <div className="flex items-center gap-4">
+                                <TabsList className="bg-slate-200/50 p-1 flex-wrap h-auto">
+                                    <TabsTrigger value="biblioteca" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 flex items-center gap-2 transition-all">
+                                        <Library className="w-4 h-4" />
+                                        Biblioteca
+                                    </TabsTrigger>
+                                </TabsList>
+
+                                <div className="h-8 w-px bg-slate-200 mx-1" />
+
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Árvores Base</span>
+                                    <TabsList className="bg-slate-200/50 p-1 flex-wrap h-auto">
+                                        <TabsTrigger value="skills" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 flex items-center gap-2 transition-all">
+                                            <BookOpen className="w-4 h-4" />
+                                            Habilidades BNCC
+                                        </TabsTrigger>
+                                        <TabsTrigger value="contents" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 flex items-center gap-2 transition-all">
+                                            <Layers className="w-4 h-4" />
+                                            Competências Gerais
+                                        </TabsTrigger>
+                                    </TabsList>
+                                </div>
+
+                                <div className="h-8 w-px bg-slate-200 mx-1" />
+
+                                <TabsList className="bg-slate-200/50 p-1 flex-wrap h-auto">
+                                    <TabsTrigger value="products" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 flex items-center gap-2 transition-all">
+                                        <PackagePlus className="w-4 h-4" />
+                                        Produtos Finais
+                                    </TabsTrigger>
+                                </TabsList>
+                            </div>
                         </div>
 
                         <div className="p-6">

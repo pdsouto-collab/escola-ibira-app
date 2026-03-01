@@ -124,19 +124,22 @@ export function MosaicContainer() {
                     </Select>
 
                     {/* Habilidades / Conteúdos Toggle */}
-                    <div className="flex bg-slate-100 p-1 rounded-lg flex-shrink-0">
-                        <button
-                            onClick={() => { setActiveTab("skill"); setDrilledNode(null); setSelectedNode(null); }}
-                            className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === "skill" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
-                        >
-                            Habilidades BNCC
-                        </button>
-                        <button
-                            onClick={() => { setActiveTab("content"); setDrilledNode(null); setSelectedNode(null); }}
-                            className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === "content" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
-                        >
-                            Competências Gerais
-                        </button>
+                    <div className="flex flex-col gap-1 items-end">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mr-1">Árvores Base</span>
+                        <div className="flex bg-slate-100 p-1 rounded-lg flex-shrink-0">
+                            <button
+                                onClick={() => { setActiveTab("skill"); setDrilledNode(null); setSelectedNode(null); }}
+                                className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === "skill" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
+                            >
+                                Habilidades BNCC
+                            </button>
+                            <button
+                                onClick={() => { setActiveTab("content"); setDrilledNode(null); setSelectedNode(null); }}
+                                className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === "content" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
+                            >
+                                Competências Gerais
+                            </button>
+                        </div>
                     </div>
 
                     {/* RIGHT: Avatar (teacher) */}
