@@ -138,7 +138,10 @@ export function BibliotecaEditor() {
     // Filter items based on tab, search and grade
     const filteredItems = libraryItems.filter(item => {
         const matchesTab = item.type === activeTab;
-        const matchesGrade = selectedGrade === "all" || item.grade === selectedGrade || item.grade === "all";
+        const matchesGrade = selectedGrade === "all" ||
+            item.grade === selectedGrade ||
+            item.subGroup === selectedGrade ||
+            item.grade === "all";
 
         const query = searchQuery.toLowerCase();
         const matchesSearch = item.name.toLowerCase().includes(query) ||
@@ -176,29 +179,30 @@ export function BibliotecaEditor() {
                             <SelectValue placeholder="Filtrar por Etapa" />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
-                            <SelectItem value="all">Todas as Etapas</SelectItem>
+                            <SelectItem value="all">Todas as {activeTab === 'skill' ? 'Etapas' : 'Categorias'}</SelectItem>
                             {activeTab === 'skill' ? (
-                                <>
-                                    <SelectItem value="infantil">Educação Infantil</SelectItem>
-                                    <SelectItem value="1ano">1º Ano</SelectItem>
-                                    <SelectItem value="2ano">2º Ano</SelectItem>
-                                    <SelectItem value="3ano">3º Ano</SelectItem>
-                                    <SelectItem value="4ano">4º Ano</SelectItem>
-                                    <SelectItem value="5ano">5º Ano</SelectItem>
-                                </>
+                                Array.from(new Set(
+                                    libraryItems
+                                        .filter(i => i.type === 'skill')
+                                        .map(i => i.grade)
+                                        .filter(Boolean)
+                                )).sort((a, b) => a!.localeCompare(b!)).map(grade => (
+                                    <SelectItem key={grade} value={grade!}>
+                                        {grade === 'infantil' ? 'Educação Infantil' :
+                                            grade?.endsWith('ano') ? `${grade.replace('ano', '')}º Ano` : grade}
+                                    </SelectItem>
+                                ))
                             ) : (
-                                <>
-                                    <SelectItem value="Conhecimento">Conhecimento</SelectItem>
-                                    <SelectItem value="Pensamento Científico, Crítico e Criativo">Pensamento Científico...</SelectItem>
-                                    <SelectItem value="Repertório Cultural">Repertório Cultural</SelectItem>
-                                    <SelectItem value="Comunicação">Comunicação</SelectItem>
-                                    <SelectItem value="Cultura Digital">Cultura Digital</SelectItem>
-                                    <SelectItem value="Trabalho e Projeto de Vida">Trabalho e Projeto de Vida</SelectItem>
-                                    <SelectItem value="Argumentação">Argumentação</SelectItem>
-                                    <SelectItem value="Autoconhecimento e Autocuidado">Autoconhecimento...</SelectItem>
-                                    <SelectItem value="Empatia e Cooperação">Empatia e Cooperação</SelectItem>
-                                    <SelectItem value="Responsabilidade e Cidadania">Responsabilidade...</SelectItem>
-                                </>
+                                Array.from(new Set(
+                                    libraryItems
+                                        .filter(i => i.type === 'content')
+                                        .map(i => i.subGroup)
+                                        .filter(Boolean)
+                                )).sort((a, b) => a.localeCompare(b)).map(group => (
+                                    <SelectItem key={group} value={group}>
+                                        {group}
+                                    </SelectItem>
+                                ))
                             )}
                         </SelectContent>
                     </Select>

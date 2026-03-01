@@ -58,7 +58,10 @@ export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all"
 
         if (showOnlySelected && !currentSelection.includes(item.id)) return false;
 
-        const matchesGrade = selectedGrade === "all" || item.grade === selectedGrade || item.grade === "all";
+        const matchesGrade = selectedGrade === "all" ||
+            item.grade === selectedGrade ||
+            item.subGroup === selectedGrade ||
+            item.grade === "all";
         if (!matchesGrade) return false;
 
         const query = searchTerm.toLowerCase();
@@ -103,25 +106,34 @@ export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all"
                             <SelectValue placeholder="Filtrar por Etapa" />
                         </SelectTrigger>
                         <SelectContent className="z-[9999]">
-                            <SelectItem value="all">Todas as Etapas</SelectItem>
-                            {/* Skill grades */}
-                            <SelectItem value="infantil">Educação Infantil</SelectItem>
-                            <SelectItem value="1ano">1º Ano</SelectItem>
-                            <SelectItem value="2ano">2º Ano</SelectItem>
-                            <SelectItem value="3ano">3º Ano</SelectItem>
-                            <SelectItem value="4ano">4º Ano</SelectItem>
-                            <SelectItem value="5ano">5º Ano</SelectItem>
-                            {/* Content grades */}
-                            <SelectItem value="Conhecimento">Conhecimento</SelectItem>
-                            <SelectItem value="Pensamento Científico, Crítico e Criativo">Pensamento Científico...</SelectItem>
-                            <SelectItem value="Repertório Cultural">Repertório Cultural</SelectItem>
-                            <SelectItem value="Comunicação">Comunicação</SelectItem>
-                            <SelectItem value="Cultura Digital">Cultura Digital</SelectItem>
-                            <SelectItem value="Trabalho e Projeto de Vida">Trabalho e Projeto de Vida</SelectItem>
-                            <SelectItem value="Argumentação">Argumentação</SelectItem>
-                            <SelectItem value="Autoconhecimento e Autocuidado">Autoconhecimento...</SelectItem>
-                            <SelectItem value="Empatia e Cooperação">Empatia e Cooperação</SelectItem>
-                            <SelectItem value="Responsabilidade e Cidadania">Responsabilidade...</SelectItem>
+                            <SelectItem value="all">Todas as Etapas e Categorias</SelectItem>
+
+                            {/* Dynamic Skill grades (Stages) */}
+                            <div className="px-2 py-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider">Etapas (BNCC)</div>
+                            {Array.from(new Set(
+                                libraryItems
+                                    .filter(i => i.type === "skill")
+                                    .map(i => i.grade)
+                                    .filter(g => g && g !== "all")
+                            )).sort((a, b) => a!.localeCompare(b!)).map(grade => (
+                                <SelectItem key={`grade-${grade}`} value={grade!}>
+                                    {grade === 'infantil' ? 'Educação Infantil' :
+                                        grade?.endsWith('ano') ? `${grade.replace('ano', '')}º Ano` : grade}
+                                </SelectItem>
+                            ))}
+
+                            {/* Dynamic Content subgroups (Categories) */}
+                            <div className="px-2 py-1.5 mt-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">Categorias (Competências)</div>
+                            {Array.from(new Set(
+                                libraryItems
+                                    .filter(i => i.type === "content")
+                                    .map(i => i.subGroup)
+                                    .filter(g => g && g !== "all")
+                            )).sort((a, b) => a.localeCompare(b)).map(group => (
+                                <SelectItem key={`group-${group}`} value={group}>
+                                    {group}
+                                </SelectItem>
+                            ))}
                         </SelectContent>
                     </Select>
 

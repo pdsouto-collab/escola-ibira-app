@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useAppStore } from "@/lib/store";
 import { KnowledgeNode, KnowledgeLevel, LibraryItem } from "@/lib/data";
-import { ChevronRight, ChevronDown, Plus, Edit2, Trash2, Link as LinkIcon, BookOpen, Search, X, Copy } from "lucide-react";
+import { ChevronRight, ChevronDown, Plus, Edit2, Trash2, Link as LinkIcon, BookOpen, Search, X, Copy, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -52,6 +52,7 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
 
     const treeData = treeType === "skill" ? skillsTree : contentsTree;
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
+    const [selectedGrade, setSelectedGrade] = useState<string>("all");
 
     // Filter only the roots. Children belong to whatever root they are in.
     const filteredTreeData = selectedClassId === "all"
@@ -134,9 +135,14 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
         return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
     };
 
-    // Filter library items by search query and type
+    // Filter library items by search query, type and grade/subgroup
     const availableLibraryItems = libraryItems
         .filter(item => item.type === treeType)
+        .filter(item => {
+            if (selectedGrade === "all") return true;
+            if (treeType === "skill") return item.grade === selectedGrade || item.grade === "all";
+            return item.subGroup === selectedGrade;
+        })
         .filter(item => {
             const query = normalizeString(libSearchQuery);
             if (!query) return true;
@@ -302,7 +308,10 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
             {/* Dialog for Add/Edit Node */}
             <Dialog open={isDialogOpen} onOpenChange={(open) => {
                 setIsDialogOpen(open);
-                if (!open) setLibSearchQuery(""); // Reset search on close
+                if (!open) {
+                    setLibSearchQuery(""); // Reset search on close
+                    setSelectedGrade("all");
+                }
             }}>
                 <DialogContent className="max-w-[600px]">
                     <DialogHeader>
@@ -323,17 +332,39 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
                             {/* IF LEVEL 3: Use Search + Select from Library */}
                             {isLevel3 ? (
                                 <div className="space-y-3">
-                                    <div className="space-y-2">
-                                        <Label>Buscar na Biblioteca (Nome ou Código BNCC)</Label>
-                                        <div className="relative">
-                                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                                            <Input
-                                                placeholder="Ex: EF01LP, Números, Natureza..."
-                                                className="pl-9"
-                                                value={libSearchQuery}
-                                                onChange={(e) => setLibSearchQuery(e.target.value)}
-                                                autoFocus
-                                            />
+                                    <div className="flex gap-2">
+                                        <div className="flex-1 space-y-2">
+                                            <Label>Buscar na Biblioteca (Nome ou Código BNCC)</Label>
+                                            <div className="relative">
+                                                <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                                                <Input
+                                                    placeholder="Ex: EF01LP, Números, Natureza..."
+                                                    className="pl-9"
+                                                    value={libSearchQuery}
+                                                    onChange={(e) => setLibSearchQuery(e.target.value)}
+                                                    autoFocus
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="w-[200px] space-y-2">
+                                            <Label>Filtrar por {treeType === "skill" ? "Etapa" : "Categoria"}</Label>
+                                            <Select value={selectedGrade} onValueChange={setSelectedGrade}>
+                                                <SelectTrigger className="bg-white">
+                                                    <Filter className="w-4 h-4 mr-2 text-slate-400" />
+                                                    <SelectValue placeholder="Todas" />
+                                                </SelectTrigger>
+                                                <SelectContent className="z-[9999]">
+                                                    <SelectItem value="all">Todas</SelectItem>
+                                                    {Array.from(new Set(
+                                                        libraryItems
+                                                            .filter(i => i.type === treeType)
+                                                            .map(i => treeType === "skill" ? i.grade : i.subGroup)
+                                                            .filter(g => g && g !== "all")
+                                                    )).sort((a, b) => a!.localeCompare(b!)).map(grade => (
+                                                        <SelectItem key={grade} value={grade!}>{grade}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
                                         </div>
                                     </div>
 

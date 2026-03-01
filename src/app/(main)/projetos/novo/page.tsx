@@ -580,12 +580,17 @@ function NewProjectWizardContent() {
                                                     </SelectTrigger>
                                                     <SelectContent>
                                                         <SelectItem value="all">Todas as Etapas</SelectItem>
-                                                        <SelectItem value="infantil">Educação Infantil</SelectItem>
-                                                        <SelectItem value="1ano">1º Ano</SelectItem>
-                                                        <SelectItem value="2ano">2º Ano</SelectItem>
-                                                        <SelectItem value="3ano">3º Ano</SelectItem>
-                                                        <SelectItem value="4ano">4º Ano</SelectItem>
-                                                        <SelectItem value="5ano">5º Ano</SelectItem>
+                                                        {Array.from(new Set(
+                                                            libraryItems
+                                                                .filter(i => i.isBNCC)
+                                                                .map(i => i.grade)
+                                                                .filter(Boolean)
+                                                        )).sort((a, b) => a!.localeCompare(b!)).map(grade => (
+                                                            <SelectItem key={grade} value={grade!}>
+                                                                {grade === 'infantil' ? 'Educação Infantil' :
+                                                                    grade?.endsWith('ano') ? `${grade.replace('ano', '')}º Ano` : grade}
+                                                            </SelectItem>
+                                                        ))}
                                                     </SelectContent>
                                                 </Select>
                                             </div>
@@ -663,17 +668,17 @@ function NewProjectWizardContent() {
                                                         <SelectValue placeholder="Todas as Etapas" />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="all">Todas as Etapas</SelectItem>
-                                                        <SelectItem value="Conhecimento">Conhecimento</SelectItem>
-                                                        <SelectItem value="Pensamento Científico, Crítico e Criativo">Pensamento Científico...</SelectItem>
-                                                        <SelectItem value="Repertório Cultural">Repertório Cultural</SelectItem>
-                                                        <SelectItem value="Comunicação">Comunicação</SelectItem>
-                                                        <SelectItem value="Cultura Digital">Cultura Digital</SelectItem>
-                                                        <SelectItem value="Trabalho e Projeto de Vida">Trabalho e Projeto de Vida</SelectItem>
-                                                        <SelectItem value="Argumentação">Argumentação</SelectItem>
-                                                        <SelectItem value="Autoconhecimento e Autocuidado">Autoconhecimento...</SelectItem>
-                                                        <SelectItem value="Empatia e Cooperação">Empatia e Cooperação</SelectItem>
-                                                        <SelectItem value="Responsabilidade e Cidadania">Responsabilidade...</SelectItem>
+                                                        <SelectItem value="all">Todas as Categorias</SelectItem>
+                                                        {Array.from(new Set(
+                                                            libraryItems
+                                                                .filter(i => !i.isBNCC)
+                                                                .map(i => i.subGroup)
+                                                                .filter(Boolean)
+                                                        )).sort((a, b) => a.localeCompare(b)).map(group => (
+                                                            <SelectItem key={group} value={group}>
+                                                                {group}
+                                                            </SelectItem>
+                                                        ))}
                                                     </SelectContent>
                                                 </Select>
                                             </div>
@@ -684,7 +689,7 @@ function NewProjectWizardContent() {
                                                 const subjectItems = libraryItems.filter(i =>
                                                     i.subGroup === subject &&
                                                     !i.isBNCC &&
-                                                    (gradeFilterCompetencias === "all" || i.grade === gradeFilterCompetencias || i.grade === "all")
+                                                    (gradeFilterCompetencias === "all" || i.grade === gradeFilterCompetencias || i.subGroup === gradeFilterCompetencias || i.grade === "all")
                                                 ).sort((a, b) => a.name.localeCompare(b.name));
 
                                                 if (subjectItems.length === 0) return null;
