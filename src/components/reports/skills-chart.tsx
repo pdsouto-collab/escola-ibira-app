@@ -17,9 +17,9 @@ const resolveNodeInfo = (id: string, skillsTree: any[], contentsTree: any[], lib
     }
 
     // 1. Search in Knowledge Trees (Skills and Contents)
-    const searchTrees = (nodes: any[], rootName?: string): any | null => {
+    const searchTrees = (nodes: any[], parentName?: string): any | null => {
         for (const node of nodes) {
-            const currentRootName = node.level === "macro" ? node.name : rootName;
+            const currentSubject = node.level === "mesclado" ? node.name : parentName;
             if (validIds.has(node.id) || (node.libraryItemId && validIds.has(node.libraryItemId))) {
                 return {
                     id: node.id,
@@ -27,11 +27,11 @@ const resolveNodeInfo = (id: string, skillsTree: any[], contentsTree: any[], lib
                     code: node.code || (node.libraryItemId ? node.libraryItemId : null),
                     description: node.description,
                     level: node.level,
-                    subject: currentRootName || libraryItem?.subGroup || "Outros"
+                    subject: currentSubject || libraryItem?.subGroup || "Outros"
                 };
             }
             if (node.children) {
-                const found = searchTrees(node.children, currentRootName);
+                const found = searchTrees(node.children, currentSubject);
                 if (found) return found;
             }
         }
@@ -56,15 +56,19 @@ const resolveNodeInfo = (id: string, skillsTree: any[], contentsTree: any[], lib
 };
 
 /** Finds all evaluatable nodes (L3/L4) within a given node or tree */
-const getAllEvaluatableNodes = (nodes: any[], rootName?: string): any[] => {
+/** Finds all evaluatable nodes (L3/L4) within a given node or tree */
+const getAllEvaluatableNodes = (nodes: any[], parentName?: string): any[] => {
     const results: any[] = [];
     for (const node of nodes) {
-        const currentRoot = node.level === "macro" ? node.name : rootName;
+        // If node is 'mesclado' (L2), it becomes the 'subject' for its descendants
+        const currentSubject = node.level === "mesclado" ? node.name : parentName;
+
         if (node.level === "micro") {
-            results.push({ ...node, subject: currentRoot || "Outros" });
+            results.push({ ...node, subject: currentSubject || "Outros" });
         }
+
         if (node.children) {
-            results.push(...getAllEvaluatableNodes(node.children, currentRoot));
+            results.push(...getAllEvaluatableNodes(node.children, currentSubject));
         }
     }
     return results;
