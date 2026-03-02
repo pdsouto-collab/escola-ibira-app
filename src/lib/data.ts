@@ -20,41 +20,69 @@ export interface KnowledgeNode {
 // Initial mock data to bootstrap the trees
 export const mockSkillsTree: KnowledgeNode[] = [
     {
-        id: "sk-macro-1",
+        id: "macro-sk-jardim-1",
         level: "macro",
         type: "skill",
-        name: "Linguagens",
+        name: "Jardim I - Habilidades BNCC",
         classId: "jardim-i",
         children: [
             {
-                id: "sk-mesclado-1",
+                id: "mes-sk-conviver",
                 level: "mesclado",
                 type: "skill",
-                name: "Comunicação",
+                name: "Conviver e Brincar (Socioemocional)",
                 children: [
                     {
-                        id: "sk-micro-1",
+                        id: "mic-sk-EI03EO01",
                         level: "micro",
                         type: "skill",
-                        name: "Escuta ativa e fala", // In reality, pulls from LibraryItem
-                        libraryItemId: "EF01LP01", // Assuming this BNCC code exists in the library
+                        name: "Empatia e Sentimentos",
+                        libraryItemId: "EI03EO01",
                         children: [
-                            {
-                                id: "sk-ato-1",
-                                level: "atomico",
-                                type: "skill",
-                                name: "Espera a vez de falar e ouve o colega",
-                                children: []
-                            }
+                            { id: "ato-sk-emo-1", level: "atomico", type: "skill", name: "Reconhece emoções básicas em fotos de colegas", children: [] },
+                            { id: "ato-sk-emo-2", level: "atomico", type: "skill", name: "Consola um colega de forma espontânea", children: [] }
                         ]
                     },
                     {
-                        id: "sk-micro-2",
+                        id: "mic-sk-EI03EO03",
                         level: "micro",
                         type: "skill",
-                        name: "O eu, o outro e o nós",
-                        libraryItemId: "EI01EO01",
-                        children: []
+                        name: "Relações Interpessoais",
+                        libraryItemId: "EI03EO03",
+                        children: [
+                            { id: "ato-sk-rel-1", level: "atomico", type: "skill", name: "Participa ativamente de brincadeiras de faz-de-conta", children: [] },
+                            { id: "ato-sk-rel-2", level: "atomico", type: "skill", name: "Propõe regras simples para jogos coletivos", children: [] }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "mes-sk-expressar",
+                level: "mesclado",
+                type: "skill",
+                name: "Expressar e Explorar (Artes e Movimento)",
+                children: [
+                    {
+                        id: "mic-sk-EI03CG03",
+                        level: "micro",
+                        type: "skill",
+                        name: "Gestos e Mímicas",
+                        libraryItemId: "EI03CG03",
+                        children: [
+                            { id: "ato-sk-ges-1", level: "atomico", type: "skill", name: "Imita sons e movimentos de animais e máquinas", children: [] },
+                            { id: "ato-sk-ges-2", level: "atomico", type: "skill", name: "Segue ritmos variados com percussão corporal", children: [] }
+                        ]
+                    },
+                    {
+                        id: "mic-sk-EI03TS02",
+                        level: "micro",
+                        type: "skill",
+                        name: "Expressão Plástica",
+                        libraryItemId: "EI03TS02",
+                        children: [
+                            { id: "ato-sk-art-1", level: "atomico", type: "skill", name: "Explora misturas de cores primárias na pintura", children: [] },
+                            { id: "ato-sk-art-2", level: "atomico", type: "skill", name: "Cria colagens usando materiais da natureza", children: [] }
+                        ]
                     }
                 ]
             }
@@ -64,34 +92,68 @@ export const mockSkillsTree: KnowledgeNode[] = [
 
 export const mockContentsTree: KnowledgeNode[] = [
     {
-        id: "co-macro-1",
+        id: "macro-co-jardim-1",
         level: "macro",
         type: "content",
-        name: "Lógica e Matemática",
+        name: "Jardim I - Competências Gerais",
         classId: "jardim-i",
         children: [
             {
-                id: "co-mesclado-1",
+                id: "mes-co-pensamento",
                 level: "mesclado",
                 type: "content",
-                name: "Números e Operações",
+                name: "Pensamento Científico e Crítico",
                 children: [
                     {
-                        id: "co-micro-1",
+                        id: "mic-co-cg3",
                         level: "micro",
                         type: "content",
-                        name: "Compreensão de Adição",
-                        libraryItemId: "EF01MA01", // Assuming this BNCC code exists
-                        linkedNodeIds: ["sk-micro-1"], // Cross-linked to the skill above
+                        name: "Investigação e Curiosidade",
+                        libraryItemId: "lib-cg-3",
                         children: [
-                            {
-                                id: "co-ato-1",
-                                level: "atomico",
-                                type: "content",
-                                name: "Resolve somas simples de um dígito usando material concreto",
-                                linkedNodeIds: ["sk-ato-1"], // Cross-linked to the specific skill evidence
-                                children: []
-                            }
+                            { id: "ato-co-inv-1", level: "atomico", type: "content", name: "Usa lupas e potes para observar pequenos seres no jardim", children: [] },
+                            { id: "ato-co-inv-2", level: "atomico", type: "content", name: "Formula perguntas curiosas sobre o clima e as plantas", children: [] }
+                        ]
+                    },
+                    {
+                        id: "mic-co-cg4",
+                        level: "micro",
+                        type: "content",
+                        name: "Resolução de Problemas",
+                        libraryItemId: "lib-cg-4",
+                        children: [
+                            { id: "ato-co-res-1", level: "atomico", type: "content", name: "Monta estruturas estáveis com blocos de diferentes pesos", children: [] },
+                            { id: "ato-co-res-2", level: "atomico", type: "content", name: "Encontra caminhos e soluções em labirintos desenhados", children: [] }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "mes-co-cultura",
+                level: "mesclado",
+                type: "content",
+                name: "Cultura e Comunicação",
+                children: [
+                    {
+                        id: "mic-co-cg6",
+                        level: "micro",
+                        type: "content",
+                        name: "Fruição e Apreciação Artística",
+                        libraryItemId: "lib-cg-6",
+                        children: [
+                            { id: "ato-co-apr-1", level: "atomico", type: "content", name: "Descreve o que sente ao ver diferentes obras de arte", children: [] },
+                            { id: "ato-co-apr-2", level: "atomico", type: "content", name: "Identifica instrumentos musicais por seu som", children: [] }
+                        ]
+                    },
+                    {
+                        id: "mic-co-cg8",
+                        level: "micro",
+                        type: "content",
+                        name: "Expressão Clara de Ideias",
+                        libraryItemId: "lib-cg-8",
+                        children: [
+                            { id: "ato-co-exp-1", level: "atomico", type: "content", name: "Relata acontecimentos do final de semana com sequência lógica", children: [] },
+                            { id: "ato-co-exp-2", level: "atomico", type: "content", name: "Usa vocabulário novo aprendido em rodas de conversa", children: [] }
                         ]
                     }
                 ]
@@ -812,6 +874,14 @@ export const mockLibraryItems: LibraryItem[] = [
     { id: "lib-cg-23", type: "content", name: "Consciência Socioambiental", description: "Atuação focada no bem comum e na sustentabilidade.", isBNCC: false, subGroup: "Responsabilidade e Cidadania", grade: "Responsabilidade e Cidadania" },
 
     // --- EDUCAÇÃO INFANTIL DATA (BNCC) ---
+    { id: "EI03EO01", type: "skill", code: "EI03EO01", name: "Empatia e Sentimentos", description: "Demonstrar empatia pelos outros, percebendo que as pessoas têm diferentes sentimentos, necessidades e maneiras de pensar e agir.", isBNCC: true, subGroup: "O eu, o outro e o nós", grade: "infantil" },
+    { id: "EI03EO03", type: "skill", code: "EI03EO03", name: "Relações Interpessoais", description: "Ampliar as relações interpessoais, desenvolvendo atitudes de participação e cooperação.", isBNCC: true, subGroup: "O eu, o outro e o nós", grade: "infantil" },
+    { id: "EI03CG02", type: "skill", code: "EI03CG02", name: "Controle e Movimento", description: "Demonstrar controle e adequação do uso de seu corpo em brincadeiras e jogos, escuta e formas de expressão.", isBNCC: true, subGroup: "Corpo, gestos e movimentos", grade: "infantil" },
+    { id: "EI03CG03", type: "skill", code: "EI03CG03", name: "Gestos e Mímicas", description: "Criar movimentos, gestos, olhares e mímicas em brincadeiras, jogos e atividades artísticas como dança, teatro e música.", isBNCC: true, subGroup: "Corpo, gestos e movimentos", grade: "infantil" },
+    { id: "EI03TS02", type: "skill", code: "EI03TS02", name: "Expressão Plástica", description: "Expressar-se livremente por meio de desenho, pintura, colagem, dobradura e escultura.", isBNCC: true, subGroup: "Traços, sons, cores e formas", grade: "infantil" },
+    { id: "EI03EF01", type: "skill", code: "EI03EF01", name: "Expressão de Ideias", description: "Expressar ideias, desejos e sentimentos sobre suas vivências, por meio da linguagem oral e escrita.", isBNCC: true, subGroup: "Escuta, fala, pensamento e imaginação", grade: "infantil" },
+    { id: "EI03ET07", type: "skill", code: "EI03ET07", name: "Números e Quantidades", description: "Relacionar números às suas respectivas quantidades e identificar o antes, o depois e o entre.", isBNCC: true, subGroup: "Espaços, tempos, quantidades, relações e transformações", grade: "infantil" },
+
     // --- CUSTOM CATEGORY EXAMPLES ---
     { id: "lib-custom-sk-01", type: "skill", name: "Inteligência Emocional", description: "Identificar e nomear as próprias emoções em situações de conflito no parquinho.", isBNCC: false, subGroup: "Sócio-Emocional", grade: "infantil" },
     { id: "lib-custom-co-01", type: "content", name: "Horta Comunitária", description: "Técnicas de plantio e cuidado diário com hortaliças no ambiente escolar.", isBNCC: false, subGroup: "Projetos Especiais", grade: "infantil" }
@@ -1096,4 +1166,35 @@ export interface Assessment {
     attachments: AssessmentAttachment[];
 }
 
-export const mockAssessments: Assessment[] = [];
+export const mockAssessments: Assessment[] = [
+    {
+        id: "as-1",
+        createdAt: new Date().toISOString(),
+        knowledgeNodeId: "mic-sk-EI03EO01",
+        scope: "student",
+        studentId: "1",
+        rating: 5,
+        observations: "Alice demonstra excelente empatia com os colegas.",
+        attachments: []
+    },
+    {
+        id: "as-2",
+        createdAt: new Date().toISOString(),
+        knowledgeNodeId: "ato-sk-emo-1",
+        scope: "student",
+        studentId: "1",
+        rating: 4,
+        observations: "Consegue identificar quase todas as emoções nas fotos.",
+        attachments: []
+    },
+    {
+        id: "as-3",
+        createdAt: new Date().toISOString(),
+        knowledgeNodeId: "mic-co-cg3",
+        scope: "student",
+        studentId: "1",
+        rating: 5,
+        observations: "Extremamente curiosa e investigativa.",
+        attachments: []
+    }
+];
