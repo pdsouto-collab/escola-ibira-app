@@ -375,9 +375,9 @@ export function BulkPortfolioDialog({ open, onOpenChange, date }: BulkPortfolioD
 
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
-                                        <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Narrativa Base (Injeção)</Label>
+                                        <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Narrativa Base</Label>
                                         <Button variant="ghost" size="sm" className="h-6 text-[9px] font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 uppercase" onClick={handleAutoFill}>
-                                            Injetar em Todos
+                                            Replicar em Todos
                                         </Button>
                                     </div>
                                     <Textarea
