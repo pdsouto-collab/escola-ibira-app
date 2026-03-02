@@ -178,7 +178,7 @@ function ReportCard({
     const allPhotos = relevantAssessments.flatMap(a => a.attachments.filter(att => att.type === "photo"));
 
     return (
-        <div className="report-card bg-white max-w-3xl mx-auto shadow-xl rounded-2xl overflow-hidden print:shadow-none print:rounded-none print:max-w-none">
+        <div className="report-card bg-white max-w-4xl mx-auto shadow-xl rounded-2xl overflow-hidden print:shadow-none print:rounded-none print:max-w-none">
 
             {/* ── HEADER BAND ───────────────────────────────────────── */}
             <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-green-700 px-10 py-8 text-white">
@@ -215,34 +215,34 @@ function ReportCard({
 
             {/* ── OVERALL RATING ────────────────────────────────────── */}
             {overallRating && (
-                <div className="bg-gradient-to-b from-green-50 to-white px-10 py-6 flex flex-col items-center text-center border-b">
+                <div className="bg-gradient-to-b from-green-50 to-white px-10 py-8 flex flex-col items-center text-center border-b">
                     <p className="text-xs uppercase tracking-widest text-slate-500 mb-3">Desenvolvimento Geral do Aluno</p>
                     <TreeRatingPicker value={overallRating} readOnly size="lg" />
-                    <p className="text-slate-500 text-sm mt-1">
+                    <p className="text-slate-500 text-sm mt-2">
                         Média: <span className="font-bold text-slate-800">{overallAvg.toFixed(1)}/5</span> &bull; {relevantAssessments.length} avaliações
                     </p>
                 </div>
             )}
 
-            <div className="px-10 py-10 space-y-12">
+            <div className="px-10 py-12 space-y-16">
                 {/* ── PHOTO GALLERY (Galeria de Vivências) ────────────────── */}
                 {allPhotos.length > 0 && (
                     <section>
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
-                            <h2 className="text-xl font-bold text-slate-800">Galeria de Vivências</h2>
+                        <div className="flex items-center gap-3 mb-8">
+                            <div className="w-1.5 h-8 bg-emerald-500 rounded-full" />
+                            <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Galeria de Vivências</h2>
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                             {allPhotos.map((photo, i) => (
-                                <div key={i} className="group relative aspect-square overflow-hidden rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                                <div key={i} className="group relative aspect-square overflow-hidden rounded-3xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300">
                                     <img
                                         src={photo.url}
                                         alt={photo.name || `Evidência ${i + 1}`}
-                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                     />
                                     {photo.name && (
-                                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3">
-                                            <p className="text-white text-[10px] font-medium line-clamp-1">{photo.name}</p>
+                                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4">
+                                            <p className="text-white text-xs font-semibold line-clamp-1">{photo.name}</p>
                                         </div>
                                     )}
                                 </div>
@@ -254,33 +254,33 @@ function ReportCard({
                 {/* ── PROFESSOR OBSERVATIONS ───────────────────────────── */}
                 {relevantAssessments.filter(a => a.observations).length > 0 && (
                     <section>
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="w-1.5 h-6 bg-indigo-500 rounded-full" />
-                            <h2 className="text-xl font-bold text-slate-800">Observações do Professor</h2>
+                        <div className="flex items-center gap-3 mb-8">
+                            <div className="w-1.5 h-8 bg-indigo-500 rounded-full" />
+                            <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Registros e Observações</h2>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {relevantAssessments.filter(a => a.observations).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map(a => {
                                 const date = new Date(a.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
                                 const trees = ["🌱", "🌿", "🌳", "🌲", "🍎"];
                                 const nodeInfo = resolveNodeInfo(a.knowledgeNodeId || "", skillsTree, contentsTree, libraryItems);
                                 return (
-                                    <div key={a.id} className="bg-slate-50/50 border border-slate-100 rounded-2xl p-5 flex gap-4 hover:bg-white hover:shadow-md transition-all">
-                                        <div className="flex flex-col items-center gap-1 shrink-0 bg-white p-2 rounded-xl border border-slate-100 min-w-[50px]">
+                                    <div key={a.id} className="bg-slate-50/40 border border-slate-100 rounded-3xl p-6 flex gap-6 hover:bg-white hover:shadow-xl transition-all duration-300 group">
+                                        <div className="flex flex-col items-center gap-1 shrink-0 bg-white p-3 rounded-2xl shadow-sm border border-slate-100 min-w-[65px] h-fit group-hover:border-indigo-100 transition-colors">
                                             {a.rating ? (
                                                 <>
-                                                    <span className="text-2xl">{trees[a.rating - 1]}</span>
-                                                    <span className="text-[10px] font-bold text-slate-500">{a.rating}/5</span>
+                                                    <span className="text-3xl">{trees[a.rating - 1]}</span>
+                                                    <span className="text-xs font-black text-slate-600 tracking-tighter">{a.rating}/5</span>
                                                 </>
                                             ) : (
-                                                <Target className="w-6 h-6 text-slate-200" />
+                                                <Target className="w-8 h-8 text-slate-200" />
                                             )}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">{date}</span>
-                                                <span className="text-[10px] font-medium text-slate-400 truncate ml-2">{nodeInfo?.name}</span>
+                                            <div className="flex justify-between items-start mb-3">
+                                                <span className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em]">{date}</span>
+                                                <span className="text-[10px] font-bold text-slate-400 truncate ml-4 bg-slate-100 px-2 py-0.5 rounded-full">{nodeInfo?.name}</span>
                                             </div>
-                                            <p className="text-sm text-slate-600 leading-relaxed italic">&ldquo;{a.observations}&rdquo;</p>
+                                            <p className="text-sm text-slate-600 leading-relaxed font-medium italic">&ldquo;{a.observations}&rdquo;</p>
                                         </div>
                                     </div>
                                 );
@@ -289,103 +289,115 @@ function ReportCard({
                     </section>
                 )}
 
-                {/* ── SESSIONS AND MILESTONES ─────────────────────────── */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                    {sessions.length > 0 && (
-                        <section>
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="w-1.5 h-6 bg-amber-500 rounded-full" />
-                                <h2 className="text-xl font-bold text-slate-800">Sessões Registradas</h2>
-                            </div>
-                            <div className="bg-white border rounded-2xl shadow-sm divide-y">
-                                {sessions.map(session => {
-                                    const sessionAssessments = relevantAssessments.filter(a => a.sessionId === session.id);
-                                    const lastRating = sessionAssessments.at(-1)?.rating;
-                                    const lastObs = sessionAssessments.at(-1)?.observations;
-                                    const dateStr = session.date
-                                        ? (typeof session.date === "string" ? session.date.split("-").reverse().join("/") : "")
-                                        : "";
-                                    const p = studentProjects.find(pr => pr.id === session.projectId);
+                {/* ── SESSION COMPONENT (Full Width) ─────────────────── */}
+                {sessions.length > 0 && (
+                    <section>
+                        <div className="flex items-center gap-3 mb-8">
+                            <div className="w-1.5 h-8 bg-amber-500 rounded-full" />
+                            <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Sessões em Projeto</h2>
+                        </div>
+                        <div className="bg-white border border-slate-100 rounded-3xl shadow-sm overflow-hidden divide-y divide-slate-50">
+                            {sessions.map(session => {
+                                const sessionAssessments = relevantAssessments.filter(a => a.sessionId === session.id);
+                                const lastRating = sessionAssessments.at(-1)?.rating;
+                                const lastObs = sessionAssessments.at(-1)?.observations;
+                                const dateStr = session.date
+                                    ? (typeof session.date === "string" ? session.date.split("-").reverse().join("/") : "")
+                                    : "";
+                                const p = studentProjects.find(pr => pr.id === session.projectId);
 
-                                    const trees = ["🌱", "🌿", "🌳", "🌲", "🍎"];
+                                const trees = ["🌱", "🌿", "🌳", "🌲", "🍎"];
 
-                                    return (
-                                        <div key={session.id} className="p-4 flex items-start gap-4">
-                                            <div className="flex-1">
-                                                <p className="text-sm font-bold text-slate-800 leading-tight">
+                                return (
+                                    <div key={session.id} className="p-6 flex items-center gap-8 hover:bg-slate-50 transition-colors">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <p className="text-lg font-bold text-slate-800 leading-tight tracking-tight">
                                                     {session.title}
-                                                    {p && <span className="text-slate-400 font-medium ml-1">[{p.title}]</span>}
                                                 </p>
-                                                <p className="text-[10px] font-bold text-emerald-600 mt-1 uppercase tracking-widest">{dateStr}</p>
-                                                {lastObs && <p className="text-xs text-slate-500 italic mt-2 border-l-2 border-slate-100 pl-3 leading-relaxed">&ldquo;{lastObs}&rdquo;</p>}
+                                                {p && <span className="text-xs bg-slate-100 text-slate-500 font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter">Projeto: {p.title}</span>}
                                             </div>
-                                            <div className="shrink-0 text-center bg-slate-50 rounded-xl p-2 min-w-[60px] border border-slate-100">
-                                                {lastRating ? (
-                                                    <>
-                                                        <div className="text-xl leading-none mb-1">{trees[lastRating - 1]}</div>
-                                                        <div className="text-[10px] font-black text-slate-500">{lastRating}/5</div>
-                                                    </>
-                                                ) : (
-                                                    <span className="text-xs text-slate-300 italic">—</span>
-                                                )}
-                                            </div>
+                                            <p className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em]">{dateStr}</p>
+                                            {lastObs && <p className="text-sm text-slate-500 italic mt-3 border-l-4 border-slate-200 pl-4 leading-relaxed font-medium">&ldquo;{lastObs}&rdquo;</p>}
                                         </div>
-                                    );
-                                })}
+                                        <div className="shrink-0 text-center bg-white rounded-2xl p-3 min-w-[80px] border border-slate-200 shadow-sm">
+                                            {lastRating ? (
+                                                <>
+                                                    <div className="text-3xl leading-none mb-1">{trees[lastRating - 1]}</div>
+                                                    <div className="text-xs font-black text-slate-600 tracking-tighter">{lastRating}/5</div>
+                                                </>
+                                            ) : (
+                                                <span className="text-xs text-slate-300 font-bold uppercase tracking-widest italic">Pendente</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </section>
+                )}
+
+                {/* ── TRABALHADO VS DESENVOLVIDO (Progress Chart - Full Width) ────────────────── */}
+                {(() => {
+                    const allMicro: any[] = [];
+                    const allAtomico: any[] = [];
+                    studentProjects.forEach(p => {
+                        const { microNodes, atomicoNodes } = getProjectNodes(p, skillsTree, contentsTree, libraryItems);
+                        allMicro.push(...microNodes);
+                        allAtomico.push(...atomicoNodes);
+                    });
+
+                    // Deduplicate
+                    const map = new Map();
+                    [...allMicro, ...allAtomico].forEach(n => map.set(n.id, n));
+                    const allNodes = Array.from(map.values());
+
+                    if (allNodes.length === 0) return null;
+
+                    const chartDataMap = new Map<string, ProgressChartData>();
+
+                    allNodes.forEach(node => {
+                        const subject = node.subject || "Outros";
+                        if (!chartDataMap.has(subject)) {
+                            chartDataMap.set(subject, { subject, proposto: 0, desenvolvido: 0, total: 0 });
+                        }
+
+                        const data = chartDataMap.get(subject)!;
+                        data.proposto += 1;
+                        data.total += 1;
+
+                        const nodeAssessment = relevantAssessments.find(a => a.knowledgeNodeId === node.id);
+                        if (nodeAssessment && (nodeAssessment.rating ?? 0) >= 3) {
+                            data.desenvolvido += 1;
+                        }
+                    });
+
+                    const chartData = Array.from(chartDataMap.values()).sort((a, b) => a.subject.localeCompare(b.subject));
+
+                    return (
+                        <section className="break-inside-avoid">
+                            <div className="flex items-center gap-3 mb-8">
+                                <div className="w-1.5 h-8 bg-teal-500 rounded-full" />
+                                <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Desenvolvimento por Área BNCC</h2>
+                            </div>
+                            <div className="bg-white border border-slate-100 rounded-[2rem] shadow-xl p-8 pt-10">
+                                <ProgressChart data={chartData} />
+                                <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    {chartData.map((d, i) => (
+                                        <div key={i} className="bg-slate-50/50 rounded-2xl p-4 border border-slate-100">
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{d.subject}</p>
+                                            <div className="flex items-baseline gap-1">
+                                                <span className="text-xl font-bold text-slate-800">{d.desenvolvido}</span>
+                                                <span className="text-xs text-slate-400 font-bold">/ {d.proposto}</span>
+                                            </div>
+                                            <p className="text-[10px] text-slate-500 font-medium mt-1">Conquistado</p>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </section>
-                    )}
-
-                    {/* ── TRABALHADO VS DESENVOLVIDO (Progress Chart) ────────────────── */}
-                    {(() => {
-                        const allMicro: any[] = [];
-                        const allAtomico: any[] = [];
-                        studentProjects.forEach(p => {
-                            const { microNodes, atomicoNodes } = getProjectNodes(p, skillsTree, contentsTree, libraryItems);
-                            allMicro.push(...microNodes);
-                            allAtomico.push(...atomicoNodes);
-                        });
-
-                        // Deduplicate
-                        const map = new Map();
-                        [...allMicro, ...allAtomico].forEach(n => map.set(n.id, n));
-                        const allNodes = Array.from(map.values());
-
-                        if (allNodes.length === 0) return null;
-
-                        const chartDataMap = new Map<string, ProgressChartData>();
-
-                        allNodes.forEach(node => {
-                            const subject = node.subject || "Outros";
-                            if (!chartDataMap.has(subject)) {
-                                chartDataMap.set(subject, { subject, proposto: 0, desenvolvido: 0, total: 0 });
-                            }
-
-                            const data = chartDataMap.get(subject)!;
-                            data.proposto += 1;
-                            data.total += 1;
-
-                            const nodeAssessment = relevantAssessments.find(a => a.knowledgeNodeId === node.id);
-                            if (nodeAssessment && (nodeAssessment.rating ?? 0) >= 3) {
-                                data.desenvolvido += 1;
-                            }
-                        });
-
-                        const chartData = Array.from(chartDataMap.values()).sort((a, b) => a.subject.localeCompare(b.subject));
-
-                        return (
-                            <section className="break-inside-avoid">
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-1.5 h-6 bg-teal-500 rounded-full" />
-                                    <h2 className="text-xl font-bold text-slate-800">Desenvolvimento por Área</h2>
-                                </div>
-                                <div className="bg-white border rounded-2xl shadow-sm p-4">
-                                    <ProgressChart data={chartData} />
-                                </div>
-                            </section>
-                        );
-                    })()}
-                </div>
+                    );
+                })()}
 
                 {/* ── MATRIZ CIRCULAR ────────────────────── */}
                 <section className="break-inside-avoid page-break-inside-avoid" style={{ pageBreakInside: "avoid" }}>
