@@ -38,7 +38,7 @@ export default function SignupPage() {
     return (
         <div className="space-y-6">
             <div className="text-center flex flex-col items-center">
-                <div className="w-32 h-32 mb-4">
+                <div className="w-48 h-48 mb-2">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                         src="/escola-ibira-app/images/opcao2_v5_transparent_final.png"
@@ -46,8 +46,7 @@ export default function SignupPage() {
                         className="w-full h-full object-contain"
                     />
                 </div>
-                <h1 className="text-3xl font-bold text-[#1e293b]">Trilha Ibirá</h1>
-                <p className="text-slate-500 mt-2">Crie sua conta para acessar a plataforma.</p>
+                <p className="text-slate-500">Crie sua conta para acessar a plataforma.</p>
             </div>
 
             <form onSubmit={handleSignup} className="space-y-4">
