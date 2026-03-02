@@ -7,15 +7,18 @@ interface MilestoneReportProps {
     studentId: string;
 }
 
-const getAllEvaluatableNodes = (nodes: any[], rootName?: string): any[] => {
+const getAllEvaluatableNodes = (nodes: any[], parentName?: string): any[] => {
     const results: any[] = [];
     for (const node of nodes) {
-        const currentRoot = node.level === "macro" ? node.name : rootName;
+        // If node is 'mesclado' (L2), it becomes the 'subject' for its descendants
+        const currentSubject = node.level === "mesclado" ? node.name : parentName;
+
         if (node.level === "micro") {
-            results.push({ ...node, subject: currentRoot || "Outros" });
+            results.push({ ...node, subject: currentSubject || "Outros" });
         }
+
         if (node.children) {
-            results.push(...getAllEvaluatableNodes(node.children, currentRoot));
+            results.push(...getAllEvaluatableNodes(node.children, currentSubject));
         }
     }
     return results;

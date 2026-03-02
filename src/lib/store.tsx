@@ -241,7 +241,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     // Load from LocalStorage on mount
     useEffect(() => {
-        const CURRENT_VERSION = "2.2"; // Increment this to force updates
+        const CURRENT_VERSION = "2.3"; // Increment this to force updates
         const storedVersion = localStorage.getItem("app_version");
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
