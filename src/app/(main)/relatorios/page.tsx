@@ -6,6 +6,7 @@ import { MilestoneReport } from "@/components/reports/milestone-report";
 import { DailyLogReport } from "@/components/reports/daily-log-report";
 import { PortfolioReport } from "@/components/reports/portfolio-report";
 import { SkillsChart } from "@/components/reports/skills-chart";
+import { ObservationList } from "@/components/reports/observation-list";
 import { User } from "lucide-react";
 import { BulkPortfolioDialog } from "@/components/portfolio/bulk-portfolio-dialog";
 import { DailyLogDialog } from "@/components/agenda/daily-log-dialog";
@@ -140,17 +141,43 @@ export default function ReportsPage() {
                     <TabsTrigger value="milestones">Relatório de Desenvolvimento</TabsTrigger>
                     <TabsTrigger value="portfolio">Galeria de Vivências</TabsTrigger>
                 </TabsList>
-
                 <TabsContent value="milestones" className="animate-in fade-in-50 duration-500 slide-in-from-bottom-2">
-                    <div className="mb-4 space-y-12">
+                    <div className="mb-4 space-y-16">
+                        {/* 1. Skill Chart */}
                         <div>
-                            <h2 className="text-xl font-bold text-slate-800 mb-2">Progresso por Áreas da BNCC</h2>
-                            <p className="text-slate-500 mb-6">Visualização do desenvolvimento do aluno em relação aos conteúdos e habilidades trabalhados em projetos.</p>
+                            <h2 className="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2">
+                                <span className="w-1.5 h-6 bg-indigo-500 rounded-full" />
+                                Desenvolvimento por Áreas da BNCC
+                            </h2>
+                            <p className="text-slate-500 mb-6">Comparativo entre o currículo proposto e o nível de consolidação da criança.</p>
                             {selectedStudent ? (
-                                <div className="space-y-12">
-                                    <SkillsChart studentId={effectiveStudentId} />
-                                    <MilestoneReport studentId={effectiveStudentId} />
-                                </div>
+                                <SkillsChart studentId={effectiveStudentId} />
+                            ) : (
+                                <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
+                            )}
+                        </div>
+
+                        {/* 2. Professor Observations */}
+                        <div>
+                            <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                                <span className="w-1.5 h-6 bg-emerald-500 rounded-full" />
+                                Registros e Evidências do Ciclo
+                            </h2>
+                            {selectedStudent ? (
+                                <ObservationList studentId={effectiveStudentId} />
+                            ) : (
+                                <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
+                            )}
+                        </div>
+
+                        {/* 3. Milestone Grid */}
+                        <div>
+                            <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                                <span className="w-1.5 h-6 bg-orange-500 rounded-full" />
+                                Matriz de Competências e Habilidades
+                            </h2>
+                            {selectedStudent ? (
+                                <MilestoneReport studentId={effectiveStudentId} />
                             ) : (
                                 <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
                             )}

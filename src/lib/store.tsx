@@ -241,7 +241,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     // Load from LocalStorage on mount
     useEffect(() => {
-        const CURRENT_VERSION = "2.4"; // Increment this to force updates
+        const CURRENT_VERSION = "2.5"; // Increment this to force updates
         const storedVersion = localStorage.getItem("app_version");
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -261,20 +261,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
         if (storedVersion !== CURRENT_VERSION) {
             console.log("Migrating data to version", CURRENT_VERSION);
-            // Migration Logic:
-            // 1. Force update projects to include new fields (like bnccSkillIds in "Horta Comunitária")
+            // Migration Logic: Force Reset of critical data to sync with new tree structure
             setProjects(initialProjects);
-
-            // 2. Force update library items to include grades
             setLibraryItems(mockLibraryItems);
-
-            // 3. Force update trees to include new class mappings
             setSkillsTree(mockSkillsTree);
             setContentsTree(mockContentsTree);
+            setAssessments(mockAssessments);
+            setPortfolioEntries(mockPortfolio);
+            setDailyLogs(mockDailyLogs);
+            setStudents(mockStudents);
+            setClasses(mockClasses);
 
             load("bnccProgress", setBnccProgress, {});
 
-            // 4. Update version
+            // Update version
             localStorage.setItem("app_version", CURRENT_VERSION);
         } else {
             // Normal Load
