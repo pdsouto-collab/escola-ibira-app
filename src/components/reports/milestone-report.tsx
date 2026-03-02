@@ -11,7 +11,7 @@ const getAllEvaluatableNodes = (nodes: any[], rootName?: string): any[] => {
     const results: any[] = [];
     for (const node of nodes) {
         const currentRoot = node.level === "macro" ? node.name : rootName;
-        if (node.level === "micro" || node.level === "atomico") {
+        if (node.level === "micro") {
             results.push({ ...node, subject: currentRoot || "Outros" });
         }
         if (node.children) {
