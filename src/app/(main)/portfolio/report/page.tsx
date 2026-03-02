@@ -400,17 +400,38 @@ function ReportCard({
                     );
                 })()}
 
-                {/* ── TRILHA IBIRÁ ────────────────────── */}
+                {/* ── TRILHAS DE DESENVOLVIMENTO ────────────────────── */}
                 <section className="break-inside-avoid page-break-inside-avoid" style={{ pageBreakInside: "avoid" }}>
                     <div className="flex items-center gap-3 mb-8">
                         <div className="w-1.5 h-6 bg-slate-800 rounded-full" />
-                        <h2 className="text-xl font-bold text-slate-800">Mapa de Habilidades Consolidadas</h2>
+                        <h2 className="text-xl font-bold text-slate-800">Trilha Habilidades Consolidada</h2>
                     </div>
                     <div className="border border-slate-100 rounded-3xl p-8 bg-white flex justify-center items-center print:border-none print:shadow-none min-h-[600px] shadow-sm">
                         <div className="w-full h-full flex items-center justify-center">
                             <RadialMatrix
                                 data={skillsTree}
                                 treeType="skill"
+                                assessments={relevantAssessments}
+                                projects={studentProjects}
+                                selectedProjectId={"all"}
+                                selectedStudentId={student.id}
+                                selectedClassId={student.classId}
+                                libraryItems={libraryItems}
+                            />
+                        </div>
+                    </div>
+                </section>
+
+                <section className="break-inside-avoid page-break-inside-avoid" style={{ pageBreakInside: "avoid" }}>
+                    <div className="flex items-center gap-3 mb-8">
+                        <div className="w-1.5 h-6 bg-indigo-600 rounded-full" />
+                        <h2 className="text-xl font-bold text-slate-800">Trilha de Competências Consolidada</h2>
+                    </div>
+                    <div className="border border-slate-100 rounded-3xl p-8 bg-white flex justify-center items-center print:border-none print:shadow-none min-h-[600px] shadow-sm">
+                        <div className="w-full h-full flex items-center justify-center">
+                            <RadialMatrix
+                                data={contentsTree}
+                                treeType="content"
                                 assessments={relevantAssessments}
                                 projects={studentProjects}
                                 selectedProjectId={"all"}
