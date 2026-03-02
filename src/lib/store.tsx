@@ -172,7 +172,7 @@ const initialProjects: Project[] = [
         startDate: "2024-02-01",
         students: ["1", "3", "5"],
         tags: ["Natureza", "Alimentação Saudável"],
-        bnccSkillIds: ["EF02CI04", "EF03CI07", "EF01GE01", "sk-micro-1"],
+        bnccSkillIds: ["mic-sk-EF03CI04", "mic-sk-EF03CI06"],
         contentIds: [],
         imageUrl: "https://images.unsplash.com/photo-1592424001844-04149e8eb3f3?auto=format&fit=crop&q=80&w=600&h=300"
     },
@@ -199,7 +199,7 @@ const initialProjects: Project[] = [
         endDate: "2023-12-15",
         students: ["1", "2", "3", "4", "5", "6"],
         tags: ["Geometria", "Socialização", "Matemática"],
-        bnccSkillIds: ["EF01MA01", "EF03MA13"],
+        bnccSkillIds: ["mic-sk-EF03MA19", "mic-sk-EF03MA18", "mic-sk-EF03EF06"],
         contentIds: [],
         imageUrl: "https://images.unsplash.com/photo-1512314889357-e157c22f938d?auto=format&fit=crop&q=80&w=600&h=300"
     }
@@ -241,7 +241,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     // Load from LocalStorage on mount
     useEffect(() => {
-        const CURRENT_VERSION = "2.5"; // Increment this to force updates
+        const CURRENT_VERSION = "2.6"; // Increment this to force updates
         const storedVersion = localStorage.getItem("app_version");
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

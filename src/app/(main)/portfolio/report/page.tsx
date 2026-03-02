@@ -129,24 +129,7 @@ function avgRating(assessments: Assessment[]): number {
 // ─────────────────────────────────────────────────────────────────────────
 // Mini row with tree
 // ─────────────────────────────────────────────────────────────────────────
-function RatingRow({ label, rating, obs }: { label: string; rating?: number; obs?: string }) {
-    const trees = ["🌱", "🌿", "🌳", "🌲", "🍎"];
-    return (
-        <div className="flex items-start gap-4 py-3 border-b border-slate-100 last:border-0">
-            <div className="flex-1">
-                <p className="text-sm font-semibold text-slate-800">{label}</p>
-                {obs && <p className="text-xs text-slate-500 italic mt-0.5 leading-relaxed">&ldquo;{obs}&rdquo;</p>}
-            </div>
-            <div className="shrink-0 text-right min-w-[80px]">
-                {rating ? (
-                    <span className="text-lg">{trees[rating - 1]} <span className="text-xs text-slate-500 font-semibold">{rating}/5</span></span>
-                ) : (
-                    <span className="text-xs text-slate-300 italic">—</span>
-                )}
-            </div>
-        </div>
-    );
-}
+// Removed unused RatingRow function
 
 // ─────────────────────────────────────────────────────────────────────────
 // Report Card Component (printable)
@@ -235,143 +218,70 @@ function ReportCard({
                 <div className="bg-gradient-to-b from-green-50 to-white px-10 py-6 flex flex-col items-center text-center border-b">
                     <p className="text-xs uppercase tracking-widest text-slate-500 mb-3">Desenvolvimento Geral do Aluno</p>
                     <TreeRatingPicker value={overallRating} readOnly size="lg" />
-                    <p className="text-slate-500 text-sm mt-3">
-                        M&#xE9;dia: <span className="font-bold text-slate-800">{overallAvg.toFixed(1)}/5</span> &bull; {relevantAssessments.length} avalia&#xE7;&#xF5;es
+                    <p className="text-slate-500 text-sm mt-1">
+                        Média: <span className="font-bold text-slate-800">{overallAvg.toFixed(1)}/5</span> &bull; {relevantAssessments.length} avaliações
                     </p>
                 </div>
             )}
 
-            <div className="px-10 py-8 space-y-8">
-
-                {(() => {
-                    const studentLogs = dailyLogs.filter(l => l.studentId === studentId).sort((a, b) => b.date.localeCompare(a.date));
-                    if (studentLogs.length === 0) return null;
-                    return (
-                        <section>
-                            <h2 className="text-sm font-bold uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2">
-                                <span className="inline-block w-4 h-0.5 bg-slate-300"></span>
-                                Rotina e Atividades do Dia
-                            </h2>
-                            <div className="space-y-4">
-                                {studentLogs.map((log) => {
-                                    const [y, m, d] = log.date.split("-");
-                                    const dtStr = `${d}/${m}/${y}`;
-                                    const moodEmoji = { happy: "😊", excited: "🤩", neutral: "😐", tired: "🥱", sad: "😢" }[log.mood];
-                                    const mealTrans = { all: "Tudo", most: "Maioria", some: "Pouco", none: "Nada" };
-                                    const mealColor = { all: "bg-green-100 text-green-700 border-green-200", most: "bg-blue-100 text-blue-700 border-blue-200", some: "bg-orange-100 text-orange-700 border-orange-200", none: "bg-red-100 text-red-700 border-red-200" };
-
-                                    return (
-                                        <div key={log.id} className="border border-slate-200 rounded-2xl p-6 bg-white shadow-sm">
-                                            <div className="flex justify-between items-center mb-6">
-                                                <h3 className="font-bold flex items-center gap-2">
-                                                    <CalendarIcon className="w-5 h-5 text-slate-400" />
-                                                    Diário de {dtStr}
-                                                </h3>
-                                                <div className="flex items-center gap-2 text-sm font-semibold text-slate-500 bg-slate-50 py-1 px-3 rounded-full border">
-                                                    HUMOR: <span className="text-xl leading-none">{moodEmoji}</span>
-                                                </div>
-                                            </div>
-
-                                            <div className="mb-6">
-                                                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2 mb-3">
-                                                    🍴 Alimentação
-                                                </h4>
-                                                <div className="flex gap-4">
-                                                    <div className="flex-1 flex flex-col items-center justify-center p-3 border rounded-xl bg-slate-50/50">
-                                                        <span className="text-[10px] text-slate-400 font-semibold uppercase mb-1">Lanche Manhã</span>
-                                                        <span className={`text-xs px-3 py-1 rounded-full font-bold border bg-white ${mealColor[log.meals.breakfast]}`}>{mealTrans[log.meals.breakfast]}</span>
-                                                    </div>
-                                                    <div className="flex-1 flex flex-col items-center justify-center p-3 border rounded-xl bg-slate-50/50">
-                                                        <span className="text-[10px] text-slate-400 font-semibold uppercase mb-1">Almoço</span>
-                                                        <span className={`text-xs px-3 py-1 rounded-full font-bold border bg-white ${mealColor[log.meals.lunch]}`}>{mealTrans[log.meals.lunch]}</span>
-                                                    </div>
-                                                    <div className="flex-1 flex flex-col items-center justify-center p-3 border rounded-xl bg-slate-50/50">
-                                                        <span className="text-[10px] text-slate-400 font-semibold uppercase mb-1">Lanche Tarde</span>
-                                                        <span className={`text-xs px-3 py-1 rounded-full font-bold border bg-white ${mealColor[log.meals.snack]}`}>{mealTrans[log.meals.snack]}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {(log.nap.start || log.nap.end || log.nap.didNotNap) && (
-                                                <div className={`mb-6 flex flex-col md:flex-row gap-4 md:items-center p-4 rounded-xl border ${log.nap.didNotNap ? 'bg-slate-50 border-slate-100 text-slate-500 italic' : 'bg-indigo-50/50 border-indigo-100'}`}>
-                                                    <h4 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${log.nap.didNotNap ? 'text-slate-400' : 'text-indigo-400'}`}>
-                                                        💤 Sono / Descanso
-                                                    </h4>
-                                                    <p className={`text-sm font-medium md:ml-auto ${log.nap.didNotNap ? 'text-slate-500' : 'text-indigo-900'}`}>
-                                                        {log.nap.didNotNap ? "Não dormiu hoje." : `${log.nap.start ? `Dorme: ${log.nap.start}` : "Dorme"} ${log.nap.end ? `às ${log.nap.end}` : ""}`}
-                                                    </p>
-                                                </div>
-                                            )}
-
-                                            {log.activities.length > 0 && (
-                                                <div className="mb-6">
-                                                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Atividades Realizadas</h4>
-                                                    <ul className="list-disc list-inside text-sm text-slate-700 space-y-1 ml-1">
-                                                        {log.activities.map((act, i) => <li key={i}>{act}</li>)}
-                                                    </ul>
-                                                </div>
-                                            )}
-
-                                            {log.notes && (
-                                                <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
-                                                    <p className="text-sm text-amber-900 italic">&ldquo;{log.notes}&rdquo;</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </section>
-                    )
-                })()}
-
-                {sessions.length > 0 && (
+            <div className="px-10 py-10 space-y-12">
+                {/* ── PHOTO GALLERY (Galeria de Vivências) ────────────────── */}
+                {allPhotos.length > 0 && (
                     <section>
-                        <h2 className="text-sm font-bold uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2">
-                            <span className="inline-block w-4 h-0.5 bg-slate-300"></span>
-                            Sess&#xF5;es Registradas
-                        </h2>
-                        <div className="space-y-1">
-                            {sessions.map(session => {
-                                const sessionAssessments = relevantAssessments.filter(a => a.sessionId === session.id);
-                                const lastRating = sessionAssessments.at(-1)?.rating;
-                                const lastObs = sessionAssessments.at(-1)?.observations;
-                                const dateStr = session.date
-                                    ? (typeof session.date === "string" ? session.date.split("-").reverse().join("/") : "")
-                                    : "";
-                                const p = studentProjects.find(pr => pr.id === session.projectId);
-
-                                return (
-                                    <RatingRow
-                                        key={session.id}
-                                        label={`${session.title}${p ? ` [${p.title}]` : ""}${dateStr ? ` · ${dateStr}` : ""}`}
-                                        rating={lastRating}
-                                        obs={lastObs}
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
+                            <h2 className="text-xl font-bold text-slate-800">Galeria de Vivências</h2>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {allPhotos.map((photo, i) => (
+                                <div key={i} className="group relative aspect-square overflow-hidden rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                                    <img
+                                        src={photo.url}
+                                        alt={photo.name || `Evidência ${i + 1}`}
+                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                     />
-                                );
-                            })}
+                                    {photo.name && (
+                                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+                                            <p className="text-white text-[10px] font-medium line-clamp-1">{photo.name}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
                         </div>
                     </section>
                 )}
 
-                {/* ── ALL OBSERVATIONS ───────────────────────────────── */}
+                {/* ── PROFESSOR OBSERVATIONS ───────────────────────────── */}
                 {relevantAssessments.filter(a => a.observations).length > 0 && (
                     <section>
-                        <h2 className="text-sm font-bold uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2">
-                            <span className="inline-block w-4 h-0.5 bg-slate-300"></span>
-                            Observa&#xE7;&#xF5;es do Professor
-                        </h2>
-                        <div className="space-y-3">
-                            {relevantAssessments.filter(a => a.observations).map(a => {
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-1.5 h-6 bg-indigo-500 rounded-full" />
+                            <h2 className="text-xl font-bold text-slate-800">Observações do Professor</h2>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {relevantAssessments.filter(a => a.observations).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map(a => {
                                 const date = new Date(a.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
                                 const trees = ["🌱", "🌿", "🌳", "🌲", "🍎"];
+                                const nodeInfo = resolveNodeInfo(a.knowledgeNodeId || "", skillsTree, contentsTree, libraryItems);
                                 return (
-                                    <div key={a.id} className="bg-slate-50 rounded-xl p-4">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="text-xs text-slate-400 font-medium">{date}</span>
-                                            {a.rating && <span className="text-sm">{trees[a.rating - 1]}</span>}
+                                    <div key={a.id} className="bg-slate-50/50 border border-slate-100 rounded-2xl p-5 flex gap-4 hover:bg-white hover:shadow-md transition-all">
+                                        <div className="flex flex-col items-center gap-1 shrink-0 bg-white p-2 rounded-xl border border-slate-100 min-w-[50px]">
+                                            {a.rating ? (
+                                                <>
+                                                    <span className="text-2xl">{trees[a.rating - 1]}</span>
+                                                    <span className="text-[10px] font-bold text-slate-500">{a.rating}/5</span>
+                                                </>
+                                            ) : (
+                                                <Target className="w-6 h-6 text-slate-200" />
+                                            )}
                                         </div>
-                                        <p className="text-sm text-slate-700 leading-relaxed italic">&ldquo;{a.observations}&rdquo;</p>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex justify-between items-start mb-2">
+                                                <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">{date}</span>
+                                                <span className="text-[10px] font-medium text-slate-400 truncate ml-2">{nodeInfo?.name}</span>
+                                            </div>
+                                            <p className="text-sm text-slate-600 leading-relaxed italic">&ldquo;{a.observations}&rdquo;</p>
+                                        </div>
                                     </div>
                                 );
                             })}
@@ -379,87 +289,112 @@ function ReportCard({
                     </section>
                 )}
 
-                {/* ── PHOTO GALLERY ──────────────────────────────────── */}
-                {allPhotos.length > 0 && (
-                    <section>
-                        <h2 className="text-sm font-bold uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2">
-                            <span className="inline-block w-4 h-0.5 bg-slate-300"></span>
-                            Galeria de Evid&#xEA;ncias ({allPhotos.length} fotos)
-                        </h2>
-                        <div className="grid grid-cols-3 gap-3">
-                            {allPhotos.map((photo, i) => (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img
-                                    key={i}
-                                    src={photo.url}
-                                    alt={photo.name || `Evidência ${i + 1}`}
-                                    className="w-full aspect-square object-cover rounded-xl border border-slate-200"
-                                />
-                            ))}
-                        </div>
-                    </section>
-                )}
+                {/* ── SESSIONS AND MILESTONES ─────────────────────────── */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                    {sessions.length > 0 && (
+                        <section>
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-1.5 h-6 bg-amber-500 rounded-full" />
+                                <h2 className="text-xl font-bold text-slate-800">Sessões Registradas</h2>
+                            </div>
+                            <div className="bg-white border rounded-2xl shadow-sm divide-y">
+                                {sessions.map(session => {
+                                    const sessionAssessments = relevantAssessments.filter(a => a.sessionId === session.id);
+                                    const lastRating = sessionAssessments.at(-1)?.rating;
+                                    const lastObs = sessionAssessments.at(-1)?.observations;
+                                    const dateStr = session.date
+                                        ? (typeof session.date === "string" ? session.date.split("-").reverse().join("/") : "")
+                                        : "";
+                                    const p = studentProjects.find(pr => pr.id === session.projectId);
 
-                {/* ── TRABALHADO VS DESENVOLVIDO ───────────────────── */}
-                {(() => {
-                    const allMicro: any[] = [];
-                    const allAtomico: any[] = [];
-                    studentProjects.forEach(p => {
-                        const { microNodes, atomicoNodes } = getProjectNodes(p, skillsTree, contentsTree, libraryItems);
-                        allMicro.push(...microNodes);
-                        allAtomico.push(...atomicoNodes);
-                    });
+                                    const trees = ["🌱", "🌿", "🌳", "🌲", "🍎"];
 
-                    // Deduplicate
-                    const map = new Map();
-                    [...allMicro, ...allAtomico].forEach(n => map.set(n.id, n));
-                    const allNodes = Array.from(map.values());
-
-                    if (allNodes.length === 0) return null;
-
-                    // Group by subject for chart
-                    const chartDataMap = new Map<string, ProgressChartData>();
-
-                    allNodes.forEach(node => {
-                        const subject = node.subject || "Outros";
-                        if (!chartDataMap.has(subject)) {
-                            chartDataMap.set(subject, { subject, trabalhado: 0, desenvolvido: 0, total: 0 });
-                        }
-
-                        const data = chartDataMap.get(subject)!;
-                        data.trabalhado += 1; // It is worked on because it's in a project
-                        data.total += 1;
-
-                        const nodeAssessment = relevantAssessments.find(a => a.knowledgeNodeId === node.id);
-                        if (nodeAssessment && (nodeAssessment.rating ?? 0) >= 3) {
-                            data.desenvolvido += 1; // Conquistado
-                        }
-                    });
-
-                    const chartData = Array.from(chartDataMap.values()).sort((a, b) => a.subject.localeCompare(b.subject));
-
-                    return (
-                        <section className="break-inside-avoid">
-                            <h2 className="text-sm font-bold uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2">
-                                <span className="inline-block w-4 h-0.5 bg-slate-300"></span>
-                                Progresso por Áreas da BNCC
-                            </h2>
-                            <p className="text-sm text-slate-500 mb-6 font-medium">Visualização do desenvolvimento no aluno em relação aos conteúdos e habilidades trabalhados em projetos.</p>
-                            <div className="bg-white border rounded-2xl shadow-sm p-2">
-                                <ProgressChart data={chartData} />
+                                    return (
+                                        <div key={session.id} className="p-4 flex items-start gap-4">
+                                            <div className="flex-1">
+                                                <p className="text-sm font-bold text-slate-800 leading-tight">
+                                                    {session.title}
+                                                    {p && <span className="text-slate-400 font-medium ml-1">[{p.title}]</span>}
+                                                </p>
+                                                <p className="text-[10px] font-bold text-emerald-600 mt-1 uppercase tracking-widest">{dateStr}</p>
+                                                {lastObs && <p className="text-xs text-slate-500 italic mt-2 border-l-2 border-slate-100 pl-3 leading-relaxed">&ldquo;{lastObs}&rdquo;</p>}
+                                            </div>
+                                            <div className="shrink-0 text-center bg-slate-50 rounded-xl p-2 min-w-[60px] border border-slate-100">
+                                                {lastRating ? (
+                                                    <>
+                                                        <div className="text-xl leading-none mb-1">{trees[lastRating - 1]}</div>
+                                                        <div className="text-[10px] font-black text-slate-500">{lastRating}/5</div>
+                                                    </>
+                                                ) : (
+                                                    <span className="text-xs text-slate-300 italic">—</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </section>
-                    );
-                })()}
+                    )}
+
+                    {/* ── TRABALHADO VS DESENVOLVIDO (Progress Chart) ────────────────── */}
+                    {(() => {
+                        const allMicro: any[] = [];
+                        const allAtomico: any[] = [];
+                        studentProjects.forEach(p => {
+                            const { microNodes, atomicoNodes } = getProjectNodes(p, skillsTree, contentsTree, libraryItems);
+                            allMicro.push(...microNodes);
+                            allAtomico.push(...atomicoNodes);
+                        });
+
+                        // Deduplicate
+                        const map = new Map();
+                        [...allMicro, ...allAtomico].forEach(n => map.set(n.id, n));
+                        const allNodes = Array.from(map.values());
+
+                        if (allNodes.length === 0) return null;
+
+                        const chartDataMap = new Map<string, ProgressChartData>();
+
+                        allNodes.forEach(node => {
+                            const subject = node.subject || "Outros";
+                            if (!chartDataMap.has(subject)) {
+                                chartDataMap.set(subject, { subject, proposto: 0, desenvolvido: 0, total: 0 });
+                            }
+
+                            const data = chartDataMap.get(subject)!;
+                            data.proposto += 1;
+                            data.total += 1;
+
+                            const nodeAssessment = relevantAssessments.find(a => a.knowledgeNodeId === node.id);
+                            if (nodeAssessment && (nodeAssessment.rating ?? 0) >= 3) {
+                                data.desenvolvido += 1;
+                            }
+                        });
+
+                        const chartData = Array.from(chartDataMap.values()).sort((a, b) => a.subject.localeCompare(b.subject));
+
+                        return (
+                            <section className="break-inside-avoid">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="w-1.5 h-6 bg-teal-500 rounded-full" />
+                                    <h2 className="text-xl font-bold text-slate-800">Desenvolvimento por Área</h2>
+                                </div>
+                                <div className="bg-white border rounded-2xl shadow-sm p-4">
+                                    <ProgressChart data={chartData} />
+                                </div>
+                            </section>
+                        );
+                    })()}
+                </div>
 
                 {/* ── MATRIZ CIRCULAR ────────────────────── */}
                 <section className="break-inside-avoid page-break-inside-avoid" style={{ pageBreakInside: "avoid" }}>
-                    <h2 className="text-sm font-bold uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2">
-                        <span className="inline-block w-4 h-0.5 bg-slate-300"></span>
-                        Matriz Circular de Habilidades
-                    </h2>
-                    <div className="border border-slate-200 rounded-2xl p-4 bg-white flex justify-center items-center print:border-none print:shadow-none min-h-[500px]">
-                        <div className="w-[600px] h-[600px] print:w-[500px] print:h-[500px] flex items-center justify-center">
+                    <div className="flex items-center gap-3 mb-8">
+                        <div className="w-1.5 h-6 bg-slate-800 rounded-full" />
+                        <h2 className="text-xl font-bold text-slate-800">Mapa de Habilidades Consolidadas</h2>
+                    </div>
+                    <div className="border border-slate-100 rounded-3xl p-8 bg-white flex justify-center items-center print:border-none print:shadow-none min-h-[600px] shadow-sm">
+                        <div className="w-full h-full flex items-center justify-center">
                             <RadialMatrix
                                 data={skillsTree}
                                 treeType="skill"
@@ -475,9 +410,11 @@ function ReportCard({
                 </section>
 
                 {/* ── FOOTER ────────────────────────────────────────── */}
-                <footer className="pt-4 border-t border-slate-100 text-center">
-                    <p className="text-xs text-slate-400">Escola Ibirá &bull; Portf&#xF3;lio gerado em {today}</p>
-                    <p className="text-xs text-slate-300 mt-0.5">Este documento &#xE9; confidencial e destinado ao uso familiar.</p>
+                <footer className="pt-10 border-t border-slate-100 text-center">
+                    <div className="inline-block px-10 py-1 bg-slate-50 rounded-full border border-slate-100 mb-4">
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Escola Ibirá &bull; {today}</p>
+                    </div>
+                    <p className="text-xs text-slate-300">Este documento é confidencial e destinado exclusivamente ao acompanhamento pedagógico da família.</p>
                 </footer>
             </div>
         </div>

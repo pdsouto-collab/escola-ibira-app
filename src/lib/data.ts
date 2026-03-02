@@ -1220,32 +1220,48 @@ export interface Assessment {
 export const mockAssessments: Assessment[] = [
     {
         id: "as-1",
-        createdAt: new Date().toISOString(),
+        createdAt: "2024-02-15T10:00:00Z",
         knowledgeNodeId: "mic-sk-EF03CI04",
         scope: "student",
         studentId: "1",
         rating: 5,
-        observations: "Alice demonstra excelente interesse pelos animais e cataloga aves com precisão.",
-        attachments: []
+        observations: "A Alice demonstrou uma curiosidade incrível durante a observação do canteiro. Ela conseguiu identificar as partes da planta sem ajuda e questionou sobre como a água chega até as folhas.",
+        attachments: [
+            { id: "att-1", type: "photo", url: "https://images.unsplash.com/photo-1592424001844-04149e8eb3f3?auto=format&fit=crop&q=80&w=400&h=400", capturedAt: "2024-02-15T10:05:00Z", name: "Exploração da horta" }
+        ]
     },
     {
         id: "as-2",
-        createdAt: new Date().toISOString(),
-        knowledgeNodeId: "mic-co-trabalho-equipe",
-        scope: "student",
-        studentId: "1",
-        rating: 4,
-        observations: "Consegue trabalhar em equipe de forma colaborativa, compartilhando materiais.",
-        attachments: []
-    },
-    {
-        id: "as-3",
-        createdAt: new Date().toISOString(),
+        createdAt: "2024-02-18T14:00:00Z",
         knowledgeNodeId: "mic-sk-EF03EF06",
         scope: "student",
         studentId: "1",
+        rating: 4,
+        observations: "Alice participou ativamente dos jogos de matriz indígena. Ela mostrou boa coordenação motora e respeitou as regras combinadas com o grupo, demonstrando empatia com os colegas.",
+        attachments: [
+            { id: "att-2", type: "photo", url: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80&w=400&h=400", capturedAt: "2024-02-18T14:30:00Z", name: "Atividade de pátio" }
+        ]
+    },
+    {
+        id: "as-3",
+        createdAt: "2024-02-20T09:30:00Z",
+        knowledgeNodeId: "mic-sk-EF03MA19",
+        scope: "student",
+        studentId: "1",
         rating: 3,
-        observations: "Está iniciando a prática com raquetes e demonstra esforço na coordenação.",
+        observations: "Durante a atividade de medição, a Alice começou a compreender a diferença entre comprimento e largura. Ela ainda precisa de apoio para usar a régua corretamente, mas a noção espacial está evoluindo bem.",
+        attachments: [
+            { id: "att-3", type: "photo", url: "https://images.unsplash.com/photo-1549420042-79fc7341fc7a?auto=format&fit=crop&q=80&w=400&h=400", capturedAt: "2024-02-20T10:00:00Z", name: "Medindo objetos" }
+        ]
+    },
+    {
+        id: "as-4",
+        createdAt: "2024-02-22T11:00:00Z",
+        knowledgeNodeId: "mic-sk-EF03CI06",
+        scope: "student",
+        studentId: "1",
+        rating: 5,
+        observations: "Destaque para a capacidade da Alice de classificar os animais por suas características físicas. Ela criou um 'álbum de figurinhas' mental muito organizado.",
         attachments: []
     }
 ];
