@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Lumiar Mosaico Clone",
+  title: "Trilha Ibirá",
   description: "Plataforma de acompanhamento escolar",
 };
 
