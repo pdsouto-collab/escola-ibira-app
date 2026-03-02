@@ -873,15 +873,6 @@ export const mockLibraryItems: LibraryItem[] = [
     { id: "lib-cg-22", type: "content", name: "Autonomia e Tomada de Decisão", description: "Capacidade de agir com independência e responsabilidade.", isBNCC: false, subGroup: "Responsabilidade e Cidadania", grade: "Responsabilidade e Cidadania" },
     { id: "lib-cg-23", type: "content", name: "Consciência Socioambiental", description: "Atuação focada no bem comum e na sustentabilidade.", isBNCC: false, subGroup: "Responsabilidade e Cidadania", grade: "Responsabilidade e Cidadania" },
 
-    // --- EDUCAÇÃO INFANTIL DATA (BNCC) ---
-    { id: "EI03EO01", type: "skill", code: "EI03EO01", name: "Empatia e Sentimentos", description: "Demonstrar empatia pelos outros, percebendo que as pessoas têm diferentes sentimentos, necessidades e maneiras de pensar e agir.", isBNCC: true, subGroup: "O eu, o outro e o nós", grade: "infantil" },
-    { id: "EI03EO03", type: "skill", code: "EI03EO03", name: "Relações Interpessoais", description: "Ampliar as relações interpessoais, desenvolvendo atitudes de participação e cooperação.", isBNCC: true, subGroup: "O eu, o outro e o nós", grade: "infantil" },
-    { id: "EI03CG02", type: "skill", code: "EI03CG02", name: "Controle e Movimento", description: "Demonstrar controle e adequação do uso de seu corpo em brincadeiras e jogos, escuta e formas de expressão.", isBNCC: true, subGroup: "Corpo, gestos e movimentos", grade: "infantil" },
-    { id: "EI03CG03", type: "skill", code: "EI03CG03", name: "Gestos e Mímicas", description: "Criar movimentos, gestos, olhares e mímicas em brincadeiras, jogos e atividades artísticas como dança, teatro e música.", isBNCC: true, subGroup: "Corpo, gestos e movimentos", grade: "infantil" },
-    { id: "EI03TS02", type: "skill", code: "EI03TS02", name: "Expressão Plástica", description: "Expressar-se livremente por meio de desenho, pintura, colagem, dobradura e escultura.", isBNCC: true, subGroup: "Traços, sons, cores e formas", grade: "infantil" },
-    { id: "EI03EF01", type: "skill", code: "EI03EF01", name: "Expressão de Ideias", description: "Expressar ideias, desejos e sentimentos sobre suas vivências, por meio da linguagem oral e escrita.", isBNCC: true, subGroup: "Escuta, fala, pensamento e imaginação", grade: "infantil" },
-    { id: "EI03ET07", type: "skill", code: "EI03ET07", name: "Números e Quantidades", description: "Relacionar números às suas respectivas quantidades e identificar o antes, o depois e o entre.", isBNCC: true, subGroup: "Espaços, tempos, quantidades, relações e transformações", grade: "infantil" },
-
     // --- CUSTOM CATEGORY EXAMPLES ---
     { id: "lib-custom-sk-01", type: "skill", name: "Inteligência Emocional", description: "Identificar e nomear as próprias emoções em situações de conflito no parquinho.", isBNCC: false, subGroup: "Sócio-Emocional", grade: "infantil" },
     { id: "lib-custom-co-01", type: "content", name: "Horta Comunitária", description: "Técnicas de plantio e cuidado diário com hortaliças no ambiente escolar.", isBNCC: false, subGroup: "Projetos Especiais", grade: "infantil" }
