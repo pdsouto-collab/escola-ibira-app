@@ -40,9 +40,9 @@ export function DashboardHero() {
                 <div className="hidden md:block absolute right-0 bottom-0 opacity-20 md:opacity-100 md:relative md:w-56 md:h-56 translate-y-8 translate-x-4 md:translate-y-6 md:translate-x-0">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                        src="/escola-ibira-app/images/opcao2_integrated_trail_v5.svg"
+                        src="/escola-ibira-app/images/logo-trilha.svg"
                         alt="Escola Ibirá"
-                        className="w-full h-full object-contain mix-blend-multiply opacity-90 scale-125 origin-bottom-right"
+                        className="w-full h-full object-contain origin-bottom-right"
                     />
                 </div>
             </div>
