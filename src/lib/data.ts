@@ -873,6 +873,7 @@ export interface DailyLog {
     };
     activities: string[];
     notes: string;
+    missingItems?: string;
 }
 
 export const mockDailyLogs: DailyLog[] = [

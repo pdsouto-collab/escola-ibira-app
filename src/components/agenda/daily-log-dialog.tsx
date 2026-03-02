@@ -37,6 +37,7 @@ interface StudentLogForm {
     napEnd: string;
     didNotNap: boolean;
     notes: string;
+    missingItems: string;
 }
 
 export function DailyLogDialog({ open, onOpenChange, date, classId }: DailyLogDialogProps) {
@@ -91,6 +92,7 @@ export function DailyLogDialog({ open, onOpenChange, date, classId }: DailyLogDi
                     napEnd: existing.nap.end,
                     didNotNap: existing.nap.didNotNap !== undefined ? existing.nap.didNotNap : true,
                     notes: existing.notes,
+                    missingItems: existing.missingItems || "",
                 };
             } else {
                 newForms[student.id] = {
@@ -104,6 +106,7 @@ export function DailyLogDialog({ open, onOpenChange, date, classId }: DailyLogDi
                     napEnd: "14:30",
                     didNotNap: true,
                     notes: "",
+                    missingItems: "",
                 };
             }
         });
@@ -154,6 +157,7 @@ export function DailyLogDialog({ open, onOpenChange, date, classId }: DailyLogDi
                 },
                 activities: checkedActivities,
                 notes: form.notes,
+                missingItems: form.missingItems,
             };
 
             if (existingLog) {
@@ -339,9 +343,9 @@ export function DailyLogDialog({ open, onOpenChange, date, classId }: DailyLogDi
                                                 </div>
                                             </div>
 
-                                            {/* Sono & Observações */}
-                                            <div className="md:col-span-5 flex flex-col gap-2">
-                                                <div className="flex flex-col gap-1.5">
+                                            {/* Sono, Observações & Itens Faltantes */}
+                                            <div className="md:col-span-5 flex flex-col gap-3">
+                                                <div className="flex flex-col gap-1.5 border-b border-slate-50 pb-2">
                                                     <div className="flex items-center justify-between">
                                                         <Label className="text-[10px] text-muted-foreground">Sono</Label>
                                                         <div className="flex items-center gap-1">
@@ -366,13 +370,26 @@ export function DailyLogDialog({ open, onOpenChange, date, classId }: DailyLogDi
                                                         </div>
                                                     )}
                                                 </div>
-                                                <div>
-                                                    <Input
-                                                        placeholder="Observação do dia (Opcional)..."
-                                                        className="h-7 text-xs px-2 bg-amber-50 placeholder:text-amber-700/50 border-amber-200"
-                                                        value={form.notes}
-                                                        onChange={(e) => updateForm(student.id, { notes: e.target.value })}
-                                                    />
+
+                                                <div className="space-y-3">
+                                                    <div>
+                                                        <Label className="text-[9px] font-black text-slate-400 uppercase mb-1 block">1. Observação do Dia</Label>
+                                                        <Input
+                                                            placeholder="Observação sobre o aluno (Opcional)..."
+                                                            className="h-7 text-xs px-2 bg-amber-50/50 placeholder:text-amber-700/30 border-amber-100 focus:bg-amber-50"
+                                                            value={form.notes}
+                                                            onChange={(e) => updateForm(student.id, { notes: e.target.value })}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <Label className="text-[9px] font-black text-slate-400 uppercase mb-1 block">2. Itens Faltantes</Label>
+                                                        <Input
+                                                            placeholder="Ex: garrafa de água, caneta, etc..."
+                                                            className="h-7 text-xs px-2 bg-slate-50 placeholder:text-slate-400 border-slate-100 focus:bg-white"
+                                                            value={form.missingItems}
+                                                            onChange={(e) => updateForm(student.id, { missingItems: e.target.value })}
+                                                        />
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
