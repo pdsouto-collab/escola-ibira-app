@@ -62,7 +62,7 @@ export function MosaicDetailPanel({ node, treeType, onAvaliacao }: MosaicDetailP
                     <img
                         src="/escola-ibira-app/images/icone_trilha_crianca_transparent.png"
                         alt="Trilha"
-                        className="w-full h-full object-contain"
+                        className="w-full h-full object-contain mix-blend-multiply opacity-70"
                     />
                 </div>
                 <h3 className="text-lg font-bold text-slate-700 mb-2">Explore a Trilha</h3>
