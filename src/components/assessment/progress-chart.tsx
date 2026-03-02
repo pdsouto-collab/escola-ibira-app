@@ -5,14 +5,60 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 
 export interface ProgressChartData {
     subject: string;
-    trabalhado: number;
+    proposto: number;
     desenvolvido: number;
     total: number;
+    propostoItems?: string[];
+    desenvolvidoItems?: string[];
 }
 
 interface ProgressChartProps {
     data: ProgressChartData[];
 }
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+        const data = payload[0].payload as ProgressChartData;
+        return (
+            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xl max-w-xs md:max-w-sm">
+                <p className="font-bold text-slate-800 mb-2 border-b pb-1 text-base">{label}</p>
+
+                <div className="space-y-3">
+                    <div>
+                        <p className="text-amber-600 font-bold text-xs uppercase flex items-center gap-1 mb-1">
+                            <span className="w-2 h-2 rounded-full bg-amber-500" />
+                            Proposto ({data.proposto})
+                        </p>
+                        <ul className="text-[11px] text-slate-600 list-disc pl-3 space-y-0.5 max-h-32 overflow-y-auto">
+                            {data.propostoItems?.slice(0, 10).map((item, i) => (
+                                <li key={i} className="line-clamp-1">{item}</li>
+                            ))}
+                            {(data.propostoItems?.length ?? 0) > 10 && <li className="list-none text-slate-400">... e mais {(data.propostoItems?.length ?? 0) - 10} itens</li>}
+                        </ul>
+                    </div>
+
+                    <div>
+                        <p className="text-emerald-600 font-bold text-xs uppercase flex items-center gap-1 mb-1">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                            Desenvolvido ({data.desenvolvido})
+                        </p>
+                        {data.desenvolvidoItems && data.desenvolvidoItems.length > 0 ? (
+                            <ul className="text-[11px] text-slate-600 list-disc pl-3 space-y-0.5 max-h-32 overflow-y-auto">
+                                {data.desenvolvidoItems.slice(0, 10).map((item, i) => (
+                                    <li key={i} className="line-clamp-1">{item}</li>
+                                ))}
+                                {data.desenvolvidoItems.length > 10 && <li className="list-none text-slate-400">... e mais {data.desenvolvidoItems.length - 10} itens</li>}
+                            </ul>
+                        ) : (
+                            <p className="text-[11px] text-slate-400 italic pl-1">Nenhum item desenvolvido ainda.</p>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+    return null;
+};
 
 export function ProgressChart({ data }: ProgressChartProps) {
     if (!data || data.length === 0) {
@@ -45,28 +91,23 @@ export function ProgressChart({ data }: ProgressChartProps) {
                         tick={{ fill: '#94a3b8', fontSize: 12 }}
                         allowDecimals={false}
                     />
-                    <Tooltip
-                        cursor={{ fill: '#f8fafc' }}
-                        contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                        itemStyle={{ fontSize: '13px', fontWeight: 500 }}
-                        labelStyle={{ fontSize: '14px', fontWeight: 600, color: '#1e293b', marginBottom: '8px' }}
-                    />
+                    <Tooltip content={<CustomTooltip />} />
                     <Legend
                         verticalAlign="top"
                         height={40}
                         iconType="circle"
-                        wrapperStyle={{ fontSize: '13px', fontWeight: 500, color: '#475569', paddingTop: '10px' }}
+                        wrapperStyle={{ fontSize: '14px', fontWeight: 600, color: '#475569', paddingTop: '10px' }}
                     />
                     <Bar
-                        dataKey="trabalhado"
-                        name="Trabalhado (Projetos)"
+                        dataKey="proposto"
+                        name="Proposto"
                         fill="#F59E0B"
                         radius={[6, 6, 0, 0]}
                         maxBarSize={48}
                     />
                     <Bar
                         dataKey="desenvolvido"
-                        name="Desenvolvido (Conquistado)"
+                        name="Desenvolvido"
                         fill="#10B981"
                         radius={[6, 6, 0, 0]}
                         maxBarSize={48}
@@ -76,7 +117,7 @@ export function ProgressChart({ data }: ProgressChartProps) {
             <div className="mt-4 px-6 flex justify-center">
                 <p className="text-[11px] text-slate-400 flex items-start gap-2 max-w-2xl text-center leading-relaxed">
                     <span className="w-3.5 h-3.5 rounded-full border border-slate-300 flex items-center justify-center shrink-0 mt-0.5 text-[8px] font-bold text-slate-400">i</span>
-                    Nota: "Trabalhado" indica habilidades incluídas nos projetos. "Desenvolvido" indica habilidades conquistadas pelo aluno na avaliação.
+                    Nota: "Proposto" indica habilidades base da BNCC e Competências. "Desenvolvido" indica habilidades com avaliação positiva.
                 </p>
             </div>
         </div>

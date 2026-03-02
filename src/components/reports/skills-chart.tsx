@@ -55,76 +55,23 @@ const resolveNodeInfo = (id: string, skillsTree: any[], contentsTree: any[], lib
     return { id, name: id, code: id, subject: "Outros" };
 };
 
-/** Finds all evaluatable nodes (L3/L4) within a given node or set of IDs */
-const findEvaluatableNodes = (allNodes: any[], targetIds: string[]): any[] => {
+/** Finds all evaluatable nodes (L3/L4) within a given node or tree */
+const getAllEvaluatableNodes = (nodes: any[], rootName?: string): any[] => {
     const results: any[] = [];
-    const search = (nodes: any[], active = false) => {
-        for (const node of nodes) {
-            const nodeIsTarget = targetIds.includes(node.id) || (node.libraryItemId && targetIds.includes(node.libraryItemId));
-            const isTargetOrDescendant = active || nodeIsTarget;
-
-            // L3 (micro) and L4 (atomico) are assessment-ready
-            if (isTargetOrDescendant && (node.level === "micro" || node.level === "atomico")) {
-                results.push(node);
-            }
-            if (node.children) {
-                search(node.children, isTargetOrDescendant);
-            }
+    for (const node of nodes) {
+        const currentRoot = node.level === "macro" ? node.name : rootName;
+        if (node.level === "micro" || node.level === "atomico") {
+            results.push({ ...node, subject: currentRoot || "Outros" });
         }
-    };
-    search(allNodes);
+        if (node.children) {
+            results.push(...getAllEvaluatableNodes(node.children, currentRoot));
+        }
+    }
     return results;
 };
 
-const getProjectNodes = (project: any, skillsTree: any[], contentsTree: any[], libraryItems: any[]) => {
-    const directSkillIds = project.bnccSkillIds || [];
-    const directContentIds = project.contentIds || [];
-
-    // Expand search scope by including linked library codes
-    const targetSet = new Set<string>();
-    [...directSkillIds, ...directContentIds].forEach(id => {
-        targetSet.add(id);
-        const li = libraryItems.find(item => item.id === id || item.code === id);
-        if (li) {
-            targetSet.add(li.id);
-            if (li.code) targetSet.add(li.code);
-        }
-    });
-
-    const recursiveNodes = findEvaluatableNodes([...skillsTree, ...contentsTree], Array.from(targetSet));
-
-    const displayedNodeIds = new Set<string>();
-    const microNodes: any[] = [];
-    const atomicoNodes: any[] = [];
-
-    // 1. Add direct skills/contents
-    [...directSkillIds, ...directContentIds].forEach(id => {
-        const info = resolveNodeInfo(id, skillsTree, contentsTree, libraryItems);
-        if (!displayedNodeIds.has(info.id)) {
-            if (info.level === "atomico") atomicoNodes.push(info);
-            else microNodes.push(info);
-            displayedNodeIds.add(info.id);
-        }
-    });
-
-    // 2. Add recursive evaluatable nodes (if not already displayed)
-    recursiveNodes.forEach(node => {
-        if (!displayedNodeIds.has(node.id)) {
-            const info = {
-                ...node,
-                code: node.code || (node.libraryItemId ? node.libraryItemId : null)
-            };
-            if (info.level === "atomico") atomicoNodes.push(info);
-            else microNodes.push(info);
-            displayedNodeIds.add(node.id);
-        }
-    });
-
-    return { microNodes, atomicoNodes };
-};
-
 export function SkillsChart({ studentId }: { studentId?: string }) {
-    const { projects, students, assessments, skillsTree, contentsTree, libraryItems } = useAppStore();
+    const { students, assessments, skillsTree, contentsTree } = useAppStore();
 
     if (!studentId) {
         return (
@@ -137,39 +84,33 @@ export function SkillsChart({ studentId }: { studentId?: string }) {
     const student = students.find(s => s.id === studentId);
     if (!student) return null;
 
-    // Find projects linked to this student
-    const studentProjects = projects.filter(p => {
-        const studentMatch = (p.students || []).some(id => String(id) === String(student.id));
-        const classMatch = (p.classes || []).some(id => String(id) === String(student.classId));
-        return studentMatch || classMatch;
-    });
-
     const studentAssessments = assessments.filter(a => a.studentId === studentId || (a.scope === "class" && a.classId === student.classId));
 
-    const allMicro: any[] = [];
-    const allAtomico: any[] = [];
-    studentProjects.forEach(p => {
-        const { microNodes, atomicoNodes } = getProjectNodes(p, skillsTree, contentsTree, libraryItems);
-        allMicro.push(...microNodes);
-        allAtomico.push(...atomicoNodes);
-    });
-
-    const map = new Map();
-    [...allMicro, ...allAtomico].forEach(n => map.set(n.id, n));
-    const allNodes = Array.from(map.values());
+    // Logic: "Proposto" is everything in the base trees
+    const allProposedNodes = getAllEvaluatableNodes([...skillsTree, ...contentsTree]);
 
     const chartDataMap = new Map<string, ProgressChartData>();
-    allNodes.forEach(node => {
+    allProposedNodes.forEach(node => {
         const subject = node.subject || "Outros";
         if (!chartDataMap.has(subject)) {
-            chartDataMap.set(subject, { subject, trabalhado: 0, desenvolvido: 0, total: 0 });
+            chartDataMap.set(subject, {
+                subject,
+                proposto: 0,
+                desenvolvido: 0,
+                total: 0,
+                propostoItems: [],
+                desenvolvidoItems: []
+            });
         }
         const data = chartDataMap.get(subject)!;
-        data.trabalhado += 1;
+        data.proposto += 1;
         data.total += 1;
+        data.propostoItems?.push(node.name);
+
         const nodeAssessment = studentAssessments.find(a => a.knowledgeNodeId === node.id);
         if (nodeAssessment && (nodeAssessment.rating ?? 0) >= 3) {
             data.desenvolvido += 1;
+            data.desenvolvidoItems?.push(node.name);
         }
     });
 
@@ -177,16 +118,16 @@ export function SkillsChart({ studentId }: { studentId?: string }) {
 
     return (
         <div className="bg-white p-6 rounded-xl border shadow-sm">
-            <h3 className="text-lg font-bold text-slate-800">Trabalhado vs. Desenvolvido</h3>
-            <p className="text-sm text-slate-500 mb-6">Comparativo entre o que foi planejado/executado em projetos e o que foi consolidado pela criança.</p>
+            <h3 className="text-xl font-bold text-slate-800">Proposto vs. Desenvolvido</h3>
+            <p className="text-sm text-slate-500 mb-6 font-medium">Comparativo entre o currículo base escola e o que já foi consolidado pela criança (avaliação 3-5).</p>
 
             <ProgressChart data={chartData} />
 
             <div className="mt-6 p-4 bg-slate-50 rounded-lg text-xs text-slate-500 flex gap-2">
                 <Info className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                <p>
-                    <strong>Nota:</strong> "Trabalhado" indica habilidades incluídas em projetos ativos ou concluídos.
-                    "Desenvolvido" indica habilidades marcadas como "Conquistada" na avaliação do professor.
+                <p className="leading-relaxed">
+                    <strong>Nota:</strong> "Proposto" contempla todas as habilidades e competências da Árvore de Conhecimento.
+                    "Desenvolvido" indica itens com avaliação entre 3 e 5 atribuída pelo professor.
                 </p>
             </div>
         </div>
