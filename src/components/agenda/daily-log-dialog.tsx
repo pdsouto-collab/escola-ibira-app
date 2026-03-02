@@ -382,7 +382,7 @@ export function DailyLogDialog({ open, onOpenChange, date, classId }: DailyLogDi
                                                         />
                                                     </div>
                                                     <div>
-                                                        <Label className="text-[9px] font-black text-slate-400 uppercase mb-1 block">2. Itens Faltantes</Label>
+                                                        <Label className="text-[9px] font-black text-slate-400 uppercase mb-1 block">2. Enviar Itens Abaixo</Label>
                                                         <Input
                                                             placeholder="Ex: garrafa de água, caneta, etc..."
                                                             className="h-7 text-xs px-2 bg-slate-50 placeholder:text-slate-400 border-slate-100 focus:bg-white"

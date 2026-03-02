@@ -120,7 +120,7 @@ export function DailyLogReport({ studentId, onEdit }: DailyLogReportProps) {
                                 )}
                                 {log.missingItems && (
                                     <div className="space-y-1">
-                                        <h4 className="text-xs font-bold text-slate-500 uppercase">2. Itens Faltantes</h4>
+                                        <h4 className="text-xs font-bold text-slate-500 uppercase">2. Enviar Itens Abaixo</h4>
                                         <div className="bg-red-50 p-4 rounded-lg border border-red-100 text-red-900 italic">
                                             &quot;{log.missingItems}&quot;
                                         </div>
