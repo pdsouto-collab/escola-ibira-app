@@ -13,8 +13,10 @@ import {
     FileText as NoteIcon,
     X,
     Plus,
-    Sparkles
+    Footprints,
+    Upload
 } from "lucide-react";
+import { useRef } from "react";
 import { BulkPortfolioDialog } from "@/components/portfolio/bulk-portfolio-dialog";
 
 export function PegadaNewPost() {
@@ -24,6 +26,9 @@ export function PegadaNewPost() {
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [isBulkOpen, setIsBulkOpen] = useState(false);
+    const [mediaUrl, setMediaUrl] = useState<string | undefined>(undefined);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const videoInputRef = useRef<HTMLInputElement>(null);
 
     const canPost = currentUser?.role === "teacher" || currentUser?.role === "director" || currentUser?.role === "admin";
 
@@ -39,7 +44,7 @@ export function PegadaNewPost() {
             type,
             title: title.trim(),
             content: content.trim(),
-            mediaUrl: type === 'photo' ? "https://images.unsplash.com/photo-1502086223501-7ea244b05ffb?q=80&w=800&auto=format&fit=crop" : undefined,
+            mediaUrl: mediaUrl || (type === 'photo' ? "https://images.unsplash.com/photo-1502086223501-7ea244b05ffb?q=80&w=800&auto=format&fit=crop" : undefined),
             createdAt: new Date().toISOString(),
             interactions: []
         };
@@ -47,7 +52,20 @@ export function PegadaNewPost() {
         addPegadaPost(newPost);
         setTitle("");
         setContent("");
+        setMediaUrl(undefined);
         setIsExpanded(false);
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fileType: 'photo' | 'video') => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setMediaUrl(reader.result as string);
+                setType(fileType);
+            };
+            reader.readAsDataURL(file);
+        }
     };
 
     return (
@@ -63,7 +81,7 @@ export function PegadaNewPost() {
                             className="flex-1 text-left h-10 px-4 rounded-full bg-white border border-indigo-100 text-slate-400 text-sm hover:border-indigo-300 transition-colors flex items-center justify-between"
                         >
                             <span>O que os Ibiritos descobriram hoje?</span>
-                            <Sparkles className="h-4 w-4 text-indigo-400" />
+                            <Footprints className="h-4 w-4 text-indigo-400" />
                         </button>
                         <Button
                             onClick={() => setIsBulkOpen(true)}
@@ -76,7 +94,7 @@ export function PegadaNewPost() {
                     <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
                         <div className="flex items-center justify-between">
                             <h3 className="text-sm font-bold text-indigo-900 flex items-center gap-2">
-                                <Sparkles className="h-4 w-4" /> Nova Pegada
+                                <Footprints className="h-4 w-4" /> Nova Pegada
                             </h3>
                             <Button variant="ghost" size="icon" onClick={() => setIsExpanded(false)} className="h-8 w-8 text-slate-400 hover:text-red-500">
                                 <X className="h-4 w-4" />
@@ -97,12 +115,44 @@ export function PegadaNewPost() {
                             className="bg-white border-indigo-100 focus-visible:ring-indigo-500 min-h-[100px] resize-none"
                         />
 
+                        {mediaUrl && (
+                            <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-indigo-100 bg-white">
+                                {type === 'video' ? (
+                                    <video src={mediaUrl} className="w-full h-full object-cover" controls />
+                                ) : (
+                                    <img src={mediaUrl} alt="Preview" className="w-full h-full object-cover" />
+                                )}
+                                <Button
+                                    variant="destructive"
+                                    size="icon"
+                                    className="absolute top-2 right-2 h-8 w-8 rounded-full"
+                                    onClick={() => setMediaUrl(undefined)}
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        )}
+
                         <div className="flex items-center justify-between pt-2">
                             <div className="flex gap-2">
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    className="hidden"
+                                    accept="image/*"
+                                    onChange={(e) => handleFileChange(e, 'photo')}
+                                />
+                                <input
+                                    type="file"
+                                    ref={videoInputRef}
+                                    className="hidden"
+                                    accept="video/*"
+                                    onChange={(e) => handleFileChange(e, 'video')}
+                                />
                                 <Button
                                     variant={type === 'photo' ? 'default' : 'outline'}
                                     size="sm"
-                                    onClick={() => setType('photo')}
+                                    onClick={() => fileInputRef.current?.click()}
                                     className={`gap-1.5 rounded-full ${type === 'photo' ? 'bg-indigo-600' : 'bg-white border-indigo-100 text-indigo-600'}`}
                                 >
                                     <ImageIcon className="h-3.5 w-3.5" /> Fotos
@@ -110,7 +160,7 @@ export function PegadaNewPost() {
                                 <Button
                                     variant={type === 'video' ? 'default' : 'outline'}
                                     size="sm"
-                                    onClick={() => setType('video')}
+                                    onClick={() => videoInputRef.current?.click()}
                                     className={`gap-1.5 rounded-full ${type === 'video' ? 'bg-indigo-600' : 'bg-white border-indigo-100 text-indigo-600'}`}
                                 >
                                     <VideoIcon className="h-3.5 w-3.5" /> Vídeo
@@ -118,7 +168,10 @@ export function PegadaNewPost() {
                                 <Button
                                     variant={type === 'note' ? 'default' : 'outline'}
                                     size="sm"
-                                    onClick={() => setType('note')}
+                                    onClick={() => {
+                                        setType('note');
+                                        setMediaUrl(undefined);
+                                    }}
                                     className={`gap-1.5 rounded-full ${type === 'note' ? 'bg-indigo-600' : 'bg-white border-indigo-100 text-indigo-600'}`}
                                 >
                                     <NoteIcon className="h-3.5 w-3.5" /> Nota
