@@ -95,8 +95,18 @@ export function ProgressChart({ data }: ProgressChartProps) {
                     <Legend
                         verticalAlign="top"
                         height={40}
-                        iconType="circle"
-                        wrapperStyle={{ fontSize: '14px', fontWeight: 600, color: '#475569', paddingTop: '10px' }}
+                        content={() => (
+                            <div className="flex justify-center gap-6 pb-4 text-[15px] font-bold text-slate-600">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-3.5 h-3.5 rounded-full bg-[#F59E0B]" />
+                                    <span>Proposto</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="w-3.5 h-3.5 rounded-full bg-[#10B981]" />
+                                    <span>Desenvolvido</span>
+                                </div>
+                            </div>
+                        )}
                     />
                     <Bar
                         dataKey="proposto"
