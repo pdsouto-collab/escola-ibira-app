@@ -253,15 +253,6 @@ export default function AgendaPage() {
                     {canEdit && (
                         <div className="flex gap-2">
                             <Button
-                                variant="outline"
-                                disabled={selectedClassId === "all"}
-                                onClick={() => setIsBulkPortfolioOpen(true)}
-                                className="border-indigo-200 text-indigo-700 bg-indigo-50 hover:bg-indigo-100"
-                                title={selectedClassId === "all" ? "Selecione uma turma específica para registrar vivência" : "Nova Vivência em Lote"}
-                            >
-                                🌟 Registrar Vivência
-                            </Button>
-                            <Button
                                 variant="default"
                                 disabled={selectedClassId === "all"}
                                 onClick={() => setIsDailyLogOpen(true)}

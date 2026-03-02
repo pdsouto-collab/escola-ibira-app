@@ -16,7 +16,8 @@ import {
     Assessment, mockAssessments, Menu, mockMenus,
     PortfolioEntry, mockPortfolio,
     Invoice, mockInvoices,
-    AppNotification, mockNotifications
+    AppNotification, mockNotifications,
+    PegadaPost, mockPegadas, PegadaInteraction
 } from "@/lib/data";
 
 interface AppState {
@@ -41,6 +42,7 @@ interface AppState {
     portfolioEntries: PortfolioEntry[];
     invoices: Invoice[];
     notifications: AppNotification[];
+    pegadaPosts: PegadaPost[];
 }
 
 interface AppContextType extends AppState {
@@ -132,6 +134,9 @@ interface AppContextType extends AppState {
     addNotification: (notification: AppNotification) => void;
     markNotificationAsRead: (id: string) => void;
     markAllNotificationsAsRead: () => void;
+    // Pegadas
+    addPegadaPost: (post: PegadaPost) => void;
+    addPegadaInteraction: (postId: string, interaction: PegadaInteraction) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -245,6 +250,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [portfolioEntries, setPortfolioEntries] = useState<PortfolioEntry[]>(mockPortfolio);
     const [invoices, setInvoices] = useState<Invoice[]>(mockInvoices);
     const [notifications, setNotifications] = useState<AppNotification[]>(mockNotifications);
+    const [pegadaPosts, setPegadaPosts] = useState<PegadaPost[]>(mockPegadas);
 
     const [isLoaded, setIsLoaded] = useState(false);
 
@@ -305,6 +311,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             load("assessments", setAssessments, mockAssessments);
             load("invoices", setInvoices, mockInvoices);
             load("notifications", setNotifications, mockNotifications);
+            load("pegadaPosts", setPegadaPosts, mockPegadas);
 
             const savedCurrentUser = localStorage.getItem("app_currentUser");
             if (savedCurrentUser) {
@@ -344,7 +351,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem("app_assessments", JSON.stringify(assessments));
         localStorage.setItem("app_invoices", JSON.stringify(invoices));
         localStorage.setItem("app_notifications", JSON.stringify(notifications));
-    }, [students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, mosaicData, libraryItems, bnccProgress, skillsTree, contentsTree, menus, portfolioEntries, assessments, invoices, notifications, isLoaded]);
+        localStorage.setItem("app_pegadaPosts", JSON.stringify(pegadaPosts));
+    }, [students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, mosaicData, libraryItems, bnccProgress, skillsTree, contentsTree, menus, portfolioEntries, assessments, invoices, notifications, pegadaPosts, isLoaded]);
 
     // Actions
     const addStudent = (student: Student) => {
@@ -666,6 +674,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const markNotificationAsRead = (id: string) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
     const markAllNotificationsAsRead = () => setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
 
+    const addPegadaPost = (post: PegadaPost) => setPegadaPosts((prev: PegadaPost[]) => [post, ...prev]);
+    const addPegadaInteraction = (postId: string, interaction: PegadaInteraction) => {
+        setPegadaPosts((prev: PegadaPost[]) => prev.map((p: PegadaPost) => {
+            if (p.id !== postId) return p;
+            return {
+                ...p,
+                interactions: [...p.interactions, interaction]
+            };
+        }));
+    };
+
     return (
         <AppContext.Provider value={{
             students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, currentUser,
@@ -713,6 +732,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             addNotification: (n) => setNotifications(prev => [n, ...prev]),
             markNotificationAsRead: (id) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n)),
             markAllNotificationsAsRead: () => setNotifications(prev => prev.map(n => ({ ...n, isRead: true }))),
+
+            pegadaPosts,
+            addPegadaPost,
+            addPegadaInteraction
         }}>
             {children}
         </AppContext.Provider>

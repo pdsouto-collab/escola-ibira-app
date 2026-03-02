@@ -1372,4 +1372,54 @@ export const mockNotifications: AppNotification[] = [
         createdAt: new Date(Date.now() - 86400000).toISOString(),
     }
 ];
+// --- PEGADAS DOS IBIRITOS FEED ---
+export interface PegadaInteraction {
+    id: string;
+    userId: string;
+    userName: string;
+    type: 'like' | 'comment' | 'audio';
+    content?: string;
+    audioUrl?: string;
+    createdAt: string;
+}
 
+export interface PegadaPost {
+    id: string;
+    authorId: string;
+    authorName: string;
+    type: 'photo' | 'video' | 'note';
+    title: string;
+    content: string;
+    mediaUrl?: string;
+    tags?: string[];
+    interactions: PegadaInteraction[];
+    createdAt: string;
+}
+
+export const mockPegadas: PegadaPost[] = [
+    {
+        id: "p1",
+        authorId: "u2",
+        authorName: "Profa. Cláudia",
+        type: "photo",
+        title: "Explorando a Pequena Horta",
+        content: "Hoje os Ibiritos descobriram como as sementes de girassol começam a brotar. Foi um momento de muita curiosidade!",
+        mediaUrl: "https://images.unsplash.com/photo-1592819044824-75dd4f566fab?q=80&w=800&auto=format&fit=crop",
+        tags: ["Natureza", "Descoberta"],
+        createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+        interactions: [
+            { id: "i1", userId: "u5", userName: "Mariana (Mãe)", type: "like", createdAt: new Date(Date.now() - 3600000).toISOString() },
+            { id: "i2", userId: "u5", userName: "Mariana (Mãe)", type: "comment", content: "Que lindo ver eles interagindo com a terra! ❤️", createdAt: new Date(Date.now() - 1800000).toISOString() }
+        ]
+    },
+    {
+        id: "p2",
+        authorId: "u2",
+        authorName: "Profa. Cláudia",
+        type: "note",
+        title: "Momento da Roda",
+        content: "Conversamos sobre a importância de cuidar uns dos outros hoje. As crianças trouxeram relatos lindos sobre suas famílias.",
+        interactions: [],
+        createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
+    }
+];

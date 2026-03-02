@@ -21,7 +21,8 @@ import {
     Aperture,
     BookMarked,
     Utensils,
-    Wallet
+    Wallet,
+    Footprints
 } from "lucide-react";
 import { SchoolLogo } from "@/components/ui/school-logo";
 
@@ -30,6 +31,7 @@ import { BookOpen } from "lucide-react";
 const navigation = [
     { name: "Início", href: "/", icon: LayoutDashboard },
     { name: "Trilha Ibirá", href: "/mosaico", icon: Aperture, roles: ["director", "admin", "teacher"] },
+    { name: "Pegadas dos Ibiritos", href: "/pegadas", icon: Footprints },
     { name: "Atividades Pendentes", href: "/pendencias", icon: CheckCircle2, roles: ["director", "admin", "teacher"] },
     { name: "Mural de Eventos", href: "/mural", icon: PartyPopper },
     { name: "Rotinas", href: "/agenda", icon: CalendarDays },

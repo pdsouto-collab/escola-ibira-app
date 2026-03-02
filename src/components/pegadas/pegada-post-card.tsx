@@ -1,0 +1,193 @@
+"use client";
+
+import { useState } from "react";
+import { PegadaPost, PegadaInteraction } from "@/lib/data";
+import { useAppStore } from "@/lib/store";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { TreeDeciduous, MessageSquare, Mic, Send, MoreVertical, Play } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
+
+interface PegadaPostCardProps {
+    post: PegadaPost;
+}
+
+export function PegadaPostCard({ post }: PegadaPostCardProps) {
+    const { currentUser, addPegadaInteraction } = useAppStore();
+    const [comment, setComment] = useState("");
+    const [showComments, setShowComments] = useState(false);
+
+    const hasLiked = post.interactions.some(i => i.type === 'like' && i.userId === currentUser?.id);
+    const likeCount = post.interactions.filter(i => i.type === 'like').length;
+    const commentCount = post.interactions.filter(i => i.type === 'comment' || i.type === 'audio').length;
+
+    const handleLike = () => {
+        if (!currentUser || hasLiked) return;
+
+        const interaction: PegadaInteraction = {
+            id: `int-${Date.now()}`,
+            userId: currentUser.id,
+            userName: currentUser.name,
+            type: 'like',
+            createdAt: new Date().toISOString()
+        };
+        addPegadaInteraction(post.id, interaction);
+    };
+
+    const handleComment = () => {
+        if (!currentUser || !comment.trim()) return;
+
+        const interaction: PegadaInteraction = {
+            id: `int-${Date.now()}`,
+            userId: currentUser.id,
+            userName: currentUser.name,
+            type: 'comment',
+            content: comment.trim(),
+            createdAt: new Date().toISOString()
+        };
+        addPegadaInteraction(post.id, interaction);
+        setComment("");
+    };
+
+    return (
+        <Card className="overflow-hidden border-slate-200 hover:shadow-md transition-shadow">
+            <CardHeader className="p-4 flex flex-row items-center gap-3">
+                <Avatar className="h-10 w-10 border border-slate-100">
+                    <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorName}`} />
+                    <AvatarFallback>{post.authorName.substring(0, 2)}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                    <h4 className="text-sm font-bold text-slate-900">{post.authorName}</h4>
+                    <p className="text-[10px] text-slate-500">
+                        {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ptBR })}
+                    </p>
+                </div>
+                <Button variant="ghost" size="icon" className="text-slate-400">
+                    <MoreVertical className="h-4 w-4" />
+                </Button>
+            </CardHeader>
+
+            <CardContent className="p-0">
+                {post.type === "photo" && post.mediaUrl && (
+                    <div className="relative aspect-video bg-slate-100">
+                        <img src={post.mediaUrl} alt={post.title} className="w-full h-full object-cover" />
+                    </div>
+                )}
+
+                {post.type === "video" && post.mediaUrl && (
+                    <div className="relative aspect-video bg-black flex items-center justify-center group cursor-pointer">
+                        <video src={post.mediaUrl} className="w-full h-full object-contain opacity-80" />
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
+                            <div className="h-16 w-16 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center">
+                                <Play className="h-8 w-8 text-white fill-white" />
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <div className="p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                        <h3 className="font-bold text-slate-800 leading-tight">{post.title}</h3>
+                        {post.tags && post.tags.length > 0 && (
+                            <div className="flex gap-1">
+                                {post.tags.map(tag => (
+                                    <Badge key={tag} variant="secondary" className="text-[9px] bg-emerald-50 text-emerald-700 border-emerald-100 uppercase tracking-tighter">
+                                        {tag}
+                                    </Badge>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                        {post.content}
+                    </p>
+                </div>
+            </CardContent>
+
+            <CardFooter className="p-4 pt-0 flex flex-col gap-4 border-t border-slate-50 mt-2">
+                <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={handleLike}
+                            className={`flex items-center gap-1.5 transition-all active:scale-125 ${hasLiked ? 'text-emerald-600' : 'text-slate-500 hover:text-emerald-500'}`}
+                        >
+                            <TreeDeciduous className={`h-5 w-5 ${hasLiked ? 'fill-emerald-100' : ''}`} />
+                            <span className="text-xs font-bold">{likeCount}</span>
+                        </button>
+
+                        <button
+                            onClick={() => setShowComments(!showComments)}
+                            className="flex items-center gap-1.5 text-slate-500 hover:text-indigo-500 transition-colors"
+                        >
+                            <MessageSquare className="h-4 w-4" />
+                            <span className="text-xs font-bold">{commentCount}</span>
+                        </button>
+                    </div>
+
+                    {currentUser?.role !== "guardian" && (
+                        <div className="text-[10px] font-medium text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-100 uppercase tracking-widest">
+                            Visível para Todos
+                        </div>
+                    )}
+                </div>
+
+                {showComments && (
+                    <div className="w-full space-y-4 pt-2">
+                        <div className="space-y-3">
+                            {post.interactions.filter(i => i.type === 'comment' || i.type === 'audio').map((int) => (
+                                <div key={int.id} className="flex gap-3 animate-in slide-in-from-bottom-2">
+                                    <Avatar className="h-8 w-8 shrink-0">
+                                        <AvatarFallback className="text-[10px] bg-slate-100 text-slate-600">{int.userName.substring(0, 2).toUpperCase()}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1 bg-slate-50 rounded-2xl p-3 text-xs">
+                                        <div className="flex justify-between items-center mb-1">
+                                            <span className="font-bold text-slate-900">{int.userName}</span>
+                                            <span className="text-[9px] text-slate-400">
+                                                {formatDistanceToNow(new Date(int.createdAt), { locale: ptBR })}
+                                            </span>
+                                        </div>
+                                        {int.type === 'comment' ? (
+                                            <p className="text-slate-600 leading-normal">{int.content}</p>
+                                        ) : (
+                                            <div className="flex items-center gap-2 bg-white/50 p-2 rounded-lg border border-slate-100 mt-1">
+                                                <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                                                    <Play className="h-4 w-4 text-indigo-600 fill-indigo-600" />
+                                                </div>
+                                                <div className="flex-1 h-1.5 bg-slate-200 rounded-full relative overflow-hidden">
+                                                    <div className="absolute inset-0 bg-indigo-400 w-1/3" />
+                                                </div>
+                                                <span className="text-[10px] text-slate-400">0:12</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="flex gap-2 items-center">
+                            <Input
+                                placeholder="Escreva um comentário..."
+                                value={comment}
+                                onChange={(e) => setComment(e.target.value)}
+                                className="h-9 text-xs bg-slate-50 border-slate-200 focus-visible:ring-indigo-500"
+                                onKeyDown={(e) => e.key === 'Enter' && handleComment()}
+                            />
+                            <div className="flex gap-1 shrink-0">
+                                <Button size="icon" variant="ghost" className="h-9 w-9 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">
+                                    <Mic className="h-4 w-4" />
+                                </Button>
+                                <Button size="icon" onClick={handleComment} disabled={!comment.trim()} className="h-9 w-9 bg-indigo-600 hover:bg-indigo-700 shadow-sm shrink-0">
+                                    <Send className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </CardFooter>
+        </Card>
+    );
+}
