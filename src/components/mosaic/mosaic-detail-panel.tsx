@@ -57,12 +57,12 @@ export function MosaicDetailPanel({ node, treeType, onAvaliacao }: MosaicDetailP
     if (!node) {
         return (
             <div className="h-full flex flex-col items-center justify-center p-8 text-center bg-slate-50 border-r border-slate-200">
-                <div className="w-24 h-24 mb-4">
+                <div className="w-36 h-36 mb-4">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                        src="/escola-ibira-app/images/icone_trilha_crianca.png"
+                        src="/escola-ibira-app/images/icone_trilha_crianca_transparent.png"
                         alt="Trilha"
-                        className="w-full h-full object-contain blur-[0.5px]"
+                        className="w-full h-full object-contain"
                     />
                 </div>
                 <h3 className="text-lg font-bold text-slate-700 mb-2">Explore a Trilha</h3>
