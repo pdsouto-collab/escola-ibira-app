@@ -400,7 +400,7 @@ function ReportCard({
                     );
                 })()}
 
-                {/* ── MATRIZ CIRCULAR ────────────────────── */}
+                {/* ── TRILHA IBIRÁ ────────────────────── */}
                 <section className="break-inside-avoid page-break-inside-avoid" style={{ pageBreakInside: "avoid" }}>
                     <div className="flex items-center gap-3 mb-8">
                         <div className="w-1.5 h-6 bg-slate-800 rounded-full" />

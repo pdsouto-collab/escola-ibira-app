@@ -181,7 +181,7 @@ export default function ReportsPage() {
                         <div>
                             <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
                                 <span className="w-1.5 h-6 bg-orange-500 rounded-full" />
-                                Matriz de Competências e Habilidades
+                                Trilha de Competências e Habilidades
                             </h2>
                             {selectedStudent ? (
                                 <MilestoneReport studentId={effectiveStudentId} />

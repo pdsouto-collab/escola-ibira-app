@@ -60,9 +60,9 @@ export function MosaicDetailPanel({ node, treeType, onAvaliacao }: MosaicDetailP
                 <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
                     <span className="text-2xl">✨</span>
                 </div>
-                <h3 className="text-lg font-bold text-slate-700 mb-2">Explore a Matriz</h3>
+                <h3 className="text-lg font-bold text-slate-700 mb-2">Explore a Trilha</h3>
                 <p className="text-sm text-slate-500">
-                    Selecione uma parte da matriz circular para visualizar detalhes curriculares e de desenvolvimento.
+                    Selecione uma parte da trilha circular para visualizar detalhes curriculares e de desenvolvimento.
                 </p>
             </div>
         );
