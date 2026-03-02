@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Trilha Ibirá",
   description: "Plataforma de acompanhamento escolar",
+  icons: {
+    icon: "/escola-ibira-app/images/icone_trilha_crianca_transparent.png",
+  }
 };
 
 export default function RootLayout({

@@ -4,6 +4,7 @@ import { Bell, Search } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 import { useAppStore } from "@/lib/store";
+import { NotificationPopover } from "./notification-popover";
 
 export function DashboardHero() {
     const { currentUser } = useAppStore();
@@ -16,9 +17,7 @@ export function DashboardHero() {
 
             {/* Top Bar inside Hero */}
             <div className="absolute top-6 right-6 flex items-center gap-4 z-20">
-                <button className="p-2 rounded-full bg-slate-900/5 hover:bg-slate-900/10 transition-colors">
-                    <Bell className="w-5 h-5 text-slate-700" />
-                </button>
+                <NotificationPopover />
                 <Avatar className="border-2 border-white cursor-pointer">
                     <AvatarImage src={currentUser?.avatar || "https://github.com/shadcn.png"} />
                     <AvatarFallback>{currentUser?.name.substring(0, 2).toUpperCase()}</AvatarFallback>

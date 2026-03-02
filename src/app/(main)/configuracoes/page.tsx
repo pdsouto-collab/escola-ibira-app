@@ -1,90 +1,262 @@
-
 "use client";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Bell, Moon, User } from "lucide-react";
-
-
-import { useState } from "react";
+import { Bell, Moon, User, Lock, Save, CheckCircle2 } from "lucide-react";
+import { useAppStore } from "@/lib/store";
+import { useState, useEffect } from "react";
 
 export default function SettingsPage() {
+    const { currentUser, updateUserInfo } = useAppStore();
+
+    // Profile State
+    const [name, setName] = useState(currentUser?.name || "");
+    const [email, setEmail] = useState(currentUser?.email || "");
+    const [phone, setPhone] = useState(currentUser?.phone || "");
+
+    // Password State
+    const [currentPassword, setCurrentPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+
+    // Preferences State
     const [emailNotifications, setEmailNotifications] = useState(true);
     const [pushNotifications, setPushNotifications] = useState(true);
     const [darkMode, setDarkMode] = useState(false);
 
+    // Feedback State
+    const [isSavingProfile, setIsSavingProfile] = useState(false);
+    const [isSavingPassword, setIsSavingPassword] = useState(false);
+    const [profileMessage, setProfileMessage] = useState("");
+    const [passwordMessage, setPasswordMessage] = useState("");
+
+    useEffect(() => {
+        if (currentUser) {
+            setName(currentUser.name);
+            setEmail(currentUser.email);
+            setPhone(currentUser.phone || "");
+        }
+    }, [currentUser]);
+
+    const handleSaveProfile = async () => {
+        if (!currentUser) return;
+        setIsSavingProfile(true);
+        setProfileMessage("");
+
+        try {
+            // In a real app, this would be an API call
+            updateUserInfo(currentUser.id, { name, email, phone });
+            setProfileMessage("Perfil atualizado com sucesso!");
+            setTimeout(() => setProfileMessage(""), 3000);
+        } catch (error) {
+            setProfileMessage("Erro ao atualizar perfil.");
+        } finally {
+            setIsSavingProfile(false);
+        }
+    };
+
+    const handleResetPassword = async () => {
+        if (newPassword !== confirmPassword) {
+            setPasswordMessage("As senhas não coincidem.");
+            return;
+        }
+        if (newPassword.length < 6) {
+            setPasswordMessage("A senha deve ter pelo menos 6 caracteres.");
+            return;
+        }
+
+        setIsSavingPassword(true);
+        setPasswordMessage("");
+
+        try {
+            // Mock password reset
+            console.log("Password reset for user:", currentUser?.id);
+            setPasswordMessage("Senha redefinida com sucesso!");
+            setCurrentPassword("");
+            setNewPassword("");
+            setConfirmPassword("");
+            setTimeout(() => setPasswordMessage(""), 3000);
+        } catch (error) {
+            setPasswordMessage("Erro ao redefinir senha.");
+        } finally {
+            setIsSavingPassword(false);
+        }
+    };
+
     return (
-        <div className="space-y-6 max-w-4xl">
+        <div className="space-y-6 max-w-4xl pb-10">
             <div className="flex flex-col gap-2">
-                <h1 className="text-3xl font-bold tracking-tight text-slate-800">Configurações</h1>
-                <p className="text-slate-500">Gerencie suas preferências e configurações da conta.</p>
+                <h1 className="text-3xl font-bold tracking-tight text-slate-800">Caminho do Usuário</h1>
+                <p className="text-slate-500">Gerencie suas informações pessoais e preferências do sistema.</p>
             </div>
 
-            <div className="space-y-6">
-                <Card>
-                    <CardHeader>
+            <div className="grid gap-6 md:grid-cols-2">
+                {/* Profile Card */}
+                <Card className="md:col-span-2 border-slate-200/60 shadow-sm">
+                    <CardHeader className="bg-slate-50/50">
                         <div className="flex items-center gap-2">
-                            <User className="h-5 w-5 text-slate-500" />
-                            <CardTitle>Perfil</CardTitle>
+                            <div className="p-2 bg-blue-100 rounded-lg">
+                                <User className="h-5 w-5 text-blue-600" />
+                            </div>
+                            <div>
+                                <CardTitle className="text-lg">Informações Pessoais</CardTitle>
+                                <CardDescription>Atualize seu nome, email e outros dados de contato.</CardDescription>
+                            </div>
                         </div>
-                        <CardDescription>Suas informações pessoais.</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid gap-2">
-                            <label className="text-sm font-medium">Nome</label>
-                            <Input defaultValue="João da Silva" />
+                    <CardContent className="pt-6">
+                        <div className="grid gap-6 md:grid-cols-2">
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold text-slate-700">Nome Completo</label>
+                                <Input
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    placeholder="Ex: Maria Carolina Santos"
+                                    className="focus-visible:ring-[#2E798A]"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold text-slate-700">Email Acadêmico</label>
+                                <Input
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="email@escolaibira.com.br"
+                                    className="focus-visible:ring-[#2E798A]"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold text-slate-700">Telefone para Contato</label>
+                                <Input
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                    placeholder="(11) 99999-9999"
+                                    className="focus-visible:ring-[#2E798A]"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold text-slate-700">Cargo / Função</label>
+                                <Input
+                                    value={currentUser?.role === 'teacher' ? 'Docente' : currentUser?.role === 'guardian' ? 'Responsável' : 'Administrador'}
+                                    disabled
+                                    className="bg-slate-50 text-slate-500 italic"
+                                />
+                            </div>
                         </div>
-                        <div className="grid gap-2">
-                            <label className="text-sm font-medium">Email</label>
-                            <Input defaultValue="joao.silva@escola.com" />
-                        </div>
+                        {profileMessage && (
+                            <div className={`mt-4 p-3 rounded-lg text-sm flex items-center gap-2 ${profileMessage.includes("sucesso") ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}>
+                                {profileMessage.includes("sucesso") && <CheckCircle2 className="w-4 h-4" />}
+                                {profileMessage}
+                            </div>
+                        )}
                     </CardContent>
-                    <CardFooter className="border-t px-6 py-4">
-                        <Button>Salvar Alterações</Button>
+                    <CardFooter className="border-t bg-slate-50/30 px-6 py-4 flex justify-end">
+                        <Button
+                            onClick={handleSaveProfile}
+                            disabled={isSavingProfile}
+                            className="bg-[#2E798A] hover:bg-[#256372] gap-2"
+                        >
+                            {isSavingProfile ? "Salvando..." : <><Save className="w-4 h-4" /> Salvar Perfil</>}
+                        </Button>
                     </CardFooter>
                 </Card>
 
-                <Card>
-                    <CardHeader>
+                {/* Password Reset Card */}
+                <Card className="border-slate-200/60 shadow-sm">
+                    <CardHeader className="bg-slate-50/50">
                         <div className="flex items-center gap-2">
-                            <Bell className="h-5 w-5 text-slate-500" />
-                            <CardTitle>Notificações</CardTitle>
+                            <div className="p-2 bg-orange-100 rounded-lg">
+                                <Lock className="h-5 w-5 text-orange-600" />
+                            </div>
+                            <div>
+                                <CardTitle className="text-lg">Redefinir Senha</CardTitle>
+                                <CardDescription>Altere sua senha de acesso periodicamente.</CardDescription>
+                            </div>
                         </div>
-                        <CardDescription>Como você deseja ser notificado.</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="flex items-center justify-between rounded-lg border p-4">
+                    <CardContent className="pt-6 space-y-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-slate-700">Senha Atual</label>
+                            <Input
+                                type="password"
+                                value={currentPassword}
+                                onChange={(e) => setCurrentPassword(e.target.value)}
+                                className="focus-visible:ring-[#E89F67]"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-slate-700">Nova Senha</label>
+                            <Input
+                                type="password"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                className="focus-visible:ring-[#E89F67]"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-slate-700">Confirmar Nova Senha</label>
+                            <Input
+                                type="password"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                className="focus-visible:ring-[#E89F67]"
+                            />
+                        </div>
+                        {passwordMessage && (
+                            <div className={`p-3 rounded-lg text-sm flex items-center gap-2 ${passwordMessage.includes("sucesso") ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}>
+                                {passwordMessage.includes("sucesso") && <CheckCircle2 className="w-4 h-4" />}
+                                {passwordMessage}
+                            </div>
+                        )}
+                    </CardContent>
+                    <CardFooter className="border-t bg-slate-50/30 px-6 py-4 flex justify-end">
+                        <Button
+                            onClick={handleResetPassword}
+                            disabled={isSavingPassword || !newPassword}
+                            className="bg-[#E89F67] hover:bg-[#d68a54] gap-2"
+                        >
+                            {isSavingPassword ? "Alterando..." : "Alterar Senha"}
+                        </Button>
+                    </CardFooter>
+                </Card>
+
+                {/* Notifications & System Card */}
+                <Card className="border-slate-200/60 shadow-sm">
+                    <CardHeader className="bg-slate-50/50">
+                        <div className="flex items-center gap-2">
+                            <div className="p-2 bg-purple-100 rounded-lg">
+                                <Bell className="h-5 w-5 text-purple-600" />
+                            </div>
+                            <div>
+                                <CardTitle className="text-lg">Preferências</CardTitle>
+                                <CardDescription>Configure como você interage com o sistema.</CardDescription>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="pt-6 space-y-6">
+                        <div className="flex items-center justify-between">
                             <div className="space-y-0.5">
-                                <label className="text-sm font-medium">Notificações por Email</label>
-                                <p className="text-xs text-slate-500">Receba atualizações diárias sobre seus alunos.</p>
+                                <label className="text-sm font-semibold">Alertas de Diário</label>
+                                <p className="text-xs text-slate-500">Notificações sobre atualizações das crianças.</p>
                             </div>
                             <Switch checked={emailNotifications} onCheckedChange={setEmailNotifications} />
                         </div>
-                        <div className="flex items-center justify-between rounded-lg border p-4">
+
+                        <div className="flex items-center justify-between">
                             <div className="space-y-0.5">
-                                <label className="text-sm font-medium">Notificações Push</label>
-                                <p className="text-xs text-slate-500">Alertas em tempo real no dispositivo.</p>
+                                <label className="text-sm font-semibold">Comunicados Gerais</label>
+                                <p className="text-xs text-slate-500">Eventos e avisos importantes da escola.</p>
                             </div>
                             <Switch checked={pushNotifications} onCheckedChange={setPushNotifications} />
                         </div>
-                    </CardContent>
-                </Card>
 
-                <Card>
-                    <CardHeader>
-                        <div className="flex items-center gap-2">
-                            <Moon className="h-5 w-5 text-slate-500" />
-                            <CardTitle>Aparência</CardTitle>
-                        </div>
-                        <CardDescription>Personalize a interface do sistema.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="flex items-center justify-between rounded-lg border p-4">
-                            <div className="space-y-0.5">
-                                <label className="text-sm font-medium">Modo Escuro</label>
-                                <p className="text-xs text-slate-500">Alternar entre tema claro e escuro.</p>
+                        <div className="border-t pt-6 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <div className="p-1.5 bg-slate-100 rounded">
+                                    <Moon className="h-4 w-4 text-slate-600" />
+                                </div>
+                                <label className="text-sm font-semibold">Modo Noturno</label>
                             </div>
                             <Switch checked={darkMode} onCheckedChange={setDarkMode} />
                         </div>
@@ -94,3 +266,4 @@ export default function SettingsPage() {
         </div>
     );
 }
+

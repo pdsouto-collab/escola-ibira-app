@@ -15,7 +15,8 @@ import {
     FinalProductType, mockFinalProductTypes,
     Assessment, mockAssessments, Menu, mockMenus,
     PortfolioEntry, mockPortfolio,
-    Invoice, mockInvoices
+    Invoice, mockInvoices,
+    AppNotification, mockNotifications
 } from "@/lib/data";
 
 interface AppState {
@@ -39,6 +40,7 @@ interface AppState {
     menus: Menu[];
     portfolioEntries: PortfolioEntry[];
     invoices: Invoice[];
+    notifications: AppNotification[];
 }
 
 interface AppContextType extends AppState {
@@ -72,7 +74,8 @@ interface AppContextType extends AppState {
     replaceMosaicData: (newData: MosaicNode[]) => void;
 
     resetData: () => void;
-    setCurrentUser: (user: User) => void;
+    setCurrentUser: (user: User | null) => void;
+    updateUserInfo: (id: string, updates: Partial<User>) => void;
 
     // User Management
     addUser: (user: User) => void;
@@ -124,6 +127,11 @@ interface AppContextType extends AppState {
     addInvoice: (invoice: Invoice) => void;
     updateInvoice: (id: string, updates: Partial<Invoice>) => void;
     removeInvoice: (id: string) => void;
+
+    // Notifications
+    addNotification: (notification: AppNotification) => void;
+    markNotificationAsRead: (id: string) => void;
+    markAllNotificationsAsRead: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -226,7 +234,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [mosaicData, setMosaicData] = useState<MosaicNode[]>(mockRecursiveDataSkills);
     const [users, setUsers] = useState<User[]>(mockUsers);
-    const [currentUser, setCurrentUser] = useState<User | null>(mockUsers[1]); // Default to Teacher (Cláudia) for dev
+    const [currentUser, _setCurrentUser] = useState<User | null>(mockUsers[1]); // Default to Teacher (Cláudia) for dev
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>(mockLibraryItems);
     const [bnccProgress, setBnccProgress] = useState<Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>>({});
     const [skillsTree, setSkillsTree] = useState<KnowledgeNode[]>(mockSkillsTree);
@@ -236,6 +244,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [menus, setMenus] = useState<Menu[]>(mockMenus);
     const [portfolioEntries, setPortfolioEntries] = useState<PortfolioEntry[]>(mockPortfolio);
     const [invoices, setInvoices] = useState<Invoice[]>(mockInvoices);
+    const [notifications, setNotifications] = useState<AppNotification[]>(mockNotifications);
 
     const [isLoaded, setIsLoaded] = useState(false);
 
@@ -295,6 +304,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             load("portfolioEntries", setPortfolioEntries, mockPortfolio);
             load("assessments", setAssessments, mockAssessments);
             load("invoices", setInvoices, mockInvoices);
+            load("notifications", setNotifications, mockNotifications);
+
+            const savedCurrentUser = localStorage.getItem("app_currentUser");
+            if (savedCurrentUser) {
+                try {
+                    _setCurrentUser(JSON.parse(savedCurrentUser));
+                } catch (e) {
+                    console.error("Failed to parse currentUser from localStorage", e);
+                    _setCurrentUser(mockUsers[1]);
+                }
+            } else {
+                _setCurrentUser(mockUsers[1]);
+            }
         }
 
         setIsLoaded(true);
@@ -321,10 +343,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem("app_portfolioEntries", JSON.stringify(portfolioEntries));
         localStorage.setItem("app_assessments", JSON.stringify(assessments));
         localStorage.setItem("app_invoices", JSON.stringify(invoices));
-    }, [students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, mosaicData, libraryItems, bnccProgress, skillsTree, contentsTree, menus, portfolioEntries, assessments, invoices, isLoaded]);
+        localStorage.setItem("app_notifications", JSON.stringify(notifications));
+    }, [students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, mosaicData, libraryItems, bnccProgress, skillsTree, contentsTree, menus, portfolioEntries, assessments, invoices, notifications, isLoaded]);
 
     // Actions
-    const addStudent = (student: Student) => setStudents(prev => [...prev, student]);
+    const addStudent = (student: Student) => {
+        setStudents(prev => [...prev, student]);
+        addNotification({
+            id: Math.random().toString(36).substr(2, 9),
+            userId: currentUser?.id || "u2",
+            title: "Novo Aluno Matatriculado",
+            message: `${student.name} foi adicionado à turma.`,
+            type: "info",
+            isRead: false,
+            createdAt: new Date().toISOString()
+        });
+    };
     const updateStudent = (id: string, updates: Partial<Student>) => {
         setStudents(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
     };
@@ -368,6 +402,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const addProject = (project: Project) => setProjects(prev => [...prev, project]);
     const updateProject = (id: string, updates: Partial<Project>) => {
         setProjects(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+        if (updates.status === "completed") {
+            const project = projects.find(p => p.id === id);
+            addNotification({
+                id: Math.random().toString(36).substr(2, 9),
+                userId: currentUser?.id || "u2",
+                title: "Projeto Finalizado",
+                message: `O projeto "${project?.title}" foi concluído com sucesso.`,
+                type: "success",
+                isRead: false,
+                createdAt: new Date().toISOString()
+            });
+        }
     };
     const removeProject = (id: string) => {
         // 1. Identify skills in this project
@@ -598,6 +644,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         else setContentsTree(updater);
     };
 
+    const setCurrentUser = (user: User | null) => {
+        _setCurrentUser(user);
+        if (user) {
+            localStorage.setItem("app_currentUser", JSON.stringify(user));
+        } else {
+            localStorage.removeItem("app_currentUser");
+        }
+    };
+
+    const updateUserInfo = (id: string, updates: Partial<User>) => {
+        setUsers(prev => prev.map(u => u.id === id ? { ...u, ...updates } : u));
+        if (currentUser?.id === id) {
+            const updatedUser = { ...currentUser, ...updates };
+            _setCurrentUser(updatedUser);
+            localStorage.setItem("app_currentUser", JSON.stringify(updatedUser));
+        }
+    };
+
+    const addNotification = (n: AppNotification) => setNotifications(prev => [n, ...prev]);
+    const markNotificationAsRead = (id: string) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+    const markAllNotificationsAsRead = () => setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+
     return (
         <AppContext.Provider value={{
             students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, currentUser,
@@ -605,7 +673,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             addMuralEvent, updateMuralEvent, removeMuralEvent, addCommentToEvent,
             updateSchedule, addProject, updateProject, removeProject, sendMessage, resetData,
             mosaicData, updateMosaicNode, replaceMosaicData,
-            users, setCurrentUser,
+            users, setCurrentUser, updateUserInfo,
             addUser: (user) => setUsers(prev => [...prev, user]),
             updateUser: (id, updates) => setUsers(prev => prev.map(u => u.id === id ? { ...u, ...updates } : u)),
             removeUser: (id) => setUsers(prev => prev.filter(u => u.id !== id)),
@@ -640,6 +708,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             addInvoice: (inv) => setInvoices(prev => [...prev, inv]),
             updateInvoice: (id, updates) => setInvoices(prev => prev.map(inv => inv.id === id ? { ...inv, ...updates } : inv)),
             removeInvoice: (id) => setInvoices(prev => prev.filter(inv => inv.id !== id)),
+
+            notifications,
+            addNotification: (n) => setNotifications(prev => [n, ...prev]),
+            markNotificationAsRead: (id) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n)),
+            markAllNotificationsAsRead: () => setNotifications(prev => prev.map(n => ({ ...n, isRead: true }))),
         }}>
             {children}
         </AppContext.Provider>
