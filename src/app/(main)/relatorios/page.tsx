@@ -137,9 +137,16 @@ export default function ReportsPage() {
             </div>
 
             <Tabs defaultValue="milestones" className="w-full">
-                <TabsList className="grid w-full mb-8 grid-cols-2">
-                    <TabsTrigger value="milestones">Relatório de Desenvolvimento</TabsTrigger>
-                    <TabsTrigger value="portfolio">Galeria de Vivências</TabsTrigger>
+                <TabsList className="flex w-full mb-8 bg-slate-100/50 p-1.5 rounded-xl border">
+                    <TabsTrigger value="milestones" className="flex-1 py-2.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-semibold">
+                        Relatório de Desenvolvimento
+                    </TabsTrigger>
+                    <TabsTrigger value="portfolio" className="flex-1 py-2.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-semibold">
+                        Galeria de Vivências
+                    </TabsTrigger>
+                    <TabsTrigger value="daily" className="flex-1 py-2.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-semibold">
+                        Diário de Bordo
+                    </TabsTrigger>
                 </TabsList>
                 <TabsContent value="milestones" className="animate-in fade-in-50 duration-500 slide-in-from-bottom-2">
                     <div className="mb-4 space-y-16">
@@ -191,6 +198,18 @@ export default function ReportsPage() {
                         <p className="text-slate-500 mb-6 font-medium">Registros fotográficos de atividades esporádicas que marcam o ano escolar.</p>
                         {selectedStudent ? (
                             <PortfolioReport studentId={effectiveStudentId} onEdit={currentUser?.role !== "guardian" ? handleEditPortfolio : undefined} />
+                        ) : (
+                            <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
+                        )}
+                    </div>
+                </TabsContent>
+
+                <TabsContent value="daily" className="animate-in fade-in-50 duration-500 slide-in-from-bottom-2">
+                    <div className="mb-4">
+                        <h2 className="text-xl font-bold text-slate-800 mb-2">Diário de Bordo</h2>
+                        <p className="text-slate-500 mb-6">Acompanhe a rotina diária, alimentação, sono e humor do aluno.</p>
+                        {selectedStudent ? (
+                            <DailyLogReport studentId={effectiveStudentId} onEdit={currentUser?.role !== "guardian" ? handleEditDailyLog : undefined} />
                         ) : (
                             <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
                         )}

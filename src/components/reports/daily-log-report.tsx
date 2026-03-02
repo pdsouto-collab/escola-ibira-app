@@ -35,7 +35,7 @@ export function DailyLogReport({ studentId, onEdit }: DailyLogReportProps) {
     };
 
     return (
-        <div className="space-y-6 max-w-3xl mx-auto">
+        <div className="space-y-6 w-full">
             {logs.map(log => (
                 <Card key={log.id} className="border-l-4 border-l-primary">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -107,10 +107,25 @@ export function DailyLogReport({ studentId, onEdit }: DailyLogReportProps) {
                             </div>
                         )}
 
-                        {/* Notes */}
-                        {log.notes && (
-                            <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100 text-yellow-900 italic">
-                                &quot;{log.notes}&quot;
+                        {/* Notes and Missing Items */}
+                        {(log.notes || log.missingItems) && (
+                            <div className="space-y-4">
+                                {log.notes && (
+                                    <div className="space-y-1">
+                                        <h4 className="text-xs font-bold text-slate-500 uppercase">1. Observação do Dia</h4>
+                                        <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100 text-yellow-900 italic">
+                                            &quot;{log.notes}&quot;
+                                        </div>
+                                    </div>
+                                )}
+                                {log.missingItems && (
+                                    <div className="space-y-1">
+                                        <h4 className="text-xs font-bold text-slate-500 uppercase">2. Itens Faltantes</h4>
+                                        <div className="bg-red-50 p-4 rounded-lg border border-red-100 text-red-900 italic">
+                                            &quot;{log.missingItems}&quot;
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </CardContent>

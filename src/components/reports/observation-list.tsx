@@ -103,7 +103,7 @@ export function ObservationList({ studentId }: { studentId: string }) {
     }
 
     return (
-        <div className="space-y-4 max-w-4xl">
+        <div className="space-y-4 w-full">
             {relevantAssessments.map((assessment) => {
                 const nodeInfo = resolveNodeInfo(assessment.knowledgeNodeId || "", skillsTree, contentsTree, libraryItems);
                 return (

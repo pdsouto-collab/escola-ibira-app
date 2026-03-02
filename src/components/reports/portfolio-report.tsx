@@ -24,7 +24,7 @@ export function PortfolioReport({ studentId, onEdit }: PortfolioReportProps) {
     }
 
     return (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-2">
             {entries.map((entry) => (
                 <Card key={entry.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                     <div className="aspect-video w-full bg-slate-200 relative overflow-hidden">

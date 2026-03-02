@@ -116,11 +116,11 @@ export function MilestoneReport({ studentId }: MilestoneReportProps) {
 
     return (
         <div className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-2">
                 {groups.map((group, idx) => (
                     <Card key={group.name} className="overflow-hidden border-2 flex flex-col h-full shadow-sm" style={{ borderColor: getCardColor(idx) }}>
                         <CardHeader className="bg-slate-50/50 pb-3 border-b border-slate-100">
-                            <CardTitle className="text-lg font-bold flex justify-between items-center text-slate-800">
+                            <CardTitle className="text-xl font-bold flex justify-between items-center text-slate-800">
                                 <span className="line-clamp-1">{group.name}</span>
                                 <span className="text-sm font-semibold text-slate-500 bg-white px-2 py-0.5 rounded-full border shadow-sm">{group.progress}%</span>
                             </CardTitle>
@@ -131,7 +131,7 @@ export function MilestoneReport({ studentId }: MilestoneReportProps) {
                                 indicatorColor={getCardColor(idx)}
                             />
                         </CardHeader>
-                        <CardContent className="pt-4 space-y-4 flex-1 overflow-y-auto max-h-[400px] scrollbar-thin">
+                        <CardContent className="pt-4 space-y-4 flex-1">
                             {group.nodes.map((node) => {
                                 const assessment = studentAssessments.find(a => a.knowledgeNodeId === node.id);
                                 const rating = assessment?.rating;
