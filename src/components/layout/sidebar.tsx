@@ -27,17 +27,9 @@ import { SchoolLogo } from "@/components/ui/school-logo";
 
 import { BookOpen } from "lucide-react";
 
-const TrilhaIcon = ({ className }: { className?: string }) => (
-    <img
-        src="/escola-ibira-app/images/icone_trilha_crianca_transparent.png"
-        alt="Trilha Ibirá"
-        className={cn("object-contain", className)}
-    />
-);
-
 const navigation = [
     { name: "Início", href: "/", icon: LayoutDashboard },
-    { name: "Trilha Ibirá", href: "/mosaico", icon: TrilhaIcon, roles: ["director", "admin", "teacher"] },
+    { name: "Trilha Ibirá", href: "/mosaico", icon: Aperture, roles: ["director", "admin", "teacher"] },
     { name: "Atividades Pendentes", href: "/pendencias", icon: CheckCircle2, roles: ["director", "admin", "teacher"] },
     { name: "Mural de Eventos", href: "/mural", icon: PartyPopper },
     { name: "Rotinas", href: "/agenda", icon: CalendarDays },
