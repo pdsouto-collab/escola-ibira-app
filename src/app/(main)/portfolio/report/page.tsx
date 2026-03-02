@@ -178,7 +178,7 @@ function ReportCard({
     const allPhotos = relevantAssessments.flatMap(a => a.attachments.filter(att => att.type === "photo"));
 
     return (
-        <div className="report-card bg-white max-w-4xl mx-auto shadow-xl rounded-2xl overflow-hidden print:shadow-none print:rounded-none print:max-w-none">
+        <div className="report-card bg-white max-w-6xl mx-auto shadow-2xl rounded-3xl overflow-hidden print:shadow-none print:rounded-none print:max-w-none">
 
             {/* ── HEADER BAND ───────────────────────────────────────── */}
             <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-green-700 px-10 py-8 text-white">
@@ -455,9 +455,20 @@ function ReportCardContent() {
             {/* Print styles */}
             <style>{`
                 @media print {
+                    @page {
+                        size: landscape;
+                        margin: 0;
+                    }
                     .no-print { display: none !important; }
-                    body { background: white; }
-                    .report-card { box-shadow: none; }
+                    body { background: white; margin: 0; padding: 0; }
+                    .report-card { 
+                        box-shadow: none; 
+                        width: 100% !important;
+                        max-width: none !important;
+                        margin: 0 !important;
+                        border-radius: 0 !important;
+                    }
+                    .no-print-padding { padding: 0 !important; }
                 }
             `}</style>
 
@@ -465,7 +476,7 @@ function ReportCardContent() {
             <div className="no-print bg-white border-b px-6 py-3 flex items-center gap-3 sticky top-0 z-10 shadow-sm">
                 <Link href="/portfolio">
                     <Button variant="ghost" size="sm" className="gap-2">
-                        <ChevronLeft className="w-4 h-4" /> Voltar ao Portf&#xF3;lio
+                        <ChevronLeft className="w-4 h-4" /> Voltar ao Portfólio
                     </Button>
                 </Link>
                 <div className="flex-1" />
@@ -478,7 +489,7 @@ function ReportCardContent() {
             </div>
 
             {/* Report content */}
-            <div className="min-h-screen bg-slate-100 py-8 px-4 print:p-0 print:bg-white no-print-padding">
+            <div className="min-h-screen bg-slate-100 py-12 px-6 print:p-0 print:bg-white no-print-padding">
                 <ReportCard studentId={studentId} projectId={projectId} />
             </div>
         </>
