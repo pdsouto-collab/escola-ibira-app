@@ -443,8 +443,10 @@ export function RadialMatrix({
                         dominantBaseline="middle"
                         className="text-xs font-bold tracking-widest fill-slate-700 leading-tight"
                     >
-                        <tspan x={center} dy="-0.5em">{drilledNodeId && data.length > 0 ? (data[0].name.length > 15 ? data[0].name.slice(0, 15) + '...' : data[0].name) : "TRILHA"}</tspan>
-                        <tspan x={center} dy="1.5em">{drilledNodeId ? "(Voltar)" : "CIRCULAR"}</tspan>
+                        <tspan x={center} dy={drilledNodeId ? "-0.5em" : "0"}>{drilledNodeId && data.length > 0 ? (data[0].name.length > 15 ? data[0].name.slice(0, 15) + '...' : data[0].name) : "TRILHA"}</tspan>
+                        {drilledNodeId && (
+                            <tspan x={center} dy="1.5em">(Voltar)</tspan>
+                        )}
                     </text>
                 )}
 

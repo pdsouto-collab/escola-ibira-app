@@ -62,7 +62,7 @@ export function MosaicDetailPanel({ node, treeType, onAvaliacao }: MosaicDetailP
                 </div>
                 <h3 className="text-lg font-bold text-slate-700 mb-2">Explore a Trilha</h3>
                 <p className="text-sm text-slate-500">
-                    Selecione uma parte da trilha circular para visualizar detalhes curriculares e de desenvolvimento.
+                    Selecione uma parte da trilha para visualizar detalhes curriculares e de desenvolvimento.
                 </p>
             </div>
         );
