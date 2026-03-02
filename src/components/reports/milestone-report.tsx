@@ -1,19 +1,71 @@
 import { useAppStore } from "@/lib/store";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle2, Circle } from "lucide-react";
+import { CheckCircle2, Circle, AlertCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface MilestoneReportProps {
     studentId: string;
 }
 
+const labels = ["Muda", "Broto", "Jovem", "Adulta", "Com frutos"];
+
+// Simple tree icon components for the report
+const TreeIcon = ({ rating, size = "sm" }: { rating: number, size?: "sm" | "md" }) => {
+    const active = true;
+    const sizeClass = size === "sm" ? "w-6 h-6" : "w-8 h-8";
+
+    // Return SVG based on rating 1-5
+    switch (rating) {
+        case 1: return (
+            <svg viewBox="0 0 60 80" className={sizeClass} fill="none">
+                <rect x="28" y="44" width="4" height="30" rx="2" fill="#92400e" />
+                <path d="M29 48 Q18 38 22 28 Q30 36 29 48Z" fill="#16a34a" />
+                <path d="M31 48 Q42 38 38 28 Q30 36 31 48Z" fill="#22c55e" />
+            </svg>
+        );
+        case 2: return (
+            <svg viewBox="0 0 60 80" className={sizeClass} fill="none">
+                <rect x="27.5" y="38" width="5" height="36" rx="2.5" fill="#78350f" />
+                <ellipse cx="30" cy="28" rx="10" ry="13" fill="#16a34a" />
+                <path d="M27 40 Q10 30 14 16 Q26 26 27 40Z" fill="#22c55e" />
+                <path d="M33 40 Q50 30 46 16 Q34 26 33 40Z" fill="#15803d" />
+            </svg>
+        );
+        case 3: return (
+            <svg viewBox="0 0 60 80" className={sizeClass} fill="none">
+                <path d="M24 74 Q26 62 27 50 L33 50 Q34 62 36 74Z" fill="#78350f" />
+                <ellipse cx="30" cy="36" rx="18" ry="20" fill="#16a34a" />
+                <ellipse cx="26" cy="28" rx="10" ry="12" fill="#22c55e" opacity="0.7" />
+            </svg>
+        );
+        case 4: return (
+            <svg viewBox="0 0 60 80" className={sizeClass} fill="none">
+                <path d="M22 74 Q24 56 26 46 L34 46 Q36 56 38 74Z" fill="#78350f" />
+                <ellipse cx="30" cy="30" rx="22" ry="22" fill="#15803d" />
+                <ellipse cx="25" cy="22" rx="13" ry="14" fill="#22c55e" opacity="0.7" />
+            </svg>
+        );
+        case 5: return (
+            <svg viewBox="0 0 60 80" className={sizeClass} fill="none">
+                <path d="M22 74 Q24 56 26 44 L34 44 Q36 56 38 74Z" fill="#78350f" />
+                <ellipse cx="30" cy="28" rx="24" ry="23" fill="#15803d" />
+                <circle cx="19" cy="34" r="4.5" fill="#dc2626" />
+                <circle cx="30" cy="12" r="4" fill="#dc2626" />
+                <circle cx="41" cy="32" r="4.5" fill="#dc2626" />
+            </svg>
+        );
+        default: return <Circle className="w-5 h-5 text-slate-300" />;
+    }
+};
+
 const getAllEvaluatableNodes = (nodes: any[], parentName?: string): any[] => {
     const results: any[] = [];
     for (const node of nodes) {
-        // If node is 'mesclado' (L2), it becomes the 'subject' for its descendants
         const currentSubject = node.level === "mesclado" ? node.name : parentName;
 
-        if (node.level === "micro") {
+        // Count both micro (skills) and atomico (evidence) for the cards
+        if (node.level === "micro" || node.level === "atomico") {
             results.push({ ...node, subject: currentSubject || "Outros" });
         }
 
@@ -32,11 +84,10 @@ export function MilestoneReport({ studentId }: MilestoneReportProps) {
 
     const studentAssessments = assessments.filter(a => a.studentId === studentId || (a.scope === "class" && a.classId === student.classId));
 
-    // Group all evaluatable nodes by subject (Macro Axis)
-    const allProposedNodes = getAllEvaluatableNodes([...skillsTree, ...contentsTree]);
+    const allNodes = getAllEvaluatableNodes([...skillsTree, ...contentsTree]);
 
     const groupsMap = new Map<string, any[]>();
-    allProposedNodes.forEach(node => {
+    allNodes.forEach(node => {
         const subject = node.subject || "Outros";
         if (!groupsMap.has(subject)) groupsMap.set(subject, []);
         groupsMap.get(subject)?.push(node);
@@ -48,7 +99,7 @@ export function MilestoneReport({ studentId }: MilestoneReportProps) {
             const assessment = studentAssessments.find(a => a.knowledgeNodeId === n.id);
             return assessment && (assessment.rating ?? 0) >= 3;
         });
-        const progress = Math.round((achievedNodes.length / nodes.length) * 100);
+        const progress = nodes.length > 0 ? Math.round((achievedNodes.length / nodes.length) * 100) : 0;
 
         return {
             name,
@@ -58,7 +109,6 @@ export function MilestoneReport({ studentId }: MilestoneReportProps) {
         };
     });
 
-    // Helper for card colors based on status/index
     const getCardColor = (index: number) => {
         const colors = ["#f97316", "#3b82f6", "#10b981", "#8b5cf6", "#ec4899", "#ef4444"];
         return colors[index % colors.length];
@@ -68,7 +118,7 @@ export function MilestoneReport({ studentId }: MilestoneReportProps) {
         <div className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {groups.map((group, idx) => (
-                    <Card key={group.name} className="overflow-hidden border-2 flex flex-col h-full shadow-sm hover:shadow-md transition-shadow" style={{ borderColor: getCardColor(idx) }}>
+                    <Card key={group.name} className="overflow-hidden border-2 flex flex-col h-full shadow-sm" style={{ borderColor: getCardColor(idx) }}>
                         <CardHeader className="bg-slate-50/50 pb-3 border-b border-slate-100">
                             <CardTitle className="text-lg font-bold flex justify-between items-center text-slate-800">
                                 <span className="line-clamp-1">{group.name}</span>
@@ -77,25 +127,46 @@ export function MilestoneReport({ studentId }: MilestoneReportProps) {
                             <Progress
                                 value={group.progress}
                                 className="h-2.5 mt-2 bg-slate-200"
-                                // @ts-ignore - dynamic color
+                                // @ts-ignore
                                 indicatorColor={getCardColor(idx)}
                             />
                         </CardHeader>
-                        <CardContent className="pt-4 space-y-3 flex-1 overflow-y-auto max-h-[300px] scrollbar-thin">
+                        <CardContent className="pt-4 space-y-4 flex-1 overflow-y-auto max-h-[400px] scrollbar-thin">
                             {group.nodes.map((node) => {
                                 const assessment = studentAssessments.find(a => a.knowledgeNodeId === node.id);
-                                const isAchieved = assessment && (assessment.rating ?? 0) >= 3;
+                                const rating = assessment?.rating;
+                                const isAchieved = (rating ?? 0) >= 3;
 
                                 return (
-                                    <div key={node.id} className="flex items-start gap-3 text-sm group">
-                                        {isAchieved ? (
-                                            <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-0.5 shrink-0" fill="#ecfdf5" />
-                                        ) : (
-                                            <Circle className="w-5 h-5 text-slate-300 mt-0.5 shrink-0 group-hover:text-slate-400 transition-colors" />
-                                        )}
-                                        <span className={isAchieved ? "text-slate-700 font-bold" : "text-slate-500 font-medium"}>
-                                            {node.name}
-                                        </span>
+                                    <div key={node.id} className={cn(
+                                        "p-3 rounded-lg border transition-all",
+                                        rating ? "bg-white border-slate-200 shadow-sm" : "bg-slate-50 border-transparent text-slate-400"
+                                    )}>
+                                        <div className="flex items-start gap-3">
+                                            <div className="shrink-0 mt-0.5">
+                                                {rating ? (
+                                                    <div className="flex flex-col items-center">
+                                                        <TreeIcon rating={rating} />
+                                                        <span className="text-[10px] font-bold text-slate-500 mt-1">{rating}/5</span>
+                                                    </div>
+                                                ) : (
+                                                    <Circle className="w-5 h-5 text-slate-300" />
+                                                )}
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className={cn(
+                                                    "text-sm leading-tight mb-1",
+                                                    rating ? "text-slate-800 font-bold" : "text-slate-400 font-medium"
+                                                )}>
+                                                    {node.name}
+                                                </p>
+                                                {rating && (
+                                                    <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">
+                                                        {labels[rating - 1]}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
                                 );
                             })}

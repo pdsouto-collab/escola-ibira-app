@@ -60,11 +60,12 @@ const resolveNodeInfo = (id: string, skillsTree: any[], contentsTree: any[], lib
 const getAllEvaluatableNodes = (nodes: any[], parentName?: string): any[] => {
     const results: any[] = [];
     for (const node of nodes) {
-        // If node is 'mesclado' (L2), it becomes the 'subject' for its descendants
-        const currentSubject = node.level === "mesclado" ? node.name : parentName;
+        // If node is 'mesclado' (L2) or 'macro' (L1), it can define the 'subject'
+        // We prefer 'mesclado' for grouping as per user preference (Ciência, Geografia, etc)
+        const currentSubject = node.level === "mesclado" ? node.name : (node.level === "macro" ? node.name : parentName);
 
-        if (node.level === "micro") {
-            results.push({ ...node, subject: currentSubject || "Outros" });
+        if (node.level === "micro" || node.level === "atomico") {
+            results.push({ ...node, subject: (node.level === "atomico" ? parentName : currentSubject) || "Outros" });
         }
 
         if (node.children) {

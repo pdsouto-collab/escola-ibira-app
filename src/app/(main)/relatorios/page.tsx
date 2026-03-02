@@ -135,57 +135,40 @@ export default function ReportsPage() {
                 </div>
             </div>
 
-            <Tabs defaultValue={showMilestones ? "milestones" : "daily"} className="w-full">
-                <TabsList className={cn("grid w-full mb-8", showMilestones && showPortfolio ? "grid-cols-3" : "grid-cols-1")}>
-                    {showMilestones && <TabsTrigger value="milestones">Marcos de Desenvolvimento</TabsTrigger>}
-                    <TabsTrigger value="daily">Diário de Bordo</TabsTrigger>
-                    {showPortfolio && <TabsTrigger value="portfolio">Portfólio de Aprendizagem</TabsTrigger>}
+            <Tabs defaultValue="milestones" className="w-full">
+                <TabsList className="grid w-full mb-8 grid-cols-2">
+                    <TabsTrigger value="milestones">Relatório de Desenvolvimento</TabsTrigger>
+                    <TabsTrigger value="portfolio">Galeria de Vivências</TabsTrigger>
                 </TabsList>
 
-                {showMilestones && (
-                    <TabsContent value="milestones" className="animate-in fade-in-50 duration-500 slide-in-from-bottom-2">
-                        <div className="mb-4 space-y-8">
-                            <div>
-                                <h2 className="text-xl font-semibold text-slate-700 mb-2">Progresso por Áreas da BNCC</h2>
-                                <p className="text-slate-500 mb-6">Visualização do desenvolvimento da criança em relação aos conteúdos e habilidades.</p>
-                                {selectedStudent ? (
-                                    <div className="space-y-8">
-                                        <SkillsChart studentId={effectiveStudentId} />
-                                        <MilestoneReport studentId={effectiveStudentId} />
-                                    </div>
-                                ) : (
-                                    <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
-                                )}
-                            </div>
+                <TabsContent value="milestones" className="animate-in fade-in-50 duration-500 slide-in-from-bottom-2">
+                    <div className="mb-4 space-y-12">
+                        <div>
+                            <h2 className="text-xl font-bold text-slate-800 mb-2">Progresso por Áreas da BNCC</h2>
+                            <p className="text-slate-500 mb-6">Visualização do desenvolvimento do aluno em relação aos conteúdos e habilidades trabalhados em projetos.</p>
+                            {selectedStudent ? (
+                                <div className="space-y-12">
+                                    <SkillsChart studentId={effectiveStudentId} />
+                                    <MilestoneReport studentId={effectiveStudentId} />
+                                </div>
+                            ) : (
+                                <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
+                            )}
                         </div>
-                    </TabsContent>
-                )}
+                    </div>
+                </TabsContent>
 
-                <TabsContent value="daily" className="animate-in fade-in-50 duration-500 slide-in-from-bottom-2">
+                <TabsContent value="portfolio" className="animate-in fade-in-50 duration-500 slide-in-from-bottom-2">
                     <div className="mb-4">
-                        <h2 className="text-xl font-semibold text-slate-700 mb-2">Rotina e Atividades do Dia</h2>
-                        <p className="text-slate-500 mb-6">Resumo diário da alimentação, sono e experiências vivenciadas.</p>
+                        <h2 className="text-xl font-bold text-slate-800 mb-2">Galeria de Vivências do Aluno</h2>
+                        <p className="text-slate-500 mb-6 font-medium">Registros fotográficos de atividades esporádicas que marcam o ano escolar.</p>
                         {selectedStudent ? (
-                            <DailyLogReport studentId={effectiveStudentId} onEdit={currentUser?.role !== "guardian" ? handleEditDailyLog : undefined} />
+                            <PortfolioReport studentId={effectiveStudentId} onEdit={currentUser?.role !== "guardian" ? handleEditPortfolio : undefined} />
                         ) : (
                             <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
                         )}
                     </div>
                 </TabsContent>
-
-                {showPortfolio && (
-                    <TabsContent value="portfolio" className="animate-in fade-in-50 duration-500 slide-in-from-bottom-2">
-                        <div className="mb-4">
-                            <h2 className="text-xl font-semibold text-slate-700 mb-2">Galeria de Vivências</h2>
-                            <p className="text-slate-500 mb-6">Registros fotográficos e observações de momentos significativos.</p>
-                            {selectedStudent ? (
-                                <PortfolioReport studentId={effectiveStudentId} onEdit={currentUser?.role !== "guardian" ? handleEditPortfolio : undefined} />
-                            ) : (
-                                <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
-                            )}
-                        </div>
-                    </TabsContent>
-                )}
             </Tabs>
 
             {selectedStudent && (
