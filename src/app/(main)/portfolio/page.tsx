@@ -688,7 +688,7 @@ function StudentView({
                             {photos.length > 0 && (
                                 <div>
                                     <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                        <ImageIcon className="w-4 h-4" /> Galeria de Evidências ({photos.length})
+                                        <ImageIcon className="w-4 h-4" /> Galeria de Vivências ({photos.length})
                                     </h3>
                                     <div className="grid grid-cols-4 gap-2">
                                         {photos.map((p, i) => (
