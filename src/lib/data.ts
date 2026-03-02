@@ -377,6 +377,39 @@ export const mockSchedule: ScheduleItem[] = [
         description: "Momento de repouso.",
         classId: "jardim-i"
     },
+    {
+        id: "7",
+        time: "10:00",
+        endTime: "11:30",
+        title: "Exploração da Horta",
+        type: "project",
+        description: "Observação e cuidado com as hortaliças.",
+        classId: "jardim-i",
+        projectId: "p1",
+        date: "2024-02-15"
+    },
+    {
+        id: "8",
+        time: "10:00",
+        endTime: "11:30",
+        title: "Brincadeiras Matriz Indígena",
+        type: "project",
+        description: "Vivência de jogos tradicionais brasileiros.",
+        classId: "jardim-i",
+        projectId: "p3",
+        date: "2024-02-18"
+    },
+    {
+        id: "9",
+        time: "10:00",
+        endTime: "11:30",
+        title: "Oficina de Medidas",
+        type: "project",
+        description: "Prática de medição com instrumentos diversos.",
+        classId: "jardim-i",
+        projectId: "p3",
+        date: "2024-02-20"
+    }
 ];
 
 export interface SchoolClass {
@@ -945,7 +978,7 @@ export const mockPortfolio: PortfolioEntry[] = [
         date: "2024-02-10",
         title: "Explorando Texturas",
         description: "Atividade sensorial com areia, água e folhas secas. Alice demonstrou muita curiosidade.",
-        imageUrl: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80&w=300&h=200",
+        imageUrl: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80&w=400&h=400",
         tags: ["Natureza", "Sensorial", "Artes"]
     },
     {
@@ -954,11 +987,38 @@ export const mockPortfolio: PortfolioEntry[] = [
         date: "2024-02-05",
         title: "Primeira Letra do Nome",
         description: "Alice identificou a letra 'A' em cartazes pela sala e tentou traçá-la na areia.",
-        imageUrl: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80&w=300&h=200", // Placeholder
+        imageUrl: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80&w=400&h=400",
         tags: ["Linguagem", "Escrita"]
     },
     {
         id: "port-3",
+        studentId: "1",
+        date: "2024-02-15",
+        title: "Exploração da Horta",
+        description: "Observação detalhada das plantas e entendimento do ciclo da água.",
+        imageUrl: "https://images.unsplash.com/photo-1542601906960-daaeac71e9c9?auto=format&fit=crop&q=80&w=400&h=400",
+        tags: ["Ciências", "Horta"]
+    },
+    {
+        id: "port-4",
+        studentId: "1",
+        date: "2024-02-18",
+        title: "Brincadeiras Matriz Indígena",
+        description: "Participação em jogos tradicionais e desenvolvimento de coordenação.",
+        imageUrl: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80&w=400&h=400",
+        tags: ["Ed. Física", "Cultura"]
+    },
+    {
+        id: "port-5",
+        studentId: "1",
+        date: "2024-02-20",
+        title: "Oficina de Medidas",
+        description: "Prática com réguas e fitas métricas para entender dimensões.",
+        imageUrl: "https://images.unsplash.com/photo-1512314889357-e157c22f938d?auto=format&fit=crop&q=80&w=400&h=400",
+        tags: ["Matemática", "Medição"]
+    },
+    {
+        id: "port-6",
         studentId: "2",
         date: "2024-02-11",
         title: "Construção Coletiva",
@@ -1222,18 +1282,20 @@ export const mockAssessments: Assessment[] = [
         id: "as-1",
         createdAt: "2024-02-15T10:00:00Z",
         knowledgeNodeId: "mic-sk-EF03CI04",
+        sessionId: "7",
         scope: "student",
         studentId: "1",
         rating: 5,
         observations: "A Alice demonstrou uma curiosidade incrível durante a observação do canteiro. Ela conseguiu identificar as partes da planta sem ajuda e questionou sobre como a água chega até as folhas.",
         attachments: [
-            { id: "att-1", type: "photo", url: "https://images.unsplash.com/photo-1592424001844-04149e8eb3f3?auto=format&fit=crop&q=80&w=400&h=400", capturedAt: "2024-02-15T10:05:00Z", name: "Exploração da horta" }
+            { id: "att-1", type: "photo", url: "https://images.unsplash.com/photo-1542601906960-daaeac71e9c9?auto=format&fit=crop&q=80&w=400&h=400", capturedAt: "2024-02-15T10:05:00Z", name: "Exploração da horta" }
         ]
     },
     {
         id: "as-2",
         createdAt: "2024-02-18T14:00:00Z",
         knowledgeNodeId: "mic-sk-EF03EF06",
+        sessionId: "8",
         scope: "student",
         studentId: "1",
         rating: 4,
@@ -1246,12 +1308,13 @@ export const mockAssessments: Assessment[] = [
         id: "as-3",
         createdAt: "2024-02-20T09:30:00Z",
         knowledgeNodeId: "mic-sk-EF03MA19",
+        sessionId: "9",
         scope: "student",
         studentId: "1",
         rating: 3,
         observations: "Durante a atividade de medição, a Alice começou a compreender a diferença entre comprimento e largura. Ela ainda precisa de apoio para usar a régua corretamente, mas a noção espacial está evoluindo bem.",
         attachments: [
-            { id: "att-3", type: "photo", url: "https://images.unsplash.com/photo-1549420042-79fc7341fc7a?auto=format&fit=crop&q=80&w=400&h=400", capturedAt: "2024-02-20T10:00:00Z", name: "Medindo objetos" }
+            { id: "att-3", type: "photo", url: "https://images.unsplash.com/photo-1512314889357-e157c22f938d?auto=format&fit=crop&q=80&w=400&h=400", capturedAt: "2024-02-20T10:00:00Z", name: "Medindo objetos" }
         ]
     },
     {

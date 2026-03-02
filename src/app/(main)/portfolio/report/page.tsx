@@ -141,7 +141,7 @@ function ReportCard({
     studentId: string;
     projectId?: string | null;
 }) {
-    const { projects, students, classes, assessments, schedule, skillsTree, contentsTree, libraryItems, dailyLogs } = useAppStore();
+    const { projects, students, classes, assessments, schedule, skillsTree, contentsTree, libraryItems, dailyLogs, portfolioEntries } = useAppStore();
 
     const student = students.find(s => s.id === studentId);
     if (!student) {
@@ -174,8 +174,8 @@ function ReportCard({
 
     const today = new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
 
-    // Photos across all assessments
-    const allPhotos = relevantAssessments.flatMap(a => a.attachments.filter(att => att.type === "photo"));
+    // Student Portfolio Entries (Galeria de Vivências)
+    const studentGallery = portfolioEntries.filter((e: any) => e.studentId === studentId);
 
     return (
         <div className="report-card bg-white max-w-6xl mx-auto shadow-2xl rounded-3xl overflow-hidden print:shadow-none print:rounded-none print:max-w-none">
@@ -226,25 +226,26 @@ function ReportCard({
 
             <div className="px-10 py-12 space-y-16">
                 {/* ── PHOTO GALLERY (Galeria de Vivências) ────────────────── */}
-                {allPhotos.length > 0 && (
+                {studentGallery.length > 0 && (
                     <section>
                         <div className="flex items-center gap-3 mb-8">
                             <div className="w-1.5 h-8 bg-emerald-500 rounded-full" />
                             <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Galeria de Vivências</h2>
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                            {allPhotos.map((photo, i) => (
-                                <div key={i} className="group relative aspect-square overflow-hidden rounded-3xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                            {studentGallery.map((vivencia: any) => (
+                                <div key={vivencia.id} className="group relative aspect-square overflow-hidden rounded-3xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300">
                                     <img
-                                        src={photo.url}
-                                        alt={photo.name || `Evidência ${i + 1}`}
+                                        src={vivencia.imageUrl || "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80&w=400&h=400"}
+                                        alt={vivencia.title}
                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                     />
-                                    {photo.name && (
-                                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4">
-                                            <p className="text-white text-xs font-semibold line-clamp-1">{photo.name}</p>
-                                        </div>
-                                    )}
+                                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 opacity-100">
+                                        <p className="text-white text-[10px] font-black uppercase tracking-widest mb-1">
+                                            {vivencia.date.split("-").reverse().join("/")}
+                                        </p>
+                                        <p className="text-white text-xs font-bold line-clamp-2">{vivencia.title}</p>
+                                    </div>
                                 </div>
                             ))}
                         </div>
