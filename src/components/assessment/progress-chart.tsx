@@ -114,12 +114,6 @@ export function ProgressChart({ data }: ProgressChartProps) {
                     />
                 </BarChart>
             </ResponsiveContainer>
-            <div className="mt-4 px-6 flex justify-center">
-                <p className="text-[11px] text-slate-400 flex items-start gap-2 max-w-2xl text-center leading-relaxed">
-                    <span className="w-3.5 h-3.5 rounded-full border border-slate-300 flex items-center justify-center shrink-0 mt-0.5 text-[8px] font-bold text-slate-400">i</span>
-                    Nota: "Proposto" indica habilidades base da BNCC e Competências. "Desenvolvido" indica habilidades com avaliação positiva.
-                </p>
-            </div>
         </div>
     );
 }
