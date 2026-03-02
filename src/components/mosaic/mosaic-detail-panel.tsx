@@ -15,16 +15,27 @@ interface MosaicDetailPanelProps {
 
 const LEVEL_LABELS = {
     skill: {
-        macro: "Eixo",
-        mesclado: "Competência",
-        micro: "Habilidade",
-        atomico: "Habilidade Específica"
+        macro: "Eixo do Saber",
+        mesclado: "Componente Curricular",
+        micro: "Habilidade BNCC",
+        atomico: "Evidência da Habilidade"
     },
     content: {
-        macro: "Área do Saber",
+        macro: "Eixo Comportamental/Cognitivo",
         mesclado: "Tópico",
-        micro: "Conteúdo",
-        atomico: "Evidência de Conteúdo"
+        micro: "Competência",
+        atomico: "Evidência de Competência"
+    }
+};
+
+const PLURAL_LABELS = {
+    skill: {
+        micro: "Habilidades BNCC",
+        atomico: "Evidências da Habilidade"
+    },
+    content: {
+        micro: "Competências",
+        atomico: "Evidências de Competência"
     }
 };
 
@@ -66,10 +77,12 @@ export function MosaicDetailPanel({ node, treeType, onAvaliacao }: MosaicDetailP
     let childrenToShow: KnowledgeNode[] = [];
 
     if (node.level === "macro" || node.level === "mesclado") {
-        childListLabel = LEVEL_LABELS[treeType]["micro"] + "s";
+        // @ts-ignore
+        childListLabel = PLURAL_LABELS[treeType]["micro"] || (LEVEL_LABELS[treeType]["micro"] + "s");
         childrenToShow = getLeavesUnderNode(node, "micro");
     } else if (node.level === "micro") {
-        childListLabel = LEVEL_LABELS[treeType]["atomico"] + "s";
+        // @ts-ignore
+        childListLabel = PLURAL_LABELS[treeType]["atomico"] || (LEVEL_LABELS[treeType]["atomico"] + "s");
         childrenToShow = getLeavesUnderNode(node, "atomico");
     }
 
