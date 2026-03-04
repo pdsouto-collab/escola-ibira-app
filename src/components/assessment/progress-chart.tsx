@@ -83,8 +83,8 @@ export function ProgressChart({ data }: ProgressChartProps) {
                         axisLine={false}
                         tickLine={false}
                         tick={{ fill: '#475569', fontSize: 11, fontWeight: 600 }}
-                        dy={15}
-                        dx={-15}
+                        dy={10}
+                        dx={-10}
                         angle={-45}
                         textAnchor="end"
                     />
