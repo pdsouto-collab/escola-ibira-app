@@ -59,38 +59,65 @@ const TreeIcon = ({ rating, size = "sm" }: { rating: number, size?: "sm" | "md" 
     }
 };
 
-const getAllEvaluatableNodes = (nodes: any[], parentName?: string): any[] => {
+const getAllEvaluatableNodes = (nodes: any[], parentName?: string, level: string = "both"): any[] => {
     const results: any[] = [];
     for (const node of nodes) {
         const currentSubject = node.level === "mesclado" ? node.name : parentName;
 
-        // Count both micro (skills) and atomico (evidence) for the cards
-        if (node.level === "micro" || node.level === "atomico") {
+        // Count both micro (skills) and atomico (evidence) by default, or specialize
+        if ((level === "both" && (node.level === "micro" || node.level === "atomico")) ||
+            (level === "micro" && node.level === "micro") ||
+            (level === "atomico" && node.level === "atomico")) {
             results.push({ ...node, subject: currentSubject || "Outros" });
         }
 
         if (node.children) {
-            results.push(...getAllEvaluatableNodes(node.children, currentSubject));
+            results.push(...getAllEvaluatableNodes(node.children, currentSubject, level));
         }
     }
     return results;
 };
 
 export function MilestoneReport({ studentId }: MilestoneReportProps) {
-    const { assessments, skillsTree, contentsTree, students } = useAppStore();
+    const { assessments, skillsTree, contentsTree, students, libraryItems } = useAppStore();
 
     const student = students.find(s => s.id === studentId);
     if (!student) return null;
 
     const studentAssessments = assessments.filter(a => a.studentId === studentId || (a.scope === "class" && a.classId === student.classId));
 
-    const allNodes = getAllEvaluatableNodes([...skillsTree, ...contentsTree]);
+    // 1. Identify which Library Items belong to the "Trilha Base" for the student's class
+    const studentClassBaseTreeIds = new Set<string>();
+    const collectBaseIds = (nodes: any[]) => {
+        nodes.forEach(node => {
+            if (node.libraryItemId) studentClassBaseTreeIds.add(node.libraryItemId);
+            if (node.children) collectBaseIds(node.children);
+        });
+    };
+
+    const allTrees = [...skillsTree, ...contentsTree];
+    const classRoots = allTrees.filter(node => node.classId === student.classId);
+    collectBaseIds(classRoots);
+
+    // 2. Fetch evaluating nodes, but only keep Micro (Level 3 - Items from Library) inside the Base Tree
+    // Get ALL micro nodes from all projects/trees
+    const allMicroNodes = getAllEvaluatableNodes([...skillsTree, ...contentsTree], undefined, "micro");
+
+    // Filter against the Trilha Base set
+    const allNodes = allMicroNodes.filter(node =>
+        node.libraryItemId && studentClassBaseTreeIds.has(node.libraryItemId)
+    );
 
     const groupsMap = new Map<string, any[]>();
     allNodes.forEach(node => {
         const subject = node.subject || "Outros";
         if (!groupsMap.has(subject)) groupsMap.set(subject, []);
-        groupsMap.get(subject)?.push(node);
+
+        // Ensure no duplicate L3 nodes by libraryItemId within the same subject
+        const groupList = groupsMap.get(subject)!;
+        if (!groupList.some(existingNode => existingNode.libraryItemId === node.libraryItemId)) {
+            groupList.push(node);
+        }
     });
 
     const groups = Array.from(groupsMap.keys()).sort().map(name => {
