@@ -72,8 +72,8 @@ const CustomXAxisTick = ({ x, y, payload }: any) => {
             <text
                 x={0}
                 y={0}
-                dx={-18} // Shift left precisely into the center of the left bar
-                dy={12} // Breathing room from the axis line
+                dx={-28} // Shift left precisely into the center of the left bar
+                dy={16} // Breathing room from the axis line
                 textAnchor="end"
                 fill="#475569"
                 fontSize={11}
@@ -96,11 +96,11 @@ export function ProgressChart({ data }: ProgressChartProps) {
     }
 
     return (
-        <div className="w-full h-[400px] pt-4">
+        <div className="w-full h-[480px] pt-4">
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                     data={data}
-                    margin={{ top: 20, right: 30, left: 0, bottom: 90 }}
+                    margin={{ top: 20, right: 30, left: 0, bottom: 140 }}
                     barGap={8}
                 >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
