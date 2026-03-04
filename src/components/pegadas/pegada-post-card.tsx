@@ -8,22 +8,26 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { TreeDeciduous, MessageSquare, Mic, Send, MoreVertical, Play } from "lucide-react";
+import { TreeDeciduous, MessageSquare, Mic, Send, MoreVertical, Play, Pencil, Trash, X, Save } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface PegadaPostCardProps {
     post: PegadaPost;
 }
 
 export function PegadaPostCard({ post }: PegadaPostCardProps) {
-    const { currentUser, addPegadaInteraction } = useAppStore();
+    const { currentUser, addPegadaInteraction, updatePegadaPost, deletePegadaPost } = useAppStore();
     const [comment, setComment] = useState("");
     const [showComments, setShowComments] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editContent, setEditContent] = useState(post.content);
 
     const hasLiked = post.interactions.some(i => i.type === 'like' && i.userId === currentUser?.id);
     const likeCount = post.interactions.filter(i => i.type === 'like').length;
     const commentCount = post.interactions.filter(i => i.type === 'comment' || i.type === 'audio').length;
+    const canManage = currentUser?.id === post.authorId || currentUser?.role === "admin" || currentUser?.role === "director";
 
     const handleLike = () => {
         if (!currentUser || hasLiked) return;
@@ -66,9 +70,23 @@ export function PegadaPostCard({ post }: PegadaPostCardProps) {
                         {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ptBR })}
                     </p>
                 </div>
-                <Button variant="ghost" size="icon" className="text-slate-400">
-                    <MoreVertical className="h-4 w-4" />
-                </Button>
+                {canManage && (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="text-slate-400">
+                                <MoreVertical className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                                <Pencil className="h-4 w-4 mr-2" /> Editar Post
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => deletePegadaPost(post.id)} className="text-red-600 focus:bg-red-50 focus:text-red-600">
+                                <Trash className="h-4 w-4 mr-2" /> Excluir Post
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                )}
             </CardHeader>
 
             <CardContent className="p-0">
@@ -102,9 +120,27 @@ export function PegadaPostCard({ post }: PegadaPostCardProps) {
                             </div>
                         )}
                     </div>
-                    <p className="text-sm text-slate-600 leading-relaxed">
-                        {post.content}
-                    </p>
+                    {isEditing ? (
+                        <div className="space-y-3 mt-2">
+                            <textarea
+                                className="w-full min-h-[100px] p-3 text-sm bg-slate-50 border border-slate-200 rounded-lg focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500"
+                                value={editContent}
+                                onChange={(e) => setEditContent(e.target.value)}
+                            />
+                            <div className="flex justify-end gap-2">
+                                <Button variant="outline" size="sm" onClick={() => { setIsEditing(false); setEditContent(post.content); }}>
+                                    <X className="h-4 w-4 mr-2" /> Cancelar
+                                </Button>
+                                <Button size="sm" onClick={() => { updatePegadaPost(post.id, { content: editContent }); setIsEditing(false); }} className="bg-indigo-600 hover:bg-indigo-700">
+                                    <Save className="h-4 w-4 mr-2" /> Salvar
+                                </Button>
+                            </div>
+                        </div>
+                    ) : (
+                        <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
+                            {post.content}
+                        </p>
+                    )}
                 </div>
             </CardContent>
 

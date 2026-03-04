@@ -60,6 +60,32 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     return null;
 };
 
+const CustomXAxisTick = ({ x, y, payload }: any) => {
+    return (
+        <g transform={`translate(${x},${y})`}>
+            {/* 
+              y=0 starts right on the axis line. We move down a bit using dy to give some breathing room.
+              Then we rotate -45 degrees.
+              Since we use textAnchor="end", the (0,0) point of the rotation is exactly where the string ends.
+              Which means the END of the string will perfectly touch the x,y coordinate of the tick center.
+            */}
+            <text
+                x={0}
+                y={0}
+                dx={-18} // Shift left precisely into the center of the left bar
+                dy={12} // Breathing room from the axis line
+                textAnchor="end"
+                fill="#475569"
+                fontSize={11}
+                fontWeight={600}
+                transform="rotate(-45)"
+            >
+                {payload.value}
+            </text>
+        </g>
+    );
+};
+
 export function ProgressChart({ data }: ProgressChartProps) {
     if (!data || data.length === 0) {
         return (
@@ -82,11 +108,7 @@ export function ProgressChart({ data }: ProgressChartProps) {
                         dataKey="subject"
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fill: '#475569', fontSize: 11, fontWeight: 600 }}
-                        dy={10}
-                        dx={-10}
-                        angle={-45}
-                        textAnchor="end"
+                        tick={<CustomXAxisTick />}
                     />
                     <YAxis
                         axisLine={false}

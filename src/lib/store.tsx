@@ -136,6 +136,8 @@ interface AppContextType extends AppState {
     markAllNotificationsAsRead: () => void;
     // Pegadas
     addPegadaPost: (post: PegadaPost) => void;
+    updatePegadaPost: (postId: string, updates: Partial<PegadaPost>) => void;
+    deletePegadaPost: (postId: string) => void;
     addPegadaInteraction: (postId: string, interaction: PegadaInteraction) => void;
 }
 
@@ -675,6 +677,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const markAllNotificationsAsRead = () => setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
 
     const addPegadaPost = (post: PegadaPost) => setPegadaPosts((prev: PegadaPost[]) => [post, ...prev]);
+    const updatePegadaPost = (postId: string, updates: Partial<PegadaPost>) => setPegadaPosts((prev: PegadaPost[]) => prev.map(p => p.id === postId ? { ...p, ...updates } : p));
+    const deletePegadaPost = (postId: string) => setPegadaPosts((prev: PegadaPost[]) => prev.filter(p => p.id !== postId));
     const addPegadaInteraction = (postId: string, interaction: PegadaInteraction) => {
         setPegadaPosts((prev: PegadaPost[]) => prev.map((p: PegadaPost) => {
             if (p.id !== postId) return p;
@@ -735,6 +739,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
             pegadaPosts,
             addPegadaPost,
+            updatePegadaPost,
+            deletePegadaPost,
             addPegadaInteraction
         }}>
             {children}
