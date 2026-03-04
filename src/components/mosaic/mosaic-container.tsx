@@ -124,7 +124,7 @@ export function MosaicContainer() {
                     </Select>
 
                     {/* Habilidades / Conteúdos Toggle */}
-                    <div className="flex flex-col gap-1 items-end">
+                    <div className="flex flex-col gap-1 items-end ml-auto">
                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mr-1">Trilhas Base</span>
                         <div className="flex bg-slate-100 p-1 rounded-lg flex-shrink-0">
                             <button
@@ -140,16 +140,6 @@ export function MosaicContainer() {
                                 Competências Gerais
                             </button>
                         </div>
-                    </div>
-
-                    {/* RIGHT: Avatar (teacher) */}
-                    <div className="ml-auto flex-shrink-0">
-                        <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
-                            <AvatarImage src={currentUser?.avatar || "https://github.com/shadcn.png"} />
-                            <AvatarFallback>
-                                {currentUser?.name?.charAt(0) ?? "U"}
-                            </AvatarFallback>
-                        </Avatar>
                     </div>
                 </header>
 
