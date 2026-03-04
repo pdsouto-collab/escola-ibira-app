@@ -76,7 +76,7 @@ const getAllEvaluatableNodes = (nodes: any[], parentName?: string): any[] => {
 };
 
 export function SkillsChart({ studentId }: { studentId?: string }) {
-    const { students, assessments, skillsTree, contentsTree } = useAppStore();
+    const { students, assessments, libraryItems } = useAppStore();
 
     if (!studentId) {
         return (
@@ -91,12 +91,12 @@ export function SkillsChart({ studentId }: { studentId?: string }) {
 
     const studentAssessments = assessments.filter(a => a.studentId === studentId || (a.scope === "class" && a.classId === student.classId));
 
-    // Logic: "Proposto" is everything in the base trees
-    const allProposedNodes = getAllEvaluatableNodes([...skillsTree, ...contentsTree]);
-
+    // Logic: "Proposto" is everything in the library (BNCC and Competencies)
+    // Grouping must mirror the library's `subGroup` completely
     const chartDataMap = new Map<string, ProgressChartData>();
-    allProposedNodes.forEach(node => {
-        const subject = node.subject || "Outros";
+
+    libraryItems.forEach(item => {
+        const subject = item.subGroup || "Outros";
         if (!chartDataMap.has(subject)) {
             chartDataMap.set(subject, {
                 subject,
@@ -110,12 +110,19 @@ export function SkillsChart({ studentId }: { studentId?: string }) {
         const data = chartDataMap.get(subject)!;
         data.proposto += 1;
         data.total += 1;
-        data.propostoItems?.push(node.name);
+        data.propostoItems?.push(item.name);
 
-        const nodeAssessment = studentAssessments.find(a => a.knowledgeNodeId === node.id);
-        if (nodeAssessment && (nodeAssessment.rating ?? 0) >= 3) {
+        // Check if there's a consolidating assessment (rating >= 3) for this library item
+        // Assessments are usually bound to knowledge nodes, but the `knowledgeNodeId` often shares the ID or code of the library item.
+        // We look for any assessment where knowledgeNodeId === item.id or knowledgeNodeId === item.code
+        const isDeveloped = studentAssessments.some(a =>
+            (a.knowledgeNodeId === item.id || (item.code && a.knowledgeNodeId === item.code)) &&
+            (a.rating ?? 0) >= 3
+        );
+
+        if (isDeveloped) {
             data.desenvolvido += 1;
-            data.desenvolvidoItems?.push(node.name);
+            data.desenvolvidoItems?.push(item.name);
         }
     });
 
@@ -124,15 +131,15 @@ export function SkillsChart({ studentId }: { studentId?: string }) {
     return (
         <div className="bg-white p-6 rounded-xl border shadow-sm">
             <h3 className="text-xl font-bold text-slate-800">Proposto vs. Desenvolvido</h3>
-            <p className="text-sm text-slate-500 mb-6 font-medium">Comparativo entre o currículo base escola e o que já foi consolidado pela criança (avaliação 3-5).</p>
+            <p className="text-sm text-slate-500 mb-6 font-medium">Comparativo entre a Biblioteca da escola e o que já foi consolidado pela criança (avaliação 3-5).</p>
 
             <ProgressChart data={chartData} />
 
             <div className="mt-6 p-4 bg-slate-50 rounded-lg text-xs text-slate-500 flex gap-2">
                 <Info className="w-4 h-4 text-slate-400 flex-shrink-0" />
                 <p className="leading-relaxed">
-                    <strong>Nota:</strong> "Proposto" contempla todas as habilidades e competências da Árvore de Conhecimento.
-                    "Desenvolvido" indica itens com avaliação entre 3 e 5 atribuída pelo professor.
+                    <strong>Nota:</strong> "Proposto" contempla todas as habilidades e competências da Biblioteca.
+                    "Desenvolvido" indica itens com avaliação entre 3 e 5 atribuída pelo professor a nós vinculados.
                 </p>
             </div>
         </div>
