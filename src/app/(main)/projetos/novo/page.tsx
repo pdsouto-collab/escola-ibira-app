@@ -80,6 +80,8 @@ function NewProjectWizardContent() {
     const [gradeFilterCompetencias, setGradeFilterCompetencias] = useState<string>("all");
     const [searchTermBNCC, setSearchTermBNCC] = useState("");
     const [searchTermCompetencias, setSearchTermCompetencias] = useState("");
+    const [filterTrilhaBaseBNCC, setFilterTrilhaBaseBNCC] = useState(false);
+    const [filterTrilhaBaseCompetencias, setFilterTrilhaBaseCompetencias] = useState(false);
 
     // Immediately write sessions to store (expanded per selected classes)
     const persistSessionsToStore = (updatedSessions: Partial<ScheduleItem>[]) => {
@@ -584,6 +586,10 @@ function NewProjectWizardContent() {
                                                         onChange={(e) => setSearchTermBNCC(e.target.value)}
                                                     />
                                                 </div>
+                                                <div className="flex items-center gap-2 mr-4 border-r pr-4 border-slate-200">
+                                                    <Checkbox id="trilha-base-bncc" checked={filterTrilhaBaseBNCC} onCheckedChange={(c: boolean) => setFilterTrilhaBaseBNCC(c)} />
+                                                    <Label htmlFor="trilha-base-bncc" className="text-sm font-bold text-slate-700 cursor-pointer mb-0">Trilha Base</Label>
+                                                </div>
                                                 <span className="text-sm font-medium text-slate-500">Filtrar por Etapa:</span>
                                                 <Select value={gradeFilterBNCC} onValueChange={setGradeFilterBNCC}>
                                                     <SelectTrigger className="w-[180px] bg-white h-9">
@@ -625,7 +631,8 @@ function NewProjectWizardContent() {
                                                         (i.code && i.code.toLowerCase().includes(searchTermBNCC.toLowerCase())) ||
                                                         i.description.toLowerCase().includes(searchTermBNCC.toLowerCase()) ||
                                                         subject.toLowerCase().includes(searchTermBNCC.toLowerCase())
-                                                    )
+                                                    ) &&
+                                                    (!filterTrilhaBaseBNCC || selectedClassLibraryItemIds.has(i.id) || (i.code && selectedClassLibraryItemIds.has(i.code)))
                                                 ).sort((a, b) => a.name.localeCompare(b.name));
 
                                                 if (subjectItems.length === 0) return null;
@@ -695,6 +702,10 @@ function NewProjectWizardContent() {
                                                         onChange={(e) => setSearchTermCompetencias(e.target.value)}
                                                     />
                                                 </div>
+                                                <div className="flex items-center gap-2 mr-4 border-r pr-4 border-slate-200">
+                                                    <Checkbox id="trilha-base-comp" checked={filterTrilhaBaseCompetencias} onCheckedChange={(c: boolean) => setFilterTrilhaBaseCompetencias(c)} />
+                                                    <Label htmlFor="trilha-base-comp" className="text-sm font-bold text-slate-700 cursor-pointer mb-0">Trilha Base</Label>
+                                                </div>
                                                 <span className="text-sm font-medium text-slate-500">Filtrar por Etapa:</span>
                                                 <Select value={gradeFilterCompetencias} onValueChange={setGradeFilterCompetencias}>
                                                     <SelectTrigger className="w-[180px] bg-white h-9">
@@ -731,7 +742,8 @@ function NewProjectWizardContent() {
                                                         i.name.toLowerCase().includes(searchTermCompetencias.toLowerCase()) ||
                                                         i.description.toLowerCase().includes(searchTermCompetencias.toLowerCase()) ||
                                                         subject.toLowerCase().includes(searchTermCompetencias.toLowerCase())
-                                                    )
+                                                    ) &&
+                                                    (!filterTrilhaBaseCompetencias || selectedClassLibraryItemIds.has(i.id) || (i.code && selectedClassLibraryItemIds.has(i.code)))
                                                 ).sort((a, b) => a.name.localeCompare(b.name));
 
                                                 if (subjectItems.length === 0) return null;
