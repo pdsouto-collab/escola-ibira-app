@@ -2,8 +2,6 @@
 
 import { useAppStore } from "@/lib/store";
 import { ProgressChart, ProgressChartData } from "@/components/assessment/progress-chart";
-import { Info } from "lucide-react";
-
 // ────────────────────────────────────────────
 // Helper: find node name recursively
 // ────────────────────────────────────────────
@@ -153,13 +151,6 @@ export function SkillsChart({ studentId }: { studentId?: string }) {
 
             <ProgressChart data={chartData} />
 
-            <div className="mt-6 p-4 bg-slate-50 rounded-lg text-xs text-slate-500 flex gap-2">
-                <Info className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                <p className="leading-relaxed">
-                    <strong>Nota:</strong> "Proposto" contempla todas as habilidades e competências da Biblioteca.
-                    "Desenvolvido" indica itens com avaliação entre 3 e 5 atribuída pelo professor a nós vinculados.
-                </p>
-            </div>
         </div>
     );
 }
