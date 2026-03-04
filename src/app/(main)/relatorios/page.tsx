@@ -164,18 +164,6 @@ export default function ReportsPage() {
                             )}
                         </div>
 
-                        {/* 2. Professor Observations */}
-                        <div>
-                            <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                                <span className="w-1.5 h-6 bg-emerald-500 rounded-full" />
-                                Registros e Evidências do Ciclo
-                            </h2>
-                            {selectedStudent ? (
-                                <ObservationList studentId={effectiveStudentId} />
-                            ) : (
-                                <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
-                            )}
-                        </div>
 
                         {/* 3. Milestone Grid */}
                         <div>
