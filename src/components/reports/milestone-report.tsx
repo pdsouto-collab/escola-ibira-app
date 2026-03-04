@@ -110,7 +110,9 @@ export function MilestoneReport({ studentId }: MilestoneReportProps) {
 
     const groupsMap = new Map<string, any[]>();
     allNodes.forEach(node => {
-        const subject = node.subject || "Outros";
+        const libraryItem = libraryItems.find(item => item.id === node.libraryItemId);
+        const subject = libraryItem?.subGroup || "Outros";
+
         if (!groupsMap.has(subject)) groupsMap.set(subject, []);
 
         // Ensure no duplicate L3 nodes by libraryItemId within the same subject
