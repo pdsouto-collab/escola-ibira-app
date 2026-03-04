@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 import { useAppStore } from "@/lib/store";
 import { NotificationPopover } from "./notification-popover";
+import { UserProfileMenu } from "../users/user-profile-menu";
 
 export function DashboardHero() {
     const { currentUser } = useAppStore();
@@ -18,10 +19,7 @@ export function DashboardHero() {
             {/* Top Bar inside Hero */}
             <div className="absolute top-6 right-6 flex items-center gap-4 z-20">
                 <NotificationPopover />
-                <Avatar className="border-2 border-white cursor-pointer">
-                    <AvatarImage src={currentUser?.avatar || "https://github.com/shadcn.png"} />
-                    <AvatarFallback>{currentUser?.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                </Avatar>
+                <UserProfileMenu />
             </div>
 
             {/* Content */}
