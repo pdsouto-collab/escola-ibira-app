@@ -76,7 +76,7 @@ const getAllEvaluatableNodes = (nodes: any[], parentName?: string): any[] => {
 };
 
 export function SkillsChart({ studentId }: { studentId?: string }) {
-    const { students, assessments, libraryItems } = useAppStore();
+    const { students, assessments, libraryItems, skillsTree, contentsTree } = useAppStore();
 
     if (!studentId) {
         return (
@@ -91,11 +91,29 @@ export function SkillsChart({ studentId }: { studentId?: string }) {
 
     const studentAssessments = assessments.filter(a => a.studentId === studentId || (a.scope === "class" && a.classId === student.classId));
 
-    // Logic: "Proposto" is everything in the library (BNCC and Competencies)
+    // 1. Identify which Library Items belong to the "Trilha Base" for the student's class
+    const studentClassBaseTreeIds = new Set<string>();
+    const collectBaseIds = (nodes: any[]) => {
+        nodes.forEach(node => {
+            if (node.libraryItemId) studentClassBaseTreeIds.add(node.libraryItemId);
+            if (node.children) collectBaseIds(node.children);
+        });
+    };
+
+    const allTrees = [...skillsTree, ...contentsTree];
+    const classRoots = allTrees.filter(node => node.classId === student.classId);
+    collectBaseIds(classRoots);
+
+    // 2. The "Proposto" items are ONLY the library items present in the class Trilha Base
+    const proposedLibraryItems = libraryItems.filter(item =>
+        studentClassBaseTreeIds.has(item.id) || (item.code && studentClassBaseTreeIds.has(item.code))
+    );
+
+    // Logic: "Proposto" is everything in the library (BNCC and Competencies) that is in the Trilha Base
     // Grouping must mirror the library's `subGroup` completely
     const chartDataMap = new Map<string, ProgressChartData>();
 
-    libraryItems.forEach(item => {
+    proposedLibraryItems.forEach(item => {
         const subject = item.subGroup || "Outros";
         if (!chartDataMap.has(subject)) {
             chartDataMap.set(subject, {
