@@ -35,6 +35,7 @@ const emptyUser: Omit<User, "id"> = {
     email: "",
     role: "teacher", // Default
     avatar: "https://github.com/shadcn.png",
+    status: "active",
 };
 
 export function UserDialog({ open, onOpenChange, user, onSave, fixedRole }: UserDialogProps) {

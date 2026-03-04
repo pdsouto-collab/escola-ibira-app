@@ -20,100 +20,1516 @@ export interface KnowledgeNode {
 // Initial mock data to bootstrap the trees
 export const mockSkillsTree: KnowledgeNode[] = [
     {
-        id: "macro-sk-ciencias-humanas",
-        level: "macro",
-        type: "skill",
-        name: "Ciências da Natureza e Humanas",
-        classId: "jardim-i",
-        children: [
+        "id": "macro-sk-ciencias",
+        "level": "macro",
+        "type": "skill",
+        "name": "Ciências da Natureza e Humanas",
+        "classId": "jardim-i",
+        "children": [
             {
-                id: "mes-sk-ciencia",
-                level: "mesclado",
-                type: "skill",
-                name: "Ciências",
-                children: [
+                "id": "mes-sk-ciencias-1",
+                "level": "mesclado",
+                "type": "skill",
+                "name": "Ciências",
+                "children": [
                     {
-                        id: "mic-sk-EF03CI04",
-                        level: "micro",
-                        type: "skill",
-                        name: "EF03CI04: Identificar características e modo de vida dos animais",
-                        libraryItemId: "bncc-ef-ef03ci04-402",
-                        children: [
-                            { id: "ato-sk-ci-1", level: "atomico", type: "skill", name: "Observa, fotografa e cataloga as aves que visitam as árvores do pátio.", children: [] },
-                            { id: "ato-sk-ci-2", level: "atomico", type: "skill", name: "Pesquisa e documenta o ciclo de postura e a quantidade de ovos de galinhas poedeiras.", children: [] },
-                            { id: "ato-sk-ci-3", level: "atomico", type: "skill", name: "Classifica corretamente a dieta (herbívoro, carnívoro, onívoro) dos animais estudados.", children: [] }
+                        "id": "mic-sk-ciencias-1-1",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp01-0",
+                        "children": [
+                            {
+                                "id": "ato-sk-ciencias-1-1-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-ciencias-1-1-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-ciencias-1-1-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
                         ]
                     },
-                    { id: "mic-sk-EF03CI05", level: "micro", type: "skill", name: "EF03CI05: Descrever e comunicar as alterações do ciclo da vida animal", libraryItemId: "bncc-ef-ef03ci05-403", children: [] },
-                    { id: "mic-sk-EF03CI06", level: "micro", type: "skill", name: "EF03CI06: Comparar animais e organizar grupos por características", libraryItemId: "bncc-ef-ef03ci06-404", children: [] }
+                    {
+                        "id": "mic-sk-ciencias-1-2",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp02-1",
+                        "children": [
+                            {
+                                "id": "ato-sk-ciencias-1-2-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-ciencias-1-2-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-ciencias-1-2-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-sk-ciencias-1-3",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Escrita (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp03-2",
+                        "children": [
+                            {
+                                "id": "ato-sk-ciencias-1-3-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-ciencias-1-3-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-ciencias-1-3-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
                 ]
             },
-            { id: "mes-sk-historia", level: "mesclado", type: "skill", name: "História", children: [] },
-            { id: "mes-sk-geografia", level: "mesclado", type: "skill", name: "Geografia", children: [] }
-        ]
-    },
-    {
-        id: "macro-sk-linguagens",
-        level: "macro",
-        type: "skill",
-        name: "Linguagens",
-        classId: "jardim-i",
-        children: [
-            { id: "mes-sk-portugues", level: "mesclado", type: "skill", name: "Língua Portuguesa", children: [] },
-            { id: "mes-sk-arte", level: "mesclado", type: "skill", name: "Arte", children: [] },
             {
-                id: "mes-sk-edfisica",
-                level: "mesclado",
-                type: "skill",
-                name: "Educação Física",
-                children: [
+                "id": "mes-sk-ciencias-2",
+                "level": "mesclado",
+                "type": "skill",
+                "name": "História",
+                "children": [
                     {
-                        id: "mic-sk-EF03EF06",
-                        level: "micro",
-                        type: "skill",
-                        name: "EF03EF06: Experimentar e fruir esportes de rede/parede",
-                        libraryItemId: "bncc-ef-ef35ef06-249",
-                        children: [
-                            { id: "ato-sk-ef-1", level: "atomico", type: "skill", name: "Demonstra a empunhadura correta ao segurar uma raquete de tênis infantil.", children: [] },
-                            { id: "ato-sk-ef-2", level: "atomico", type: "skill", name: "Consegue rebater a bola por cima da rede com direção e força intencionais.", children: [] },
-                            { id: "ato-sk-ef-3", level: "atomico", type: "skill", name: "Explica as regras básicas de pontuação do jogo para um colega.", children: [] }
+                        "id": "mic-sk-ciencias-2-1",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp01-0",
+                        "children": [
+                            {
+                                "id": "ato-sk-ciencias-2-1-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-ciencias-2-1-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-ciencias-2-1-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
                         ]
                     },
-                    { id: "mic-sk-EF03EF04", level: "micro", type: "skill", name: "EF03EF04: Formular estratégias para resolver desafios em práticas corporais", libraryItemId: "bncc-ef-ef35ef04-247", children: [] },
-                    { id: "mic-sk-EF03EF05", level: "micro", type: "skill", name: "EF03EF05: Participar de jogos e brincadeiras de matriz indígena e africana", libraryItemId: "bncc-ef-ef35ef05-248", children: [] }
+                    {
+                        "id": "mic-sk-ciencias-2-2",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp02-1",
+                        "children": [
+                            {
+                                "id": "ato-sk-ciencias-2-2-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-ciencias-2-2-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-ciencias-2-2-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-sk-ciencias-2-3",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Escrita (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp03-2",
+                        "children": [
+                            {
+                                "id": "ato-sk-ciencias-2-3-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-ciencias-2-3-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-ciencias-2-3-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mes-sk-ciencias-3",
+                "level": "mesclado",
+                "type": "skill",
+                "name": "Geografia",
+                "children": [
+                    {
+                        "id": "mic-sk-ciencias-3-1",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp01-0",
+                        "children": [
+                            {
+                                "id": "ato-sk-ciencias-3-1-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-ciencias-3-1-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-ciencias-3-1-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-sk-ciencias-3-2",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp02-1",
+                        "children": [
+                            {
+                                "id": "ato-sk-ciencias-3-2-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-ciencias-3-2-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-ciencias-3-2-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-sk-ciencias-3-3",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Escrita (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp03-2",
+                        "children": [
+                            {
+                                "id": "ato-sk-ciencias-3-3-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-ciencias-3-3-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-ciencias-3-3-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
                 ]
             }
         ]
     },
     {
-        id: "macro-sk-matematica",
-        level: "macro",
-        type: "skill",
-        name: "Matemática e Lógica",
-        classId: "jardim-i",
-        children: [
-            { id: "mes-sk-aritmetica", level: "mesclado", type: "skill", name: "Aritmética", children: [] },
-            { id: "mes-sk-geometria", level: "mesclado", type: "skill", name: "Geometria", children: [] },
+        "id": "macro-sk-linguagens",
+        "level": "macro",
+        "type": "skill",
+        "name": "Linguagens",
+        "classId": "jardim-i",
+        "children": [
             {
-                id: "mes-sk-medidas",
-                level: "mesclado",
-                type: "skill",
-                name: "Grandezas e Medidas",
-                children: [
+                "id": "mes-sk-linguagens-1",
+                "level": "mesclado",
+                "type": "skill",
+                "name": "Língua Portuguesa",
+                "children": [
                     {
-                        id: "mic-sk-EF03MA19",
-                        level: "micro",
-                        type: "skill",
-                        name: "EF03MA19: Estimar, medir e comparar comprimentos de forma padronizada",
-                        libraryItemId: "bncc-ef-ef03ma19-322",
-                        children: [
-                            { id: "ato-sk-ma-1", level: "atomico", type: "skill", name: "Mede o comprimento e a largura da sala usando uma fita métrica.", children: [] },
-                            { id: "ato-sk-ma-2", level: "atomico", type: "skill", name: "Calcula o volume exato de água necessário para a irrigação do projeto da horta.", children: [] },
-                            { id: "ato-sk-ma-3", level: "atomico", type: "skill", name: "Converte corretamente os dados da régua de centímetros para metros no diário de bordo.", children: [] }
+                        "id": "mic-sk-linguagens-1-1",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp01-0",
+                        "children": [
+                            {
+                                "id": "ato-sk-linguagens-1-1-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-linguagens-1-1-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-linguagens-1-1-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
                         ]
                     },
-                    { id: "mic-sk-EF03MA17", level: "micro", type: "skill", name: "EF03MA17: Reconhecer o conceito de unidade de medida", libraryItemId: "bncc-ef-ef03ma17-320", children: [] },
-                    { id: "mic-sk-EF03MA18", level: "micro", type: "skill", name: "EF03MA18: Escolher o instrumento mais apropriado para medições", libraryItemId: "bncc-ef-ef03ma18-321", children: [] }
+                    {
+                        "id": "mic-sk-linguagens-1-2",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp02-1",
+                        "children": [
+                            {
+                                "id": "ato-sk-linguagens-1-2-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-linguagens-1-2-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-linguagens-1-2-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-sk-linguagens-1-3",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Escrita (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp03-2",
+                        "children": [
+                            {
+                                "id": "ato-sk-linguagens-1-3-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-linguagens-1-3-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-linguagens-1-3-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mes-sk-linguagens-2",
+                "level": "mesclado",
+                "type": "skill",
+                "name": "Arte",
+                "children": [
+                    {
+                        "id": "mic-sk-linguagens-2-1",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp01-0",
+                        "children": [
+                            {
+                                "id": "ato-sk-linguagens-2-1-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-linguagens-2-1-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-linguagens-2-1-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-sk-linguagens-2-2",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp02-1",
+                        "children": [
+                            {
+                                "id": "ato-sk-linguagens-2-2-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-linguagens-2-2-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-linguagens-2-2-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-sk-linguagens-2-3",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Escrita (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp03-2",
+                        "children": [
+                            {
+                                "id": "ato-sk-linguagens-2-3-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-linguagens-2-3-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-linguagens-2-3-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mes-sk-linguagens-3",
+                "level": "mesclado",
+                "type": "skill",
+                "name": "Educação Física",
+                "children": [
+                    {
+                        "id": "mic-sk-linguagens-3-1",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp01-0",
+                        "children": [
+                            {
+                                "id": "ato-sk-linguagens-3-1-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-linguagens-3-1-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-linguagens-3-1-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-sk-linguagens-3-2",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp02-1",
+                        "children": [
+                            {
+                                "id": "ato-sk-linguagens-3-2-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-linguagens-3-2-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-linguagens-3-2-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-sk-linguagens-3-3",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Escrita (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp03-2",
+                        "children": [
+                            {
+                                "id": "ato-sk-linguagens-3-3-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-linguagens-3-3-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-linguagens-3-3-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "macro-sk-matematica",
+        "level": "macro",
+        "type": "skill",
+        "name": "Matemática e Lógica",
+        "classId": "jardim-i",
+        "children": [
+            {
+                "id": "mes-sk-matematica-1",
+                "level": "mesclado",
+                "type": "skill",
+                "name": "Aritmética",
+                "children": [
+                    {
+                        "id": "mic-sk-matematica-1-1",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp01-0",
+                        "children": [
+                            {
+                                "id": "ato-sk-matematica-1-1-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-matematica-1-1-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-matematica-1-1-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-sk-matematica-1-2",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp02-1",
+                        "children": [
+                            {
+                                "id": "ato-sk-matematica-1-2-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-matematica-1-2-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-matematica-1-2-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-sk-matematica-1-3",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Escrita (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp03-2",
+                        "children": [
+                            {
+                                "id": "ato-sk-matematica-1-3-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-matematica-1-3-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-matematica-1-3-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mes-sk-matematica-2",
+                "level": "mesclado",
+                "type": "skill",
+                "name": "Geometria",
+                "children": [
+                    {
+                        "id": "mic-sk-matematica-2-1",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp01-0",
+                        "children": [
+                            {
+                                "id": "ato-sk-matematica-2-1-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-matematica-2-1-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-matematica-2-1-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-sk-matematica-2-2",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp02-1",
+                        "children": [
+                            {
+                                "id": "ato-sk-matematica-2-2-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-matematica-2-2-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-matematica-2-2-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-sk-matematica-2-3",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Escrita (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp03-2",
+                        "children": [
+                            {
+                                "id": "ato-sk-matematica-2-3-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-matematica-2-3-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-matematica-2-3-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mes-sk-matematica-3",
+                "level": "mesclado",
+                "type": "skill",
+                "name": "Medidas",
+                "children": [
+                    {
+                        "id": "mic-sk-matematica-3-1",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp01-0",
+                        "children": [
+                            {
+                                "id": "ato-sk-matematica-3-1-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-matematica-3-1-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-matematica-3-1-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-sk-matematica-3-2",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp02-1",
+                        "children": [
+                            {
+                                "id": "ato-sk-matematica-3-2-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-matematica-3-2-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-matematica-3-2-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-sk-matematica-3-3",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Escrita (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp03-2",
+                        "children": [
+                            {
+                                "id": "ato-sk-matematica-3-3-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-matematica-3-3-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-matematica-3-3-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "macro-sk-socioemocional",
+        "level": "macro",
+        "type": "skill",
+        "name": "Socioemocional",
+        "classId": "jardim-i",
+        "children": [
+            {
+                "id": "mes-sk-socioemocional-1",
+                "level": "mesclado",
+                "type": "skill",
+                "name": "Autoconhecimento",
+                "children": [
+                    {
+                        "id": "mic-sk-socioemocional-1-1",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp01-0",
+                        "children": [
+                            {
+                                "id": "ato-sk-socioemocional-1-1-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-socioemocional-1-1-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-socioemocional-1-1-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-sk-socioemocional-1-2",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp02-1",
+                        "children": [
+                            {
+                                "id": "ato-sk-socioemocional-1-2-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-socioemocional-1-2-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-socioemocional-1-2-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-sk-socioemocional-1-3",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Escrita (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp03-2",
+                        "children": [
+                            {
+                                "id": "ato-sk-socioemocional-1-3-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-socioemocional-1-3-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-socioemocional-1-3-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mes-sk-socioemocional-2",
+                "level": "mesclado",
+                "type": "skill",
+                "name": "Empatia",
+                "children": [
+                    {
+                        "id": "mic-sk-socioemocional-2-1",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp01-0",
+                        "children": [
+                            {
+                                "id": "ato-sk-socioemocional-2-1-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-socioemocional-2-1-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-socioemocional-2-1-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-sk-socioemocional-2-2",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp02-1",
+                        "children": [
+                            {
+                                "id": "ato-sk-socioemocional-2-2-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-socioemocional-2-2-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-socioemocional-2-2-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-sk-socioemocional-2-3",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Escrita (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp03-2",
+                        "children": [
+                            {
+                                "id": "ato-sk-socioemocional-2-3-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-socioemocional-2-3-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-socioemocional-2-3-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mes-sk-socioemocional-3",
+                "level": "mesclado",
+                "type": "skill",
+                "name": "Colaboração",
+                "children": [
+                    {
+                        "id": "mic-sk-socioemocional-3-1",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp01-0",
+                        "children": [
+                            {
+                                "id": "ato-sk-socioemocional-3-1-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-socioemocional-3-1-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-socioemocional-3-1-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-sk-socioemocional-3-2",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp02-1",
+                        "children": [
+                            {
+                                "id": "ato-sk-socioemocional-3-2-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-socioemocional-3-2-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-socioemocional-3-2-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-sk-socioemocional-3-3",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Escrita (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp03-2",
+                        "children": [
+                            {
+                                "id": "ato-sk-socioemocional-3-3-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-socioemocional-3-3-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-socioemocional-3-3-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "macro-sk-expressao",
+        "level": "macro",
+        "type": "skill",
+        "name": "Expressão Corporal e Artística",
+        "classId": "jardim-i",
+        "children": [
+            {
+                "id": "mes-sk-expressao-1",
+                "level": "mesclado",
+                "type": "skill",
+                "name": "Dança",
+                "children": [
+                    {
+                        "id": "mic-sk-expressao-1-1",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp01-0",
+                        "children": [
+                            {
+                                "id": "ato-sk-expressao-1-1-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-expressao-1-1-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-expressao-1-1-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-sk-expressao-1-2",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp02-1",
+                        "children": [
+                            {
+                                "id": "ato-sk-expressao-1-2-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-expressao-1-2-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-expressao-1-2-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-sk-expressao-1-3",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Escrita (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp03-2",
+                        "children": [
+                            {
+                                "id": "ato-sk-expressao-1-3-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-expressao-1-3-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-expressao-1-3-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mes-sk-expressao-2",
+                "level": "mesclado",
+                "type": "skill",
+                "name": "Teatro",
+                "children": [
+                    {
+                        "id": "mic-sk-expressao-2-1",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp01-0",
+                        "children": [
+                            {
+                                "id": "ato-sk-expressao-2-1-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-expressao-2-1-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-expressao-2-1-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-sk-expressao-2-2",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp02-1",
+                        "children": [
+                            {
+                                "id": "ato-sk-expressao-2-2-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-expressao-2-2-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-expressao-2-2-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-sk-expressao-2-3",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Escrita (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp03-2",
+                        "children": [
+                            {
+                                "id": "ato-sk-expressao-2-3-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-expressao-2-3-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-expressao-2-3-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mes-sk-expressao-3",
+                "level": "mesclado",
+                "type": "skill",
+                "name": "Música",
+                "children": [
+                    {
+                        "id": "mic-sk-expressao-3-1",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp01-0",
+                        "children": [
+                            {
+                                "id": "ato-sk-expressao-3-1-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-expressao-3-1-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-expressao-3-1-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-sk-expressao-3-2",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Leitura/escuta (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp02-1",
+                        "children": [
+                            {
+                                "id": "ato-sk-expressao-3-2-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-expressao-3-2-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-expressao-3-2-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-sk-expressao-3-3",
+                        "level": "micro",
+                        "type": "skill",
+                        "name": "Escrita (compartilhada e autônoma)",
+                        "libraryItemId": "bncc-ef-ef01lp03-2",
+                        "children": [
+                            {
+                                "id": "ato-sk-expressao-3-3-1",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-expressao-3-3-2",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-sk-expressao-3-3-3",
+                                "level": "atomico",
+                                "type": "skill",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
                 ]
             }
         ]
@@ -122,102 +1538,1518 @@ export const mockSkillsTree: KnowledgeNode[] = [
 
 export const mockContentsTree: KnowledgeNode[] = [
     {
-        id: "macro-co-relacoes",
-        level: "macro",
-        type: "content",
-        name: "Relações e Convivência",
-        classId: "jardim-i",
-        children: [
+        "id": "macro-ct-identidade",
+        "level": "macro",
+        "type": "content",
+        "name": "Identidade e Autonomia",
+        "classId": "jardim-i",
+        "children": [
             {
-                id: "mes-co-empatia",
-                level: "mesclado",
-                type: "content",
-                name: "Empatia e Cooperação",
-                children: [
+                "id": "mes-ct-identidade-1",
+                "level": "mesclado",
+                "type": "content",
+                "name": "Eu e o Outro",
+                "children": [
                     {
-                        id: "mic-co-trabalho-equipe",
-                        level: "micro",
-                        type: "content",
-                        name: "Trabalho em Equipe",
-                        libraryItemId: "lib-cg-20",
-                        children: [
-                            { id: "ato-co-trab-1", level: "atomico", type: "content", name: "Divide os materiais de forma justa com os colegas durante uma oficina.", children: [] },
-                            { id: "ato-co-trab-2", level: "atomico", type: "content", name: "Escuta ativamente a ideia de um membro do grupo antes de impor a própria visão.", children: [] },
-                            { id: "ato-co-trab-3", level: "atomico", type: "content", name: "Assume uma responsabilidade específica e a entrega no prazo combinado.", children: [] }
+                        "id": "mic-ct-identidade-1-1",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Busca por Aprendizado",
+                        "libraryItemId": "lib-cg-1",
+                        "children": [
+                            {
+                                "id": "ato-ct-identidade-1-1-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-identidade-1-1-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-identidade-1-1-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
                         ]
                     },
-                    { id: "mic-co-conflitos", level: "micro", type: "content", name: "Resolução de Conflitos", libraryItemId: "lib-cg-19", children: [] },
-                    { id: "mic-co-diversidade", level: "micro", type: "content", name: "Respeito à Diversidade", libraryItemId: "lib-cg-21", children: [] }
+                    {
+                        "id": "mic-ct-identidade-1-2",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Aplicação Prática do Saber",
+                        "libraryItemId": "lib-cg-2",
+                        "children": [
+                            {
+                                "id": "ato-ct-identidade-1-2-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-identidade-1-2-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-identidade-1-2-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-ct-identidade-1-3",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Investigação e Curiosidade",
+                        "libraryItemId": "lib-cg-3",
+                        "children": [
+                            {
+                                "id": "ato-ct-identidade-1-3-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-identidade-1-3-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-identidade-1-3-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
                 ]
             },
-            { id: "mes-co-comunicacao", level: "mesclado", type: "content", name: "Comunicação", children: [] },
-            { id: "mes-co-responsabilidade", level: "mesclado", type: "content", name: "Responsabilidade e Cidadania", children: [] }
+            {
+                "id": "mes-ct-identidade-2",
+                "level": "mesclado",
+                "type": "content",
+                "name": "Cuidado Pessoal",
+                "children": [
+                    {
+                        "id": "mic-ct-identidade-2-1",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Busca por Aprendizado",
+                        "libraryItemId": "lib-cg-1",
+                        "children": [
+                            {
+                                "id": "ato-ct-identidade-2-1-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-identidade-2-1-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-identidade-2-1-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-ct-identidade-2-2",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Aplicação Prática do Saber",
+                        "libraryItemId": "lib-cg-2",
+                        "children": [
+                            {
+                                "id": "ato-ct-identidade-2-2-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-identidade-2-2-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-identidade-2-2-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-ct-identidade-2-3",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Investigação e Curiosidade",
+                        "libraryItemId": "lib-cg-3",
+                        "children": [
+                            {
+                                "id": "ato-ct-identidade-2-3-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-identidade-2-3-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-identidade-2-3-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mes-ct-identidade-3",
+                "level": "mesclado",
+                "type": "content",
+                "name": "Estando no Mundo",
+                "children": [
+                    {
+                        "id": "mic-ct-identidade-3-1",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Busca por Aprendizado",
+                        "libraryItemId": "lib-cg-1",
+                        "children": [
+                            {
+                                "id": "ato-ct-identidade-3-1-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-identidade-3-1-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-identidade-3-1-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-ct-identidade-3-2",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Aplicação Prática do Saber",
+                        "libraryItemId": "lib-cg-2",
+                        "children": [
+                            {
+                                "id": "ato-ct-identidade-3-2-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-identidade-3-2-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-identidade-3-2-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-ct-identidade-3-3",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Investigação e Curiosidade",
+                        "libraryItemId": "lib-cg-3",
+                        "children": [
+                            {
+                                "id": "ato-ct-identidade-3-3-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-identidade-3-3-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-identidade-3-3-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            }
         ]
     },
     {
-        id: "macro-co-autonomia",
-        level: "macro",
-        type: "content",
-        name: "Autonomia e Autoconhecimento",
-        classId: "jardim-i",
-        children: [
+        "id": "macro-ct-linguagem",
+        "level": "macro",
+        "type": "content",
+        "name": "Linguagem Oral e Escrita",
+        "classId": "jardim-i",
+        "children": [
             {
-                id: "mes-co-autoconhecimento",
-                level: "mesclado",
-                type: "content",
-                name: "Autoconhecimento e Autocuidado",
-                children: [
+                "id": "mes-ct-linguagem-1",
+                "level": "mesclado",
+                "type": "content",
+                "name": "Fala e Escuta",
+                "children": [
                     {
-                        id: "mic-co-saude-fisica",
-                        level: "micro",
-                        type: "content",
-                        name: "Cuidado com a Saúde Física",
-                        libraryItemId: "lib-cg-18",
-                        children: [
-                            { id: "ato-co-saude-1", level: "atomico", type: "content", name: "Participa ativamente e com fôlego de atividades físicas de alto gasto energético.", children: [] },
-                            { id: "ato-co-saude-2", level: "atomico", type: "content", name: "Escolhe de forma autônoma alimentos nutritivos e adequados no momento do lanche.", children: [] },
-                            { id: "ato-co-saude-3", level: "atomico", type: "content", name: "Realiza a higienização correta das mãos de forma espontânea após atividades na terra.", children: [] }
+                        "id": "mic-ct-linguagem-1-1",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Busca por Aprendizado",
+                        "libraryItemId": "lib-cg-1",
+                        "children": [
+                            {
+                                "id": "ato-ct-linguagem-1-1-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-linguagem-1-1-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-linguagem-1-1-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
                         ]
                     },
-                    { id: "mic-co-gestao-emocoes", level: "micro", type: "content", name: "Gestão das Emoções", libraryItemId: "lib-cg-16", children: [] },
-                    { id: "mic-co-autoconfianca", level: "micro", type: "content", name: "Autoconfiança", libraryItemId: "lib-cg-17", children: [] }
+                    {
+                        "id": "mic-ct-linguagem-1-2",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Aplicação Prática do Saber",
+                        "libraryItemId": "lib-cg-2",
+                        "children": [
+                            {
+                                "id": "ato-ct-linguagem-1-2-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-linguagem-1-2-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-linguagem-1-2-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-ct-linguagem-1-3",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Investigação e Curiosidade",
+                        "libraryItemId": "lib-cg-3",
+                        "children": [
+                            {
+                                "id": "ato-ct-linguagem-1-3-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-linguagem-1-3-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-linguagem-1-3-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
                 ]
             },
-            { id: "mes-co-trabalho-vida", level: "mesclado", type: "content", name: "Trabalho e Projeto de Vida", children: [] },
-            { id: "mes-co-repertorio", level: "mesclado", type: "content", name: "Repertório Cultural", children: [] }
+            {
+                "id": "mes-ct-linguagem-2",
+                "level": "mesclado",
+                "type": "content",
+                "name": "Práticas de Leitura",
+                "children": [
+                    {
+                        "id": "mic-ct-linguagem-2-1",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Busca por Aprendizado",
+                        "libraryItemId": "lib-cg-1",
+                        "children": [
+                            {
+                                "id": "ato-ct-linguagem-2-1-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-linguagem-2-1-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-linguagem-2-1-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-ct-linguagem-2-2",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Aplicação Prática do Saber",
+                        "libraryItemId": "lib-cg-2",
+                        "children": [
+                            {
+                                "id": "ato-ct-linguagem-2-2-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-linguagem-2-2-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-linguagem-2-2-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-ct-linguagem-2-3",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Investigação e Curiosidade",
+                        "libraryItemId": "lib-cg-3",
+                        "children": [
+                            {
+                                "id": "ato-ct-linguagem-2-3-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-linguagem-2-3-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-linguagem-2-3-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mes-ct-linguagem-3",
+                "level": "mesclado",
+                "type": "content",
+                "name": "Escrita Inicial",
+                "children": [
+                    {
+                        "id": "mic-ct-linguagem-3-1",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Busca por Aprendizado",
+                        "libraryItemId": "lib-cg-1",
+                        "children": [
+                            {
+                                "id": "ato-ct-linguagem-3-1-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-linguagem-3-1-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-linguagem-3-1-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-ct-linguagem-3-2",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Aplicação Prática do Saber",
+                        "libraryItemId": "lib-cg-2",
+                        "children": [
+                            {
+                                "id": "ato-ct-linguagem-3-2-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-linguagem-3-2-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-linguagem-3-2-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-ct-linguagem-3-3",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Investigação e Curiosidade",
+                        "libraryItemId": "lib-cg-3",
+                        "children": [
+                            {
+                                "id": "ato-ct-linguagem-3-3-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-linguagem-3-3-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-linguagem-3-3-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            }
         ]
     },
     {
-        id: "macro-co-investigacao",
-        level: "macro",
-        type: "content",
-        name: "Investigação e Criação",
-        classId: "jardim-i",
-        children: [
+        "id": "macro-ct-matematica",
+        "level": "macro",
+        "type": "content",
+        "name": "Matemática",
+        "classId": "jardim-i",
+        "children": [
             {
-                id: "mes-co-pensamento",
-                level: "mesclado",
-                type: "content",
-                name: "Pensamento Científico e Crítico",
-                children: [
+                "id": "mes-ct-matematica-1",
+                "level": "mesclado",
+                "type": "content",
+                "name": "Números",
+                "children": [
                     {
-                        id: "mic-co-resolucao-problemas",
-                        level: "micro",
-                        type: "content",
-                        name: "Resolução de Problemas",
-                        libraryItemId: "lib-cg-4",
-                        children: [
-                            { id: "ato-co-prob-1", level: "atomico", type: "content", name: "Mapeia logicamente a causa de uma falha em um pequeno sistema ou circuito elétrico montado na sala.", children: [] },
-                            { id: "ato-co-prob-2", level: "atomico", type: "content", name: "Propõe uma adaptação funcional e imediata para um brinquedo ou material quebrado.", children: [] },
-                            { id: "ato-co-prob-3", level: "atomico", type: "content", name: "Testa três hipóteses práticas diferentes para um desafio antes de pedir a resposta pronta ao tutor.", children: [] }
+                        "id": "mic-ct-matematica-1-1",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Busca por Aprendizado",
+                        "libraryItemId": "lib-cg-1",
+                        "children": [
+                            {
+                                "id": "ato-ct-matematica-1-1-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-matematica-1-1-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-matematica-1-1-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
                         ]
                     },
-                    { id: "mic-co-investigacao", level: "micro", type: "content", name: "Investigação e Curiosidade", libraryItemId: "lib-cg-3", children: [] },
-                    { id: "mic-co-criatividade", level: "micro", type: "content", name: "Criatividade e Invenção", libraryItemId: "lib-cg-5", children: [] }
+                    {
+                        "id": "mic-ct-matematica-1-2",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Aplicação Prática do Saber",
+                        "libraryItemId": "lib-cg-2",
+                        "children": [
+                            {
+                                "id": "ato-ct-matematica-1-2-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-matematica-1-2-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-matematica-1-2-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-ct-matematica-1-3",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Investigação e Curiosidade",
+                        "libraryItemId": "lib-cg-3",
+                        "children": [
+                            {
+                                "id": "ato-ct-matematica-1-3-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-matematica-1-3-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-matematica-1-3-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
                 ]
             },
-            { id: "mes-co-conhecimento", level: "mesclado", type: "content", name: "Conhecimento", children: [] },
-            { id: "mes-co-cultura-digital", level: "mesclado", type: "content", name: "Cultura Digital", children: [] }
+            {
+                "id": "mes-ct-matematica-2",
+                "level": "mesclado",
+                "type": "content",
+                "name": "Espaço e Forma",
+                "children": [
+                    {
+                        "id": "mic-ct-matematica-2-1",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Busca por Aprendizado",
+                        "libraryItemId": "lib-cg-1",
+                        "children": [
+                            {
+                                "id": "ato-ct-matematica-2-1-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-matematica-2-1-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-matematica-2-1-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-ct-matematica-2-2",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Aplicação Prática do Saber",
+                        "libraryItemId": "lib-cg-2",
+                        "children": [
+                            {
+                                "id": "ato-ct-matematica-2-2-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-matematica-2-2-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-matematica-2-2-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-ct-matematica-2-3",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Investigação e Curiosidade",
+                        "libraryItemId": "lib-cg-3",
+                        "children": [
+                            {
+                                "id": "ato-ct-matematica-2-3-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-matematica-2-3-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-matematica-2-3-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mes-ct-matematica-3",
+                "level": "mesclado",
+                "type": "content",
+                "name": "Grandezas",
+                "children": [
+                    {
+                        "id": "mic-ct-matematica-3-1",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Busca por Aprendizado",
+                        "libraryItemId": "lib-cg-1",
+                        "children": [
+                            {
+                                "id": "ato-ct-matematica-3-1-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-matematica-3-1-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-matematica-3-1-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-ct-matematica-3-2",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Aplicação Prática do Saber",
+                        "libraryItemId": "lib-cg-2",
+                        "children": [
+                            {
+                                "id": "ato-ct-matematica-3-2-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-matematica-3-2-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-matematica-3-2-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-ct-matematica-3-3",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Investigação e Curiosidade",
+                        "libraryItemId": "lib-cg-3",
+                        "children": [
+                            {
+                                "id": "ato-ct-matematica-3-3-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-matematica-3-3-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-matematica-3-3-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "macro-ct-natureza",
+        "level": "macro",
+        "type": "content",
+        "name": "Natureza e Sociedade",
+        "classId": "jardim-i",
+        "children": [
+            {
+                "id": "mes-ct-natureza-1",
+                "level": "mesclado",
+                "type": "content",
+                "name": "Seres Vivos",
+                "children": [
+                    {
+                        "id": "mic-ct-natureza-1-1",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Busca por Aprendizado",
+                        "libraryItemId": "lib-cg-1",
+                        "children": [
+                            {
+                                "id": "ato-ct-natureza-1-1-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-natureza-1-1-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-natureza-1-1-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-ct-natureza-1-2",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Aplicação Prática do Saber",
+                        "libraryItemId": "lib-cg-2",
+                        "children": [
+                            {
+                                "id": "ato-ct-natureza-1-2-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-natureza-1-2-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-natureza-1-2-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-ct-natureza-1-3",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Investigação e Curiosidade",
+                        "libraryItemId": "lib-cg-3",
+                        "children": [
+                            {
+                                "id": "ato-ct-natureza-1-3-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-natureza-1-3-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-natureza-1-3-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mes-ct-natureza-2",
+                "level": "mesclado",
+                "type": "content",
+                "name": "Fenômenos Naturais",
+                "children": [
+                    {
+                        "id": "mic-ct-natureza-2-1",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Busca por Aprendizado",
+                        "libraryItemId": "lib-cg-1",
+                        "children": [
+                            {
+                                "id": "ato-ct-natureza-2-1-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-natureza-2-1-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-natureza-2-1-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-ct-natureza-2-2",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Aplicação Prática do Saber",
+                        "libraryItemId": "lib-cg-2",
+                        "children": [
+                            {
+                                "id": "ato-ct-natureza-2-2-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-natureza-2-2-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-natureza-2-2-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-ct-natureza-2-3",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Investigação e Curiosidade",
+                        "libraryItemId": "lib-cg-3",
+                        "children": [
+                            {
+                                "id": "ato-ct-natureza-2-3-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-natureza-2-3-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-natureza-2-3-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mes-ct-natureza-3",
+                "level": "mesclado",
+                "type": "content",
+                "name": "A Sociedade",
+                "children": [
+                    {
+                        "id": "mic-ct-natureza-3-1",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Busca por Aprendizado",
+                        "libraryItemId": "lib-cg-1",
+                        "children": [
+                            {
+                                "id": "ato-ct-natureza-3-1-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-natureza-3-1-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-natureza-3-1-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-ct-natureza-3-2",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Aplicação Prática do Saber",
+                        "libraryItemId": "lib-cg-2",
+                        "children": [
+                            {
+                                "id": "ato-ct-natureza-3-2-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-natureza-3-2-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-natureza-3-2-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-ct-natureza-3-3",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Investigação e Curiosidade",
+                        "libraryItemId": "lib-cg-3",
+                        "children": [
+                            {
+                                "id": "ato-ct-natureza-3-3-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-natureza-3-3-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-natureza-3-3-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "macro-ct-movimento",
+        "level": "macro",
+        "type": "content",
+        "name": "Movimento",
+        "classId": "jardim-i",
+        "children": [
+            {
+                "id": "mes-ct-movimento-1",
+                "level": "mesclado",
+                "type": "content",
+                "name": "Coordenação Grossa",
+                "children": [
+                    {
+                        "id": "mic-ct-movimento-1-1",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Busca por Aprendizado",
+                        "libraryItemId": "lib-cg-1",
+                        "children": [
+                            {
+                                "id": "ato-ct-movimento-1-1-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-movimento-1-1-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-movimento-1-1-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-ct-movimento-1-2",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Aplicação Prática do Saber",
+                        "libraryItemId": "lib-cg-2",
+                        "children": [
+                            {
+                                "id": "ato-ct-movimento-1-2-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-movimento-1-2-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-movimento-1-2-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-ct-movimento-1-3",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Investigação e Curiosidade",
+                        "libraryItemId": "lib-cg-3",
+                        "children": [
+                            {
+                                "id": "ato-ct-movimento-1-3-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-movimento-1-3-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-movimento-1-3-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mes-ct-movimento-2",
+                "level": "mesclado",
+                "type": "content",
+                "name": "Coordenação Fina",
+                "children": [
+                    {
+                        "id": "mic-ct-movimento-2-1",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Busca por Aprendizado",
+                        "libraryItemId": "lib-cg-1",
+                        "children": [
+                            {
+                                "id": "ato-ct-movimento-2-1-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-movimento-2-1-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-movimento-2-1-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-ct-movimento-2-2",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Aplicação Prática do Saber",
+                        "libraryItemId": "lib-cg-2",
+                        "children": [
+                            {
+                                "id": "ato-ct-movimento-2-2-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-movimento-2-2-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-movimento-2-2-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-ct-movimento-2-3",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Investigação e Curiosidade",
+                        "libraryItemId": "lib-cg-3",
+                        "children": [
+                            {
+                                "id": "ato-ct-movimento-2-3-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-movimento-2-3-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-movimento-2-3-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "mes-ct-movimento-3",
+                "level": "mesclado",
+                "type": "content",
+                "name": "Expressão Livre",
+                "children": [
+                    {
+                        "id": "mic-ct-movimento-3-1",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Busca por Aprendizado",
+                        "libraryItemId": "lib-cg-1",
+                        "children": [
+                            {
+                                "id": "ato-ct-movimento-3-1-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-movimento-3-1-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-movimento-3-1-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-ct-movimento-3-2",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Aplicação Prática do Saber",
+                        "libraryItemId": "lib-cg-2",
+                        "children": [
+                            {
+                                "id": "ato-ct-movimento-3-2-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-movimento-3-2-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-movimento-3-2-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "id": "mic-ct-movimento-3-3",
+                        "level": "micro",
+                        "type": "content",
+                        "name": "Investigação e Curiosidade",
+                        "libraryItemId": "lib-cg-3",
+                        "children": [
+                            {
+                                "id": "ato-ct-movimento-3-3-1",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 1 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-movimento-3-3-2",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 2 para a habilidade/conteúdo.",
+                                "children": []
+                            },
+                            {
+                                "id": "ato-ct-movimento-3-3-3",
+                                "level": "atomico",
+                                "type": "content",
+                                "name": "Evidência 3 para a habilidade/conteúdo.",
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            }
         ]
     }
 ];
