@@ -125,7 +125,7 @@ export function MosaicContainer() {
 
                     {/* Habilidades / Conteúdos Toggle */}
                     <div className="flex flex-col gap-1 items-end">
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mr-1">Árvores Base</span>
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mr-1">Trilhas Base</span>
                         <div className="flex bg-slate-100 p-1 rounded-lg flex-shrink-0">
                             <button
                                 onClick={() => { setActiveTab("skill"); setDrilledNode(null); setSelectedNode(null); }}

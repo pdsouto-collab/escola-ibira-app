@@ -35,7 +35,7 @@ export default function AdminPanelPage() {
                                 <div className="h-8 w-px bg-slate-200 mx-1" />
 
                                 <div className="flex flex-col gap-1">
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Árvores Base</span>
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Trilhas Base</span>
                                     <TabsList className="bg-slate-200/50 p-1 flex-wrap h-auto">
                                         <TabsTrigger value="skills" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 flex items-center gap-2 transition-all">
                                             <BookOpen className="w-4 h-4" />
