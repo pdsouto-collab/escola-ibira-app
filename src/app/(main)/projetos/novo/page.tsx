@@ -62,7 +62,7 @@ function NewProjectWizardContent() {
     });
 
     // Stable project ID across steps
-    const [projectId] = useState(() => isEditMode ? (editId || crypto.randomUUID()) : crypto.randomUUID());
+    const [projectId] = useState(() => editId || crypto.randomUUID());
 
     const [newSession, setNewSession] = useState<{ date: string, time: string, endTime: string, description: string, title: string, type: "activity" | "meal" | "care" | "project" }>({
         date: format(new Date(), 'yyyy-MM-dd'),
@@ -654,7 +654,7 @@ function NewProjectWizardContent() {
                                                                                     </Badge>
                                                                                     {isFromBaseTree && (
                                                                                         <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200 text-[10px] font-bold h-5 px-1.5">
-                                                                                            Árvore Base
+                                                                                            Trilha Base
                                                                                         </Badge>
                                                                                     )}
                                                                                 </div>
@@ -760,7 +760,7 @@ function NewProjectWizardContent() {
                                                                                     </Badge>
                                                                                     {isFromBaseTree && (
                                                                                         <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200 text-[10px] font-bold h-5 px-1.5">
-                                                                                            Árvore Base
+                                                                                            Trilha Base
                                                                                         </Badge>
                                                                                     )}
                                                                                 </div>
