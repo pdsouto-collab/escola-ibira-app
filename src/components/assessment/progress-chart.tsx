@@ -74,7 +74,7 @@ export function ProgressChart({ data }: ProgressChartProps) {
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                     data={data}
-                    margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+                    margin={{ top: 20, right: 30, left: 0, bottom: 80 }}
                     barGap={8}
                 >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
@@ -82,8 +82,11 @@ export function ProgressChart({ data }: ProgressChartProps) {
                         dataKey="subject"
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fill: '#475569', fontSize: 13, fontWeight: 600 }}
-                        dy={10}
+                        tick={{ fill: '#475569', fontSize: 11, fontWeight: 600 }}
+                        dy={5}
+                        dx={-5}
+                        angle={-45}
+                        textAnchor="end"
                     />
                     <YAxis
                         axisLine={false}
