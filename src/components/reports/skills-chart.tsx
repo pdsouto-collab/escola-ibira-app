@@ -111,6 +111,18 @@ export function SkillsChart({ studentId }: { studentId?: string }) {
     // Grouping must mirror the library's `subGroup` completely
     const chartDataMap = new Map<string, ProgressChartData>();
 
+    // Pre-build a map to quickly find the libraryItemId of any tree node
+    const nodeToLibraryItemMap = new Map<string, string>();
+    const mapNodes = (nodes: any[]) => {
+        nodes.forEach(node => {
+            if (node.libraryItemId) {
+                nodeToLibraryItemMap.set(node.id, node.libraryItemId);
+            }
+            if (node.children) mapNodes(node.children);
+        });
+    };
+    mapNodes(allTrees);
+
     proposedLibraryItems.forEach(item => {
         const subject = item.subGroup || "Outros";
         if (!chartDataMap.has(subject)) {
@@ -131,10 +143,22 @@ export function SkillsChart({ studentId }: { studentId?: string }) {
         // Check if there's a consolidating assessment (rating >= 3) for this library item
         // Assessments are usually bound to knowledge nodes, but the `knowledgeNodeId` often shares the ID or code of the library item.
         // We look for any assessment where knowledgeNodeId === item.id or knowledgeNodeId === item.code
-        const isDeveloped = studentAssessments.some(a =>
-            (a.knowledgeNodeId === item.id || (item.code && a.knowledgeNodeId === item.code)) &&
-            (a.rating ?? 0) >= 3
-        );
+        // OR if the knowledgeNodeId is a tree node that points to this library item.
+        const isDeveloped = studentAssessments.some(a => {
+            if ((a.rating ?? 0) < 3) return false;
+
+            const assessedNodeId = a.knowledgeNodeId;
+            if (!assessedNodeId) return false;
+
+            // Direct match
+            if (assessedNodeId === item.id || (item.code && assessedNodeId === item.code)) return true;
+
+            // Indirect match via tree node
+            const libraryItemId = nodeToLibraryItemMap.get(assessedNodeId);
+            if (libraryItemId && (libraryItemId === item.id || (item.code && libraryItemId === item.code))) return true;
+
+            return false;
+        });
 
         if (isDeveloped) {
             data.desenvolvido += 1;
