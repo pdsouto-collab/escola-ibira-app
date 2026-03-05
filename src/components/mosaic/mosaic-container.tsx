@@ -50,10 +50,17 @@ export function MosaicContainer() {
     const dataToRender = drilledNode ? [drilledNode] : filteredTreeData;
 
     const handleAvaliacao = (node: KnowledgeNode) => {
+        let resolvedClassId = selectedClassId !== "all" ? selectedClassId : undefined;
+
+        if (selectedStudentId !== "all") {
+            const student = students.find(s => s.id === selectedStudentId);
+            if (student) resolvedClassId = student.classId;
+        }
+
         setDrawerCtx({
             knowledgeNodeId: node.id,
             projectId: selectedProjectId !== "all" ? selectedProjectId : undefined,
-            classId: selectedClassId !== "all" ? selectedClassId : undefined,
+            classId: resolvedClassId,
             studentId: selectedStudentId !== "all" ? selectedStudentId : undefined,
             scope: selectedStudentId !== "all" ? "student" : "class",
             contextLabel: node.name,
