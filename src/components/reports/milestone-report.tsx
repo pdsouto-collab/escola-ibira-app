@@ -124,17 +124,56 @@ export function MilestoneReport({ studentId }: MilestoneReportProps) {
 
     const groups = Array.from(groupsMap.keys()).sort().map(name => {
         const nodes = groupsMap.get(name) || [];
+
+        // Pre-build a map to quickly find the libraryItemId of any tree node
+        const nodeToLibraryItemMap = new Map<string, string>();
+        const mapNodesFn = (ns: any[]) => {
+            ns.forEach(node => {
+                if (node.libraryItemId) nodeToLibraryItemMap.set(node.id, node.libraryItemId);
+                if (node.children) mapNodesFn(node.children);
+            });
+        };
+        mapNodesFn(allTrees);
+
+        const getAssessmentForLibraryItemId = (libItemId: string) => {
+            // Find the best or most recent assessment for a given libraryItemId
+            const relatedAssessments = studentAssessments.filter(a => {
+                const assessedNodeId = a.knowledgeNodeId;
+                if (!assessedNodeId) return false;
+
+                // Match directly against the library item id or code
+                const libraryItem = libraryItems.find(li => li.id === libItemId);
+                if (assessedNodeId === libItemId || (libraryItem?.code && assessedNodeId === libraryItem.code)) return true;
+
+                // Indirect match via tree node
+                const mappedLibId = nodeToLibraryItemMap.get(assessedNodeId);
+                if (mappedLibId && (mappedLibId === libItemId || (libraryItem?.code && mappedLibId === libraryItem.code))) return true;
+
+                return false;
+            });
+
+            // Return the highest rating assessment, or most recent if none
+            if (relatedAssessments.length === 0) return undefined;
+            return relatedAssessments.reduce((best, current) => {
+                if ((current.rating ?? 0) > (best.rating ?? 0)) return current;
+                return best;
+            }, relatedAssessments[0]);
+        };
+
         const achievedNodes = nodes.filter(n => {
-            const assessment = studentAssessments.find(a => a.knowledgeNodeId === n.id);
+            if (!n.libraryItemId) return false;
+            const assessment = getAssessmentForLibraryItemId(n.libraryItemId);
             return assessment && (assessment.rating ?? 0) >= 3;
         });
+
         const progress = nodes.length > 0 ? Math.round((achievedNodes.length / nodes.length) * 100) : 0;
 
         return {
             name,
             nodes,
             achievedCount: achievedNodes.length,
-            progress
+            progress,
+            getAssessmentForLibraryItemId // pass it down to render
         };
     });
 
@@ -162,7 +201,7 @@ export function MilestoneReport({ studentId }: MilestoneReportProps) {
                         </CardHeader>
                         <CardContent className="pt-4 space-y-4 flex-1">
                             {group.nodes.map((node) => {
-                                const assessment = studentAssessments.find(a => a.knowledgeNodeId === node.id);
+                                const assessment = group.getAssessmentForLibraryItemId(node.libraryItemId);
                                 const rating = assessment?.rating;
                                 const isAchieved = (rating ?? 0) >= 3;
 
