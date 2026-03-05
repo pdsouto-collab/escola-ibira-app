@@ -10,7 +10,7 @@ import { Printer, Download, ChevronLeft, Star, Target, CheckCircle2 } from "luci
 import Link from "next/link";
 import { RadialMatrix } from "@/components/mosaic/radial-matrix";
 import { Badge } from "@/components/ui/badge";
-import { ProgressChart, ProgressChartData } from "@/components/assessment/progress-chart";
+import { SkillsChart } from "@/components/reports/skills-chart";
 import { CalendarIcon } from "lucide-react";
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -339,66 +339,15 @@ function ReportCard({
                 )}
 
                 {/* ── TRABALHADO VS DESENVOLVIDO (Progress Chart - Full Width) ────────────────── */}
-                {(() => {
-                    const allMicro: any[] = [];
-                    const allAtomico: any[] = [];
-                    studentProjects.forEach(p => {
-                        const { microNodes, atomicoNodes } = getProjectNodes(p, skillsTree, contentsTree, libraryItems);
-                        allMicro.push(...microNodes);
-                        allAtomico.push(...atomicoNodes);
-                    });
-
-                    // Deduplicate
-                    const map = new Map();
-                    [...allMicro, ...allAtomico].forEach(n => map.set(n.id, n));
-                    const allNodes = Array.from(map.values());
-
-                    if (allNodes.length === 0) return null;
-
-                    const chartDataMap = new Map<string, ProgressChartData>();
-
-                    allNodes.forEach(node => {
-                        const subject = node.subject || "Outros";
-                        if (!chartDataMap.has(subject)) {
-                            chartDataMap.set(subject, { subject, proposto: 0, desenvolvido: 0, total: 0 });
-                        }
-
-                        const data = chartDataMap.get(subject)!;
-                        data.proposto += 1;
-                        data.total += 1;
-
-                        const nodeAssessment = relevantAssessments.find(a => a.knowledgeNodeId === node.id);
-                        if (nodeAssessment && (nodeAssessment.rating ?? 0) >= 3) {
-                            data.desenvolvido += 1;
-                        }
-                    });
-
-                    const chartData = Array.from(chartDataMap.values()).sort((a, b) => a.subject.localeCompare(b.subject));
-
-                    return (
-                        <section className="break-inside-avoid">
-                            <div className="flex items-center gap-3 mb-8">
-                                <div className="w-1.5 h-8 bg-teal-500 rounded-full" />
-                                <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Desenvolvimento por Área BNCC</h2>
-                            </div>
-                            <div className="bg-white border border-slate-100 rounded-[2rem] shadow-xl p-8 pt-10">
-                                <ProgressChart data={chartData} />
-                                <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    {chartData.map((d, i) => (
-                                        <div key={i} className="bg-slate-50/50 rounded-2xl p-4 border border-slate-100">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{d.subject}</p>
-                                            <div className="flex items-baseline gap-1">
-                                                <span className="text-xl font-bold text-slate-800">{d.desenvolvido}</span>
-                                                <span className="text-xs text-slate-400 font-bold">/ {d.proposto}</span>
-                                            </div>
-                                            <p className="text-[10px] text-slate-500 font-medium mt-1">Conquistado</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </section>
-                    );
-                })()}
+                <section className="break-inside-avoid">
+                    <div className="flex items-center gap-3 mb-8">
+                        <div className="w-1.5 h-8 bg-teal-500 rounded-full" />
+                        <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Desenvolvimento por Área BNCC</h2>
+                    </div>
+                    <div className="print:shadow-none print:border-none">
+                        <SkillsChart studentId={student.id} />
+                    </div>
+                </section>
 
                 {/* ── TRILHAS DE DESENVOLVIMENTO ────────────────────── */}
                 <section className="break-inside-avoid page-break-inside-avoid" style={{ pageBreakInside: "avoid" }}>
