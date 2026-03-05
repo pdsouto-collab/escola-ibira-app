@@ -95,12 +95,18 @@ export function ProgressChart({ data }: ProgressChartProps) {
         );
     }
 
+    // Calcula a altura da margem inferior dinamicamente com base no tamanho da maior string no eixo X
+    const maxLabelLength = data.reduce((max, item) => Math.max(max, item.subject.length), 0);
+    const calculatedBottomMargin = Math.max(90, Math.ceil(maxLabelLength * 5.5));
+    // A altura total acompanha a margem inferior extra mantendo a área do gráfico consistente
+    const chartHeight = Math.max(400, 310 + calculatedBottomMargin);
+
     return (
-        <div className="w-full h-[400px] pt-4">
+        <div className="w-full pt-4 transition-all duration-300" style={{ height: `${chartHeight}px` }}>
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                     data={data}
-                    margin={{ top: 20, right: 30, left: 0, bottom: 90 }}
+                    margin={{ top: 20, right: 30, left: 0, bottom: calculatedBottomMargin }}
                     barGap={8}
                 >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
