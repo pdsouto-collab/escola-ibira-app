@@ -11,7 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, Send, MoveLeft, Users, Plus, Settings, Camera } from "lucide-react";
+import { Search, Send, MoveLeft, Users, Plus, Settings, Camera, Trash2 } from "lucide-react";
 
 export default function ChatPage() {
     const { messages, sendMessage } = useAppStore();
@@ -143,6 +143,14 @@ export default function ChatPage() {
 
         setContacts(updatedContacts);
         setSelectedContact(updatedContacts.find(c => c.id === selectedContact.id) || null);
+        setIsEditGroupOpen(false);
+    };
+
+    const handleDeleteGroup = () => {
+        if (!selectedContact) return;
+        const updatedContacts = contacts.filter(c => c.id !== selectedContact.id);
+        setContacts(updatedContacts);
+        setSelectedContact(null);
         setIsEditGroupOpen(false);
     };
 
@@ -375,11 +383,17 @@ export default function ChatPage() {
                                                 </ScrollArea>
                                             </div>
                                         </div>
-                                        <DialogFooter>
-                                            <Button variant="outline" onClick={() => setIsEditGroupOpen(false)}>Cancelar</Button>
-                                            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white" onClick={handleSaveGroupEdit} disabled={!editGroupName.trim() || editSelectedParticipants.length === 0}>
-                                                Salvar Alterações
+                                        <DialogFooter className="sm:justify-between">
+                                            <Button variant="destructive" onClick={handleDeleteGroup} className="flex items-center gap-2">
+                                                <Trash2 className="w-4 h-4" />
+                                                Excluir Grupo
                                             </Button>
+                                            <div className="flex gap-2">
+                                                <Button variant="outline" onClick={() => setIsEditGroupOpen(false)}>Cancelar</Button>
+                                                <Button className="bg-indigo-600 hover:bg-indigo-700 text-white" onClick={handleSaveGroupEdit} disabled={!editGroupName.trim() || editSelectedParticipants.length === 0}>
+                                                    Salvar Alterações
+                                                </Button>
+                                            </div>
                                         </DialogFooter>
                                     </DialogContent>
                                 </Dialog>
