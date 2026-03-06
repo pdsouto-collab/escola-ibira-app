@@ -192,17 +192,14 @@ export function BulkPortfolioDialog({ open, onOpenChange, date }: BulkPortfolioD
         });
 
         // Add a single PegadaPost to the feed as well
-        const defaultImage = "https://images.unsplash.com/photo-1544717297-fa95b6ee9643?q=80&w=600&auto=format&fit=crop";
-        const hasCustomImage = imageUrl !== defaultImage;
-
         addPegadaPost({
             id: `pegada-${Date.now()}`,
             authorId: currentUser?.id || "u2",
             authorName: currentUser?.name || "Professor",
-            type: hasCustomImage ? "photo" : "note",
+            type: "photo",
             title: title.trim(),
             content: baseNarrative.trim() || "Nova vivência registrada para a turma.",
-            mediaUrl: hasCustomImage ? imageUrl : undefined,
+            mediaUrl: imageUrl,
             tags: tagsArray,
             interactions: [],
             createdAt: new Date().toISOString()
