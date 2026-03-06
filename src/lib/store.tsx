@@ -335,25 +335,29 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // Save to LocalStorage on change
     useEffect(() => {
         if (!isLoaded) return;
-        localStorage.setItem("app_students", JSON.stringify(students));
-        localStorage.setItem("app_classes", JSON.stringify(classes));
-        localStorage.setItem("app_schedule", JSON.stringify(schedule));
-        localStorage.setItem("app_dailyLogs", JSON.stringify(dailyLogs));
-        localStorage.setItem("app_tasks", JSON.stringify(tasks));
-        localStorage.setItem("app_muralEvents", JSON.stringify(muralEvents));
-        localStorage.setItem("app_projects", JSON.stringify(projects));
-        localStorage.setItem("app_messages", JSON.stringify(messages));
-        localStorage.setItem("app_mosaicData", JSON.stringify(mosaicData));
-        localStorage.setItem("app_libraryItems", JSON.stringify(libraryItems));
-        localStorage.setItem("app_bnccProgress", JSON.stringify(bnccProgress));
-        localStorage.setItem("app_skillsTree", JSON.stringify(skillsTree));
-        localStorage.setItem("app_contentsTree", JSON.stringify(contentsTree));
-        localStorage.setItem("app_menus", JSON.stringify(menus));
-        localStorage.setItem("app_portfolioEntries", JSON.stringify(portfolioEntries));
-        localStorage.setItem("app_assessments", JSON.stringify(assessments));
-        localStorage.setItem("app_invoices", JSON.stringify(invoices));
-        localStorage.setItem("app_notifications", JSON.stringify(notifications));
-        localStorage.setItem("app_pegadaPosts", JSON.stringify(pegadaPosts));
+        try {
+            localStorage.setItem("app_students", JSON.stringify(students));
+            localStorage.setItem("app_classes", JSON.stringify(classes));
+            localStorage.setItem("app_schedule", JSON.stringify(schedule));
+            localStorage.setItem("app_dailyLogs", JSON.stringify(dailyLogs));
+            localStorage.setItem("app_tasks", JSON.stringify(tasks));
+            localStorage.setItem("app_muralEvents", JSON.stringify(muralEvents));
+            localStorage.setItem("app_projects", JSON.stringify(projects));
+            localStorage.setItem("app_messages", JSON.stringify(messages));
+            localStorage.setItem("app_mosaicData", JSON.stringify(mosaicData));
+            localStorage.setItem("app_libraryItems", JSON.stringify(libraryItems));
+            localStorage.setItem("app_bnccProgress", JSON.stringify(bnccProgress));
+            localStorage.setItem("app_skillsTree", JSON.stringify(skillsTree));
+            localStorage.setItem("app_contentsTree", JSON.stringify(contentsTree));
+            localStorage.setItem("app_menus", JSON.stringify(menus));
+            localStorage.setItem("app_portfolioEntries", JSON.stringify(portfolioEntries));
+            localStorage.setItem("app_assessments", JSON.stringify(assessments));
+            localStorage.setItem("app_invoices", JSON.stringify(invoices));
+            localStorage.setItem("app_notifications", JSON.stringify(notifications));
+            localStorage.setItem("app_pegadaPosts", JSON.stringify(pegadaPosts));
+        } catch (error) {
+            console.error("Erro ao salvar no cache local. O limite de armazenamento pode ter sido atingido.", error);
+        }
     }, [students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, mosaicData, libraryItems, bnccProgress, skillsTree, contentsTree, menus, portfolioEntries, assessments, invoices, notifications, pegadaPosts, isLoaded]);
 
     // Actions

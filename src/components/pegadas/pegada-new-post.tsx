@@ -73,7 +73,29 @@ export function PegadaNewPost() {
             const promises = files.map(file => {
                 return new Promise<string>((resolve) => {
                     const reader = new FileReader();
-                    reader.onloadend = () => resolve(reader.result as string);
+                    reader.onload = (event) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            let width = img.width;
+                            let height = img.height;
+                            const MAX_DIMENSION = 800; // Limit rendering size
+                            if (width > height && width > MAX_DIMENSION) {
+                                height *= MAX_DIMENSION / width;
+                                width = MAX_DIMENSION;
+                            } else if (height > MAX_DIMENSION) {
+                                width *= MAX_DIMENSION / height;
+                                height = MAX_DIMENSION;
+                            }
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx?.drawImage(img, 0, 0, width, height);
+                            // Quality 0.7 to significantly reduce Base64 string length
+                            resolve(canvas.toDataURL('image/jpeg', 0.7));
+                        };
+                        img.src = event.target?.result as string;
+                    };
                     reader.readAsDataURL(file);
                 });
             });
