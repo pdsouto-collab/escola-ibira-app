@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { PegadaPost, PegadaInteraction } from "@/lib/data";
 import { useAppStore } from "@/lib/store";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { TreeDeciduous, MessageSquare, Mic, Send, MoreVertical, Play, Pencil, Trash, X, Save } from "lucide-react";
+import { TreeDeciduous, MessageSquare, Mic, Send, MoreVertical, Play, Pencil, Trash, X, Save, ChevronLeft, ChevronRight } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -23,11 +23,19 @@ export function PegadaPostCard({ post }: PegadaPostCardProps) {
     const [showComments, setShowComments] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState(post.content);
+    const scrollRef = useRef<HTMLDivElement>(null);
 
     const hasLiked = post.interactions.some(i => i.type === 'like' && i.userId === currentUser?.id);
     const likeCount = post.interactions.filter(i => i.type === 'like').length;
     const commentCount = post.interactions.filter(i => i.type === 'comment' || i.type === 'audio').length;
     const canManage = currentUser?.id === post.authorId || currentUser?.role === "admin" || currentUser?.role === "director";
+
+    const scroll = (direction: 'left' | 'right') => {
+        if (scrollRef.current) {
+            const amount = scrollRef.current.clientWidth;
+            scrollRef.current.scrollBy({ left: direction === 'left' ? -amount : amount, behavior: 'smooth' });
+        }
+    };
 
     const handleLike = () => {
         if (!currentUser || hasLiked) return;
@@ -93,17 +101,35 @@ export function PegadaPostCard({ post }: PegadaPostCardProps) {
                 {post.type === "photo" && (
                     post.mediaUrls && post.mediaUrls.length > 0 ? (
                         <div className="relative aspect-video bg-slate-100 overflow-hidden group">
-                            <div className="flex w-full h-full overflow-x-auto snap-x snap-mandatory hide-scrollbar">
+                            <div ref={scrollRef} className="flex w-full h-full overflow-x-auto snap-x snap-mandatory hide-scrollbar">
                                 {post.mediaUrls.map((url, i) => (
                                     <img key={i} src={url} alt={`${post.title} - foto ${i + 1}`} className="w-full h-full object-cover shrink-0 snap-center" />
                                 ))}
                             </div>
                             {post.mediaUrls.length > 1 && (
-                                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 bg-black/20 px-2 py-1 rounded-full backdrop-blur-sm">
-                                    {post.mediaUrls.map((_, i) => (
-                                        <div key={i} className="h-1.5 w-1.5 rounded-full bg-white shadow-sm opacity-50 first:opacity-100" />
-                                    ))}
-                                </div>
+                                <>
+                                    <Button
+                                        variant="default"
+                                        size="icon"
+                                        className="absolute top-1/2 left-2 -translate-y-1/2 h-8 w-8 rounded-full bg-black/30 hover:bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                                        onClick={() => scroll('left')}
+                                    >
+                                        <ChevronLeft className="h-5 w-5" />
+                                    </Button>
+                                    <Button
+                                        variant="default"
+                                        size="icon"
+                                        className="absolute top-1/2 right-2 -translate-y-1/2 h-8 w-8 rounded-full bg-black/30 hover:bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                                        onClick={() => scroll('right')}
+                                    >
+                                        <ChevronRight className="h-5 w-5" />
+                                    </Button>
+                                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 bg-black/20 px-2 py-1 rounded-full backdrop-blur-sm">
+                                        {post.mediaUrls.map((_, i) => (
+                                            <div key={i} className="h-1.5 w-1.5 rounded-full bg-white shadow-sm opacity-50 first:opacity-100" />
+                                        ))}
+                                    </div>
+                                </>
                             )}
                         </div>
                     ) : post.mediaUrl ? (

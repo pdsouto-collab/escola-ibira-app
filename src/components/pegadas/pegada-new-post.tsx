@@ -70,8 +70,7 @@ export function PegadaNewPost() {
             };
             reader.readAsDataURL(file);
         } else {
-            const newFiles = files.slice(0, 5); // Limita a 5 fotos
-            const promises = newFiles.map(file => {
+            const promises = files.map(file => {
                 return new Promise<string>((resolve) => {
                     const reader = new FileReader();
                     reader.onloadend = () => resolve(reader.result as string);
@@ -79,9 +78,14 @@ export function PegadaNewPost() {
                 });
             });
             const results = await Promise.all(promises);
-            setMediaUrls(results);
+            setMediaUrls(prev => {
+                const newUrls = type === 'photo' ? [...prev, ...results] : results;
+                return newUrls.slice(0, 5); // Limita a 5 fotos no total
+            });
             setType(fileType);
         }
+
+        e.target.value = '';
     };
 
     return (
@@ -133,25 +137,49 @@ export function PegadaNewPost() {
 
                         {mediaUrls.length > 0 && (
                             <div className="space-y-2">
-                                <div className={`relative w-full aspect-video rounded-xl overflow-hidden border border-indigo-100 bg-slate-50 flex ${mediaUrls.length > 1 ? 'gap-1 overflow-x-auto snap-x snap-mandatory hide-scrollbar' : ''}`}>
+                                <div className={`relative w-full aspect-video rounded-xl overflow-hidden border border-indigo-100 bg-slate-50 flex ${type === 'photo' ? 'gap-2 overflow-x-auto snap-x snap-mandatory hide-scrollbar p-2' : ''}`}>
                                     {type === 'video' ? (
-                                        <video src={mediaUrls[0]} className="w-full h-full object-cover shrink-0 snap-center" controls />
+                                        <>
+                                            <video src={mediaUrls[0]} className="w-full h-full object-cover shrink-0 snap-center" controls />
+                                            <Button
+                                                variant="destructive"
+                                                size="icon"
+                                                className="absolute top-2 right-2 h-8 w-8 rounded-full shadow-md"
+                                                onClick={() => setMediaUrls([])}
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        </>
                                     ) : (
-                                        mediaUrls.map((url, i) => (
-                                            <img key={i} src={url} alt={`Preview ${i}`} className={`h-full object-cover shrink-0 snap-center ${mediaUrls.length > 1 ? 'w-[85%]' : 'w-full'}`} />
-                                        ))
+                                        <>
+                                            {mediaUrls.map((url, i) => (
+                                                <div key={i} className="relative shrink-0 snap-center w-[85%] sm:w-[60%] h-full rounded-lg overflow-hidden border border-slate-200 shadow-sm">
+                                                    <img src={url} alt={`Preview ${i}`} className="w-full h-full object-cover bg-slate-100" />
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="icon"
+                                                        className="absolute top-2 right-2 h-8 w-8 rounded-full shadow-md opacity-90 transition-opacity hover:opacity-100"
+                                                        onClick={() => setMediaUrls(prev => prev.filter((_, index) => index !== i))}
+                                                    >
+                                                        <X className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                            {mediaUrls.length < 5 && (
+                                                <button
+                                                    onClick={() => fileInputRef.current?.click()}
+                                                    className="shrink-0 snap-center w-[85%] sm:w-[60%] h-full flex flex-col items-center justify-center border-2 border-dashed border-indigo-200 rounded-lg hover:bg-indigo-50 hover:border-indigo-400 transition-colors text-indigo-400 hover:text-indigo-500 bg-white shadow-sm"
+                                                >
+                                                    <Plus className="h-8 w-8 mb-2" />
+                                                    <span className="text-sm font-medium">Adicionar foto</span>
+                                                    <span className="text-xs opacity-70">({5 - mediaUrls.length} restantes)</span>
+                                                </button>
+                                            )}
+                                        </>
                                     )}
-                                    <Button
-                                        variant="destructive"
-                                        size="icon"
-                                        className="absolute top-2 right-2 h-8 w-8 rounded-full"
-                                        onClick={() => setMediaUrls([])}
-                                    >
-                                        <X className="h-4 w-4" />
-                                    </Button>
                                 </div>
-                                {mediaUrls.length > 1 && type === 'photo' && (
-                                    <p className="text-[10px] text-slate-500 text-center font-medium animate-pulse">{mediaUrls.length} fotos prontas. Deslize para ver.</p>
+                                {type === 'photo' && (
+                                    <p className="text-[10px] text-slate-500 text-center font-medium animate-pulse">{mediaUrls.length} de 5 fotos prontas.{mediaUrls.length > 1 || mediaUrls.length < 5 ? ' Deslize para ver.' : ''}</p>
                                 )}
                             </div>
                         )}
