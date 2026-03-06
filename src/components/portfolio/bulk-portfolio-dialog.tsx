@@ -32,7 +32,7 @@ interface StudentPortfolioForm {
 }
 
 export function BulkPortfolioDialog({ open, onOpenChange, date }: BulkPortfolioDialogProps) {
-    const { students, classes, portfolioEntries, addPortfolioEntry, updatePortfolioEntry, removePortfolioEntry } = useAppStore();
+    const { students, classes, portfolioEntries, addPortfolioEntry, updatePortfolioEntry, removePortfolioEntry, addPegadaPost, currentUser } = useAppStore();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Flow State
@@ -189,6 +189,23 @@ export function BulkPortfolioDialog({ open, onOpenChange, date }: BulkPortfolioD
                 tags: tagsArray
             };
             addPortfolioEntry(entryData);
+        });
+
+        // Add a single PegadaPost to the feed as well
+        const defaultImage = "https://images.unsplash.com/photo-1544717297-fa95b6ee9643?q=80&w=600&auto=format&fit=crop";
+        const hasCustomImage = imageUrl !== defaultImage;
+
+        addPegadaPost({
+            id: `pegada-${Date.now()}`,
+            authorId: currentUser?.id || "u2",
+            authorName: currentUser?.name || "Professor",
+            type: hasCustomImage ? "photo" : "note",
+            title: title.trim(),
+            content: baseNarrative.trim() || "Nova vivência registrada para a turma.",
+            mediaUrl: hasCustomImage ? imageUrl : undefined,
+            tags: tagsArray,
+            interactions: [],
+            createdAt: new Date().toISOString()
         });
 
         onOpenChange(false);
