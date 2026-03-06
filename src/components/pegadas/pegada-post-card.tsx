@@ -90,10 +90,27 @@ export function PegadaPostCard({ post }: PegadaPostCardProps) {
             </CardHeader>
 
             <CardContent className="p-0">
-                {post.type === "photo" && post.mediaUrl && (
-                    <div className="relative aspect-video bg-slate-100">
-                        <img src={post.mediaUrl} alt={post.title} className="w-full h-full object-cover" />
-                    </div>
+                {post.type === "photo" && (
+                    post.mediaUrls && post.mediaUrls.length > 0 ? (
+                        <div className="relative aspect-video bg-slate-100 overflow-hidden group">
+                            <div className="flex w-full h-full overflow-x-auto snap-x snap-mandatory hide-scrollbar">
+                                {post.mediaUrls.map((url, i) => (
+                                    <img key={i} src={url} alt={`${post.title} - foto ${i + 1}`} className="w-full h-full object-cover shrink-0 snap-center" />
+                                ))}
+                            </div>
+                            {post.mediaUrls.length > 1 && (
+                                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 bg-black/20 px-2 py-1 rounded-full backdrop-blur-sm">
+                                    {post.mediaUrls.map((_, i) => (
+                                        <div key={i} className="h-1.5 w-1.5 rounded-full bg-white shadow-sm opacity-50 first:opacity-100" />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    ) : post.mediaUrl ? (
+                        <div className="relative aspect-video bg-slate-100">
+                            <img src={post.mediaUrl} alt={post.title} className="w-full h-full object-cover" />
+                        </div>
+                    ) : null
                 )}
 
                 {post.type === "video" && post.mediaUrl && (

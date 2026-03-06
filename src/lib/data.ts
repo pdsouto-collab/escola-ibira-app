@@ -4223,6 +4223,7 @@ export interface PegadaPost {
     title: string;
     content: string;
     mediaUrl?: string;
+    mediaUrls?: string[]; // Multiple images up to 5
     tags?: string[];
     interactions: PegadaInteraction[];
     createdAt: string;

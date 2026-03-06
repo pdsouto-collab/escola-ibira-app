@@ -26,7 +26,7 @@ export function PegadaNewPost() {
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [isBulkOpen, setIsBulkOpen] = useState(false);
-    const [mediaUrl, setMediaUrl] = useState<string | undefined>(undefined);
+    const [mediaUrls, setMediaUrls] = useState<string[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const videoInputRef = useRef<HTMLInputElement>(null);
 
@@ -44,7 +44,8 @@ export function PegadaNewPost() {
             type,
             title: title.trim(),
             content: content.trim(),
-            mediaUrl: mediaUrl || (type === 'photo' ? "https://images.unsplash.com/photo-1502086223501-7ea244b05ffb?q=80&w=800&auto=format&fit=crop" : undefined),
+            mediaUrl: mediaUrls.length > 0 ? mediaUrls[0] : (type === 'photo' ? "https://images.unsplash.com/photo-1502086223501-7ea244b05ffb?q=80&w=800&auto=format&fit=crop" : undefined),
+            mediaUrls: mediaUrls.length > 0 ? mediaUrls : undefined,
             createdAt: new Date().toISOString(),
             interactions: []
         };
@@ -52,19 +53,34 @@ export function PegadaNewPost() {
         addPegadaPost(newPost);
         setTitle("");
         setContent("");
-        setMediaUrl(undefined);
+        setMediaUrls([]);
         setIsExpanded(false);
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fileType: 'photo' | 'video') => {
-        const file = e.target.files?.[0];
-        if (file) {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, fileType: 'photo' | 'video') => {
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
+
+        if (fileType === 'video') {
+            const file = files[0];
             const reader = new FileReader();
             reader.onloadend = () => {
-                setMediaUrl(reader.result as string);
+                setMediaUrls([reader.result as string]);
                 setType(fileType);
             };
             reader.readAsDataURL(file);
+        } else {
+            const newFiles = files.slice(0, 5); // Limita a 5 fotos
+            const promises = newFiles.map(file => {
+                return new Promise<string>((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result as string);
+                    reader.readAsDataURL(file);
+                });
+            });
+            const results = await Promise.all(promises);
+            setMediaUrls(results);
+            setType(fileType);
         }
     };
 
@@ -115,21 +131,28 @@ export function PegadaNewPost() {
                             className="bg-white border-indigo-100 focus-visible:ring-indigo-500 min-h-[100px] resize-none"
                         />
 
-                        {mediaUrl && (
-                            <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-indigo-100 bg-white">
-                                {type === 'video' ? (
-                                    <video src={mediaUrl} className="w-full h-full object-cover" controls />
-                                ) : (
-                                    <img src={mediaUrl} alt="Preview" className="w-full h-full object-cover" />
+                        {mediaUrls.length > 0 && (
+                            <div className="space-y-2">
+                                <div className={`relative w-full aspect-video rounded-xl overflow-hidden border border-indigo-100 bg-slate-50 flex ${mediaUrls.length > 1 ? 'gap-1 overflow-x-auto snap-x snap-mandatory hide-scrollbar' : ''}`}>
+                                    {type === 'video' ? (
+                                        <video src={mediaUrls[0]} className="w-full h-full object-cover shrink-0 snap-center" controls />
+                                    ) : (
+                                        mediaUrls.map((url, i) => (
+                                            <img key={i} src={url} alt={`Preview ${i}`} className={`h-full object-cover shrink-0 snap-center ${mediaUrls.length > 1 ? 'w-[85%]' : 'w-full'}`} />
+                                        ))
+                                    )}
+                                    <Button
+                                        variant="destructive"
+                                        size="icon"
+                                        className="absolute top-2 right-2 h-8 w-8 rounded-full"
+                                        onClick={() => setMediaUrls([])}
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                                {mediaUrls.length > 1 && type === 'photo' && (
+                                    <p className="text-[10px] text-slate-500 text-center font-medium animate-pulse">{mediaUrls.length} fotos prontas. Deslize para ver.</p>
                                 )}
-                                <Button
-                                    variant="destructive"
-                                    size="icon"
-                                    className="absolute top-2 right-2 h-8 w-8 rounded-full"
-                                    onClick={() => setMediaUrl(undefined)}
-                                >
-                                    <X className="h-4 w-4" />
-                                </Button>
                             </div>
                         )}
 
@@ -137,6 +160,7 @@ export function PegadaNewPost() {
                             <div className="flex gap-2">
                                 <input
                                     type="file"
+                                    multiple
                                     ref={fileInputRef}
                                     className="hidden"
                                     accept="image/*"
@@ -170,7 +194,7 @@ export function PegadaNewPost() {
                                     size="sm"
                                     onClick={() => {
                                         setType('note');
-                                        setMediaUrl(undefined);
+                                        setMediaUrls([]);
                                     }}
                                     className={`gap-1.5 rounded-full ${type === 'note' ? 'bg-indigo-600' : 'bg-white border-indigo-100 text-indigo-600'}`}
                                 >
