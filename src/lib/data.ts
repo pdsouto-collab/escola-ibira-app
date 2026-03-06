@@ -3864,10 +3864,11 @@ export const mockPortfolio: PortfolioEntry[] = [
 export interface Contact {
     id: string;
     name: string;
-    role: "Mãe" | "Pai" | "Responsável";
+    role: "Mãe" | "Pai" | "Responsável" | "Grupo" | string;
     studentName: string;
     studentId: string;
     avatarUrl?: string;
+    isGroup?: boolean;
     unreadCount: number;
     lastMessage: string;
     lastMessageTime: string;
@@ -3903,6 +3904,17 @@ export const mockContacts: Contact[] = [
         unreadCount: 0,
         lastMessage: "Ela vai chegar um pouco atrasada amanhã.",
         lastMessageTime: "Ontem"
+    },
+    {
+        id: "group-1",
+        name: "Pais - Jardim I",
+        role: "Grupo",
+        studentName: "Jardim I",
+        studentId: "jardim-i",
+        isGroup: true,
+        unreadCount: 3,
+        lastMessage: "Ana (Diretora): Lembrete da reunião amanhã.",
+        lastMessageTime: "11:00"
     }
 ];
 
@@ -3910,6 +3922,7 @@ export interface Message {
     id: string;
     contactId: string;
     sender: "me" | "them";
+    senderName?: string;
     content: string;
     timestamp: string;
 }
@@ -3919,8 +3932,12 @@ export const mockMessages: Message[] = [
     { id: "m2", contactId: "c1", sender: "me", content: "Bom dia, Mariana! Tudo bem?", timestamp: "08:05" },
     { id: "m3", contactId: "c1", sender: "them", content: "Tudo ótimo. A Alice esqueceu o casaco rosa dela aí?", timestamp: "10:30" },
 
-    { id: "m4", contactId: "c2", sender: "me", content: "Olá Carlos, segue o registro da atividade de hoje.", timestamp: "14:00" },
-    { id: "m5", contactId: "c2", sender: "them", content: "Obrigado pelas fotos! Ele adorou.", timestamp: "14:15" }
+    // Group messages
+    { id: "m4", contactId: "group-1", sender: "them", senderName: "Ana (Diretora)", content: "Bom dia, responsáveis! Lembrete da nossa reunião pedagógica amanhã às 18h.", timestamp: "08:00" },
+    { id: "m5", contactId: "group-1", sender: "them", senderName: "Carlos Souza", content: "Obrigado pelo aviso, Ana. Estarei presente com a mãe do Bernardo.", timestamp: "08:05" },
+    { id: "m6", contactId: "group-1", sender: "them", senderName: "Patrícia", content: "Nós também!", timestamp: "08:12" },
+    { id: "m7", contactId: "c2", sender: "me", content: "Olá Carlos, segue o registro da atividade de hoje.", timestamp: "14:00" },
+    { id: "m8", contactId: "c2", sender: "them", content: "Obrigado pelas fotos! Ele adorou.", timestamp: "14:15" }
 ];
 
 export interface Task {
@@ -3989,6 +4006,7 @@ export interface ChatMessage {
     content: string;
     timestamp: string;
     read: boolean;
+    senderName?: string;
 }
 
 export const mockTasks: Task[] = [

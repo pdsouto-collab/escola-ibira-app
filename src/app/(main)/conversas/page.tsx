@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, Send, MoveLeft } from "lucide-react";
+import { Search, Send, MoveLeft, Users } from "lucide-react";
 
 export default function ChatPage() {
     const { messages, sendMessage } = useAppStore();
@@ -79,9 +79,15 @@ export default function ChatPage() {
                                 className={`flex items-center gap-3 p-4 hover:bg-slate-50 transition-colors text-left border-b last:border-0 ${selectedContact?.id === contact.id ? 'bg-slate-100' : ''}`}
                             >
                                 <div className="relative">
-                                    <Avatar className="h-12 w-12 border">
-                                        <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${contact.name}`} />
-                                        <AvatarFallback>{contact.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                                    <Avatar className={`h-12 w-12 border ${contact.isGroup ? 'bg-indigo-50 flex items-center justify-center' : ''}`}>
+                                        {contact.isGroup ? (
+                                            <Users className="h-6 w-6 text-indigo-500" />
+                                        ) : (
+                                            <>
+                                                <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${contact.name}`} />
+                                                <AvatarFallback>{contact.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                                            </>
+                                        )}
                                     </Avatar>
                                     {contact.unreadCount > 0 && (
                                         <span className="absolute -top-1 -right-1 bg-green-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full border-2 border-white font-bold">
@@ -94,9 +100,15 @@ export default function ChatPage() {
                                         <span className="font-semibold text-slate-800 truncate">{contact.name}</span>
                                         <span className="text-xs text-slate-400 whitespace-nowrap">{contact.lastMessageTime}</span>
                                     </div>
-                                    <p className="text-sm text-slate-500 truncate mb-0.5">
-                                        <span className="font-medium text-primary/80">({contact.role} de {contact.studentName.split(" ")[0]})</span>
-                                    </p>
+                                    {contact.isGroup ? (
+                                        <p className="text-sm text-slate-500 truncate mb-0.5">
+                                            <span className="font-medium text-indigo-500/80">Grupo da Turma</span>
+                                        </p>
+                                    ) : (
+                                        <p className="text-sm text-slate-500 truncate mb-0.5">
+                                            <span className="font-medium text-primary/80">({contact.role} de {contact.studentName.split(" ")[0]})</span>
+                                        </p>
+                                    )}
                                     <p className="text-sm text-slate-400 truncate">
                                         {contact.lastMessage}
                                     </p>
@@ -117,13 +129,19 @@ export default function ChatPage() {
                                 <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setSelectedContact(null)}>
                                     <MoveLeft className="w-5 h-5" />
                                 </Button>
-                                <Avatar className="h-10 w-10">
-                                    <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedContact.name}`} />
-                                    <AvatarFallback>{selectedContact.name.substring(0, 2)}</AvatarFallback>
+                                <Avatar className={`h-10 w-10 ${selectedContact.isGroup ? 'bg-indigo-50 flex flex-col items-center justify-center' : ''}`}>
+                                    {selectedContact.isGroup ? (
+                                        <Users className="h-5 w-5 text-indigo-500" />
+                                    ) : (
+                                        <>
+                                            <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedContact.name}`} />
+                                            <AvatarFallback>{selectedContact.name.substring(0, 2)}</AvatarFallback>
+                                        </>
+                                    )}
                                 </Avatar>
                                 <div>
                                     <h2 className="font-bold text-slate-800 leading-tight">{selectedContact.name}</h2>
-                                    <p className="text-xs text-slate-500">{selectedContact.role} de {selectedContact.studentName}</p>
+                                    <p className="text-xs text-slate-500">{selectedContact.isGroup ? 'Grupo de Pais e Professores' : `${selectedContact.role} de ${selectedContact.studentName}`}</p>
                                 </div>
                             </div>
                         </div>
@@ -137,11 +155,14 @@ export default function ChatPage() {
                                         className={`flex flex-col max-w-[80%] ${msg.senderId === 'me' ? 'self-end items-end' : 'self-start items-start'}`}
                                     >
                                         <div
-                                            className={`px-4 py-2 rounded-2xl shadow-sm text-sm ${msg.senderId === 'me'
+                                            className={`max-w-full px-4 py-2 rounded-2xl shadow-sm text-sm ${msg.senderId === 'me'
                                                 ? 'bg-primary text-white rounded-tr-none'
                                                 : 'bg-white text-slate-800 rounded-tl-none border'
                                                 }`}
                                         >
+                                            {selectedContact.isGroup && msg.senderId !== 'me' && msg.senderName && (
+                                                <div className="font-bold text-xs text-indigo-500 mb-0.5">{msg.senderName}</div>
+                                            )}
                                             {msg.content}
                                         </div>
                                         <span className="text-[10px] text-slate-400 mt-1 px-1">

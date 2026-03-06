@@ -226,7 +226,8 @@ const initialMessages: ChatMessage[] = mockMessages.map(m => ({
     receiverId: m.sender === "me" ? m.contactId : "me",
     content: m.content,
     timestamp: m.timestamp,
-    read: true
+    read: true,
+    senderName: m.senderName
 }));
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
