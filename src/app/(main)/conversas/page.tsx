@@ -8,17 +8,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, Send, MoveLeft, Users } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Search, Send, MoveLeft, Users, Plus } from "lucide-react";
 
 export default function ChatPage() {
     const { messages, sendMessage } = useAppStore();
+    const [contacts, setContacts] = useState<Contact[]>(mockContacts);
     const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
     const [inputText, setInputText] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
+    const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
+    const [newGroupName, setNewGroupName] = useState("");
+    const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     // Filter contacts based on search
-    const filteredContacts = mockContacts.filter(contact =>
+    const filteredContacts = contacts.filter(contact =>
         contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         contact.studentName.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -50,6 +57,28 @@ export default function ChatPage() {
         setInputText("");
     };
 
+    const handleCreateGroup = () => {
+        if (!newGroupName.trim() || selectedParticipants.length === 0) return;
+
+        const newGroup: Contact = {
+            id: `group-${Date.now()}`,
+            name: newGroupName,
+            role: "Grupo",
+            studentName: "Diversos",
+            studentId: "varios",
+            isGroup: true,
+            unreadCount: 0,
+            lastMessage: "Grupo criado.",
+            lastMessageTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+
+        setContacts([newGroup, ...contacts]);
+        setNewGroupName("");
+        setSelectedParticipants([]);
+        setIsCreateGroupOpen(false);
+        setSelectedContact(newGroup);
+    };
+
     const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === "Enter") handleSendMessage();
     };
@@ -59,7 +88,66 @@ export default function ChatPage() {
             {/* Contacts Sidebar */}
             <Card className={`${selectedContact ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 flex-col overflow-hidden border-r-0 md:border-r`}>
                 <div className="p-4 border-b space-y-4">
-                    <h1 className="text-2xl font-bold text-slate-800">Conversas</h1>
+                    <div className="flex justify-between items-center">
+                        <h1 className="text-2xl font-bold text-slate-800">Conversas</h1>
+                        <Dialog open={isCreateGroupOpen} onOpenChange={setIsCreateGroupOpen}>
+                            <DialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 bg-indigo-50/50" title="Novo Grupo">
+                                    <Plus className="w-5 h-5" />
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-md">
+                                <DialogHeader>
+                                    <DialogTitle>Criar Novo Grupo</DialogTitle>
+                                    <DialogDescription>
+                                        Selecione os contatos e dê um nome ao novo grupo.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="space-y-4 py-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="group-name">Nome do Grupo</Label>
+                                        <Input
+                                            id="group-name"
+                                            placeholder="Ex: Pais - Jardim II"
+                                            value={newGroupName}
+                                            onChange={(e) => setNewGroupName(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Participantes</Label>
+                                        <ScrollArea className="h-48 rounded-md border p-2 bg-slate-50">
+                                            <div className="space-y-2">
+                                                {contacts.filter(c => !c.isGroup).map((contact) => (
+                                                    <div key={contact.id} className="flex items-center space-x-2 py-1">
+                                                        <Checkbox
+                                                            id={`chk-${contact.id}`}
+                                                            checked={selectedParticipants.includes(contact.id)}
+                                                            onCheckedChange={(checked) => {
+                                                                if (checked) {
+                                                                    setSelectedParticipants([...selectedParticipants, contact.id]);
+                                                                } else {
+                                                                    setSelectedParticipants(selectedParticipants.filter(id => id !== contact.id));
+                                                                }
+                                                            }}
+                                                        />
+                                                        <Label htmlFor={`chk-${contact.id}`} className="text-sm cursor-pointer font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                                            {contact.name} ({contact.role} de {contact.studentName.split(' ')[0]})
+                                                        </Label>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </ScrollArea>
+                                    </div>
+                                </div>
+                                <DialogFooter>
+                                    <Button variant="outline" onClick={() => setIsCreateGroupOpen(false)}>Cancelar</Button>
+                                    <Button className="bg-indigo-600 hover:bg-indigo-700 text-white" onClick={handleCreateGroup} disabled={!newGroupName.trim() || selectedParticipants.length === 0}>
+                                        Criar Grupo
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
+                    </div>
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         <Input
