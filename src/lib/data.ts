@@ -3869,6 +3869,7 @@ export interface Contact {
     studentId: string;
     avatarUrl?: string;
     isGroup?: boolean;
+    participantIds?: string[];
     unreadCount: number;
     lastMessage: string;
     lastMessageTime: string;
@@ -3912,6 +3913,7 @@ export const mockContacts: Contact[] = [
         studentName: "Jardim I",
         studentId: "jardim-i",
         isGroup: true,
+        participantIds: ["c1", "c2", "c3"],
         unreadCount: 3,
         lastMessage: "Ana (Diretora): Lembrete da reunião amanhã.",
         lastMessageTime: "11:00"

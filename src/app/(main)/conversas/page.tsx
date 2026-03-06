@@ -11,7 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, Send, MoveLeft, Users, Plus } from "lucide-react";
+import { Search, Send, MoveLeft, Users, Plus, Settings, Camera } from "lucide-react";
 
 export default function ChatPage() {
     const { messages, sendMessage } = useAppStore();
@@ -22,6 +22,14 @@ export default function ChatPage() {
     const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
     const [newGroupName, setNewGroupName] = useState("");
     const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
+
+    // Edit Group States
+    const [isEditGroupOpen, setIsEditGroupOpen] = useState(false);
+    const [editGroupName, setEditGroupName] = useState("");
+    const [editSelectedParticipants, setEditSelectedParticipants] = useState<string[]>([]);
+    const [editGroupPhoto, setEditGroupPhoto] = useState<string | undefined>(undefined);
+    const editFileInputRef = useRef<HTMLInputElement>(null);
+
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     // Filter contacts based on search
@@ -67,6 +75,7 @@ export default function ChatPage() {
             studentName: "Diversos",
             studentId: "varios",
             isGroup: true,
+            participantIds: selectedParticipants,
             unreadCount: 0,
             lastMessage: "Grupo criado.",
             lastMessageTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -77,6 +86,64 @@ export default function ChatPage() {
         setSelectedParticipants([]);
         setIsCreateGroupOpen(false);
         setSelectedContact(newGroup);
+    };
+
+    const handleOpenEditGroup = () => {
+        if (!selectedContact || !selectedContact.isGroup) return;
+        setEditGroupName(selectedContact.name);
+        setEditSelectedParticipants(selectedContact.participantIds || []);
+        setEditGroupPhoto(selectedContact.avatarUrl);
+        setIsEditGroupOpen(true);
+    };
+
+    const handleEditGroupImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const MAX_DIMENSION = 200; // Small size for avatar
+                    if (width > height && width > MAX_DIMENSION) {
+                        height *= MAX_DIMENSION / width;
+                        width = MAX_DIMENSION;
+                    } else if (height > MAX_DIMENSION) {
+                        width *= MAX_DIMENSION / height;
+                        height = MAX_DIMENSION;
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx?.drawImage(img, 0, 0, width, height);
+                    setEditGroupPhoto(canvas.toDataURL('image/jpeg', 0.8));
+                };
+                img.src = event.target?.result as string;
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleSaveGroupEdit = () => {
+        if (!selectedContact || !editGroupName.trim() || editSelectedParticipants.length === 0) return;
+
+        const updatedContacts = contacts.map(c => {
+            if (c.id === selectedContact.id) {
+                return {
+                    ...c,
+                    name: editGroupName,
+                    participantIds: editSelectedParticipants,
+                    avatarUrl: editGroupPhoto
+                };
+            }
+            return c;
+        });
+
+        setContacts(updatedContacts);
+        setSelectedContact(updatedContacts.find(c => c.id === selectedContact.id) || null);
+        setIsEditGroupOpen(false);
     };
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -167,12 +234,12 @@ export default function ChatPage() {
                                 className={`flex items-center gap-3 p-4 hover:bg-slate-50 transition-colors text-left border-b last:border-0 ${selectedContact?.id === contact.id ? 'bg-slate-100' : ''}`}
                             >
                                 <div className="relative">
-                                    <Avatar className={`h-12 w-12 border ${contact.isGroup ? 'bg-indigo-50 flex items-center justify-center' : ''}`}>
-                                        {contact.isGroup ? (
+                                    <Avatar className={`h-12 w-12 border ${contact.isGroup && !contact.avatarUrl ? 'bg-indigo-50 flex items-center justify-center' : ''}`}>
+                                        {contact.isGroup && !contact.avatarUrl ? (
                                             <Users className="h-6 w-6 text-indigo-500" />
                                         ) : (
                                             <>
-                                                <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${contact.name}`} />
+                                                <AvatarImage src={contact.avatarUrl ? contact.avatarUrl : `https://api.dicebear.com/7.x/avataaars/svg?seed=${contact.name}`} />
                                                 <AvatarFallback>{contact.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                                             </>
                                         )}
@@ -217,12 +284,12 @@ export default function ChatPage() {
                                 <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setSelectedContact(null)}>
                                     <MoveLeft className="w-5 h-5" />
                                 </Button>
-                                <Avatar className={`h-10 w-10 ${selectedContact.isGroup ? 'bg-indigo-50 flex flex-col items-center justify-center' : ''}`}>
-                                    {selectedContact.isGroup ? (
+                                <Avatar className={`h-10 w-10 ${selectedContact.isGroup && !selectedContact.avatarUrl ? 'bg-indigo-50 flex flex-col items-center justify-center' : ''}`}>
+                                    {selectedContact.isGroup && !selectedContact.avatarUrl ? (
                                         <Users className="h-5 w-5 text-indigo-500" />
                                     ) : (
                                         <>
-                                            <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedContact.name}`} />
+                                            <AvatarImage src={selectedContact.avatarUrl ? selectedContact.avatarUrl : `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedContact.name}`} />
                                             <AvatarFallback>{selectedContact.name.substring(0, 2)}</AvatarFallback>
                                         </>
                                     )}
@@ -232,6 +299,91 @@ export default function ChatPage() {
                                     <p className="text-xs text-slate-500">{selectedContact.isGroup ? 'Grupo de Pais e Professores' : `${selectedContact.role} de ${selectedContact.studentName}`}</p>
                                 </div>
                             </div>
+
+                            {/* Group Settings / Edit */}
+                            {selectedContact.isGroup && (
+                                <Dialog open={isEditGroupOpen} onOpenChange={setIsEditGroupOpen}>
+                                    <DialogTrigger asChild>
+                                        <Button variant="ghost" size="icon" onClick={handleOpenEditGroup}>
+                                            <Settings className="w-5 h-5 text-slate-500" />
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="sm:max-w-md">
+                                        <DialogHeader>
+                                            <DialogTitle>Configurações do Grupo</DialogTitle>
+                                            <DialogDescription>
+                                                Altere o nome, atualize a foto ou gerencie os participantes.
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        <div className="space-y-4 py-4">
+
+                                            {/* Photo Upload Area */}
+                                            <div className="flex flex-col items-center gap-3">
+                                                <Avatar className="h-20 w-20 border-2 cursor-pointer relative group" onClick={() => editFileInputRef.current?.click()}>
+                                                    {editGroupPhoto ? (
+                                                        <AvatarImage src={editGroupPhoto} />
+                                                    ) : (
+                                                        <div className="w-full h-full bg-indigo-50 flex items-center justify-center">
+                                                            <Users className="h-8 w-8 text-indigo-500" />
+                                                        </div>
+                                                    )}
+                                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <Camera className="w-6 h-6 text-white" />
+                                                    </div>
+                                                </Avatar>
+                                                <input
+                                                    type="file"
+                                                    ref={editFileInputRef}
+                                                    onChange={handleEditGroupImageChange}
+                                                    accept="image/*"
+                                                    className="hidden"
+                                                />
+                                                <span className="text-xs text-slate-500 font-medium">Trocar Foto do Grupo</span>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="edit-group-name">Nome do Grupo</Label>
+                                                <Input
+                                                    id="edit-group-name"
+                                                    value={editGroupName}
+                                                    onChange={(e) => setEditGroupName(e.target.value)}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>Participantes ({editSelectedParticipants.length})</Label>
+                                                <ScrollArea className="h-48 rounded-md border p-2 bg-slate-50">
+                                                    <div className="space-y-2">
+                                                        {contacts.filter(c => !c.isGroup).map((contact) => (
+                                                            <div key={contact.id} className="flex items-center space-x-2 py-1">
+                                                                <Checkbox
+                                                                    id={`edit-chk-${contact.id}`}
+                                                                    checked={editSelectedParticipants.includes(contact.id)}
+                                                                    onCheckedChange={(checked) => {
+                                                                        if (checked) {
+                                                                            setEditSelectedParticipants([...editSelectedParticipants, contact.id]);
+                                                                        } else {
+                                                                            setEditSelectedParticipants(editSelectedParticipants.filter(id => id !== contact.id));
+                                                                        }
+                                                                    }}
+                                                                />
+                                                                <Label htmlFor={`edit-chk-${contact.id}`} className="text-sm cursor-pointer font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                                                    {contact.name} ({contact.role} de {contact.studentName.split(' ')[0]})
+                                                                </Label>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </ScrollArea>
+                                            </div>
+                                        </div>
+                                        <DialogFooter>
+                                            <Button variant="outline" onClick={() => setIsEditGroupOpen(false)}>Cancelar</Button>
+                                            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white" onClick={handleSaveGroupEdit} disabled={!editGroupName.trim() || editSelectedParticipants.length === 0}>
+                                                Salvar Alterações
+                                            </Button>
+                                        </DialogFooter>
+                                    </DialogContent>
+                                </Dialog>
+                            )}
                         </div>
 
                         {/* Messages List */}
