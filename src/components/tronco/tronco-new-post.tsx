@@ -19,6 +19,7 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [extraMaterials, setExtraMaterials] = useState("");
+    const [customPhoto, setCustomPhoto] = useState("");
 
     const isTeacherOrAdmin = currentUser?.role === "teacher" || currentUser?.role === "director" || currentUser?.role === "admin";
 
@@ -44,7 +45,13 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
         if (!title.trim() && !isAcontece) return; // Validation
         if (isAcontece && linkedProjectId === "none") return;
 
-        let photos = ["https://images.unsplash.com/photo-1577880216142-8549e9488dad?auto=format&fit=crop&q=80"];
+        let photos: string[] = [];
+        if (customPhoto) {
+            photos = [customPhoto];
+        } else if (!isAcontece) {
+            photos = ["https://images.unsplash.com/photo-1577880216142-8549e9488dad?auto=format&fit=crop&q=80"]; // default fallback
+        }
+
         let finalTitle = title;
 
         if (isAcontece && linkedProjectId !== "none") {
@@ -80,6 +87,7 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
         setContent("");
         setExtraMaterials("");
         setLinkedProjectId("none");
+        setCustomPhoto("");
     };
 
     if (!isExpanded) {
@@ -95,6 +103,14 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
             </div>
         );
     }
+
+    // Image attach logic
+    const handleAttachImage = () => {
+        const url = window.prompt("Cole a URL da imagem:");
+        if (url) {
+            setCustomPhoto(url);
+        }
+    };
 
     return (
         <div className="mb-8 bg-white border border-emerald-100 rounded-xl shadow-sm overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300">
@@ -167,12 +183,33 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
                         onChange={(e) => setContent(e.target.value)}
                         className="min-h-[120px] bg-slate-50 border-transparent hover:border-slate-200 focus:border-emerald-300 focus:bg-white"
                     />
+
+                    {/* Image Preview */}
+                    {customPhoto && (
+                        <div className="relative mt-2 rounded-lg overflow-hidden border border-slate-200 aspect-[4/3] max-w-sm">
+                            <button
+                                onClick={() => setCustomPhoto("")}
+                                className="absolute top-2 right-2 bg-white/90 text-slate-700 rounded-full p-1.5 shadow-sm hover:bg-red-50 hover:text-red-600 transition-colors z-10"
+                            >
+                                <span className="sr-only">Remover foto</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                            </button>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={customPhoto} alt="Preview Anexo" className="w-full h-full object-cover" />
+                        </div>
+                    )}
                 </div>
             </div>
 
             <div className="bg-slate-50 px-4 py-3 border-t flex items-center justify-between">
                 <div className="flex gap-2">
-                    <Button variant="outline" size="icon" className="h-9 w-9 text-slate-500 hover:text-slate-700 rounded-full">
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={handleAttachImage}
+                        className="h-9 w-9 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-full transition-colors"
+                        title="Anexar imagem (URL)"
+                    >
                         <ImageIcon className="h-4 w-4" />
                     </Button>
                 </div>
