@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useAppStore } from "@/lib/store";
 import { ClassBoardPost, ClassBoardCategoryType, Project } from "@/lib/data";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
     const [content, setContent] = useState("");
     const [extraMaterials, setExtraMaterials] = useState("");
     const [customPhoto, setCustomPhoto] = useState("");
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const isTeacherOrAdmin = currentUser?.role === "teacher" || currentUser?.role === "director" || currentUser?.role === "admin";
 
@@ -88,6 +89,7 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
         setExtraMaterials("");
         setLinkedProjectId("none");
         setCustomPhoto("");
+        if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
     if (!isExpanded) {
@@ -106,9 +108,17 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
 
     // Image attach logic
     const handleAttachImage = () => {
-        const url = window.prompt("Cole a URL da imagem:");
-        if (url) {
-            setCustomPhoto(url);
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setCustomPhoto(reader.result as string);
+            };
+            reader.readAsDataURL(file);
         }
     };
 
@@ -203,12 +213,19 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
 
             <div className="bg-slate-50 px-4 py-3 border-t flex items-center justify-between">
                 <div className="flex gap-2">
+                    <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                    />
                     <Button
                         variant="outline"
                         size="icon"
                         onClick={handleAttachImage}
                         className="h-9 w-9 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-full transition-colors"
-                        title="Anexar imagem (URL)"
+                        title="Anexar imagem (arquivo)"
                     >
                         <ImageIcon className="h-4 w-4" />
                     </Button>
