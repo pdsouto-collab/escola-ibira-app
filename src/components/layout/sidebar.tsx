@@ -32,20 +32,19 @@ import { BookOpen } from "lucide-react";
 const navigation = [
     { name: "Início", href: "/", icon: LayoutDashboard },
     { name: "Trilha Ibirá", href: "/mosaico", icon: Aperture, roles: ["director", "admin", "teacher"] },
-    { name: "Pegadas dos Ibiritos", href: "/pegadas", icon: Footprints },
-    { name: "Atividades Pendentes", href: "/pendencias", icon: CheckCircle2, roles: ["director", "admin", "teacher"] },
-    { name: "Mural de Eventos", href: "/mural", icon: PartyPopper },
     { name: "Tronco de Recados", href: "/tronco", icon: TreeDeciduous },
+    { name: "Pegadas dos Ibiritos", href: "/pegadas", icon: Footprints },
+    { name: "Mural de Eventos", href: "/mural", icon: PartyPopper },
+    { name: "Cardápio da Semana", href: "/cardapio", icon: Utensils },
     { name: "Rotinas", href: "/agenda", icon: CalendarDays },
     { name: "Conversas", href: "/conversas", icon: MessageCircle },
-    { name: "Banco de Projetos", href: "/projetos", icon: FolderOpen, roles: ["director", "admin", "teacher"] },
+    { name: "Atividades Pendentes", href: "/pendencias", icon: CheckCircle2, roles: ["director", "admin", "teacher"] },
     { name: "Portfólio", href: "/portfolio", icon: BookMarked },
+    { name: "Banco de Projetos", href: "/projetos", icon: FolderOpen, roles: ["director", "admin", "teacher"] },
     { name: "Relatórios e Dashboards", href: "/relatorios", icon: BarChart3 },
-    { name: "Cardápio da Semana", href: "/cardapio", icon: Utensils },
     { name: "Alunos / Turmas", href: "/alunos", icon: Users, roles: ["director", "admin", "teacher"] },
+    { name: "Docentes", href: "/professores", icon: GraduationCap, roles: ["director", "admin"] },
     { name: "Financeiro", href: "/financeiro", icon: Wallet, roles: ["director", "admin"] },
-    // Restricted Routes
-    { name: "Professores", href: "/professores", icon: GraduationCap, roles: ["director", "admin"] },
     { name: "Painel Admin", href: "/admin-panel", icon: Settings, roles: ["director", "admin"] },
 ];
 
