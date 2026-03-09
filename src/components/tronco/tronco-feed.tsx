@@ -172,7 +172,7 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
     return (
         <div className="space-y-6">
             {sortedPosts.map(post => {
-                const isAcontece = post.categoryType === "Acontece na Classe";
+                const isAcontece = post.categoryType === "Projetos da Classe";
 
                 return (
                     <div key={post.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
@@ -223,7 +223,7 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
                                 {post.content}
                             </div>
 
-                            {/* Extra Materials (for Acontece na Classe) */}
+                            {/* Extra Materials (for Projetos da Classe) */}
                             {post.extraMaterials && (
                                 <div className="mt-4 p-3.5 bg-slate-50 border border-slate-100 rounded-xl text-sm">
                                     <div className="font-semibold text-slate-900 mb-1 flex items-center gap-2">

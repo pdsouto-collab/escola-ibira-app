@@ -26,8 +26,8 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
 
     if (!isTeacherOrAdmin) return null;
 
-    // Acontece na Classe logic
-    const isAcontece = categoryType === "Acontece na Classe";
+    // Projetos da Classe logic
+    const isAcontece = categoryType === "Projetos da Classe";
     const availableProjects = projects.filter(p => p.status === "active"); // simple filter, can be scoped by class if needed.
 
     const handleProjectSelect = (pid: string) => {
@@ -142,11 +142,11 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
                         Novidades da Turma
                     </button>
                     <button
-                        onClick={() => setCategoryType("Acontece na Classe")}
+                        onClick={() => setCategoryType("Projetos da Classe")}
                         className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-md transition-all ${isAcontece ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
                         <Shapes className="h-4 w-4" />
-                        Acontece na Classe
+                        Projetos da Classe
                     </button>
                 </div>
 

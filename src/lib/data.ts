@@ -4288,7 +4288,7 @@ export interface PostInteraction {
     createdAt: string;
 }
 
-export type ClassBoardCategoryType = "Acontece na Classe" | "Novidades da Turma";
+export type ClassBoardCategoryType = "Projetos da Classe" | "Novidades da Turma";
 
 export interface ClassBoardPost {
     id: string;
@@ -4312,7 +4312,7 @@ export const mockClassBoardPosts: ClassBoardPost[] = [
         authorId: "u2",
         authorName: "Profa. Cláudia",
         authorRole: "Responsável pela Turma",
-        categoryType: "Acontece na Classe",
+        categoryType: "Projetos da Classe",
         linkedProjectId: "p1", // Assumes project p1 exists
         title: "Cultivo de Hortaliças Hoje!",
         content: "Nossa tarde foi maravilhosa mexendo na terra.",
