@@ -4276,3 +4276,60 @@ export const mockPegadas: PegadaPost[] = [
         createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
     }
 ];
+
+export interface PostInteraction {
+    id: string;
+    postId: string;
+    userId: string;
+    userName: string;
+    userRole?: string;
+    type: "like" | "comment";
+    content?: string;
+    createdAt: string;
+}
+
+export type ClassBoardCategoryType = "Acontece na Classe" | "Novidades da Turma";
+
+export interface ClassBoardPost {
+    id: string;
+    classId: string;
+    authorId: string;
+    authorName: string;
+    authorRole?: string;
+    categoryType: ClassBoardCategoryType;
+    linkedProjectId?: string;
+    title: string;
+    content: string;
+    extraMaterials?: string;
+    photos?: string[];
+    createdAt: string;
+}
+
+export const mockClassBoardPosts: ClassBoardPost[] = [
+    {
+        id: "cbp1",
+        classId: "jardim-i",
+        authorId: "u2",
+        authorName: "Profa. Cláudia",
+        authorRole: "Responsável pela Turma",
+        categoryType: "Acontece na Classe",
+        linkedProjectId: "p1", // Assumes project p1 exists
+        title: "Cultivo de Hortaliças Hoje!",
+        content: "Nossa tarde foi maravilhosa mexendo na terra.",
+        extraMaterials: "Livro de Ciências: A Semente de Mostarda.",
+        photos: ["https://images.unsplash.com/photo-1592819044824-75dd4f566fab?q=80&w=800&auto=format&fit=crop"],
+        createdAt: new Date().toISOString()
+    }
+];
+
+export const mockPostInteractions: PostInteraction[] = [
+    {
+        id: "pi1",
+        postId: "cbp1",
+        userId: "u5",
+        userName: "Mariana",
+        userRole: "Pai/Responsável",
+        type: "like",
+        createdAt: new Date().toISOString()
+    }
+];

@@ -1,0 +1,2 @@
+﻿src/components/tronco/tronco-feed.tsx(32,23): error TS2367: This comparison appears to be unintentional because the types 'UserRole | undefined' and '"parent"' have no overlap.
+src/components/tronco/tronco-feed.tsx(47,23): error TS2367: This comparison appears to be unintentional because the types 'UserRole | undefined' and '"parent"' have no overlap.

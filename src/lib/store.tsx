@@ -17,7 +17,8 @@ import {
     PortfolioEntry, mockPortfolio,
     Invoice, mockInvoices,
     AppNotification, mockNotifications,
-    PegadaPost, mockPegadas, PegadaInteraction
+    PegadaPost, mockPegadas, PegadaInteraction,
+    ClassBoardPost, mockClassBoardPosts, PostInteraction, mockPostInteractions
 } from "@/lib/data";
 
 interface AppState {
@@ -43,6 +44,8 @@ interface AppState {
     invoices: Invoice[];
     notifications: AppNotification[];
     pegadaPosts: PegadaPost[];
+    classBoardPosts: ClassBoardPost[];
+    postInteractions: PostInteraction[];
 }
 
 interface AppContextType extends AppState {
@@ -139,6 +142,10 @@ interface AppContextType extends AppState {
     updatePegadaPost: (postId: string, updates: Partial<PegadaPost>) => void;
     deletePegadaPost: (postId: string) => void;
     addPegadaInteraction: (postId: string, interaction: PegadaInteraction) => void;
+
+    // Class Board
+    addClassBoardPost: (post: ClassBoardPost) => void;
+    addPostInteraction: (interaction: PostInteraction) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -254,6 +261,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [invoices, setInvoices] = useState<Invoice[]>(mockInvoices);
     const [notifications, setNotifications] = useState<AppNotification[]>(mockNotifications);
     const [pegadaPosts, setPegadaPosts] = useState<PegadaPost[]>(mockPegadas);
+    const [classBoardPosts, setClassBoardPosts] = useState<ClassBoardPost[]>(mockClassBoardPosts);
+    const [postInteractions, setPostInteractions] = useState<PostInteraction[]>(mockPostInteractions);
 
     const [isLoaded, setIsLoaded] = useState(false);
 
@@ -289,6 +298,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             setDailyLogs(mockDailyLogs);
             setStudents(mockStudents);
             setClasses(mockClasses);
+            setClassBoardPosts(mockClassBoardPosts);
+            setPostInteractions(mockPostInteractions);
 
             load("bnccProgress", setBnccProgress, {});
 
@@ -315,6 +326,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             load("invoices", setInvoices, mockInvoices);
             load("notifications", setNotifications, mockNotifications);
             load("pegadaPosts", setPegadaPosts, mockPegadas);
+            load("classBoardPosts", setClassBoardPosts, mockClassBoardPosts);
+            load("postInteractions", setPostInteractions, mockPostInteractions);
 
             const savedCurrentUser = localStorage.getItem("app_currentUser");
             if (savedCurrentUser) {
@@ -356,10 +369,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem("app_invoices", JSON.stringify(invoices));
             localStorage.setItem("app_notifications", JSON.stringify(notifications));
             localStorage.setItem("app_pegadaPosts", JSON.stringify(pegadaPosts));
+            localStorage.setItem("app_classBoardPosts", JSON.stringify(classBoardPosts));
+            localStorage.setItem("app_postInteractions", JSON.stringify(postInteractions));
         } catch (error) {
             console.error("Erro ao salvar no cache local. O limite de armazenamento pode ter sido atingido.", error);
         }
-    }, [students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, mosaicData, libraryItems, bnccProgress, skillsTree, contentsTree, menus, portfolioEntries, assessments, invoices, notifications, pegadaPosts, isLoaded]);
+    }, [students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, mosaicData, libraryItems, bnccProgress, skillsTree, contentsTree, menus, portfolioEntries, assessments, invoices, notifications, pegadaPosts, classBoardPosts, postInteractions, isLoaded]);
 
     // Actions
     const addStudent = (student: Student) => {
@@ -694,6 +709,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }));
     };
 
+    const addClassBoardPost = (post: ClassBoardPost) => setClassBoardPosts(prev => [post, ...prev]);
+    const addPostInteraction = (interaction: PostInteraction) => setPostInteractions(prev => [...prev, interaction]);
+
     return (
         <AppContext.Provider value={{
             students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, currentUser,
@@ -746,7 +764,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             addPegadaPost,
             updatePegadaPost,
             deletePegadaPost,
-            addPegadaInteraction
+            addPegadaInteraction,
+
+            classBoardPosts,
+            postInteractions,
+            addClassBoardPost,
+            addPostInteraction
         }}>
             {children}
         </AppContext.Provider>
