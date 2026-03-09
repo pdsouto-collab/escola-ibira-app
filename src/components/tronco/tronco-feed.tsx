@@ -147,11 +147,14 @@ function PostInteractionsView({ post }: { post: ClassBoardPost }) {
     );
 }
 
-export function TroncoFeed({ classId }: { classId: string }) {
+export function TroncoFeed({ classId, categoryFilter }: { classId: string, categoryFilter?: string }) {
     const { classBoardPosts } = useAppStore();
 
-    // Filter posts by classId and sort from newest to oldest
-    const filteredPosts = classBoardPosts.filter(p => p.classId === classId);
+    // Filter posts by classId and optionally by category, then sort from newest to oldest
+    let filteredPosts = classBoardPosts.filter(p => p.classId === classId);
+    if (categoryFilter) {
+        filteredPosts = filteredPosts.filter(p => p.categoryType === categoryFilter);
+    }
     const sortedPosts = [...filteredPosts].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     if (sortedPosts.length === 0) {
