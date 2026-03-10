@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { UserRole } from "@/lib/data";
 
 export default function SignupPage() {
+    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
     const router = useRouter();
     const { setCurrentUser } = useAppStore(); // In a real app we would add the user to DB here
 
@@ -41,7 +42,7 @@ export default function SignupPage() {
                 <div className="w-48 h-48 mb-2">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                        src="/images/opcao2_v5_transparent_final.png"
+                        src={`${basePath}/images/opcao2_v5_transparent_final.png`}
                         alt="Trilha Ibirá"
                         className="w-full h-full object-contain"
                     />

@@ -20,5 +20,8 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  env: {
+    NEXT_PUBLIC_BASE_PATH: basePath
+  }
 };
 module.exports = nextConfig;

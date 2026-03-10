@@ -157,6 +157,8 @@ const initialTasks: Task[] = [
     { id: "t3", title: "Comprar materiais de arte", completed: false, dueDate: "2024-02-25", priority: "low" },
 ];
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 const initialMuralEvents: MuralEvent[] = [
     {
         id: "e1",
@@ -166,7 +168,7 @@ const initialMuralEvents: MuralEvent[] = [
         author: "Coordenação",
         type: "event",
         location: "Pátio Central",
-        image: "/images/festa-primavera.svg",
+        image: `${basePath}images/festa-primavera.svg`,
         comments: [],
         likes: 12
     },

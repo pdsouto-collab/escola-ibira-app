@@ -40,6 +40,8 @@ export function PracticesTree({ data, onSelectNode, editMode }: PracticesTreePro
         return data.find(n => n.id === id);
     };
 
+    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
     return (
         <div className="relative flex justify-center items-center select-none bg-[#FDFBF7] rounded-xl overflow-hidden min-h-[900px] shadow-inner w-full">
 
@@ -49,7 +51,7 @@ export function PracticesTree({ data, onSelectNode, editMode }: PracticesTreePro
                 {/* 1. Base Image */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                    src="/escola-ibira-app/mosaico/tree-structure.png"
+                    src={`${basePath}/mosaico/tree-structure.png`}
                     alt="Árvore de Práticas"
                     className="absolute inset-0 w-full h-full object-contain pointer-events-none"
                 />

@@ -150,12 +150,14 @@ export function TreeMosaic({ data, onSelectNode, editMode }: TreeMosaicProps) {
         return elements;
     }, [data, onSelectNode]);
 
+    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
     return (
         <div className="relative flex justify-center items-center select-none bg-[#FDFBF7] rounded-xl overflow-hidden min-h-[900px] shadow-inner">
             <svg width="100%" height="1000" viewBox="0 0 800 1000" className="max-w-full h-auto z-10 overflow-visible">
 
                 {/* 1. Base Image */}
-                <image href="/escola-ibira-app/mosaico/tree-base.svg" width="800" height="1000" />
+                <image href={`${basePath}/mosaico/tree-base.svg`} width="800" height="1000" />
 
                 {/* 2. Interactive Root Zones (Invisible Hit Areas) */}
                 <path d={ZONES.rootBlue} stroke="transparent" strokeWidth="40" fill="none" className="cursor-pointer" onClick={() => onSelectNode(ROOT_NODES[0])}><title>Raízes Sociais</title></path>

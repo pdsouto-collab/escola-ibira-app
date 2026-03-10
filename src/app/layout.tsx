@@ -13,11 +13,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 export const metadata: Metadata = {
   title: "Trilha Ibirá",
   description: "Plataforma de acompanhamento escolar",
   icons: {
-    icon: "/images/icone_trilha_crianca_transparent.png",
+    icon: `${basePath}/images/icone_trilha_crianca_transparent.png`,
   }
 };
 

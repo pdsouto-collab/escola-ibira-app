@@ -29,13 +29,15 @@ export default function LoginPage() {
         }
     };
 
+    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
     return (
         <div className="space-y-6">
             <div className="text-center flex flex-col items-center">
                 <div className="w-48 h-48 mb-2">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                        src="/images/opcao2_v5_transparent_final.png"
+                        src={`${basePath}/images/opcao2_v5_transparent_final.png`}
                         alt="Trilha Ibirá"
                         className="w-full h-full object-contain"
                     />
