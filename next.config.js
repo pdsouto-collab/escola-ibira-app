@@ -1,10 +1,13 @@
 /** @type {import('next').NextConfig} */
 
 const isGithubPages = process.env.GITHUB_ACTIONS || process.env.GITHUB_PAGES;
+const basePath = isGithubPages ? "/escola-ibira-app" : "";
+
 const nextConfig = {
   ...(isGithubPages && {
     output: "export",
-    basePath: "/escola-ibira-app",
+    basePath: basePath,
+    assetPrefix: basePath,
     trailingSlash: true,
   }),
   images: {

@@ -166,7 +166,7 @@ const initialMuralEvents: MuralEvent[] = [
         author: "Coordenação",
         type: "event",
         location: "Pátio Central",
-        image: "/escola-ibira-app/images/festa-primavera.svg",
+        image: "/images/festa-primavera.svg",
         comments: [],
         likes: 12
     },

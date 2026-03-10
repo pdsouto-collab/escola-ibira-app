@@ -35,7 +35,7 @@ export default function LoginPage() {
                 <div className="w-48 h-48 mb-2">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                        src="/escola-ibira-app/images/opcao2_v5_transparent_final.png"
+                        src="/images/opcao2_v5_transparent_final.png"
                         alt="Trilha Ibirá"
                         className="w-full h-full object-contain"
                     />
