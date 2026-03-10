@@ -14,7 +14,7 @@ export function SchoolLogo({ className = "h-8 w-auto", variant = "default" }: Sc
         <div className={cn("relative", className)}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-                src={`${basePath}images/logo-ibira-novo-colorido.png`}
+                src={`${basePath}/images/logo-ibira-novo-colorido.png`}
                 alt="Escola Ibirá"
                 className="h-full w-auto object-contain"
             />

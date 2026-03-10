@@ -62,7 +62,7 @@ export function MosaicDetailPanel({ node, treeType, onAvaliacao }: MosaicDetailP
                 <div className="w-36 h-36 mb-4">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                        src={`${basePath}images/icone_trilha_crianca_transparent.png`}
+                        src={`${basePath}/images/icone_trilha_crianca_transparent.png`}
                         alt="Trilha"
                         className="w-full h-full object-contain mix-blend-multiply opacity-70"
                     />
