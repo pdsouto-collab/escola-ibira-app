@@ -79,7 +79,7 @@ export default function LoginPage() {
             <div className="text-center text-sm text-slate-500">
                 <p>
                     Não tem uma conta?{" "}
-                    <a href="/escola-ibira-app/cadastro" className="text-[#2E798A] hover:underline font-medium">
+                    <a href={`${basePath}/cadastro`} className="text-[#2E798A] hover:underline font-medium">
                         Cadastre-se
                     </a>
                 </p>

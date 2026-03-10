@@ -105,7 +105,7 @@ export default function SignupPage() {
             <div className="text-center text-sm text-slate-500">
                 <p>
                     Já tem uma conta?{" "}
-                    <a href="/escola-ibira-app/login" className="text-[#E89F67] hover:underline font-medium">
+                    <a href={`${basePath}/login`} className="text-[#E89F67] hover:underline font-medium">
                         Faça login
                     </a>
                 </p>
