@@ -1,0 +1,27 @@
+import { LibraryItem } from "../data";
+
+export const competenciasGeraisDataSeed: LibraryItem[] = [
+    { id: "lib-cg-1", type: "content", name: "Busca por Aprendizado", description: "Exploração de novos conhecimentos e curiosidade intelectual.", isBNCC: false, subGroup: "Conhecimento", grade: "Conhecimento" },
+    { id: "lib-cg-2", type: "content", name: "Aplicação Prática do Saber", description: "Capacidade de utilizar o conhecimento em situações da vida real.", isBNCC: false, subGroup: "Conhecimento", grade: "Conhecimento" },
+    { id: "lib-cg-3", type: "content", name: "Investigação e Curiosidade", description: "Uso da abordagem científica para entender o mundo.", isBNCC: false, subGroup: "Pensamento Científico, Crítico e Criativo", grade: "Pensamento Científico, Crítico e Criativo" },
+    { id: "lib-cg-4", type: "content", name: "Resolução de Problemas", description: "Capacidade de analisar desafios e propor soluções criativas.", isBNCC: false, subGroup: "Pensamento Científico, Crítico e Criativo", grade: "Pensamento Científico, Crítico e Criativo" },
+    { id: "lib-cg-5", type: "content", name: "Criatividade e Invenção", description: "Pensar além do óbvio e criar caminhos originais.", isBNCC: false, subGroup: "Pensamento Científico, Crítico e Criativo", grade: "Pensamento Científico, Crítico e Criativo" },
+    { id: "lib-cg-6", type: "content", name: "Fruição e Apreciação Artística", description: "Valorização e prazer no contato com diversas formas de arte.", isBNCC: false, subGroup: "Repertório Cultural", grade: "Repertório Cultural" },
+    { id: "lib-cg-7", type: "content", name: "Expressão Cultural", description: "Manifestação das próprias identidades através da cultura.", isBNCC: false, subGroup: "Repertório Cultural", grade: "Repertório Cultural" },
+    { id: "lib-cg-8", type: "content", name: "Expressão Clara de Ideias", description: "Comunicação verbal e não verbal de forma compreensível.", isBNCC: false, subGroup: "Comunicação", grade: "Comunicação" },
+    { id: "lib-cg-9", type: "content", name: "Escuta Ativa e Atenta", description: "Capacidade de ouvir e processar a informação do outro com empatia.", isBNCC: false, subGroup: "Comunicação", grade: "Comunicação" },
+    { id: "lib-cg-10", type: "content", name: "Uso Ético e Seguro da Tecnologia", description: "Navegação responsável e consciente no ambiente digital.", isBNCC: false, subGroup: "Cultura Digital", grade: "Cultura Digital" },
+    { id: "lib-cg-11", type: "content", name: "Letramento Digital e Informacional", description: "Domínio das ferramentas digitais para busca e análise de informação.", isBNCC: false, subGroup: "Cultura Digital", grade: "Cultura Digital" },
+    { id: "lib-cg-12", type: "content", name: "Determinação e Foco", description: "Persistência na busca por objetivos de vida e carreira.", isBNCC: false, subGroup: "Trabalho e Projeto de Vida", grade: "Trabalho e Projeto de Vida" },
+    { id: "lib-cg-13", type: "content", name: "Planejamento e Organização", description: "Capacidade de estruturar passos para atingir metas.", isBNCC: false, subGroup: "Trabalho e Projeto de Vida", grade: "Trabalho e Projeto de Vida" },
+    { id: "lib-cg-14", type: "content", name: "Posicionamento Crítico", description: "Defesa de ideias com base em argumentos sólidos.", isBNCC: false, subGroup: "Argumentação", grade: "Argumentação" },
+    { id: "lib-cg-15", type: "content", name: "Diálogo Baseado em Fatos", description: "Troca de ideias utilizando evidências e respeito.", isBNCC: false, subGroup: "Argumentação", grade: "Argumentação" },
+    { id: "lib-cg-16", type: "content", name: "Gestão das Emoções", description: "Identificação e equilíbrio do estado emocional próprio.", isBNCC: false, subGroup: "Autoconhecimento e Autocuidado", grade: "Autoconhecimento e Autocuidado" },
+    { id: "lib-cg-17", type: "content", name: "Autoconfiança", description: "Segurança nas próprias capacidades e potencial.", isBNCC: false, subGroup: "Autoconhecimento e Autocuidado", grade: "Autoconhecimento e Autocuidado" },
+    { id: "lib-cg-18", type: "content", name: "Cuidado com a Saúde Física", description: "Hábitos saudáveis e consciência do próprio corpo.", isBNCC: false, subGroup: "Autoconhecimento e Autocuidado", grade: "Autoconhecimento e Autocuidado" },
+    { id: "lib-cg-19", type: "content", name: "Resolução de Conflitos", description: "Mediação e busca pelo entendimento comum.", isBNCC: false, subGroup: "Empatia e Cooperação", grade: "Empatia e Cooperação" },
+    { id: "lib-cg-20", type: "content", name: "Trabalho em Equipe", description: "Colaboração efetiva para objetivos compartilhados.", isBNCC: false, subGroup: "Empatia e Cooperação", grade: "Empatia e Cooperação" },
+    { id: "lib-cg-21", type: "content", name: "Respeito à Diversidade", description: "Acolhimento e valorização das diferenças.", isBNCC: false, subGroup: "Empatia e Cooperação", grade: "Empatia e Cooperação" },
+    { id: "lib-cg-22", type: "content", name: "Autonomia e Tomada de Decisão", description: "Capacidade de agir com independência e responsabilidade.", isBNCC: false, subGroup: "Responsabilidade e Cidadania", grade: "Responsabilidade e Cidadania" },
+    { id: "lib-cg-23", type: "content", name: "Consciência Socioambiental", description: "Atuação focada no bem comum e na sustentabilidade.", isBNCC: false, subGroup: "Responsabilidade e Cidadania", grade: "Responsabilidade e Cidadania" },
+];

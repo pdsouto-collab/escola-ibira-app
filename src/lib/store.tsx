@@ -10,7 +10,7 @@ import {
     mockMessages,
     mockClasses, SchoolClass,
     User, mockUsers,
-    LibraryItem, mockLibraryItems,
+    LibraryItem, pgSqlLibraryItems,
     KnowledgeNode, mockSkillsTree, mockContentsTree,
     FinalProductType, mockFinalProductTypes,
     Assessment, mockAssessments, Menu, mockMenus,
@@ -252,7 +252,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [mosaicData, setMosaicData] = useState<MosaicNode[]>(mockRecursiveDataSkills);
     const [users, setUsers] = useState<User[]>(mockUsers);
     const [currentUser, _setCurrentUser] = useState<User | null>(mockUsers[1]); // Default to Teacher (Cláudia) for dev
-    const [libraryItems, setLibraryItems] = useState<LibraryItem[]>(mockLibraryItems);
+    const [libraryItems, setLibraryItems] = useState<LibraryItem[]>(pgSqlLibraryItems);
     const [bnccProgress, setBnccProgress] = useState<Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>>({});
     const [skillsTree, setSkillsTree] = useState<KnowledgeNode[]>(mockSkillsTree);
     const [contentsTree, setContentsTree] = useState<KnowledgeNode[]>(mockContentsTree);
@@ -292,7 +292,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             console.log("Migrating data to version", CURRENT_VERSION);
             // Migration Logic: Force Reset of critical data to sync with new tree structure
             setProjects(initialProjects);
-            setLibraryItems(mockLibraryItems);
+            // setLibraryItems(mockLibraryItems);
             setSkillsTree(mockSkillsTree);
             setContentsTree(mockContentsTree);
             setAssessments(mockAssessments);
@@ -318,7 +318,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             load("projects", setProjects, initialProjects);
             load("messages", setMessages, initialMessages);
             load("mosaicData", setMosaicData, mockRecursiveDataSkills);
-            load("libraryItems", setLibraryItems, mockLibraryItems);
+            // load("libraryItems", setLibraryItems, mockLibraryItems);
             load("bnccProgress", setBnccProgress, {});
             load("skillsTree", setSkillsTree, mockSkillsTree);
             load("contentsTree", setContentsTree, mockContentsTree);
@@ -361,7 +361,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem("app_projects", JSON.stringify(projects));
             localStorage.setItem("app_messages", JSON.stringify(messages));
             localStorage.setItem("app_mosaicData", JSON.stringify(mosaicData));
-            localStorage.setItem("app_libraryItems", JSON.stringify(libraryItems));
+            // localStorage.setItem("app_libraryItems", JSON.stringify(libraryItems));
             localStorage.setItem("app_bnccProgress", JSON.stringify(bnccProgress));
             localStorage.setItem("app_skillsTree", JSON.stringify(skillsTree));
             localStorage.setItem("app_contentsTree", JSON.stringify(contentsTree));

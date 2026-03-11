@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//--------------------------------------------
+/// Tabela de habilidades educacionais BNCC
+//--------------------------------------------
+model Bncc {
+  /// ID único gerado pela aplicação
+  id          String   @id // Define a chave primária da tabela.
+  /// Tipo de habilidade
+  type        String
+  /// Código oficial da habilidade
+  code        String?
+  /// Nome da habilidade
+  name        String
+  /// Descrição da habilidade
+  description String
+  /// Indica se pertence à BNCC
+  isBNCC      Boolean
+  /// Disciplina
+  subGroup    String
+  /// Ano escolar
+  grade       String
+  /// Data de criação
+  createdAt   DateTime @default(now()) // Define valor padrão automático.
+  /// Data da última atualização
+  updatedAt   DateTime @updatedAt // Atualiza automaticamente quando o registro muda.
+  @@index([type])     // Cria índice no banco para busca rápida.
+  @@index([grade])    // Cria índice no banco para busca rápida.
+  @@index([subGroup]) // Cria índice no banco para busca rápida.
+}
