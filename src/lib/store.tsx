@@ -10,7 +10,7 @@ import {
     mockMessages,
     mockClasses, SchoolClass,
     User, mockUsers,
-    LibraryItem, pgSqlLibraryItems,
+    // LibraryItem, 
     KnowledgeNode, mockSkillsTree, mockContentsTree,
     FinalProductType, mockFinalProductTypes,
     Assessment, mockAssessments, Menu, mockMenus,
@@ -20,6 +20,8 @@ import {
     PegadaPost, mockPegadas, PegadaInteraction,
     ClassBoardPost, mockClassBoardPosts, PostInteraction, mockPostInteractions
 } from "@/lib/data";
+
+import { LibraryItem } from "@/types/library-item";
 
 interface AppState {
     students: Student[];
@@ -33,7 +35,6 @@ interface AppState {
     mosaicData: MosaicNode[];
     currentUser: User | null;
     users: User[];
-    libraryItems: LibraryItem[];
     bnccProgress: Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>;
     skillsTree: KnowledgeNode[];
     contentsTree: KnowledgeNode[];
@@ -92,10 +93,6 @@ interface AppContextType extends AppState {
     updateBNCCStatus: (skillCode: string, status: "not-started" | "in-progress" | "achieved") => void;
 
     // Library
-    addLibraryItem: (item: LibraryItem) => void;
-    updateLibraryItem: (id: string, updates: Partial<LibraryItem>) => void;
-    removeLibraryItem: (id: string) => void;
-    renameSubGroup: (oldName: string, newName: string) => void;
     deleteSubGroup: (name: string) => void;
 
     // Knowledge Trees
@@ -252,7 +249,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [mosaicData, setMosaicData] = useState<MosaicNode[]>(mockRecursiveDataSkills);
     const [users, setUsers] = useState<User[]>(mockUsers);
     const [currentUser, _setCurrentUser] = useState<User | null>(mockUsers[1]); // Default to Teacher (Cláudia) for dev
-    const [libraryItems, setLibraryItems] = useState<LibraryItem[]>(pgSqlLibraryItems);
+    const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
     const [bnccProgress, setBnccProgress] = useState<Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>>({});
     const [skillsTree, setSkillsTree] = useState<KnowledgeNode[]>(mockSkillsTree);
     const [contentsTree, setContentsTree] = useState<KnowledgeNode[]>(mockContentsTree);
@@ -376,7 +373,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
             console.error("Erro ao salvar no cache local. O limite de armazenamento pode ter sido atingido.", error);
         }
-    }, [students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, mosaicData, libraryItems, bnccProgress, skillsTree, contentsTree, menus, portfolioEntries, assessments, invoices, notifications, pegadaPosts, classBoardPosts, postInteractions, isLoaded]);
+    }, [students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, mosaicData, bnccProgress, skillsTree, contentsTree, menus, portfolioEntries, assessments, invoices, notifications, pegadaPosts, classBoardPosts, postInteractions, isLoaded]);
 
     // Actions
     const addStudent = (student: Student) => {
@@ -527,14 +524,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
 
     const replaceMosaicData = (newData: MosaicNode[]) => setMosaicData(newData);
-
-    const addLibraryItem = (item: LibraryItem) => setLibraryItems(prev => [...prev, item]);
-    const updateLibraryItem = (id: string, updates: Partial<LibraryItem>) => setLibraryItems(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i));
-    const removeLibraryItem = (id: string) => setLibraryItems(prev => prev.filter(i => i.id !== id));
-
-    const renameSubGroup = (oldName: string, newName: string) => {
-        setLibraryItems(prev => prev.map(item => item.subGroup === oldName ? { ...item, subGroup: newName } : item));
-    };
 
     const deleteSubGroup = (name: string) => {
         setLibraryItems(prev => prev.map(item => {
@@ -726,8 +715,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             updateUser: (id, updates) => setUsers(prev => prev.map(u => u.id === id ? { ...u, ...updates } : u)),
             removeUser: (id) => setUsers(prev => prev.filter(u => u.id !== id)),
             bnccProgress, updateBNCCStatus,
-            libraryItems, addLibraryItem, updateLibraryItem, removeLibraryItem,
-            renameSubGroup, deleteSubGroup,
+            deleteSubGroup,
             skillsTree, contentsTree, addKnowledgeNode, updateKnowledgeNode, removeKnowledgeNode, duplicateKnowledgeNode,
             finalProductTypes,
             addFinalProductType: (type) => setFinalProductTypes(prev => [...prev, type]),

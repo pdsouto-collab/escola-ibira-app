@@ -1,4 +1,4 @@
-import { LibraryItem } from "../data";
+import { LibraryItem } from "@/types/library-item";
 
 export const competenciasGeraisDataSeed: LibraryItem[] = [
     { id: "lib-cg-1", type: "content", name: "Busca por Aprendizado", description: "Exploração de novos conhecimentos e curiosidade intelectual.", isBNCC: false, subGroup: "Conhecimento", grade: "Conhecimento" },

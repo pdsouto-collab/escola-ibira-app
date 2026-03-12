@@ -1,4 +1,4 @@
-import { LibraryItem } from "../data";
+import { LibraryItem } from "@/types/library-item";
 
 export const bnccDataSeed: LibraryItem[] = [
     { id: "bncc-ef-ef01lp01-0", type: "skill", code: "EF01LP01", name: "Leitura/escuta (compartilhada e autônoma)", description: "Reconhecer que textos são lidos e escritos da esquerda para a direita e de cima para baixo da página.", isBNCC: true, subGroup: "Língua Portuguesa", grade: "1ano" },

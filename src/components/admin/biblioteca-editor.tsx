@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAppStore } from "@/lib/store";
-import { LibraryItem } from "@/lib/data";
+import { LibraryItem } from "@/types/library-item";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,12 +32,16 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 
+import { getListBncc, createBncc, updateBncc, deleteBncc, renameSubGroupBncc } from "@/services/bncc.service";
+
 export function BibliotecaEditor() {
-    const { libraryItems, addLibraryItem, updateLibraryItem, removeLibraryItem, renameSubGroup, deleteSubGroup } = useAppStore();
+    
+    const { deleteSubGroup } = useAppStore();
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedGrade, setSelectedGrade] = useState<string>("all");
     const [activeTab, setActiveTab] = useState<"skill" | "content">("skill");
-
+    const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
+    
     // Dialog State
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<LibraryItem | null>(null);
@@ -56,6 +60,7 @@ export function BibliotecaEditor() {
     const [manageGroupNewName, setManageGroupNewName] = useState("");
     const [isCreatingNewGroup, setIsCreatingNewGroup] = useState(false);
     const [newGroupName, setNewGroupName] = useState("");
+    const [loading, setLoading] = useState(false)
 
     // Get unique existing groups for the active tab (to populate the combobox)
     const existingGroups = Array.from(new Set(libraryItems.filter(i => i.type === activeTab).map(i => i.subGroup))).sort();
@@ -85,55 +90,115 @@ export function BibliotecaEditor() {
         setIsDialogOpen(true);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
+
         if (!formData.name.trim() || !formData.description.trim() || !formData.subGroup.trim()) return;
 
-        if (editingItem) {
-            updateLibraryItem(editingItem.id, {
-                type: formData.type,
-                name: formData.name,
-                description: formData.description,
-                subGroup: formData.subGroup,
-                grade: formData.grade
-            });
-        } else {
-            addLibraryItem({
-                id: `lib-custom-${Date.now()}`,
-                type: formData.type,
-                name: formData.name,
-                description: formData.description,
-                subGroup: formData.subGroup,
-                grade: formData.grade,
-                isBNCC: false // Custom items are never BNCC
-            });
+        setLoading(true);
+
+        try {
+
+            if (editingItem) {
+                await updateBncc({
+                    id: editingItem.id,
+                    type: formData.type,
+                    name: formData.name,
+                    description: formData.description,
+                    subGroup: formData.subGroup,
+                    grade: formData.grade,
+                    isBNCC: false
+                });
+            } else {
+                await createBncc({
+                    id: `lib-custom-${Date.now()}`,
+                    type: formData.type,
+                    name: formData.name,
+                    description: formData.description,
+                    subGroup: formData.subGroup,
+                    grade: formData.grade,
+                    isBNCC: false // Custom items are never BNCC
+                });
+            }
+            setIsDialogOpen(false);
+
+        } catch (error:any) {
+            alert("Não foi possível salvar/editar o item: " + error.message);
+        } finally {
+            setLoading(false);
+            getListaBNCC();
         }
-        setIsDialogOpen(false);
+
     };
 
-    const handleCreateGroup = () => {
+    const handleCreateGroup = async () => {
+
         if (!newGroupName.trim()) return;
-        addLibraryItem({
-            id: `lib-custom-${Date.now()}`,
-            type: activeTab,
-            name: `Exemplo de ${newGroupName.trim()}`,
-            description: `Este item foi criado automaticamente para que o grupo "${newGroupName.trim()}" apareça na lista. Você pode editá-lo para adicionar um conteúdo real ou excluí-lo após adicionar outros itens a este grupo.`,
-            subGroup: newGroupName.trim(),
-            grade: "all",
-            isBNCC: false
-        });
-        setNewGroupName("");
-        setIsCreatingNewGroup(false);
+
+        setLoading(true);
+
+        try {
+
+            await createBncc({
+                id: `lib-custom-${Date.now()}`,
+                type: activeTab,
+                name: `Exemplo de ${newGroupName.trim()}`,
+                description: `Este item foi criado automaticamente para que o grupo "${newGroupName.trim()}" apareça na lista. Você pode editá-lo para adicionar um conteúdo real ou excluí-lo após adicionar outros itens a este grupo.`,
+                subGroup: newGroupName.trim(),
+                grade: "all",
+                isBNCC: false
+            });
+            setNewGroupName("");
+            setIsCreatingNewGroup(false);
+
+        } catch (error:any) {
+            alert("Não foi possível salvar o grupo: " + error.message);
+        } finally {
+            setLoading(false);
+            getListaBNCC();
+        }
+
+
     };
 
-    const handleDelete = (id: string, isBNCC: boolean) => {
+    const handleDelete = async (id: string, isBNCC: boolean) => {
         if (isBNCC) {
             alert("Itens da BNCC não podem ser excluídos.");
             return;
         }
         if (confirm("Tem certeza que deseja excluir este item? Projetos que o utilizam não serão afetados, mas ele não aparecerá mais na busca.")) {
-            removeLibraryItem(id);
+            
+            setLoading(true);
+            try {
+                await deleteBncc(id);
+            } catch (error:any) {
+                alert("Não foi possível deletar o item: " + error.message);
+            } finally {
+                setLoading(false);
+                getListaBNCC();
+            };
+
         }
     };
+
+    useEffect(() => {
+        getListaBNCC();
+    }, [])
+
+    async function getListaBNCC(){
+        setLoading(true);
+        await getListBncc().then(setLibraryItems);
+        setLoading(false);
+    }
+
+    async function renameSubGroup(oldName:string, newName:string) {
+        setLoading(true);
+        await renameSubGroupBncc({
+            oldName: oldName,
+            newName: newName
+        });
+        setLoading(false);
+        getListaBNCC();
+    }
 
     // Filter items based on tab, search and grade
     const filteredItems = libraryItems.filter(item => {
@@ -260,68 +325,77 @@ export function BibliotecaEditor() {
                     </TabsList>
                 </div>
 
-                <Accordion type="multiple" className="w-full space-y-4" defaultValue={sortedGroups}>
-                    {sortedGroups.map(group => (
-                        <AccordionItem key={group} value={group} className="border bg-white rounded-xl overflow-hidden data-[state=open]:shadow-sm">
-                            <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-slate-50 transition-colors">
-                                <div className="flex items-center gap-3">
-                                    <div className="bg-primary/10 text-primary p-2 rounded-lg">
-                                        {activeTab === 'skill' ? <BookOpen className="w-5 h-5" /> : <Layers className="w-5 h-5" />}
+                {loading ? (
+                    <div className="space-y-3">
+                        <div className="h-10 bg-slate-200 animate-pulse rounded"></div>
+                        <div className="h-10 bg-slate-200 animate-pulse rounded"></div>
+                        <div className="h-10 bg-slate-200 animate-pulse rounded"></div>
+                    </div>
+                ) : (
+                    <Accordion type="multiple" className="w-full space-y-4" defaultValue={sortedGroups}>
+                        {sortedGroups.map(group => (
+                            <AccordionItem key={group} value={group} className="border bg-white rounded-xl overflow-hidden data-[state=open]:shadow-sm">
+                                <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-slate-50 transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <div className="bg-primary/10 text-primary p-2 rounded-lg">
+                                            {activeTab === 'skill' ? <BookOpen className="w-5 h-5" /> : <Layers className="w-5 h-5" />}
+                                        </div>
+                                        <div className="flex flex-col items-start">
+                                            <h3 className="text-lg font-bold text-slate-800">{group}</h3>
+                                            <span className="text-sm font-normal text-slate-500">{groupedItems[group].length} {groupedItems[group].length === 1 ? 'item' : 'itens'}</span>
+                                        </div>
                                     </div>
-                                    <div className="flex flex-col items-start">
-                                        <h3 className="text-lg font-bold text-slate-800">{group}</h3>
-                                        <span className="text-sm font-normal text-slate-500">{groupedItems[group].length} {groupedItems[group].length === 1 ? 'item' : 'itens'}</span>
-                                    </div>
-                                </div>
-                            </AccordionTrigger>
-                            <AccordionContent className="px-6 pb-6 pt-2">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {groupedItems[group].map(item => (
-                                        <div key={item.id} className="bg-slate-50 border border-slate-200 text-left p-5 rounded-xl hover:border-slate-300 transition-colors relative group flex flex-col h-full">
-                                            <div className="flex justify-between items-start mb-3">
-                                                {item.isBNCC ? (
-                                                    <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200 uppercase text-[10px] tracking-wider">
-                                                        Oficial BNCC
-                                                    </Badge>
-                                                ) : (
-                                                    <Badge variant="secondary" className="bg-purple-100 text-purple-700 border-purple-200 uppercase text-[10px] tracking-wider">
-                                                        Personalizado
-                                                    </Badge>
-                                                )}
-
-                                                <div className="flex items-center gap-1 transition-opacity">
-                                                    <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-primary" onClick={(e) => { e.stopPropagation(); handleOpenDialog(item); }}>
-                                                        <Edit className="w-3.5 h-3.5" />
-                                                    </Button>
-                                                    {!item.isBNCC && (
-                                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-red-600 hover:bg-red-50" onClick={(e) => { e.stopPropagation(); handleDelete(item.id, item.isBNCC); }}>
-                                                            <Trash2 className="w-3.5 h-3.5" />
-                                                        </Button>
+                                </AccordionTrigger>
+                                <AccordionContent className="px-6 pb-6 pt-2">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {groupedItems[group].map(item => (
+                                            <div key={item.id} className="bg-slate-50 border border-slate-200 text-left p-5 rounded-xl hover:border-slate-300 transition-colors relative group flex flex-col h-full">
+                                                <div className="flex justify-between items-start mb-3">
+                                                    {item.isBNCC ? (
+                                                        <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200 uppercase text-[10px] tracking-wider">
+                                                            Oficial BNCC
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge variant="secondary" className="bg-purple-100 text-purple-700 border-purple-200 uppercase text-[10px] tracking-wider">
+                                                            Personalizado
+                                                        </Badge>
                                                     )}
+
+                                                    <div className="flex items-center gap-1 transition-opacity">
+                                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-primary" onClick={(e) => { e.stopPropagation(); handleOpenDialog(item); }}>
+                                                            <Edit className="w-3.5 h-3.5" />
+                                                        </Button>
+                                                        {!item.isBNCC && (
+                                                            <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-red-600 hover:bg-red-50" onClick={(e) => { e.stopPropagation(); handleDelete(item.id, item.isBNCC); }}>
+                                                                <Trash2 className="w-3.5 h-3.5" />
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex-1">
+                                                    {item.code && (
+                                                        <div className="text-xs font-mono font-bold text-slate-400 mb-1">
+                                                            {item.code}
+                                                        </div>
+                                                    )}
+                                                    <h3 className="text-base font-bold text-slate-800 leading-tight mb-2">
+                                                        {item.name}
+                                                    </h3>
+                                                    <p className="text-sm text-slate-600 line-clamp-4">
+                                                        {item.description}
+                                                    </p>
                                                 </div>
                                             </div>
+                                        ))}
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+                        ))}
+                    </Accordion>
+                )}
 
-                                            <div className="flex-1">
-                                                {item.code && (
-                                                    <div className="text-xs font-mono font-bold text-slate-400 mb-1">
-                                                        {item.code}
-                                                    </div>
-                                                )}
-                                                <h3 className="text-base font-bold text-slate-800 leading-tight mb-2">
-                                                    {item.name}
-                                                </h3>
-                                                <p className="text-sm text-slate-600 line-clamp-4">
-                                                    {item.description}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </AccordionContent>
-                        </AccordionItem>
-                    ))}
-                </Accordion>
-                {filteredItems.length === 0 && (
+                {filteredItems.length === 0 && !loading && (
                     <div className="col-span-full text-center py-20 bg-slate-50 border border-dashed border-slate-200 rounded-2xl">
                         <p className="text-slate-500 font-medium">Nenhum item encontrado nesta categoria.</p>
                         <Button
@@ -461,8 +535,8 @@ export function BibliotecaEditor() {
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
-                        <Button onClick={handleSave} disabled={!formData.name.trim() || !formData.description.trim() || !formData.subGroup.trim()}>
-                            Gravar
+                        <Button onClick={handleSave} disabled={loading || !formData.name.trim() || !formData.description.trim() || !formData.subGroup.trim()}>
+                            {loading ? "Gravando..." : "Gravar"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -470,7 +544,7 @@ export function BibliotecaEditor() {
 
             {/* Manage Groups Dialog */}
             <Dialog open={isManageGroupsOpen} onOpenChange={setIsManageGroupsOpen}>
-                <DialogContent className="sm:max-w-[400px]">
+                <DialogContent className="sm:max-w-[400px] max-h-[80vh] flex flex-col">
                     <DialogHeader>
                         <DialogTitle>Gerenciar Grupos</DialogTitle>
                         <DialogDescription>
@@ -478,7 +552,7 @@ export function BibliotecaEditor() {
                             Itens da BNCC de um grupo excluído irão para a categoria "BNCC Sem Grupo".
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="grid gap-2 py-4">
+                    <div className="grid gap-2 py-4 overflow-y-auto flex-1 pr-2">
                         {existingGroups.length === 0 && (
                             <p className="text-sm text-slate-500 text-center py-4">Nenhum grupo encontrado.</p>
                         )}
@@ -492,19 +566,19 @@ export function BibliotecaEditor() {
                                             className="h-8 text-sm"
                                             autoFocus
                                         />
-                                        <Button
+                                        <Button disabled={loading}
                                             size="sm"
                                             onClick={() => {
                                                 if (manageGroupNewName.trim() && manageGroupNewName !== group) {
                                                     renameSubGroup(group, manageGroupNewName.trim());
                                                 }
-                                                setManageGroupEditing(null);
+                                                //setManageGroupEditing(null);
                                             }}
                                             className="h-8 px-3"
                                         >
-                                            Salvar
+                                            {loading ? "Salvando..." : "Salvar"}
                                         </Button>
-                                        <Button
+                                        <Button disabled={loading}
                                             size="sm"
                                             variant="ghost"
                                             onClick={() => setManageGroupEditing(null)}
@@ -561,7 +635,9 @@ export function BibliotecaEditor() {
                                             if (e.key === 'Escape') setIsCreatingNewGroup(false);
                                         }}
                                     />
-                                    <Button size="sm" onClick={handleCreateGroup} className="h-8 px-3">Criar</Button>
+                                    <Button size="sm" disabled={loading} onClick={handleCreateGroup} className="h-8 px-3">
+                                        {loading ? "Criando..." : "Criar"}
+                                    </Button>
                                     <Button size="sm" variant="ghost" onClick={() => setIsCreatingNewGroup(false)} className="h-8 px-3">Cancelar</Button>
                                 </div>
                             </div>

@@ -3755,24 +3755,6 @@ export interface PortfolioEntry {
     tags: string[];
 }
 
-// --- NEW ENHANCED LIBRARY STRUCTURE ---
-export type Grade = string; // Flexible to accommodate BNCC and Competências Gerais stages
-
-export interface LibraryItem {
-    id: string;
-    type: "skill" | "content";
-    code?: string; // Only for BNCC skills (e.g. EF01 MA01)
-    name: string; // The category, title, or short name
-    description: string; // The full text or content detail
-    isBNCC: boolean;
-    subGroup: string; // e.g. "Ciências", "Matemática", "Projetos Culturais"
-    grade: Grade; // Target school stage
-}
-
-// BNCC + COMPETÊNCIAS GERAIS + CUSTOM CATEGORY EXAMPLES
-import { bnccData } from "./bncc-data";
-export const pgSqlLibraryItems: LibraryItem[] = bnccData;
-
 export const mockPortfolio: PortfolioEntry[] = [
     {
         id: "port-1",
