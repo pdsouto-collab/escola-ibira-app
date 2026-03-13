@@ -2,6 +2,10 @@
 
 import { useAppStore } from "@/lib/store";
 import { ProgressChart, ProgressChartData } from "@/components/assessment/progress-chart";
+import { useEffect, useState } from "react";
+import { LibraryItem } from "@/types/library-item";
+import { getListBncc } from "@/services/bncc.service";
+
 // ────────────────────────────────────────────
 // Helper: find node name recursively
 // ────────────────────────────────────────────
@@ -74,7 +78,18 @@ const getAllEvaluatableNodes = (nodes: any[], parentName?: string): any[] => {
 };
 
 export function SkillsChart({ studentId }: { studentId?: string }) {
-    const { students, assessments, libraryItems, skillsTree, contentsTree } = useAppStore();
+
+    const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
+
+    useEffect(() => {
+        getListaBNCC();
+    }, [])
+
+    async function getListaBNCC(){
+        await getListBncc().then(setLibraryItems);
+    }
+
+    const { students, assessments, skillsTree, contentsTree } = useAppStore();
 
     if (!studentId) {
         return (

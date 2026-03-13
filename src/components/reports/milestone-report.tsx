@@ -3,6 +3,9 @@ import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, Circle, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { getListBncc } from "@/services/bncc.service";
+import { LibraryItem } from "@/types/library-item";
 
 interface MilestoneReportProps {
     studentId: string;
@@ -79,7 +82,18 @@ const getAllEvaluatableNodes = (nodes: any[], parentName?: string, level: string
 };
 
 export function MilestoneReport({ studentId }: MilestoneReportProps) {
-    const { assessments, skillsTree, contentsTree, students, libraryItems } = useAppStore();
+
+    const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
+
+    useEffect(() => {
+        getListaBNCC();
+    }, [])
+
+    async function getListaBNCC(){
+        await getListBncc().then(setLibraryItems);
+    }
+
+    const { assessments, skillsTree, contentsTree, students} = useAppStore();
 
     const student = students.find(s => s.id === studentId);
     if (!student) return null;
