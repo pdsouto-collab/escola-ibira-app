@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server.js";
-import prisma from "../lib/prisma.js";
+import prisma from "@/lib/prisma.";
 import { LibraryItem } from "@/types/library-item.js";
 import { subGroupRename } from "@/types/sub-group-rename";
 
