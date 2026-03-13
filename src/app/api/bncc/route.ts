@@ -4,6 +4,8 @@ import { LibraryItem } from "@/types/library-item.js";
 import { subGroupRename } from "@/types/sub-group-rename";
 
 export async function GET() {
+  console.log("DATABASE_URL:", process.env.DATABASE_URL)
+  console.log("DIRECT_URL:", process.env.DIRECT_URL)
   const bncc = await prisma.bncc.findMany();
   return NextResponse.json(bncc);
 }
