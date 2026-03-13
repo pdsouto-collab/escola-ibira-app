@@ -17,11 +17,27 @@ export async function POST(request: Request){
 }
 
 export async function DELETE(request: Request){
-  const id = await request.text();
-  await prisma.bncc.delete({
-    where: { id }
-  });
-  return NextResponse.json({ ok: true })
+
+  const type = request.headers.get("type")
+
+  if (type === 'deleteBncc') {
+
+    const id = await request.text();
+    await prisma.bncc.delete({
+      where: { id }
+    });
+    return NextResponse.json({ ok: true })
+
+  }else if(type === 'deleteSubGroupBncc'){
+
+    const subGroup = await request.text();
+    await prisma.bncc.deleteMany({
+      where: { subGroup }
+    });
+    return NextResponse.json({ ok: true })
+
+  }
+
 }
 
 export async function PUT(request: Request) {

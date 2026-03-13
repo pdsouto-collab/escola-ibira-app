@@ -32,11 +32,10 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 
-import { getListBncc, createBncc, updateBncc, deleteBncc, renameSubGroupBncc } from "@/services/bncc.service";
+import { getListBncc, createBncc, updateBncc, deleteBncc, renameSubGroupBncc, deleteSubGroupBncc } from "@/services/bncc.service";
 
 export function BibliotecaEditor() {
     
-    const { deleteSubGroup } = useAppStore();
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedGrade, setSelectedGrade] = useState<string>("all");
     const [activeTab, setActiveTab] = useState<"skill" | "content">("skill");
@@ -196,6 +195,14 @@ export function BibliotecaEditor() {
             oldName: oldName,
             newName: newName
         });
+        setLoading(false);
+        getListaBNCC();
+    }
+
+    async function deleteSubGroup(nameSubGroup:string) {
+        setLoading(true);
+        setIsManageGroupsOpen(false);
+        await deleteSubGroupBncc(nameSubGroup);
         setLoading(false);
         getListaBNCC();
     }

@@ -92,9 +92,6 @@ interface AppContextType extends AppState {
     bnccProgress: Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>;
     updateBNCCStatus: (skillCode: string, status: "not-started" | "in-progress" | "achieved") => void;
 
-    // Library
-    deleteSubGroup: (name: string) => void;
-
     // Knowledge Trees
     addKnowledgeNode: (treeType: "skill" | "content", parentId: string | null, node: KnowledgeNode) => void;
     updateKnowledgeNode: (treeType: "skill" | "content", id: string, updates: Partial<KnowledgeNode>) => void;
@@ -249,7 +246,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [mosaicData, setMosaicData] = useState<MosaicNode[]>(mockRecursiveDataSkills);
     const [users, setUsers] = useState<User[]>(mockUsers);
     const [currentUser, _setCurrentUser] = useState<User | null>(mockUsers[1]); // Default to Teacher (Cláudia) for dev
-    const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
     const [bnccProgress, setBnccProgress] = useState<Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>>({});
     const [skillsTree, setSkillsTree] = useState<KnowledgeNode[]>(mockSkillsTree);
     const [contentsTree, setContentsTree] = useState<KnowledgeNode[]>(mockContentsTree);
@@ -289,7 +285,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             console.log("Migrating data to version", CURRENT_VERSION);
             // Migration Logic: Force Reset of critical data to sync with new tree structure
             setProjects(initialProjects);
-            // setLibraryItems(mockLibraryItems);
             setSkillsTree(mockSkillsTree);
             setContentsTree(mockContentsTree);
             setAssessments(mockAssessments);
@@ -315,7 +310,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             load("projects", setProjects, initialProjects);
             load("messages", setMessages, initialMessages);
             load("mosaicData", setMosaicData, mockRecursiveDataSkills);
-            // load("libraryItems", setLibraryItems, mockLibraryItems);
             load("bnccProgress", setBnccProgress, {});
             load("skillsTree", setSkillsTree, mockSkillsTree);
             load("contentsTree", setContentsTree, mockContentsTree);
@@ -358,7 +352,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem("app_projects", JSON.stringify(projects));
             localStorage.setItem("app_messages", JSON.stringify(messages));
             localStorage.setItem("app_mosaicData", JSON.stringify(mosaicData));
-            // localStorage.setItem("app_libraryItems", JSON.stringify(libraryItems));
             localStorage.setItem("app_bnccProgress", JSON.stringify(bnccProgress));
             localStorage.setItem("app_skillsTree", JSON.stringify(skillsTree));
             localStorage.setItem("app_contentsTree", JSON.stringify(contentsTree));
@@ -524,18 +517,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
 
     const replaceMosaicData = (newData: MosaicNode[]) => setMosaicData(newData);
-
-    const deleteSubGroup = (name: string) => {
-        setLibraryItems(prev => prev.map(item => {
-            if (item.subGroup === name) {
-                if (item.isBNCC) {
-                    return { ...item, subGroup: "BNCC Sem Grupo" };
-                }
-                return null;
-            }
-            return item;
-        }).filter(Boolean) as LibraryItem[]);
-    };
 
     const addKnowledgeNode = (treeType: "skill" | "content", parentId: string | null, node: KnowledgeNode) => {
         const updater = (prev: KnowledgeNode[]): KnowledgeNode[] => {
@@ -715,7 +696,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             updateUser: (id, updates) => setUsers(prev => prev.map(u => u.id === id ? { ...u, ...updates } : u)),
             removeUser: (id) => setUsers(prev => prev.filter(u => u.id !== id)),
             bnccProgress, updateBNCCStatus,
-            deleteSubGroup,
             skillsTree, contentsTree, addKnowledgeNode, updateKnowledgeNode, removeKnowledgeNode, duplicateKnowledgeNode,
             finalProductTypes,
             addFinalProductType: (type) => setFinalProductTypes(prev => [...prev, type]),

@@ -34,9 +34,24 @@ export async function deleteBncc(id: string) {
   const res = await fetch(BASE_URL, {
     method: "DELETE",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "type": "deleteBncc"
     },
     body: id
+  })
+  if (!res.ok) {
+    throw new Error("Erro ao deletar BNCC")
+  }
+}
+
+export async function deleteSubGroupBncc(nameSubGroup: string) {
+  const res = await fetch(BASE_URL, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      "type": "deleteSubGroupBncc"
+    },
+    body: nameSubGroup
   })
   if (!res.ok) {
     throw new Error("Erro ao deletar BNCC")
