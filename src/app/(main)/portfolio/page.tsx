@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { LibraryItem } from "@/types/library-item";
+import { getListBncc } from "@/services/bncc.service";
 
 // ────────────────────────────────────────────
 // Helper: find node name recursively
@@ -233,11 +235,21 @@ function ProjectView({
     classes: ReturnType<typeof useAppStore>["classes"];
     skillsTree: ReturnType<typeof useAppStore>["skillsTree"];
     contentsTree: ReturnType<typeof useAppStore>["contentsTree"];
-    libraryItems: ReturnType<typeof useAppStore>["libraryItems"];
+    libraryItems: LibraryItem[]
     onAvaliacao: (ctx: Partial<Assessment> & { contextLabel: string }) => void;
     onEdit: (assessment: Assessment) => void;
 }) {
     const projects = projectFilter === "all" ? allProjects : allProjects.filter(p => p.id === projectFilter);
+
+    useEffect(() => {
+        getListaBNCC();
+    }, [])
+    
+    async function getListaBNCC(){
+        await getListBncc().then((data) => {
+            libraryItems = data;
+        });
+    }
 
     return (
         <div className="space-y-8">
@@ -445,7 +457,7 @@ function StudentView({
     schedule: ReturnType<typeof useAppStore>["schedule"];
     skillsTree: ReturnType<typeof useAppStore>["skillsTree"];
     contentsTree: ReturnType<typeof useAppStore>["contentsTree"];
-    libraryItems: ReturnType<typeof useAppStore>["libraryItems"];
+    libraryItems: LibraryItem[]
     studentFilter: string;
     classFilter: string;
     projectFilter: string;
@@ -453,6 +465,17 @@ function StudentView({
     onAvaliacao: (ctx: Partial<Assessment> & { contextLabel: string }) => void;
     onEdit: (assessment: Assessment) => void;
 }) {
+
+    useEffect(() => {
+        getListaBNCC();
+    }, [])
+    
+    async function getListaBNCC(){
+        await getListBncc().then((data) => {
+            libraryItems = data;
+        });
+    }
+
     const filteredStudents = students.filter(s => {
         if (classFilter !== "all" && s.classId !== classFilter) return false;
         if (studentFilter !== "all" && s.id !== studentFilter) return false;
@@ -710,7 +733,7 @@ function StudentView({
 // Main Portfolio Page
 // ────────────────────────────────────────────
 function PortfolioContent() {
-    const { assessments, projects: allProjects, students, classes, schedule, skillsTree, contentsTree, libraryItems } = useAppStore();
+    const { assessments, projects: allProjects, students, classes, schedule, skillsTree, contentsTree} = useAppStore();
     const searchParams = useSearchParams();
     const initialClassId = searchParams.get("classId");
 
@@ -720,6 +743,16 @@ function PortfolioContent() {
     const [studentFilter, setStudentFilter] = useState("all");
     const [drawerCtx, setDrawerCtx] = useState<(Partial<Assessment> & { contextLabel: string }) | null>(null);
     const [editingAssessment, setEditingAssessment] = useState<Assessment | null>(null);
+
+    const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
+    
+    useEffect(() => {
+        getListaBNCC();
+    }, [])
+
+    async function getListaBNCC(){
+        await getListBncc().then(setLibraryItems);
+    }
 
     // Sync class filter if search param changes
     useEffect(() => {

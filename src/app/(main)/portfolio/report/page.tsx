@@ -12,6 +12,8 @@ import { RadialMatrix } from "@/components/mosaic/radial-matrix";
 import { Badge } from "@/components/ui/badge";
 import { SkillsChart } from "@/components/reports/skills-chart";
 import { CalendarIcon } from "lucide-react";
+import { LibraryItem } from "@/types/library-item";
+import { getListBncc } from "@/services/bncc.service";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Node Resolvers
@@ -141,7 +143,17 @@ function ReportCard({
     studentId: string;
     projectId?: string | null;
 }) {
-    const { projects, students, classes, assessments, schedule, skillsTree, contentsTree, libraryItems, dailyLogs, portfolioEntries } = useAppStore();
+    const { projects, students, classes, assessments, schedule, skillsTree, contentsTree, dailyLogs, portfolioEntries } = useAppStore();
+
+    const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
+    
+    useEffect(() => {
+        getListaBNCC();
+    }, [])
+
+    async function getListaBNCC(){
+        await getListBncc().then(setLibraryItems);
+    }
 
     const student = students.find(s => s.id === studentId);
     if (!student) {

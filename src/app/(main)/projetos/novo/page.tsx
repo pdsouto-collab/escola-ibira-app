@@ -18,6 +18,8 @@ import { useAppStore } from "@/lib/store";
 import { Project, ScheduleItem, KnowledgeNode } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { LibraryItem } from "@/types/library-item";
+import { getListBncc } from "@/services/bncc.service";
 
 function NewProjectWizardContent() {
     const router = useRouter();
@@ -32,13 +34,22 @@ function NewProjectWizardContent() {
         classes,
         schedule,
         updateSchedule,
-        libraryItems,
         finalProductTypes,
         students,
         users,
         skillsTree,
         contentsTree
     } = useAppStore();
+
+    const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
+    
+    useEffect(() => {
+        getListaBNCC();
+    }, [])
+
+    async function getListaBNCC(){
+        await getListBncc().then(setLibraryItems);
+    }
 
     const [isEditMode, setIsEditMode] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
