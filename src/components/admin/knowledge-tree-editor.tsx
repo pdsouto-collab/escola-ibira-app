@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAppStore } from "@/lib/store";
-import { KnowledgeNode, KnowledgeLevel, LibraryItem } from "@/lib/data";
+import { KnowledgeNode, KnowledgeLevel } from "@/lib/data";
 import { ChevronRight, ChevronDown, Plus, Edit2, Trash2, Link as LinkIcon, BookOpen, Search, X, Copy, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { getListBncc } from "@/services/bncc.service";
+import { LibraryItem } from "@/types/library-item";
 
 interface Props {
     treeType: "skill" | "content";
@@ -48,7 +50,9 @@ const LEVEL_COLORS = {
 };
 
 export function KnowledgeTreeEditor({ treeType }: Props) {
-    const { skillsTree, contentsTree, libraryItems, classes, addKnowledgeNode, updateKnowledgeNode, removeKnowledgeNode, duplicateKnowledgeNode } = useAppStore();
+
+    const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
+    const { skillsTree, contentsTree, classes, addKnowledgeNode, updateKnowledgeNode, removeKnowledgeNode, duplicateKnowledgeNode } = useAppStore();
 
     const treeData = treeType === "skill" ? skillsTree : contentsTree;
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
@@ -64,6 +68,14 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
     const [editMode, setEditMode] = useState<"add" | "edit" | null>(null);
     const [currentNode, setCurrentNode] = useState<Partial<KnowledgeNode> | null>(null);
     const [parentLevel, setParentLevel] = useState<KnowledgeLevel | null>(null); // To determine new node's level if adding
+
+    useEffect(() => {
+        getListaBNCC();
+    }, [])
+
+    async function getListaBNCC(){
+        await getListBncc().then(setLibraryItems);
+    }
 
     const handleAddRoot = () => {
         setEditMode("add");
