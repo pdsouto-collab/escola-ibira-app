@@ -35,12 +35,12 @@ import {
 import { getListBncc, createBncc, updateBncc, deleteBncc, renameSubGroupBncc, deleteSubGroupBncc } from "@/services/bncc.service";
 
 export function BibliotecaEditor() {
-    
+
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedGrade, setSelectedGrade] = useState<string>("all");
     const [activeTab, setActiveTab] = useState<"skill" | "content">("skill");
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
-    
+
     // Dialog State
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<LibraryItem | null>(null);
@@ -63,6 +63,9 @@ export function BibliotecaEditor() {
 
     // Get unique existing groups for the active tab (to populate the combobox)
     const existingGroups = Array.from(new Set(libraryItems.filter(i => i.type === activeTab).map(i => i.subGroup))).sort();
+
+    // Get unique existing groups filtered by the type selected IN THE FORM (may differ from activeTab)
+    const existingGroupsForForm = Array.from(new Set(libraryItems.filter(i => i.type === formData.type).map(i => i.subGroup))).sort();
 
     const handleOpenDialog = (item?: LibraryItem) => {
         if (item) {
@@ -120,7 +123,7 @@ export function BibliotecaEditor() {
             }
             setIsDialogOpen(false);
 
-        } catch (error:any) {
+        } catch (error: any) {
             alert("Não foi possível salvar/editar o item: " + error.message);
         } finally {
             setLoading(false);
@@ -149,7 +152,7 @@ export function BibliotecaEditor() {
             setNewGroupName("");
             setIsCreatingNewGroup(false);
 
-        } catch (error:any) {
+        } catch (error: any) {
             alert("Não foi possível salvar o grupo: " + error.message);
         } finally {
             setLoading(false);
@@ -165,11 +168,11 @@ export function BibliotecaEditor() {
             return;
         }
         if (confirm("Tem certeza que deseja excluir este item? Projetos que o utilizam não serão afetados, mas ele não aparecerá mais na busca.")) {
-            
+
             setLoading(true);
             try {
                 await deleteBncc(id);
-            } catch (error:any) {
+            } catch (error: any) {
                 alert("Não foi possível deletar o item: " + error.message);
             } finally {
                 setLoading(false);
@@ -183,13 +186,13 @@ export function BibliotecaEditor() {
         getListaBNCC();
     }, [])
 
-    async function getListaBNCC(){
+    async function getListaBNCC() {
         setLoading(true);
         await getListBncc().then(setLibraryItems);
         setLoading(false);
     }
 
-    async function renameSubGroup(oldName:string, newName:string) {
+    async function renameSubGroup(oldName: string, newName: string) {
         setLoading(true);
         await renameSubGroupBncc({
             oldName: oldName,
@@ -199,7 +202,7 @@ export function BibliotecaEditor() {
         getListaBNCC();
     }
 
-    async function deleteSubGroup(nameSubGroup:string) {
+    async function deleteSubGroup(nameSubGroup: string) {
         setLoading(true);
         setIsManageGroupsOpen(false);
         await deleteSubGroupBncc(nameSubGroup);
@@ -430,7 +433,11 @@ export function BibliotecaEditor() {
                             <label className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Tipo</label>
                             <Select
                                 value={formData.type}
-                                onValueChange={(val) => setFormData({ ...formData, type: val as "skill" | "content" })}
+                                onValueChange={(val) => {
+                                    const newType = val as "skill" | "content";
+                                    const groupsForNewType = Array.from(new Set(libraryItems.filter(i => i.type === newType).map(i => i.subGroup))).sort();
+                                    setFormData({ ...formData, type: newType, subGroup: groupsForNewType[0] || "", isCustomGroup: false });
+                                }}
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Selecione o tipo" />
@@ -495,7 +502,7 @@ export function BibliotecaEditor() {
                                         <SelectValue placeholder="Selecione um grupo existente" />
                                     </SelectTrigger>
                                     <SelectContent className="z-[9999]">
-                                        {existingGroups.map(g => (
+                                        {existingGroupsForForm.map(g => (
                                             <SelectItem key={g} value={g}>{g}</SelectItem>
                                         ))}
                                         <SelectItem value="new_group_trigger" className="font-bold text-primary border-t mt-1">
