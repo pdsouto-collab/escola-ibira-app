@@ -42,12 +42,12 @@ function NewProjectWizardContent() {
     } = useAppStore();
 
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
-    
+
     useEffect(() => {
         getListaBNCC();
     }, [])
 
-    async function getListaBNCC(){
+    async function getListaBNCC() {
         await getListBncc().then(setLibraryItems);
     }
 
@@ -610,7 +610,7 @@ function NewProjectWizardContent() {
                                                         <SelectItem value="all">Todas as Etapas</SelectItem>
                                                         {Array.from(new Set(
                                                             libraryItems
-                                                                .filter(i => i.isBNCC)
+                                                                .filter(i => i.type === "skill")
                                                                 .map(i => i.grade)
                                                                 .filter(g => g && g.trim().toLowerCase() !== "all")
                                                         )).sort((a, b) => {
@@ -632,10 +632,10 @@ function NewProjectWizardContent() {
                                         </div>
 
                                         <Accordion type="multiple" className="space-y-4">
-                                            {Array.from(new Set(libraryItems.filter(i => i.isBNCC).map(i => i.subGroup || "Geral"))).sort((a, b) => a.localeCompare(b)).map(subject => {
+                                            {Array.from(new Set(libraryItems.filter(i => i.type === "skill").map(i => i.subGroup || "Geral"))).sort((a, b) => a.localeCompare(b)).map(subject => {
                                                 const subjectItems = libraryItems.filter(i =>
                                                     i.subGroup === subject &&
-                                                    i.isBNCC &&
+                                                    i.type === "skill" &&
                                                     (gradeFilterBNCC === "all" || i.grade === gradeFilterBNCC || i.grade === "all") &&
                                                     (searchTermBNCC === "" ||
                                                         i.name.toLowerCase().includes(searchTermBNCC.toLowerCase()) ||
@@ -667,9 +667,15 @@ function NewProjectWizardContent() {
                                                                         <div key={item.id} onClick={() => toggleSkill(item.id, true)} className={cn("border-2 rounded-xl p-4 cursor-pointer transition-all relative overflow-hidden", isSelected ? "border-emerald-600 shadow-sm" : "border-slate-200 hover:border-emerald-300")}>
                                                                             <div className="flex justify-between items-start mb-2">
                                                                                 <div className="flex flex-wrap gap-1">
-                                                                                    <Badge variant="outline" className="text-[10px] font-bold h-5 px-1.5 bg-emerald-50 text-emerald-700 border-emerald-200">
-                                                                                        BNCC
-                                                                                    </Badge>
+                                                                                    {item.isBNCC ? (
+                                                                                        <Badge variant="outline" className="text-[10px] font-bold h-5 px-1.5 bg-emerald-50 text-emerald-700 border-emerald-200">
+                                                                                            BNCC
+                                                                                        </Badge>
+                                                                                    ) : (
+                                                                                        <Badge variant="outline" className="text-[10px] font-bold h-5 px-1.5 bg-purple-50 text-purple-700 border-purple-200">
+                                                                                            Escola
+                                                                                        </Badge>
+                                                                                    )}
                                                                                     {isFromBaseTree && (
                                                                                         <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200 text-[10px] font-bold h-5 px-1.5">
                                                                                             Trilha Base
@@ -726,7 +732,7 @@ function NewProjectWizardContent() {
                                                         <SelectItem value="all">Todas as Categorias</SelectItem>
                                                         {Array.from(new Set(
                                                             libraryItems
-                                                                .filter(i => !i.isBNCC)
+                                                                .filter(i => i.type === "content")
                                                                 .map(i => i.subGroup)
                                                                 .filter(g => g && g.trim().toLowerCase() !== "all")
                                                         )).sort((a, b) => {
@@ -744,10 +750,10 @@ function NewProjectWizardContent() {
                                         </div>
 
                                         <Accordion type="multiple" className="space-y-4">
-                                            {Array.from(new Set(libraryItems.filter(i => !i.isBNCC).map(i => i.subGroup || "Geral"))).sort((a, b) => a.localeCompare(b)).map(subject => {
+                                            {Array.from(new Set(libraryItems.filter(i => i.type === "content").map(i => i.subGroup || "Geral"))).sort((a, b) => a.localeCompare(b)).map(subject => {
                                                 const subjectItems = libraryItems.filter(i =>
                                                     i.subGroup === subject &&
-                                                    !i.isBNCC &&
+                                                    i.type === "content" &&
                                                     (gradeFilterCompetencias === "all" || i.grade === gradeFilterCompetencias || i.subGroup === gradeFilterCompetencias || i.grade === "all") &&
                                                     (searchTermCompetencias === "" ||
                                                         i.name.toLowerCase().includes(searchTermCompetencias.toLowerCase()) ||
