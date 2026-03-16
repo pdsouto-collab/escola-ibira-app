@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useAppStore } from "@/lib/store";
+import { useState, useEffect } from "react";
 import { Search, BookOpen, Layers, Filter, Check } from "lucide-react";
 import { Input } from "../ui/input";
 import { Badge } from "../ui/badge";
@@ -20,6 +19,8 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
+import { getListBncc } from "@/services/bncc.service";
+import { LibraryItem } from "@/types/library-item";
 
 interface LibrarySelectorProps {
     selectedIds?: string[];
@@ -28,10 +29,18 @@ interface LibrarySelectorProps {
 }
 
 export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all" }: LibrarySelectorProps) {
-    const { libraryItems } = useAppStore();
+    const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
+    const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedGrade, setSelectedGrade] = useState<string>("all");
     const [showOnlySelected, setShowOnlySelected] = useState(false);
+
+    useEffect(() => {
+        setLoading(true);
+        getListBncc()
+            .then(setLibraryItems)
+            .finally(() => setLoading(false));
+    }, []);
 
     // Keep internal state if not controlled
     const [itemState, setItemState] = useState<string[]>([]);
@@ -163,7 +172,14 @@ export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all"
 
             {/* List */}
             <div className="space-y-6 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                {skills.length > 0 && (
+                {loading && (
+                    <div className="space-y-3">
+                        <div className="h-10 bg-slate-200 animate-pulse rounded" />
+                        <div className="h-10 bg-slate-200 animate-pulse rounded" />
+                        <div className="h-10 bg-slate-200 animate-pulse rounded" />
+                    </div>
+                )}
+                {!loading && skills.length > 0 && (
                     <div className="space-y-3">
                         <h3 className="font-semibold text-sm text-slate-500 uppercase tracking-wider sticky top-0 bg-white/90 backdrop-blur pb-2 z-10">
                             Habilidades BNCC ({skills.length})
@@ -196,7 +212,7 @@ export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all"
                     </div>
                 )}
 
-                {contents.length > 0 && (
+                {!loading && contents.length > 0 && (
                     <div className="space-y-3 pt-4">
                         <h3 className="font-semibold text-sm text-slate-500 uppercase tracking-wider sticky top-0 bg-white/90 backdrop-blur pb-2 z-10">
                             Competências Gerais ({contents.length})
@@ -229,7 +245,7 @@ export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all"
                     </div>
                 )}
 
-                {filteredItems.length === 0 && (
+                {!loading && filteredItems.length === 0 && (
                     <div className="text-center py-12 text-slate-400 border-2 border-dashed rounded-xl">
                         Nenhum item encontrado na biblioteca.
                     </div>
