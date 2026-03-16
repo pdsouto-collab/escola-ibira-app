@@ -435,8 +435,14 @@ export function BibliotecaEditor() {
                                 value={formData.type}
                                 onValueChange={(val) => {
                                     const newType = val as "skill" | "content";
-                                    const groupsForNewType = Array.from(new Set(libraryItems.filter(i => i.type === newType).map(i => i.subGroup))).sort();
-                                    setFormData({ ...formData, type: newType, subGroup: groupsForNewType[0] || "", isCustomGroup: false });
+                                    // Se o usuário já estiver digitando um grupo customizado, mantemos. 
+                                    // Senão, resetamos para o primeiro grupo disponível desse novo tipo.
+                                    if (!formData.isCustomGroup) {
+                                        const groupsForNewType = Array.from(new Set(libraryItems.filter(i => i.type === newType).map(i => i.subGroup))).sort();
+                                        setFormData({ ...formData, type: newType, subGroup: groupsForNewType[0] || "" });
+                                    } else {
+                                        setFormData({ ...formData, type: newType });
+                                    }
                                 }}
                             >
                                 <SelectTrigger>

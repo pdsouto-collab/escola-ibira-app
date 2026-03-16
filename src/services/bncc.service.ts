@@ -3,31 +3,32 @@ import { subGroupRename } from "@/types/sub-group-rename";
 
 const BASE_URL = "/api/bncc";
 
-export async function getListBncc():Promise<LibraryItem[]> {
-    const res = await fetch(BASE_URL, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json"
-        }
-    });
-    if (!res.ok) {
-        throw new Error("Erro ao buscar BNCC");
-    };
-    return res.json();
+export async function getListBncc(): Promise<LibraryItem[]> {
+  const res = await fetch(BASE_URL, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    cache: "no-store"
+  });
+  if (!res.ok) {
+    throw new Error("Erro ao buscar BNCC");
+  };
+  return res.json();
 }
 
 export async function createBncc(item: LibraryItem): Promise<LibraryItem> {
-    const res = await fetch(BASE_URL, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(item)
-    })
-    if (!res.ok) {
-        throw new Error("Erro ao criar BNCC")
-    }
-    return res.json()
+  const res = await fetch(BASE_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(item)
+  })
+  if (!res.ok) {
+    throw new Error("Erro ao criar BNCC")
+  }
+  return res.json()
 }
 
 export async function deleteBncc(id: string) {
