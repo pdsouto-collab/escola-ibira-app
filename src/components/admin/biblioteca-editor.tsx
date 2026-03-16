@@ -108,7 +108,7 @@ export function BibliotecaEditor() {
                     description: formData.description,
                     subGroup: formData.subGroup,
                     grade: formData.grade,
-                    isBNCC: false
+                    isBNCC: editingItem.isBNCC // Preserva o status original da BNCC
                 });
             } else {
                 await createBncc({
@@ -391,6 +391,7 @@ export function BibliotecaEditor() {
                                                     )}
                                                     <h3 className="text-base font-bold text-slate-800 leading-tight mb-2">
                                                         {item.name}
+                                                        <span className="ml-2 text-[10px] text-slate-400 font-normal uppercase">({item.type === 'skill' ? 'Hab' : 'Comp'})</span>
                                                     </h3>
                                                     <p className="text-sm text-slate-600 line-clamp-4">
                                                         {item.description}

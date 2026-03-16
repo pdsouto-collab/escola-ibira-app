@@ -687,7 +687,10 @@ function NewProjectWizardContent() {
                                                                                 </div>
                                                                             </div>
                                                                             {item.code && <p className="text-emerald-700 font-mono text-[10px] mb-1 font-bold">{item.code}</p>}
-                                                                            <h4 className="font-bold text-slate-800 text-sm mb-1">{item.name}</h4>
+                                                                            <h4 className="font-bold text-slate-800 text-sm mb-1">
+                                                                                {item.name}
+                                                                                <span className="ml-2 text-[9px] text-slate-400 font-normal uppercase">({item.type})</span>
+                                                                            </h4>
                                                                             <p className="text-slate-500 text-xs line-clamp-3 leading-relaxed">{item.description}</p>
                                                                         </div>
                                                                     );
@@ -797,7 +800,10 @@ function NewProjectWizardContent() {
                                                                                     {isSelected && <Check className="w-3 h-3 text-white" />}
                                                                                 </div>
                                                                             </div>
-                                                                            <h4 className="font-bold text-slate-800 text-sm mb-1">{item.name}</h4>
+                                                                            <h4 className="font-bold text-slate-800 text-sm mb-1">
+                                                                                {item.name}
+                                                                                <span className="ml-2 text-[9px] text-slate-400 font-normal uppercase">({item.type})</span>
+                                                                            </h4>
                                                                             <p className="text-slate-500 text-xs line-clamp-3 leading-relaxed">{item.description}</p>
                                                                         </div>
                                                                     );
