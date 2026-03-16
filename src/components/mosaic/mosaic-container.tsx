@@ -42,9 +42,19 @@ export function MosaicContainer() {
         : students.filter(s => s.classId === selectedClassId);
 
     // Filtering logic for the tree itself based on class
-    const filteredTreeData = currentData.filter(node =>
-        selectedClassId === "all" || (node.classId || "all") === selectedClassId
-    );
+    // We prioritize the student's class if a specific student is selected
+    const filteredTreeData = currentData.filter(node => {
+        let activeClassId = selectedClassId;
+
+        if (selectedStudentId !== "all") {
+            const student = students.find(s => s.id === selectedStudentId);
+            if (student) {
+                activeClassId = student.classId;
+            }
+        }
+
+        return activeClassId === "all" || (node.classId || "all") === activeClassId;
+    });
 
     // If drilled down, we only render the drilled node as the root.
     const dataToRender = drilledNode ? [drilledNode] : filteredTreeData;
@@ -91,6 +101,8 @@ export function MosaicContainer() {
                         onValueChange={(v) => {
                             setSelectedClassId(v);
                             setSelectedStudentId("all");
+                            setDrilledNode(null);
+                            setSelectedNode(null);
                         }}
                     >
                         <SelectTrigger className={selectTriggerClass}>
@@ -118,7 +130,21 @@ export function MosaicContainer() {
                     </Select>
 
                     {/* Filter: Aluno */}
-                    <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
+                    <Select
+                        value={selectedStudentId}
+                        onValueChange={(v) => {
+                            setSelectedStudentId(v);
+                            setDrilledNode(null);
+                            setSelectedNode(null);
+                            // Sincroniza a turma se um aluno for selecionado
+                            if (v !== "all") {
+                                const student = students.find(s => s.id === v);
+                                if (student && student.classId) {
+                                    setSelectedClassId(student.classId);
+                                }
+                            }
+                        }}
+                    >
                         <SelectTrigger className={selectTriggerClass}>
                             <SelectValue placeholder="Todos os Alunos" />
                         </SelectTrigger>
