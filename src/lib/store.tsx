@@ -10,7 +10,6 @@ import {
     mockMessages,
     mockClasses, SchoolClass,
     User, mockUsers,
-    // LibraryItem, 
     KnowledgeNode, mockSkillsTree, mockContentsTree,
     FinalProductType, mockFinalProductTypes,
     Assessment, mockAssessments, Menu, mockMenus,
@@ -20,8 +19,6 @@ import {
     PegadaPost, mockPegadas, PegadaInteraction,
     ClassBoardPost, mockClassBoardPosts, PostInteraction, mockPostInteractions
 } from "@/lib/data";
-
-import { LibraryItem } from "@/types/library-item";
 
 interface AppState {
     students: Student[];
@@ -38,7 +35,6 @@ interface AppState {
     bnccProgress: Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>;
     skillsTree: KnowledgeNode[];
     contentsTree: KnowledgeNode[];
-    libraryItems: LibraryItem[];
     finalProductTypes: FinalProductType[];
     assessments: Assessment[];
     menus: Menu[];
@@ -141,8 +137,6 @@ interface AppContextType extends AppState {
     // Class Board
     addClassBoardPost: (post: ClassBoardPost) => void;
     addPostInteraction: (interaction: PostInteraction) => void;
-    // Library
-    setLibraryItems: (items: LibraryItem[]) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -252,7 +246,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [bnccProgress, setBnccProgress] = useState<Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>>({});
     const [skillsTree, setSkillsTree] = useState<KnowledgeNode[]>(mockSkillsTree);
     const [contentsTree, setContentsTree] = useState<KnowledgeNode[]>(mockContentsTree);
-    const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
     const [finalProductTypes, setFinalProductTypes] = useState<FinalProductType[]>(mockFinalProductTypes);
     const [assessments, setAssessments] = useState<Assessment[]>(mockAssessments);
     const [menus, setMenus] = useState<Menu[]>(mockMenus);
@@ -317,7 +310,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             load("bnccProgress", setBnccProgress, {});
             load("skillsTree", setSkillsTree, mockSkillsTree);
             load("contentsTree", setContentsTree, mockContentsTree);
-            load("libraryItems", setLibraryItems, []);
             load("menus", setMenus, mockMenus);
             load("portfolioEntries", setPortfolioEntries, mockPortfolio);
             load("assessments", setAssessments, mockAssessments);
@@ -360,7 +352,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem("app_bnccProgress", JSON.stringify(bnccProgress));
             localStorage.setItem("app_skillsTree", JSON.stringify(skillsTree));
             localStorage.setItem("app_contentsTree", JSON.stringify(contentsTree));
-            localStorage.setItem("app_libraryItems", JSON.stringify(libraryItems));
             localStorage.setItem("app_menus", JSON.stringify(menus));
             localStorage.setItem("app_portfolioEntries", JSON.stringify(portfolioEntries));
             localStorage.setItem("app_assessments", JSON.stringify(assessments));
@@ -702,8 +693,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             updateUser: (id, updates) => setUsers(prev => prev.map(u => u.id === id ? { ...u, ...updates } : u)),
             removeUser: (id) => setUsers(prev => prev.filter(u => u.id !== id)),
             bnccProgress, updateBNCCStatus,
-            skillsTree, contentsTree, libraryItems, addKnowledgeNode, updateKnowledgeNode, removeKnowledgeNode, duplicateKnowledgeNode,
-            setLibraryItems, // Adicionando setter se necessário (ou podemos atualizar ele via ações)
+            skillsTree, contentsTree, addKnowledgeNode, updateKnowledgeNode, removeKnowledgeNode, duplicateKnowledgeNode,
             finalProductTypes,
             addFinalProductType: (type) => setFinalProductTypes(prev => [...prev, type]),
             updateFinalProductType: (id, updates) => setFinalProductTypes(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t)),
