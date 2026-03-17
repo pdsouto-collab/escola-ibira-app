@@ -17,7 +17,7 @@ const LEVEL_LABELS = {
     skill: {
         macro: "Eixo do Saber",
         mesclado: "Componente Curricular",
-        micro: "Habilidade BNCC",
+        micro: "Habilidade",
         atomico: "Evidência da Habilidade"
     },
     content: {
