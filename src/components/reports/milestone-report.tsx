@@ -9,6 +9,7 @@ import { LibraryItem } from "@/types/library-item";
 
 interface MilestoneReportProps {
     studentId: string;
+    filter?: "bncc" | "ibira" | "all";
 }
 
 const labels = ["Muda", "Broto", "Jovem", "Adulta", "Com frutos"];
@@ -81,7 +82,7 @@ const getAllEvaluatableNodes = (nodes: any[], parentName?: string, level: string
     return results;
 };
 
-export function MilestoneReport({ studentId }: MilestoneReportProps) {
+export function MilestoneReport({ studentId, filter = "all" }: MilestoneReportProps) {
 
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
 
@@ -89,11 +90,11 @@ export function MilestoneReport({ studentId }: MilestoneReportProps) {
         getListaBNCC();
     }, [])
 
-    async function getListaBNCC(){
+    async function getListaBNCC() {
         await getListBncc().then(setLibraryItems);
     }
 
-    const { assessments, skillsTree, contentsTree, students} = useAppStore();
+    const { assessments, skillsTree, contentsTree, students } = useAppStore();
 
     const student = students.find(s => s.id === studentId);
     if (!student) return null;
@@ -117,10 +118,15 @@ export function MilestoneReport({ studentId }: MilestoneReportProps) {
     // Get ALL micro nodes from all projects/trees
     const allMicroNodes = getAllEvaluatableNodes([...skillsTree, ...contentsTree], undefined, "micro");
 
-    // Filter against the Trilha Base set
-    const allNodes = allMicroNodes.filter(node =>
-        node.libraryItemId && studentClassBaseTreeIds.has(node.libraryItemId)
-    );
+    // Filter against the Trilha Base set, then apply isBNCC filter
+    const allNodes = allMicroNodes.filter(node => {
+        if (!node.libraryItemId || !studentClassBaseTreeIds.has(node.libraryItemId)) return false;
+        const libraryItem = libraryItems.find(item => item.id === node.libraryItemId);
+        if (!libraryItem) return false;
+        if (filter === "bncc") return libraryItem.isBNCC === true;
+        if (filter === "ibira") return libraryItem.isBNCC === false;
+        return true;
+    });
 
     const groupsMap = new Map<string, any[]>();
     allNodes.forEach(node => {
