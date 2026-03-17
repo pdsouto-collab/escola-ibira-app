@@ -30,7 +30,7 @@ const LEVEL_LABELS = {
 
 const PLURAL_LABELS = {
     skill: {
-        micro: "Habilidades BNCC",
+        micro: "Habilidades (BNCC / IBIRÁ)",
         atomico: "Evidências da Habilidade"
     },
     content: {

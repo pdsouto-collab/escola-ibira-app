@@ -164,13 +164,13 @@ export function MosaicContainer() {
                                 onClick={() => { setActiveTab("skill"); setDrilledNode(null); setSelectedNode(null); }}
                                 className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === "skill" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
                             >
-                                Habilidades BNCC
+                                Habilidades (BNCC / IBIRÁ)
                             </button>
                             <button
                                 onClick={() => { setActiveTab("content"); setDrilledNode(null); setSelectedNode(null); }}
                                 className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === "content" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}
                             >
-                                Competências Gerais
+                                Competências (BNCC / IBIRÁ)
                             </button>
                         </div>
                     </div>
@@ -196,11 +196,11 @@ export function MosaicContainer() {
                     <div className="w-full bg-white border-b py-2 px-6 flex justify-center">
                         {activeTab === "skill" ? (
                             <div className="text-blue-700 font-bold tracking-widest uppercase text-[10px] opacity-80">
-                                VISÃO ACADÊMICA / CURRICULAR (habilidades bncc)
+                                VISÃO ACADÊMICA / CURRICULAR (habilidades bncc / ibirá)
                             </div>
                         ) : (
                             <div className="text-indigo-700 font-bold tracking-widest uppercase text-[10px] opacity-80">
-                                VISÃO COMPORTAMENTAL / COGNITIVA (competências gerais)
+                                VISÃO COMPORTAMENTAL / COGNITIVA (competências bncc / ibirá)
                             </div>
                         )}
                     </div>

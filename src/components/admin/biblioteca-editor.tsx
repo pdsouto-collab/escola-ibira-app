@@ -323,14 +323,14 @@ export function BibliotecaEditor() {
                             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-2 py-3 text-base font-medium text-slate-500 data-[state=active]:text-primary transition-all flex items-center gap-2"
                         >
                             <BookOpen className="w-4 h-4" />
-                            Habilidades BNCC
+                            Habilidades (BNCC / IBIRÁ)
                         </TabsTrigger>
                         <TabsTrigger
                             value="content"
                             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-2 py-3 text-base font-medium text-slate-500 data-[state=active]:text-primary transition-all flex items-center gap-2"
                         >
                             <Layers className="w-4 h-4" />
-                            Competências Gerais
+                            Competências (BNCC / IBIRÁ)
                         </TabsTrigger>
                     </TabsList>
                 </div>
@@ -450,8 +450,8 @@ export function BibliotecaEditor() {
                                     <SelectValue placeholder="Selecione o tipo" />
                                 </SelectTrigger>
                                 <SelectContent className="z-[9999]">
-                                    <SelectItem value="skill">Habilidades BNCC</SelectItem>
-                                    <SelectItem value="content">Competências Gerais</SelectItem>
+                                    <SelectItem value="skill">Habilidades (BNCC / IBIRÁ)</SelectItem>
+                                    <SelectItem value="content">Competências (BNCC / IBIRÁ)</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -569,7 +569,7 @@ export function BibliotecaEditor() {
                     <DialogHeader>
                         <DialogTitle>Gerenciar Grupos</DialogTitle>
                         <DialogDescription>
-                            Renomeie ou exclua os grupos existentes na aba atual ({activeTab === 'skill' ? 'Habilidades BNCC' : 'Competências Gerais'}).<br />
+                            Renomeie ou exclua os grupos existentes na aba atual ({activeTab === 'skill' ? 'Habilidades (BNCC / IBIRÁ)' : 'Competências (BNCC / IBIRÁ)'}).<br />
                             Itens da BNCC de um grupo excluído irão para a categoria "BNCC Sem Grupo".
                         </DialogDescription>
                     </DialogHeader>
