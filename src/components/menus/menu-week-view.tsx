@@ -14,10 +14,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 import { Badge } from "@/components/ui/badge";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";import { useSession } from "next-auth/react";
+
 
 export function MenuWeekView() {
-    const { menus, addMenu, updateMenu, removeMenu, currentUser } = useAppStore();
+    const { menus, addMenu, updateMenu, removeMenu } = useAppStore();
+    const { data: session } = useSession();
+    const currentUser = session?.user as any;
     const isNutritionist = currentUser?.role === "nutritionist" || currentUser?.role === "admin" || currentUser?.role === "director";
 
     const [currentDate, setCurrentDate] = useState(new Date());

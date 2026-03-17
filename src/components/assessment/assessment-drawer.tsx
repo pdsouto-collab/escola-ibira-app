@@ -10,7 +10,8 @@ import { TreeRatingPicker } from "@/components/assessment/tree-rating-picker";
 import { useAppStore } from "@/lib/store";
 import { Assessment, AssessmentAttachment } from "@/lib/data";
 import { Camera, FileUp, X, Users, User, Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";import { useSession } from "next-auth/react";
+
 
 interface AssessmentDrawerProps {
     open: boolean;
@@ -49,7 +50,9 @@ export function AssessmentDrawer({
     initialObservations,
     initialAttachments,
 }: AssessmentDrawerProps) {
-    const { students, classes, projects, schedule, addAssessment, updateAssessment, removeAssessment, currentUser, assessments } = useAppStore();
+    const { students, classes, projects, schedule, addAssessment, updateAssessment, removeAssessment, assessments } = useAppStore();
+    const { data: session } = useSession();
+    const currentUser = session?.user as any;
 
     const [activeAssessmentId, setActiveAssessmentId] = useState<string | undefined>(assessmentId);
 

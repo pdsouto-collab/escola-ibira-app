@@ -9,7 +9,6 @@ import {
     Task, MuralEvent, Project, ChatMessage,
     mockMessages,
     mockClasses, SchoolClass,
-    User, mockUsers,
     KnowledgeNode, mockSkillsTree, mockContentsTree,
     FinalProductType, mockFinalProductTypes,
     Assessment, mockAssessments, Menu, mockMenus,
@@ -30,8 +29,6 @@ interface AppState {
     projects: Project[];
     messages: ChatMessage[];
     mosaicData: MosaicNode[];
-    currentUser: User | null;
-    users: User[];
     bnccProgress: Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>;
     skillsTree: KnowledgeNode[];
     contentsTree: KnowledgeNode[];
@@ -77,13 +74,6 @@ interface AppContextType extends AppState {
     replaceMosaicData: (newData: MosaicNode[]) => void;
 
     resetData: () => void;
-    setCurrentUser: (user: User | null) => void;
-    updateUserInfo: (id: string, updates: Partial<User>) => void;
-
-    // User Management
-    addUser: (user: User) => void;
-    updateUser: (id: string, updates: Partial<User>) => void;
-    removeUser: (id: string) => void;
 
     // BNCC Progress
     bnccProgress: Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>;
@@ -241,8 +231,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [projects, setProjects] = useState<Project[]>(initialProjects);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [mosaicData, setMosaicData] = useState<MosaicNode[]>(mockRecursiveDataSkills);
-    const [users, setUsers] = useState<User[]>(mockUsers);
-    const [currentUser, _setCurrentUser] = useState<User | null>(mockUsers[1]); // Default to Teacher (Cláudia) for dev
     const [bnccProgress, setBnccProgress] = useState<Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>>({});
     const [skillsTree, setSkillsTree] = useState<KnowledgeNode[]>(mockSkillsTree);
     const [contentsTree, setContentsTree] = useState<KnowledgeNode[]>(mockContentsTree);
@@ -260,7 +248,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     // Load from LocalStorage on mount
     useEffect(() => {
-        const CURRENT_VERSION = "3.0"; // Increment this to force updates
+        const CURRENT_VERSION = "3.1"; // Increment this to force updates
         const storedVersion = localStorage.getItem("app_version");
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -318,19 +306,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             load("pegadaPosts", setPegadaPosts, mockPegadas);
             load("classBoardPosts", setClassBoardPosts, mockClassBoardPosts);
             load("postInteractions", setPostInteractions, mockPostInteractions);
-
-            const savedCurrentUser = localStorage.getItem("app_currentUser");
-            if (savedCurrentUser) {
-                try {
-                    _setCurrentUser(JSON.parse(savedCurrentUser));
-                } catch (e) {
-                    console.error("Failed to parse currentUser from localStorage", e);
-                    _setCurrentUser(mockUsers[1]);
-                }
-            } else {
-                _setCurrentUser(mockUsers[1]);
-            }
         }
+
 
         setIsLoaded(true);
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -370,8 +347,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setStudents(prev => [...prev, student]);
         addNotification({
             id: Math.random().toString(36).substr(2, 9),
-            userId: currentUser?.id || "u2",
-            title: "Novo Aluno Matatriculado",
+            userId: "admin",
+            title: "Novo Aluno Matriculado",
             message: `${student.name} foi adicionado à turma.`,
             type: "info",
             isRead: false,
@@ -406,7 +383,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             if (e.id === eventId) {
                 const newComment = {
                     id: Math.random().toString(36).substr(2, 9),
-                    author: currentUser?.name || "Usuário",
+                    author: "Usuário",
                     text: commentText,
                     date: new Date().toISOString()
                 };
@@ -425,7 +402,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             const project = projects.find(p => p.id === id);
             addNotification({
                 id: Math.random().toString(36).substr(2, 9),
-                userId: currentUser?.id || "u2",
+                userId: "admin",
                 title: "Projeto Finalizado",
                 message: `O projeto "${project?.title}" foi concluído com sucesso.`,
                 type: "success",
@@ -643,24 +620,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         else setContentsTree(updater);
     };
 
-    const setCurrentUser = (user: User | null) => {
-        _setCurrentUser(user);
-        if (user) {
-            localStorage.setItem("app_currentUser", JSON.stringify(user));
-        } else {
-            localStorage.removeItem("app_currentUser");
-        }
-    };
-
-    const updateUserInfo = (id: string, updates: Partial<User>) => {
-        setUsers(prev => prev.map(u => u.id === id ? { ...u, ...updates } : u));
-        if (currentUser?.id === id) {
-            const updatedUser = { ...currentUser, ...updates };
-            _setCurrentUser(updatedUser);
-            localStorage.setItem("app_currentUser", JSON.stringify(updatedUser));
-        }
-    };
-
     const addNotification = (n: AppNotification) => setNotifications(prev => [n, ...prev]);
     const markNotificationAsRead = (id: string) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
     const markAllNotificationsAsRead = () => setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
@@ -683,15 +642,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <AppContext.Provider value={{
-            students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages, currentUser,
+            students, classes, schedule, dailyLogs, tasks, muralEvents, projects, messages,
             addStudent, updateStudent, removeStudent, addClass, updateClass, removeClass, toggleTask, addTask, removeTask,
             addMuralEvent, updateMuralEvent, removeMuralEvent, addCommentToEvent,
             updateSchedule, addProject, updateProject, removeProject, sendMessage, resetData,
             mosaicData, updateMosaicNode, replaceMosaicData,
-            users, setCurrentUser, updateUserInfo,
-            addUser: (user) => setUsers(prev => [...prev, user]),
-            updateUser: (id, updates) => setUsers(prev => prev.map(u => u.id === id ? { ...u, ...updates } : u)),
-            removeUser: (id) => setUsers(prev => prev.filter(u => u.id !== id)),
             bnccProgress, updateBNCCStatus,
             skillsTree, contentsTree, addKnowledgeNode, updateKnowledgeNode, removeKnowledgeNode, duplicateKnowledgeNode,
             finalProductTypes,

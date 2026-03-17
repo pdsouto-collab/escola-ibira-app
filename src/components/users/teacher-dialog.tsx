@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { User, SchoolClass } from "@/lib/data";
+import { SchoolClass } from "@/lib/data";
+import { User } from "@/types/user";
 import { useAppStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +33,7 @@ interface TeacherDialogProps {
     onOpenChange: (open: boolean) => void;
     user?: User | null;
     onSave: (user: User) => void;
+    isLoading?: boolean;
 }
 
 const emptyTeacher: Omit<User, "id"> = {
@@ -48,9 +50,10 @@ const emptyTeacher: Omit<User, "id"> = {
     education: "",
     specialization: [],
     assignedClassIds: [],
+    password: "",
 };
 
-export function TeacherDialog({ open, onOpenChange, user, onSave }: TeacherDialogProps) {
+export function TeacherDialog({ open, onOpenChange, user, onSave, isLoading = false }: TeacherDialogProps) {
     const { classes, students } = useAppStore();
     const [formData, setFormData] = useState<Partial<User>>(emptyTeacher);
     const [activeTab, setActiveTab] = useState("personal");
@@ -65,13 +68,22 @@ export function TeacherDialog({ open, onOpenChange, user, onSave }: TeacherDialo
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        
+        const dataToSave = {
+            ...formData,
+        };
+
+        // If password fields are empty, don't send them to prevent validation errors on the server
+        if (!dataToSave.password) delete dataToSave.password;
+        if (!dataToSave.currentPassword) delete dataToSave.currentPassword;
+
         onSave({
             id: user?.id || crypto.randomUUID(),
-            ...formData,
+            ...dataToSave,
             role: "teacher",
             avatar: formData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.name || 'teacher'}`,
         } as User);
-        onOpenChange(false);
+        // Do NOT close dialog here - let the parent handle it after success
     };
 
     const toggleClass = (classId: string) => {
@@ -267,11 +279,11 @@ export function TeacherDialog({ open, onOpenChange, user, onSave }: TeacherDialo
                     </Tabs>
 
                     <DialogFooter className="p-6 bg-white border-t">
-                        <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+                        <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} disabled={isLoading}>
                             Cancelar
                         </Button>
-                        <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white px-8">
-                            Salvar Alterações
+                        <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white px-8" disabled={isLoading}>
+                            {isLoading ? "Salvando..." : "Salvar Alterações"}
                         </Button>
                     </DialogFooter>
                 </form>

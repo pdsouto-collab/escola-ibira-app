@@ -6,10 +6,13 @@ import { ClassBoardPost, PostInteraction } from "@/lib/data";
 import { TreeDeciduous, MessageCircle, MoreHorizontal, Shapes, Megaphone, Clock } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow, parseISO } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { ptBR } from "date-fns/locale";import { useSession } from "next-auth/react";
+
 
 function PostInteractionsView({ post }: { post: ClassBoardPost }) {
-    const { currentUser, postInteractions, addPostInteraction } = useAppStore();
+    const { postInteractions, addPostInteraction } = useAppStore();
+    const { data: session } = useSession();
+    const currentUser = session?.user as any;
     const [showComments, setShowComments] = useState(false);
     const [commentText, setCommentText] = useState("");
 

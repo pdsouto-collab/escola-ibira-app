@@ -11,14 +11,17 @@ import { Input } from "@/components/ui/input";
 import { TreeDeciduous, MessageSquare, Mic, Send, MoreVertical, Play, Pencil, Trash, X, Save, ChevronLeft, ChevronRight } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";import { useSession } from "next-auth/react";
+
 
 interface PegadaPostCardProps {
     post: PegadaPost;
 }
 
 export function PegadaPostCard({ post }: PegadaPostCardProps) {
-    const { currentUser, addPegadaInteraction, updatePegadaPost, deletePegadaPost } = useAppStore();
+    const { addPegadaInteraction, updatePegadaPost, deletePegadaPost } = useAppStore();
+    const { data: session } = useSession();
+    const currentUser = session?.user as any;
     const [comment, setComment] = useState("");
     const [showComments, setShowComments] = useState(false);
     const [isEditing, setIsEditing] = useState(false);

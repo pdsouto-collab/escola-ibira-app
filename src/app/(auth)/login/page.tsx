@@ -2,30 +2,34 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAppStore } from "@/lib/store";
+import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { mockUsers } from "@/lib/data";
 
 export default function LoginPage() {
     const router = useRouter();
-    const { setCurrentUser, users } = useAppStore();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError("");
+        setIsLoading(true);
 
-        // Simulating auth: Find user by email in the GLOBAL STORE (mock password check)
-        const user = users.find(u => u.email === email);
+        try {
+            const { authService } = await import("@/services/auth.service");
+            const res = await authService.login({ email, password });
 
-        if (user) {
-            setCurrentUser(user);
-            router.push("/");
-        } else {
-            setError("Email ou senha inválidos.");
+            if (res?.ok) {
+                router.push("/");
+            }
+        } catch (err: any) {
+            setError(err.message || "Email ou senha incorretos.");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -71,8 +75,9 @@ export default function LoginPage() {
 
                 {error && <p className="text-sm text-red-500">{error}</p>}
 
-                <Button type="submit" className="w-full bg-[#E89F67] hover:bg-[#D48A54]">
-                    Entrar
+                <Button type="submit" disabled={isLoading} className="w-full bg-[#E89F67] hover:bg-[#D48A54]">
+                    {isLoading ? "Entrando..." : "Entrar"}
+
                 </Button>
             </form>
 
@@ -84,12 +89,12 @@ export default function LoginPage() {
                     </a>
                 </p>
                 <div className="mt-4 text-xs bg-slate-50 p-2 rounded">
-                    <p className="font-semibold">Credenciais de teste (Qualquer Senha):</p>
+                    <p className="font-semibold">Credenciais de teste (Senha '123'):</p>
                     <p>ana.diretora@escolaibira.com.br</p>
                     <p>admin@escolaibira.com.br</p>
                     <p>claudia.prof@escolaibira.com.br</p>
                     <p>juliana.nutri@escolaibira.com.br</p>
-                    <p>mariana.responsavel@escolaibira.com.br</p>
+                    <p>mariana.mae@email.com</p>
                 </div>
             </div>
         </div>

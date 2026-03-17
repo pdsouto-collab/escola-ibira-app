@@ -14,10 +14,13 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";import { useSession } from "next-auth/react";
+
 
 export function NotificationPopover() {
-    const { notifications, markNotificationAsRead, markAllNotificationsAsRead, currentUser } = useAppStore();
+    const { notifications, markNotificationAsRead, markAllNotificationsAsRead } = useAppStore();
+    const { data: session } = useSession();
+    const currentUser = session?.user as any;
     const [open, setOpen] = useState(false);
 
     // Filter notifications for the current user

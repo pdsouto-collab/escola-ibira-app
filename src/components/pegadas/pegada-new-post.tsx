@@ -17,10 +17,13 @@ import {
     Upload
 } from "lucide-react";
 import { useRef } from "react";
-import { BulkPortfolioDialog } from "@/components/portfolio/bulk-portfolio-dialog";
+import { BulkPortfolioDialog } from "@/components/portfolio/bulk-portfolio-dialog";import { useSession } from "next-auth/react";
+
 
 export function PegadaNewPost() {
-    const { currentUser, addPegadaPost } = useAppStore();
+    const { addPegadaPost } = useAppStore();
+    const { data: session } = useSession();
+    const currentUser = session?.user as any;
     const [isExpanded, setIsExpanded] = useState(false);
     const [type, setType] = useState<'photo' | 'video' | 'note'>('photo');
     const [title, setTitle] = useState("");

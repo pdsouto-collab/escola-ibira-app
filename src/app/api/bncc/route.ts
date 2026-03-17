@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma.";
+import prisma from "@/lib/prisma";
 import { LibraryItem } from "@/types/library-item.js";
 import { subGroupRename } from "@/types/sub-group-rename";
 
@@ -8,7 +8,7 @@ export async function GET() {
   return NextResponse.json(bncc);
 }
 
-export async function POST(request: Request){
+export async function POST(request: Request) {
   const item: LibraryItem = await request.json();
   const created = await prisma.bncc.create({
     data: item
@@ -16,7 +16,7 @@ export async function POST(request: Request){
   return NextResponse.json(created);
 }
 
-export async function DELETE(request: Request){
+export async function DELETE(request: Request) {
 
   const type = request.headers.get("type")
 
@@ -28,7 +28,7 @@ export async function DELETE(request: Request){
     });
     return NextResponse.json({ ok: true })
 
-  }else if(type === 'deleteSubGroupBncc'){
+  } else if (type === 'deleteSubGroupBncc') {
 
     const subGroup = await request.text();
     await prisma.bncc.deleteMany({
@@ -55,14 +55,14 @@ export async function PUT(request: Request) {
     })
     return NextResponse.json(updated);
 
-  }else if(type === 'renameSubGroup'){
+  } else if (type === 'renameSubGroup') {
 
     const item: subGroupRename = await request.json();
     const updated = await prisma.bncc.updateMany({
-      where: { 
+      where: {
         subGroup: item.oldName
       },
-      data: { 
+      data: {
         subGroup: item.newName
       }
     })

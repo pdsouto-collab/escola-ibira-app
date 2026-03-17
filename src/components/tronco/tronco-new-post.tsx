@@ -7,10 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { TreeDeciduous, Image as ImageIcon, Send, Shapes, Megaphone } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";import { useSession } from "next-auth/react";
+
 
 export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) {
-    const { currentUser, projects, addClassBoardPost } = useAppStore();
+    const { projects, addClassBoardPost } = useAppStore();
+    const { data: session } = useSession();
+    const currentUser = session?.user as any;
     const [isExpanded, setIsExpanded] = useState(false);
 
     // Form State

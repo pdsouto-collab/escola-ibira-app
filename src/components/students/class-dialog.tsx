@@ -26,7 +26,10 @@ const emptyClass: Omit<SchoolClass, "id"> = {
     description: "",
 };
 
-import { useAppStore } from "@/lib/store";
+import { getUsers } from "@/services/user.service";
+import { User } from "@/types/user";
+import { useEffect } from "react";
+
 import {
     Select,
     SelectContent,
@@ -36,9 +39,16 @@ import {
 } from "@/components/ui/select";
 
 export function ClassDialog({ open, onOpenChange, schoolClass, onSave }: ClassDialogProps) {
-    const { users } = useAppStore();
-    const teachers = users.filter(u => u.role === "teacher");
+    const [teachers, setTeachers] = useState<User[]>([]);
     const [formData, setFormData] = useState<Partial<SchoolClass>>(schoolClass ? { ...schoolClass } : emptyClass);
+
+    useEffect(() => {
+        if (open) {
+            getUsers().then(users => {
+                setTeachers(users.filter(u => u.role === "teacher"));
+            });
+        }
+    }, [open]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();

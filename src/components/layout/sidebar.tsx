@@ -26,8 +26,8 @@ import {
     Footprints
 } from "lucide-react";
 import { SchoolLogo } from "@/components/ui/school-logo";
-
-import { BookOpen } from "lucide-react";
+import { useAppStore } from "@/lib/store";
+import { useSession, signOut } from "next-auth/react";
 
 const navigation = [
     { name: "Início", href: "/", icon: LayoutDashboard },
@@ -48,19 +48,14 @@ const navigation = [
     { name: "Painel Admin", href: "/admin-panel", icon: Settings, roles: ["director", "admin"] },
 ];
 
-import { useAppStore } from "@/lib/store";
-import { useRouter } from "next/navigation";
-
 export function Sidebar() {
     const pathname = usePathname();
-    const router = useRouter();
-    const { currentUser, setCurrentUser, resetData } = useAppStore();
+    const { resetData } = useAppStore();
+    const { data: session } = useSession();
+    const currentUser = session?.user as any;
 
-    const handleLogout = () => {
-        // Clear current user
-        // @ts-ignore - allowing null for logout
-        setCurrentUser(null);
-        router.push("/login");
+    const handleLogout = async () => {
+        await signOut({ redirect: true, callbackUrl: "/login" });
     };
 
     return (
@@ -70,7 +65,7 @@ export function Sidebar() {
             </div>
             <div className="flex-1 overflow-y-auto py-4">
                 <nav className="space-y-1 px-3">
-                    {navigation.map((item) => {
+                    {navigation.map((item: any) => {
                         // RBAC Check
                         // @ts-ignore - roles property might not exist on all items in original type inference
                         if (item.roles && (!currentUser || !item.roles.includes(currentUser.role))) {

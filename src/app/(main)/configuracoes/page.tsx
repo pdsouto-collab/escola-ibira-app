@@ -5,16 +5,18 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Bell, Moon, User, Lock, Save, CheckCircle2 } from "lucide-react";
-import { useAppStore } from "@/lib/store";
 import { useState, useEffect } from "react";
+import { signOut, useSession } from "next-auth/react";
+import { updateUser as updateUserService } from "@/services/user.service";
 
 export default function SettingsPage() {
-    const { currentUser, updateUserInfo } = useAppStore();
+    const { data: session, update } = useSession();
+    const currentUser = session?.user as any;
 
     // Profile State
-    const [name, setName] = useState(currentUser?.name || "");
-    const [email, setEmail] = useState(currentUser?.email || "");
-    const [phone, setPhone] = useState(currentUser?.phone || "");
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [phone, setPhone] = useState("");
 
     // Password State
     const [currentPassword, setCurrentPassword] = useState("");
@@ -32,10 +34,12 @@ export default function SettingsPage() {
     const [profileMessage, setProfileMessage] = useState("");
     const [passwordMessage, setPasswordMessage] = useState("");
 
+    // Sync form with session
     useEffect(() => {
         if (currentUser) {
-            setName(currentUser.name);
-            setEmail(currentUser.email);
+            console.log("SettingsPage - Usuário Atual:", currentUser);
+            setName(currentUser.name || "");
+            setEmail(currentUser.email || "");
             setPhone(currentUser.phone || "");
         }
     }, [currentUser]);
@@ -46,11 +50,17 @@ export default function SettingsPage() {
         setProfileMessage("");
 
         try {
-            // In a real app, this would be an API call
-            updateUserInfo(currentUser.id, { name, email, phone });
+            await updateUserService(currentUser.id, { name, email, phone });
+            // Forçar atualização da sessão no NextAuth
+            await update({
+                name,
+                email,
+                phone,
+            });
             setProfileMessage("Perfil atualizado com sucesso!");
             setTimeout(() => setProfileMessage(""), 3000);
         } catch (error) {
+            console.error("Erro ao atualizar perfil:", error);
             setProfileMessage("Erro ao atualizar perfil.");
         } finally {
             setIsSavingProfile(false);
@@ -71,15 +81,24 @@ export default function SettingsPage() {
         setPasswordMessage("");
 
         try {
-            // Mock password reset
-            console.log("Password reset for user:", currentUser?.id);
-            setPasswordMessage("Senha redefinida com sucesso!");
+            await updateUserService(currentUser.id, {
+                currentPassword,
+                password: newPassword
+            });
+            setPasswordMessage("Senha redefinida com sucesso! Redirecionando...");
             setCurrentPassword("");
             setNewPassword("");
             setConfirmPassword("");
-            setTimeout(() => setPasswordMessage(""), 3000);
-        } catch (error) {
-            setPasswordMessage("Erro ao redefinir senha.");
+            setTimeout(() => signOut({ callbackUrl: "/login" }), 2000);
+        } catch (error: any) {
+            console.error("Erro ao redefinir senha:", error);
+            const message = error.message || "";
+            // Agora que o service inclui o status, podemos detectar o 401
+            if (message.includes("401")) {
+                setPasswordMessage("A senha atual digitada está incorreta.");
+            } else {
+                setPasswordMessage("Ocorreu um erro ao tentar redefinir sua senha. Verifique os dados e tente novamente.");
+            }
         } finally {
             setIsSavingPassword(false);
         }
@@ -88,7 +107,7 @@ export default function SettingsPage() {
     return (
         <div className="space-y-6 max-w-4xl pb-10">
             <div className="flex flex-col gap-2">
-                <h1 className="text-3xl font-bold tracking-tight text-slate-800">Caminho do Usuário</h1>
+                <h1 className="text-3xl font-bold tracking-tight text-slate-800">Pessoais e Configurações</h1>
                 <p className="text-slate-500">Gerencie suas informações pessoais e preferências do sistema.</p>
             </div>
 
@@ -118,7 +137,7 @@ export default function SettingsPage() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-semibold text-slate-700">Email Acadêmico</label>
+                                <label className="text-sm font-semibold text-slate-700">Email</label>
                                 <Input
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
@@ -266,4 +285,3 @@ export default function SettingsPage() {
         </div>
     );
 }
-

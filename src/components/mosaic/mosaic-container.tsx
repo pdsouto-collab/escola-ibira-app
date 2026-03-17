@@ -10,10 +10,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 import { AssessmentDrawer } from "../assessment/assessment-drawer";
-import { Assessment } from "@/lib/data";
+import { Assessment } from "@/lib/data";import { useSession } from "next-auth/react";
+
 
 export function MosaicContainer() {
-    const { skillsTree, contentsTree, classes, projects, students, currentUser, assessments, libraryItems } = useAppStore();
+    const { skillsTree, contentsTree, classes, projects, students, assessments, libraryItems } = useAppStore();
+    const { data: session } = useSession();
+    const currentUser = session?.user as any;
 
     // Core State
     const [activeTab, setActiveTab] = useState<"skill" | "content">("skill");

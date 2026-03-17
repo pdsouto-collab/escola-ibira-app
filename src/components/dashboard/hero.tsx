@@ -5,10 +5,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 import { useAppStore } from "@/lib/store";
 import { NotificationPopover } from "./notification-popover";
-import { UserProfileMenu } from "../users/user-profile-menu";
+import { UserProfileMenu } from "../users/user-profile-menu";import { useSession } from "next-auth/react";
+
 
 export function DashboardHero() {
-    const { currentUser } = useAppStore();
+    const { data: session } = useSession();
+    const currentUser = session?.user as any;
     const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
     return (

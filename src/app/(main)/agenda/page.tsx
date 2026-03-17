@@ -17,7 +17,8 @@ import { ScheduleItem } from "@/lib/data";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";import { useSession } from "next-auth/react";
+
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -26,7 +27,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export default function AgendaPage() {
-    const { schedule, classes, currentUser, updateSchedule } = useAppStore();
+    const { schedule, classes, updateSchedule } = useAppStore();
+    const { data: session } = useSession();
+    const currentUser = session?.user as any;
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
     const [selectedType, setSelectedType] = useState<string>("all");

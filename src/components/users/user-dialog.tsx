@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { User, UserRole } from "@/lib/data";
+import { User } from "@/types/user";
+import { UserRole } from "@/types/user-role";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,

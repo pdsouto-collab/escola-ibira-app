@@ -22,21 +22,38 @@ import {
     DialogHeader,
     DialogTitle,
 } from "../ui/dialog";
-import { useAppStore } from "@/lib/store";
-import { Settings, LogOut, User as UserIcon, Lock, KeyRound } from "lucide-react";
+import { updateUser as updateUserService } from "@/services/user.service";
+import { Settings, LogOut, User as UserIcon, Lock } from "lucide-react";
+import { useSession, signOut } from "next-auth/react";
 
 export function UserProfileMenu() {
-    const { currentUser, updateUserInfo } = useAppStore();
+    const { data: session, update } = useSession();
+    const currentUser = session?.user as any;
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isPasswordOpen, setIsPasswordOpen] = useState(false);
+    const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+    const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
     // Profile Form State
     const [formData, setFormData] = useState({
-        name: currentUser?.name.split(" ")[0] || "",
-        lastName: currentUser?.name.split(" ").slice(1).join(" ") || "",
-        email: currentUser?.email || "",
-        phone: currentUser?.phone || "",
+        name: "",
+        lastName: "",
+        email: "",
+        phone: "",
     });
+
+    // Populate form data when currentUser is available
+    React.useEffect(() => {
+        if (currentUser) {
+            //console.log("UserProfileMenu - Usuário Atual:", currentUser);
+            setFormData({
+                name: currentUser.name?.split(" ")[0] || "",
+                lastName: currentUser.name?.split(" ").slice(1).join(" ") || "",
+                email: currentUser.email || "",
+                phone: currentUser.phone || "",
+            });
+        }
+    }, [currentUser]);
 
     // Password Form State
     const [passwordData, setPasswordData] = useState({
@@ -45,27 +62,57 @@ export function UserProfileMenu() {
         confirmPassword: "",
     });
 
-    const handleProfileSave = () => {
+    const handleProfileSave = async () => {
         if (!currentUser) return;
         const fullName = `${formData.name} ${formData.lastName}`.trim();
-        updateUserInfo(currentUser.id, {
-            name: fullName,
-            email: formData.email,
-            phone: formData.phone,
-        });
-        setIsProfileOpen(false);
-        // Optional: toast("Perfil atualizado com sucesso!");
+        setIsUpdatingProfile(true);
+
+        try {
+            await updateUserService(currentUser.id, {
+                name: fullName,
+                email: formData.email,
+                phone: formData.phone,
+            });
+
+            // Forçar atualização da sessão no NextAuth
+            await update({
+                name: fullName,
+                email: formData.email,
+                phone: formData.phone,
+            });
+
+            setIsProfileOpen(false);
+        } catch (error) {
+            console.error("Erro ao atualizar perfil", error);
+            alert("Erro ao atualizar perfil.");
+        } finally {
+            setIsUpdatingProfile(false);
+        }
     };
 
-    const handlePasswordSave = () => {
-        // Mock password save
+    const handlePasswordSave = async () => {
         if (passwordData.newPassword !== passwordData.confirmPassword) {
             alert("As novas senhas não coincidem.");
             return;
         }
-        setIsPasswordOpen(false);
-        setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
-        // Optional: toast("Senha alterada com sucesso!");
+
+        setIsUpdatingPassword(true);
+        try {
+            await updateUserService(currentUser.id, {
+                currentPassword: passwordData.currentPassword,
+                password: passwordData.newPassword
+            });
+            setIsPasswordOpen(false);
+            setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+            alert("Senha atualizada com sucesso! Você será deslogado para sua segurança.");
+            signOut({ callbackUrl: "/login" });
+        } catch (error: any) {
+            console.error("Erro ao atualizar senha", error);
+            const message = error.message || "Erro ao atualizar senha.";
+            alert(message.includes("401") ? "Senha atual incorreta." : "Erro ao atualizar senha.");
+        } finally {
+            setIsUpdatingPassword(false);
+        }
     };
 
     if (!currentUser) return null;
@@ -75,8 +122,8 @@ export function UserProfileMenu() {
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Avatar className="border-2 border-white cursor-pointer hover:ring-2 hover:ring-emerald-500 transition-all">
-                        <AvatarImage src={currentUser.avatar || "https://github.com/shadcn.png"} />
-                        <AvatarFallback>{currentUser.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                        <AvatarImage src={currentUser.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + currentUser.name} />
+                        <AvatarFallback>{currentUser.name?.substring(0, 2).toUpperCase()}</AvatarFallback>
                     </Avatar>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end" forceMount>
@@ -103,7 +150,7 @@ export function UserProfileMenu() {
                         </DropdownMenuItem>
                     </DropdownMenuGroup>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem className="cursor-pointer text-red-600 focus:bg-red-50 focus:text-red-700">
+                    <DropdownMenuItem onClick={() => signOut()} className="cursor-pointer text-red-600 focus:bg-red-50 focus:text-red-700">
                         <LogOut className="mr-2 h-4 w-4" />
                         <span>Sair</span>
                     </DropdownMenuItem>
@@ -157,8 +204,10 @@ export function UserProfileMenu() {
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsProfileOpen(false)}>Cancelar</Button>
-                        <Button onClick={handleProfileSave} className="bg-emerald-600 hover:bg-emerald-700 text-white">Salvar alterações</Button>
+                        <Button variant="outline" onClick={() => setIsProfileOpen(false)} disabled={isUpdatingProfile}>Cancelar</Button>
+                        <Button onClick={handleProfileSave} className="bg-emerald-600 hover:bg-emerald-700 text-white" disabled={isUpdatingProfile}>
+                            {isUpdatingProfile ? "Salvando..." : "Salvar alterações"}
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -202,8 +251,10 @@ export function UserProfileMenu() {
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsPasswordOpen(false)}>Cancelar</Button>
-                        <Button onClick={handlePasswordSave} className="bg-emerald-600 hover:bg-emerald-700 text-white">Atualizar Senha</Button>
+                        <Button variant="outline" onClick={() => setIsPasswordOpen(false)} disabled={isUpdatingPassword}>Cancelar</Button>
+                        <Button onClick={handlePasswordSave} className="bg-emerald-600 hover:bg-emerald-700 text-white" disabled={isUpdatingPassword}>
+                            {isUpdatingPassword ? "Atualizando..." : "Atualizar Senha"}
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

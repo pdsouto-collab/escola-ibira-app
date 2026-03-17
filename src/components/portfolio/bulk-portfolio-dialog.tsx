@@ -15,7 +15,8 @@ import { ImagePlus, Images, Sparkles, Trash2, Users, Target, Check, ChevronRight
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";import { useSession } from "next-auth/react";
+
 
 interface BulkPortfolioDialogProps {
     open: boolean;
@@ -32,7 +33,9 @@ interface StudentPortfolioForm {
 }
 
 export function BulkPortfolioDialog({ open, onOpenChange, date }: BulkPortfolioDialogProps) {
-    const { students, classes, portfolioEntries, addPortfolioEntry, updatePortfolioEntry, removePortfolioEntry, addPegadaPost, currentUser } = useAppStore();
+    const { students, classes, portfolioEntries, addPortfolioEntry, updatePortfolioEntry, removePortfolioEntry, addPegadaPost } = useAppStore();
+    const { data: session } = useSession();
+    const currentUser = session?.user as any;
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Flow State

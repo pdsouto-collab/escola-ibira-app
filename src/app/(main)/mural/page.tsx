@@ -7,7 +7,8 @@ import { Plus, Calendar, MapPin, MessageCircle, User, Edit2, Check, X, Users, Mo
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useAppStore } from "@/lib/store";
-import { MuralEvent } from "@/lib/data";
+import { MuralEvent } from "@/lib/data";import { useSession } from "next-auth/react";
+
 import {
     Select,
     SelectContent,
@@ -23,7 +24,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export default function MuralPage() {
-    const { muralEvents, addMuralEvent, updateMuralEvent, removeMuralEvent, addCommentToEvent, currentUser, classes } = useAppStore();
+    const { muralEvents, addMuralEvent, updateMuralEvent, removeMuralEvent, addCommentToEvent, classes } = useAppStore();
+    const { data: session } = useSession();
+    const currentUser = session?.user as any;
     const [showNewEventForm, setShowNewEventForm] = useState(false);
     const [editingEventId, setEditingEventId] = useState<string | null>(null);
 

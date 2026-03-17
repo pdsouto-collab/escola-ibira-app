@@ -8,7 +8,8 @@ import { Plus, Users, MoreVertical, Edit2, Trash2, FolderPlus } from "lucide-rea
 import { StudentDialog } from "@/components/students/student-dialog";
 import { ClassDialog } from "@/components/students/class-dialog";
 import { Student, SchoolClass } from "@/lib/data";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";import { useSession } from "next-auth/react";
+
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -17,7 +18,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export default function StudentsPage() {
-    const { students, classes, currentUser, addStudent, updateStudent, removeStudent, addClass, updateClass, removeClass } = useAppStore();
+    const { students, classes, addStudent, updateStudent, removeStudent, addClass, updateClass, removeClass } = useAppStore();
+    const { data: session } = useSession();
+    const currentUser = session?.user as any;
 
     // Dialog States
     const [isStudentDialogOpen, setIsStudentDialogOpen] = useState(false);

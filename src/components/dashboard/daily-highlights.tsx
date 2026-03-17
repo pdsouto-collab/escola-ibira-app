@@ -14,10 +14,13 @@ import { Label } from "../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Task } from "@/lib/data";
 import { Badge } from "../ui/badge";
-import { DailyLogDialog } from "../agenda/daily-log-dialog";
+import { DailyLogDialog } from "../agenda/daily-log-dialog";import { useSession } from "next-auth/react";
+
 
 export function DailyHighlights() {
-    const { tasks, toggleTask, addTask, currentUser, classes } = useAppStore();
+    const { tasks, toggleTask, addTask, classes } = useAppStore();
+    const { data: session } = useSession();
+    const currentUser = session?.user as any;
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);

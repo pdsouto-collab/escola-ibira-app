@@ -2,38 +2,45 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAppStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserRole } from "@/lib/data";
+import { UserRole } from "@/types/user-role";
+import { signIn } from "next-auth/react";
 
 export default function SignupPage() {
     const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
     const router = useRouter();
-    const { setCurrentUser } = useAppStore(); // In a real app we would add the user to DB here
+    const [isLoading, setIsLoading] = useState(false);
 
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [role, setRole] = useState<UserRole>("guardian");
 
-    const handleSignup = (e: React.FormEvent) => {
+    const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsLoading(true);
 
-        // Mock signup: Create user object and log them in
-        const newUser = {
-            id: Math.random().toString(36).substr(2, 9),
-            name,
-            email,
-            role,
-            avatar: "https://github.com/shadcn.png", // Default avatar
-            status: "active" as const
-        };
-
-        setCurrentUser(newUser);
-        router.push("/");
+        try {
+            const { authService } = await import("@/services/auth.service");
+            await authService.register({ email, name, password, role });
+            
+            // Auto sign in after registration
+            const loginResult = await authService.login({ email, password });
+            
+            if (loginResult?.ok) {
+                router.push("/");
+            } else {
+                router.push("/login");
+            }
+        } catch (error: any) {
+            console.error("Erro no cadastro", error);
+            alert(error.message || "Ocorreu um erro ao tentar criar sua conta.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -59,6 +66,7 @@ export default function SignupPage() {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         required
+                        disabled={isLoading}
                     />
                 </div>
                 <div className="space-y-2">
@@ -70,11 +78,12 @@ export default function SignupPage() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
+                        disabled={isLoading}
                     />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="role">Eu sou:</Label>
-                    <Select value={role} onValueChange={(v) => setRole(v as UserRole)}>
+                    <Select value={role} onValueChange={(v) => setRole(v as UserRole)} disabled={isLoading}>
                         <SelectTrigger>
                             <SelectValue placeholder="Selecione..." />
                         </SelectTrigger>
@@ -94,11 +103,12 @@ export default function SignupPage() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
+                        disabled={isLoading}
                     />
                 </div>
 
-                <Button type="submit" className="w-full bg-[#2E798A] hover:bg-[#256372]">
-                    Criar Conta
+                <Button type="submit" className="w-full bg-[#2E798A] hover:bg-[#256372]" disabled={isLoading}>
+                    {isLoading ? "Criando conta..." : "Criar Conta"}
                 </Button>
             </form>
 

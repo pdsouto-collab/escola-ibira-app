@@ -2,12 +2,15 @@ import { PrismaClient } from "@prisma/client"
 import { bnccDataSeed } from "../src/lib/seed/bncc-data-seed"
 import { competenciasGeraisDataSeed } from "../src/lib/seed/competencias-gerais-data-seed"
 import { customCategoryExamplesDataSeed } from "../src/lib/seed/custom-category-examples-data-seed"
+import { usersDataSeed } from "@/lib/seed/users-data-seed"
+import { User } from "@/types/user"
 
 const prisma = new PrismaClient()
 
 async function main() {
 
   await prisma.bncc.deleteMany();
+  await prisma.user.deleteMany();
 
   // BNCC
   console.log("Importando BNCC...");
@@ -23,7 +26,7 @@ async function main() {
     data: competenciasGeraisDataSeed.map((item) => ({
       ...item,
       code: item.code ?? "" // Garantir code na hora de salvar, pois não pode ser nulo
-    })), 
+    })),
     skipDuplicates: false
   })
   console.log("Competências Gerais importada com sucesso!")
@@ -34,10 +37,18 @@ async function main() {
     data: customCategoryExamplesDataSeed.map((item) => ({
       ...item,
       code: item.code ?? "" // Garantir code na hora de salvar, pois não pode ser nulo
-    })), 
+    })),
     skipDuplicates: false
   })
   console.log("Custom Category Examples importada com sucesso!")
+
+  // Users
+  console.log("Importando Users...");
+  await prisma.user.createMany({
+    data: usersDataSeed as User[],
+    skipDuplicates: false
+  })
+  console.log("Users importados com sucesso!")
 
 }
 

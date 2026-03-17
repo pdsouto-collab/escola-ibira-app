@@ -20,10 +20,13 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";import { useSession } from "next-auth/react";
+
 
 export default function ReportsPage() {
-    const { students, classes, currentUser } = useAppStore();
+    const { students, classes } = useAppStore();
+    const { data: session } = useSession();
+    const currentUser = session?.user as any;
 
     // Class Filter State
     const [selectedClassId, setSelectedClassId] = useState<string>("all");

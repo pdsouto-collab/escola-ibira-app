@@ -36,7 +36,6 @@ function NewProjectWizardContent() {
         updateSchedule,
         finalProductTypes,
         students,
-        users,
         skillsTree,
         contentsTree
     } = useAppStore();

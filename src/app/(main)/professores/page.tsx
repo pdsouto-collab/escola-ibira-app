@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAppStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { UserPlus, MoreVertical, Edit2, Trash2, Mail, Phone, Calendar, MapPin, Briefcase } from "lucide-react";
-import { User } from "@/lib/data";
+import { User } from "@/types/user";
+import { createUser, updateUser as updateUserService, deleteUser, getUsers } from "@/services/user.service";
 import { TeacherDialog } from "@/components/users/teacher-dialog";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,6 +15,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useSession } from "next-auth/react";
+
 import {
     Dialog,
     DialogContent,
@@ -26,20 +28,37 @@ import {
 
 export default function TeachersPage() {
     const router = useRouter();
-    const { users, currentUser, addUser, updateUser, removeUser } = useAppStore();
+    const { data: session } = useSession();
+    const currentUser = session?.user as any;
+
+    const [localUsers, setLocalUsers] = useState<User[]>([]);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [createdCredentials, setCreatedCredentials] = useState<{ email: string; password: string } | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
+
+    const loadUsers = async () => {
+        try {
+            const data = await getUsers();
+            setLocalUsers(data);
+        } catch (error) {
+            console.error("Erro ao carregar usuários", error);
+        }
+    };
+
+    useEffect(() => {
+        loadUsers();
+    }, []);
 
     // RBAC: Redirect if not Director or Admin
     useEffect(() => {
         if (currentUser && currentUser.role !== "director" && currentUser.role !== "admin") {
             router.push("/");
         }
-    }, [currentUser, router]);
+    }, [router, currentUser]);
 
     // Filter only teachers
-    const teachers = users.filter(u => u.role === "teacher");
+    const teachers = localUsers.filter(u => u.role === "teacher");
 
     const handleAddTeacher = () => {
         setEditingUser(null);
@@ -51,22 +70,39 @@ export default function TeachersPage() {
         setIsDialogOpen(true);
     };
 
-    const handleDeleteTeacher = (teacher: User) => {
-
+    const handleDeleteTeacher = async (teacher: User) => {
         if (confirm(`Tem certeza que deseja remover o registro de ${teacher.name}?`)) {
-            removeUser(teacher.id);
+            try {
+                await deleteUser(teacher.id);
+                setLocalUsers(prev => prev.filter(u => u.id !== teacher.id));
+            } catch (error) {
+                console.error("Erro ao deletar professor:", error);
+                alert("Ocorreu um erro ao tentar remover o professor.");
+            }
         }
     };
 
-    const handleSaveTeacher = (teacher: User) => {
-        if (teacher.id && users.some(u => u.id === teacher.id)) {
-            updateUser(teacher.id, teacher);
-        } else {
-            addUser(teacher);
-            setCreatedCredentials({
-                email: teacher.email,
-                password: "123456",
-            });
+    const handleSaveTeacher = async (teacher: User) => {
+        setIsSaving(true);
+        try {
+            if (teacher.id && localUsers.some(u => u.id === teacher.id)) {
+                const updated = await updateUserService(teacher.id, teacher);
+                setLocalUsers(prev => prev.map(u => u.id === teacher.id ? updated : u));
+            } else {
+                teacher.password = '123456';
+                const newUser = await createUser(teacher);
+                setLocalUsers(prev => [...prev, newUser]);
+                setCreatedCredentials({
+                    email: newUser.email,
+                    password: teacher.password || "123456",
+                });
+            }
+            setIsDialogOpen(false);
+        } catch (error) {
+            console.error("Erro ao salvar professor:", error);
+            alert("Ocorreu um erro ao tentar salvar os dados do professor.");
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -177,6 +213,7 @@ export default function TeachersPage() {
                 onOpenChange={setIsDialogOpen}
                 user={editingUser}
                 onSave={handleSaveTeacher}
+                isLoading={isSaving}
             />
 
             <Dialog open={!!createdCredentials} onOpenChange={(open) => !open && setCreatedCredentials(null)}>

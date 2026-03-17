@@ -5,10 +5,13 @@ import { useAppStore } from "@/lib/store";
 import { TreeDeciduous, Info, Filter } from "lucide-react";
 import { TroncoNewPost } from "@/components/tronco/tronco-new-post";
 import { TroncoFeed } from "@/components/tronco/tronco-feed";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";import { useSession } from "next-auth/react";
+
 
 export default function TroncoPage() {
-    const { currentUser, classes, classBoardPosts } = useAppStore();
+    const { classes, classBoardPosts } = useAppStore();
+    const { data: session } = useSession();
+    const currentUser = session?.user as any;
 
     const isTeacherOrAdmin = currentUser?.role === "teacher" || currentUser?.role === "director" || currentUser?.role === "admin";
     const [selectedClassId, setSelectedClassId] = useState<string>(classes[0]?.id || "");

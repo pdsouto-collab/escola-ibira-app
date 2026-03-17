@@ -16,10 +16,13 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DailyLogDialog } from "@/components/agenda/daily-log-dialog";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";import { useSession } from "next-auth/react";
+
 
 export default function PendenciasPage() {
-    const { tasks, addTask, toggleTask, removeTask, currentUser, dailyLogs, classes } = useAppStore();
+    const { tasks, addTask, toggleTask, removeTask, dailyLogs, classes } = useAppStore();
+    const { data: session } = useSession();
+    const currentUser = session?.user as any;
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
