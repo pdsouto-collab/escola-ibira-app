@@ -366,8 +366,8 @@ export function BibliotecaEditor() {
                                                             Oficial BNCC
                                                         </Badge>
                                                     ) : (
-                                                        <Badge variant="secondary" className="bg-purple-100 text-purple-700 border-purple-200 uppercase text-[10px] tracking-wider">
-                                                            Personalizado
+                                                        <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200 uppercase text-[10px] tracking-wider">
+                                                            Ibirá
                                                         </Badge>
                                                     )}
 
