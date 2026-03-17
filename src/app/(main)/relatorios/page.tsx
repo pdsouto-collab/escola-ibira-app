@@ -139,7 +139,7 @@ export default function ReportsPage() {
             <Tabs defaultValue="milestones" className="w-full">
                 <TabsList className="flex w-full mb-8 bg-slate-100/50 p-1.5 rounded-xl border">
                     <TabsTrigger value="milestones" className="flex-1 py-2.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-semibold">
-                        Relatório de Desenvolvimento
+                        Relatório BNCC
                     </TabsTrigger>
                     <TabsTrigger value="ibira" className="flex-1 py-2.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-green-600 data-[state=active]:shadow-sm transition-all font-semibold">
                         Relatório Ibirá
