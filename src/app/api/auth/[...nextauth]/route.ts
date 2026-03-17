@@ -23,14 +23,14 @@ export const authOptions: NextAuthOptions = {
                     where: { email: credentials.email }
                 });
                 console.log("NextAuth - Usuário encontrado no banco:", user ? "Sim" : "Não");
-                
+
                 if (!user || !user.password) {
                     console.error("NextAuth - Usuário não encontrado ou sem senha");
                     throw new Error("Credenciais inválidas");
                 }
                 const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
                 console.log("NextAuth - Senha válida:", isPasswordValid);
-                
+
                 if (!isPasswordValid) {
                     console.error("NextAuth - Senha inválida para o usuário:", credentials.email);
                     throw new Error("Credenciais inválidas");
@@ -58,7 +58,7 @@ export const authOptions: NextAuthOptions = {
                 token.avatar = (user as any).avatar;
             }
             if (trigger === "update" && session) {
-               token = { ...token, ...session }
+                token = { ...token, ...session }
             }
             return token;
         },
@@ -75,7 +75,7 @@ export const authOptions: NextAuthOptions = {
     pages: {
         signIn: "/login",
     },
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: process.env.AUTH_SECRET,
 };
 
 const handler = NextAuth(authOptions);
