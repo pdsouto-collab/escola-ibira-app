@@ -244,8 +244,8 @@ function ProjectView({
     useEffect(() => {
         getListaBNCC();
     }, [])
-    
-    async function getListaBNCC(){
+
+    async function getListaBNCC() {
         await getListBncc().then((data) => {
             libraryItems = data;
         });
@@ -334,7 +334,7 @@ function ProjectView({
                                         {microNodes.length > 0 && (
                                             <div>
                                                 <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                                    <Star className="w-4 h-4 text-amber-500" /> Habilidades & Conteúdos
+                                                    <Star className="w-4 h-4 text-amber-500" /> Habilidades & Competências
                                                 </h3>
                                                 <div className="grid grid-cols-1 gap-2">
                                                     {microNodes.map(node => (
@@ -469,8 +469,8 @@ function StudentView({
     useEffect(() => {
         getListaBNCC();
     }, [])
-    
-    async function getListaBNCC(){
+
+    async function getListaBNCC() {
         await getListBncc().then((data) => {
             libraryItems = data;
         });
@@ -599,7 +599,7 @@ function StudentView({
                                                             {microNodes.length > 0 && (
                                                                 <div className="space-y-3">
                                                                     <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                                                                        <Star className="w-3 h-3 text-amber-500" /> Habilidades & Conteúdos
+                                                                        <Star className="w-3 h-3 text-amber-500" /> Habilidades & Competências
                                                                     </h4>
                                                                     <div className="space-y-2">
                                                                         {microNodes.map(node => {
@@ -733,7 +733,7 @@ function StudentView({
 // Main Portfolio Page
 // ────────────────────────────────────────────
 function PortfolioContent() {
-    const { assessments, projects: allProjects, students, classes, schedule, skillsTree, contentsTree} = useAppStore();
+    const { assessments, projects: allProjects, students, classes, schedule, skillsTree, contentsTree } = useAppStore();
     const searchParams = useSearchParams();
     const initialClassId = searchParams.get("classId");
 
@@ -745,12 +745,12 @@ function PortfolioContent() {
     const [editingAssessment, setEditingAssessment] = useState<Assessment | null>(null);
 
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
-    
+
     useEffect(() => {
         getListaBNCC();
     }, [])
 
-    async function getListaBNCC(){
+    async function getListaBNCC() {
         await getListBncc().then(setLibraryItems);
     }
 
