@@ -189,20 +189,20 @@ const initialProjects: Project[] = [
         tags: ["Natureza", "Alimentação Saudável"],
         bnccSkillIds: ["mic-sk-EF03CI04", "mic-sk-EF03CI06"],
         contentIds: [],
-        imageUrl: "https://images.unsplash.com/photo-1592424001844-04149e8eb3f3?auto=format&fit=crop&q=80&w=600&h=300"
+        imageUrl: "https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&q=80&w=600&h=300"
     },
     {
         id: "p2",
         title: "Música do Nosso Corpo",
         description: "Exploração de sons e ritmos utilizando o próprio corpo como instrumento.",
         guidingQuestion: "Quantos sons diferentes o nosso corpo consegue fazer?",
-        status: "planning",
+        status: "draft",
         startDate: "2024-04-10",
         students: ["2", "4"],
         tags: ["Artes", "Música", "Corpo e Movimento"],
         bnccSkillIds: ["EF03CI01"],
         contentIds: [],
-        imageUrl: "https://images.unsplash.com/photo-1549420042-79fc7341fc7a?auto=format&fit=crop&q=80&w=600&h=300"
+        imageUrl: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=600&h=300"
     },
     {
         id: "p3",

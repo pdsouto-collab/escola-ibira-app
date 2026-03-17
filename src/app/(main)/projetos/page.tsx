@@ -287,7 +287,7 @@ function ProjectCard({
             {/* Optional Banner Image directly below or just structural split */}
             {project.imageUrl && (
                 <div className="h-32 w-full relative">
-                    <Image src={project.imageUrl} alt={project.title} fill className="object-cover" />
+                    <Image src={project.imageUrl} alt={project.title} fill className="object-cover" priority />
                 </div>
             )}
 
