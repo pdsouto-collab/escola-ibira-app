@@ -184,7 +184,7 @@ export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all"
                         <h3 className="font-semibold text-sm text-slate-500 uppercase tracking-wider sticky top-0 bg-white/90 backdrop-blur pb-2 z-10">
                             Habilidades (BNCC / IBIRÁ) ({skills.length})
                         </h3>
-                        <Accordion type="multiple" className="w-full space-y-3" defaultValue={sortedSkillKeys}>
+                        <Accordion type="multiple" className="w-full space-y-3" defaultValue={[]}>
                             {sortedSkillKeys.map(group => (
                                 <AccordionItem key={`skill-${group}`} value={group} className="border bg-white rounded-xl overflow-hidden data-[state=open]:shadow-sm">
                                     <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-slate-50 transition-colors">
@@ -217,7 +217,7 @@ export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all"
                         <h3 className="font-semibold text-sm text-slate-500 uppercase tracking-wider sticky top-0 bg-white/90 backdrop-blur pb-2 z-10">
                             Competências (BNCC / IBIRÁ) ({contents.length})
                         </h3>
-                        <Accordion type="multiple" className="w-full space-y-3" defaultValue={sortedContentKeys}>
+                        <Accordion type="multiple" className="w-full space-y-3" defaultValue={[]}>
                             {sortedContentKeys.map(group => (
                                 <AccordionItem key={`content-${group}`} value={group} className="border bg-white rounded-xl overflow-hidden data-[state=open]:shadow-sm">
                                     <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-slate-50 transition-colors">

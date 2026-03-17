@@ -342,7 +342,7 @@ export function BibliotecaEditor() {
                         <div className="h-10 bg-slate-200 animate-pulse rounded"></div>
                     </div>
                 ) : (
-                    <Accordion type="multiple" className="w-full space-y-4" defaultValue={sortedGroups}>
+                    <Accordion type="multiple" className="w-full space-y-4" defaultValue={[]}>
                         {sortedGroups.map(group => (
                             <AccordionItem key={group} value={group} className="border bg-white rounded-xl overflow-hidden data-[state=open]:shadow-sm">
                                 <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-slate-50 transition-colors">
