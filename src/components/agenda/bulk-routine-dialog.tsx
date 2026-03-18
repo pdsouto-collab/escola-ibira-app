@@ -21,7 +21,8 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { SchoolClass } from "@/lib/data";
+import { SchoolClass, Project } from "@/lib/data";
+import { useAppStore } from "@/lib/store";
 
 export interface BulkRoutineConfig {
     title: string;
@@ -33,6 +34,7 @@ export interface BulkRoutineConfig {
     endDate: string;
     daysOfWeek: number[]; // 0 = Sunday, 1 = Monday, etc.
     classId: string;
+    projectId?: string;
 }
 
 interface BulkRoutineDialogProps {
@@ -54,6 +56,7 @@ const DAYS = [
 ];
 
 export function BulkRoutineDialog({ open, onOpenChange, classes, initialConfig, onSave }: BulkRoutineDialogProps) {
+    const { projects, students } = useAppStore();
     const [config, setConfig] = useState<BulkRoutineConfig>({
         title: "",
         description: "",
@@ -63,31 +66,9 @@ export function BulkRoutineDialog({ open, onOpenChange, classes, initialConfig, 
         startDate: "",
         endDate: "",
         daysOfWeek: [1, 2, 3, 4, 5], // Default: Mon-Fri
-        classId: "all"
+        classId: "all",
+        projectId: undefined
     });
-
-    // Reset or load initial config when dialog opens
-    // We use a key or effect? Let's use an effect on open change to reset if empty, or on initialConfig change
-    // Better: use a simple effect to load initialConfig if present
-
-    // Actually, react state initialization only happens once.
-    // Let's use an effect to update state when initialConfig changes or open changes
-    if (initialConfig && config !== initialConfig && open) {
-        // This is risky for infinite loops if strict equality fails.
-        // Better to do it in a useEffect dependent on open
-    }
-
-    // Recommended pattern:
-    // When `open` becomes true, set config.
-    // We can use a `useEffect`.
-
-    // But since we can't easily import useEffect inside the replace block without wider context change (though I can add imports),
-    // wait, I can just use key on the parent component or use effect here.
-    // I'll update the component signature to include useEffect import if needed, or assume it's there?
-    // It's not there in the previous file view. I'll need to add it.
-
-    // Actually, I'll update the whole file import section too.
-
 
     useEffect(() => {
         if (open) {
@@ -103,7 +84,8 @@ export function BulkRoutineDialog({ open, onOpenChange, classes, initialConfig, 
                     startDate: "",
                     endDate: "",
                     daysOfWeek: [1, 2, 3, 4, 5],
-                    classId: "all"
+                    classId: "all",
+                    projectId: undefined
                 });
             }
         }
@@ -116,6 +98,51 @@ export function BulkRoutineDialog({ open, onOpenChange, classes, initialConfig, 
                 : [...prev.daysOfWeek, day];
             return { ...prev, daysOfWeek: days };
         });
+    };
+
+    const handleProjectSelect = (value: string) => {
+        if (value === "none") {
+            setConfig({ ...config, projectId: undefined });
+            return;
+        }
+
+        const project = projects.find(p => p.id === value);
+        if (!project) return;
+
+        const classId = config.classId;
+        if (classId && classId !== "all") {
+            const hasWholeClass = project.classes?.includes(classId);
+            const hasAnyStudentInClass = project.students.some(sId => {
+                const s = students.find(st => st.id === sId);
+                return s?.classId === classId;
+            });
+
+            if (!hasWholeClass && !hasAnyStudentInClass) {
+                window.alert("Não existem alunos dessa turma vinculados ao projeto selecionado");
+                return;
+            }
+        }
+
+        setConfig({ ...config, projectId: value });
+    };
+
+    const handleClassSelect = (value: string) => {
+        if (config.projectId && value !== "all") {
+             const project = projects.find(p => p.id === config.projectId);
+             if (project) {
+                 const hasWholeClass = project.classes?.includes(value);
+                 const hasAnyStudentInClass = project.students.some(sId => {
+                     const s = students.find(st => st.id === sId);
+                     return s?.classId === value;
+                 });
+                 if (!hasWholeClass && !hasAnyStudentInClass) {
+                     window.alert("Não existem alunos dessa turma vinculados ao projeto selecionado. O projeto será desvinculado.");
+                     setConfig({ ...config, classId: value, projectId: undefined });
+                     return;
+                 }
+             }
+        }
+        setConfig({ ...config, classId: value });
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -166,12 +193,33 @@ export function BulkRoutineDialog({ open, onOpenChange, classes, initialConfig, 
                             </Select>
                         </div>
 
+                        {/* Project Selector - only show for Project Session type */}
+                        {config.type === "project" && (
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="projectId" className="text-right text-indigo-600 font-semibold">Projeto</Label>
+                                <Select
+                                    value={config.projectId || "none"}
+                                    onValueChange={handleProjectSelect}
+                                >
+                                    <SelectTrigger className="col-span-3 border-indigo-200">
+                                        <SelectValue placeholder="Vincular a um plano pedagógico" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="none">Nenhum (Rotina comum)</SelectItem>
+                                        {projects.map(p => (
+                                            <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
+
                         {/* Class Selection */}
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="classId" className="text-right">Turma</Label>
                             <Select
                                 value={config.classId}
-                                onValueChange={(value) => setConfig({ ...config, classId: value })}
+                                onValueChange={handleClassSelect}
                             >
                                 <SelectTrigger className="col-span-3">
                                     <SelectValue placeholder="Selecione a turma" />

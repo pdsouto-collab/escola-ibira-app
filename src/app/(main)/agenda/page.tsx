@@ -81,8 +81,9 @@ export default function AgendaPage() {
     const handleSave = (item: ScheduleItem) => {
         const newItem = {
             ...item,
-            classId: selectedClassId === "all" ? availableClasses[0]?.id : selectedClassId,
-            date: item.date || format(currentDate, 'yyyy-MM-dd')
+            classId: item.classId || (selectedClassId === "all" ? availableClasses[0]?.id : selectedClassId),
+            date: item.date || format(currentDate, 'yyyy-MM-dd'),
+            projectId: item.projectId
         };
 
         if (editingItem) {
@@ -123,7 +124,8 @@ export default function AgendaPage() {
                 type: config.type,
                 date: format(date, 'yyyy-MM-dd'),
                 classId: cId,
-                routineId: routineId
+                routineId: routineId,
+                projectId: config.projectId // Pass the selected project
             });
         };
 
@@ -161,7 +163,8 @@ export default function AgendaPage() {
             startDate: exampleItem.date || "", // This might be lossy if not stored on routine level, but good enough for now
             endDate: exampleItem.date || "", // User will have to re-select range
             daysOfWeek: [1, 2, 3, 4, 5], // Default, hard to infer perfectly without better data structure
-            classId: exampleItem.classId || "all"
+            classId: exampleItem.classId || "all",
+            projectId: exampleItem.projectId
         });
         setIsBulkDialogOpen(true);
     };
@@ -305,11 +308,11 @@ export default function AgendaPage() {
                 onEditProjectSessionsBulk={(projectId, config) => {
                     // Remove all existing sessions for this project
                     const remaining = schedule.filter(s => s.projectId !== projectId);
-                    // Get the classIds from the existing sessions for this project
-                    const existingClassIds = [...new Set(
-                        schedule.filter(s => s.projectId === projectId && s.classId).map(s => s.classId as string)
-                    )];
-                    const effectiveClasses = existingClassIds.length > 0 ? existingClassIds : [undefined];
+                    
+                    const effectiveClasses = config.classId && config.classId !== "all"
+                        ? [config.classId]
+                        : classes.map(c => c.id); // For all classes
+
                     // Regenerate sessions for the new date range
                     const start = new Date(config.startDate + "T12:00:00");
                     const end = new Date(config.endDate + "T12:00:00");
