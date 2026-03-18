@@ -16,8 +16,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2, Edit, CalendarDays, Clock, Users, FolderKanban } from "lucide-react";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { useAppStore } from "@/lib/store";
 import { format } from "date-fns";
+import { Trash2, Edit, CalendarDays, Clock, Users, FolderKanban } from "lucide-react";
 
 const DAYS = [
     { label: "Dom", value: 0 },
@@ -37,6 +45,7 @@ export interface ProjectSessionBulkEdit {
     startDate: string;
     endDate: string;
     daysOfWeek: number[];
+    projectId?: string;
 }
 
 interface RoutineManagerDialogProps {
@@ -73,10 +82,12 @@ export function RoutineManagerDialog({
     onEditProjectSessionsBulk,
 }: RoutineManagerDialogProps) {
 
+    const { projects } = useAppStore();
     const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
     const [editConfig, setEditConfig] = useState<ProjectSessionBulkEdit>({
         title: "", description: "", time: "08:00", endTime: "09:00",
         startDate: "", endDate: "", daysOfWeek: [1, 2, 3, 4, 5],
+        projectId: undefined,
     });
 
     const { routines, projectGroups } = useMemo(() => {
@@ -142,6 +153,7 @@ export function RoutineManagerDialog({
             startDate: dates[0] || "",
             endDate: dates[dates.length - 1] || "",
             daysOfWeek: Array.from(daySet).sort(),
+            projectId: group.id,
         });
         setEditingProjectId(group.id);
     };
@@ -280,6 +292,23 @@ export function RoutineManagerDialog({
                             <Label className="text-right">Fim</Label>
                             <Input type="time" className="col-span-3" value={editConfig.endTime}
                                 onChange={e => setEditConfig(p => ({ ...p, endTime: e.target.value }))} />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="edit-projectId" className="text-right text-indigo-600 font-semibold">Projeto / Plano</Label>
+                            <Select
+                                value={editConfig.projectId || "none"}
+                                onValueChange={(value) => setEditConfig(p => ({ ...p, projectId: value === "none" ? undefined : value }))}
+                            >
+                                <SelectTrigger className="col-span-3 border-indigo-200">
+                                    <SelectValue placeholder="Vincular a um plano pedagógico" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">Nenhum (Atividade Avulsa)</SelectItem>
+                                    {projects.map((p: import("@/lib/data").Project) => (
+                                        <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label className="text-right">De</Label>
