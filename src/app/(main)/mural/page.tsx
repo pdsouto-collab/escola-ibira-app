@@ -7,7 +7,8 @@ import { Plus, Calendar, MapPin, MessageCircle, User, Edit2, Check, X, Users, Mo
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useAppStore } from "@/lib/store";
-import { MuralEvent } from "@/lib/data";import { useSession } from "next-auth/react";
+import { MuralEvent } from "@/lib/data";
+import { useSession } from "next-auth/react";
 
 import {
     Select,

@@ -5,7 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 import { useAppStore } from "@/lib/store";
 import { NotificationPopover } from "./notification-popover";
-import { UserProfileMenu } from "../users/user-profile-menu";import { useSession } from "next-auth/react";
+import { UserProfileMenu } from "../users/user-profile-menu";
+import { useSession } from "next-auth/react";
 
 
 export function DashboardHero() {

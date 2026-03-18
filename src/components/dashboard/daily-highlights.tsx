@@ -14,7 +14,8 @@ import { Label } from "../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Task } from "@/lib/data";
 import { Badge } from "../ui/badge";
-import { DailyLogDialog } from "../agenda/daily-log-dialog";import { useSession } from "next-auth/react";
+import { DailyLogDialog } from "../agenda/daily-log-dialog";
+import { useSession } from "next-auth/react";
 
 
 export function DailyHighlights() {

@@ -68,7 +68,7 @@ export function TeacherDialog({ open, onOpenChange, user, onSave, isLoading = fa
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         const dataToSave = {
             ...formData,
         };
@@ -78,7 +78,6 @@ export function TeacherDialog({ open, onOpenChange, user, onSave, isLoading = fa
         if (!dataToSave.currentPassword) delete dataToSave.currentPassword;
 
         onSave({
-            id: user?.id || crypto.randomUUID(),
             ...dataToSave,
             role: "teacher",
             avatar: formData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.name || 'teacher'}`,

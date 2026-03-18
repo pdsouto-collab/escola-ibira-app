@@ -5,7 +5,8 @@ import { useAppStore } from "@/lib/store";
 import { TreeDeciduous, Info, Filter } from "lucide-react";
 import { TroncoNewPost } from "@/components/tronco/tronco-new-post";
 import { TroncoFeed } from "@/components/tronco/tronco-feed";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";import { useSession } from "next-auth/react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useSession } from "next-auth/react";
 
 
 export default function TroncoPage() {

@@ -14,7 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { cn } from "@/lib/utils";import { useSession } from "next-auth/react";
+import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
 
 
 export function NotificationPopover() {

@@ -6,7 +6,7 @@ export type User = {
     role: UserRole;
     avatar?: string;
     email: string;
-    password: string;
+    password?: string;
 
     // Additional Profile Fields
     cpf?: string;

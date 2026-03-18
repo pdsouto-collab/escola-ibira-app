@@ -89,7 +89,7 @@ export default function TeachersPage() {
                 const updated = await updateUserService(teacher.id, teacher);
                 setLocalUsers(prev => prev.map(u => u.id === teacher.id ? updated : u));
             } else {
-                teacher.password = '123456';
+                teacher.password = '123456'; // Senha padrão para criação de professores
                 const newUser = await createUser(teacher);
                 setLocalUsers(prev => [...prev, newUser]);
                 setCreatedCredentials({

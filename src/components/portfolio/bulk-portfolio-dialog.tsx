@@ -15,7 +15,8 @@ import { ImagePlus, Images, Sparkles, Trash2, Users, Target, Check, ChevronRight
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";import { useSession } from "next-auth/react";
+import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
 
 
 interface BulkPortfolioDialogProps {

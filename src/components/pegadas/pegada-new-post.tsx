@@ -17,7 +17,8 @@ import {
     Upload
 } from "lucide-react";
 import { useRef } from "react";
-import { BulkPortfolioDialog } from "@/components/portfolio/bulk-portfolio-dialog";import { useSession } from "next-auth/react";
+import { BulkPortfolioDialog } from "@/components/portfolio/bulk-portfolio-dialog";
+import { useSession } from "next-auth/react";
 
 
 export function PegadaNewPost() {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAppStore } from "@/lib/store";
 import { KnowledgeNode } from "@/lib/data";
 import { RadialMatrix } from "./radial-matrix";
@@ -10,13 +10,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 import { AssessmentDrawer } from "../assessment/assessment-drawer";
-import { Assessment } from "@/lib/data";import { useSession } from "next-auth/react";
+import { Assessment } from "@/lib/data";
+import { useSession } from "next-auth/react";
+import { LibraryItem } from "@/types/library-item";
+import { getListBncc } from "@/services/bncc.service";
 
 
 export function MosaicContainer() {
-    const { skillsTree, contentsTree, classes, projects, students, assessments, libraryItems } = useAppStore();
+    const { skillsTree, contentsTree, classes, projects, students, assessments } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
+
+    const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
+    const [loading, setLoading] = useState(false)
 
     // Core State
     const [activeTab, setActiveTab] = useState<"skill" | "content">("skill");
@@ -61,6 +67,17 @@ export function MosaicContainer() {
 
     // If drilled down, we only render the drilled node as the root.
     const dataToRender = drilledNode ? [drilledNode] : filteredTreeData;
+
+
+    useEffect(() => {
+        getListaBNCC();
+    }, [])
+
+    async function getListaBNCC() {
+        setLoading(true);
+        await getListBncc().then(setLibraryItems);
+        setLoading(false);
+    }
 
     const handleAvaliacao = (node: KnowledgeNode) => {
         let resolvedClassId = selectedClassId !== "all" ? selectedClassId : undefined;

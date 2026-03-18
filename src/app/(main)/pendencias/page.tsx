@@ -16,7 +16,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DailyLogDialog } from "@/components/agenda/daily-log-dialog";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";import { useSession } from "next-auth/react";
+import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
 
 
 export default function PendenciasPage() {

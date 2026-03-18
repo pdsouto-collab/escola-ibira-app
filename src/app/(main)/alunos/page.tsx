@@ -8,7 +8,8 @@ import { Plus, Users, MoreVertical, Edit2, Trash2, FolderPlus } from "lucide-rea
 import { StudentDialog } from "@/components/students/student-dialog";
 import { ClassDialog } from "@/components/students/class-dialog";
 import { Student, SchoolClass } from "@/lib/data";
-import { cn } from "@/lib/utils";import { useSession } from "next-auth/react";
+import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
 
 import {
     DropdownMenu,

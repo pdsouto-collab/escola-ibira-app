@@ -17,7 +17,8 @@ import { ScheduleItem } from "@/lib/data";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";import { useSession } from "next-auth/react";
+import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
 
 import {
     DropdownMenu,

@@ -3,7 +3,8 @@
 import { useAppStore } from "@/lib/store";
 import { PegadaNewPost } from "@/components/pegadas/pegada-new-post";
 import { PegadasFeed } from "@/components/pegadas/pegadas-feed";
-import { TreeDeciduous, Info } from "lucide-react";import { useSession } from "next-auth/react";
+import { TreeDeciduous, Info } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 
 export default function PegadasPage() {

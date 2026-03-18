@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAppStore } from "@/lib/store";
 import { LibraryItem } from "@/types/library-item";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

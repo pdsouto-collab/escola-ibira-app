@@ -45,7 +45,6 @@ export function UserDialog({ open, onOpenChange, user, onSave, fixedRole }: User
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onSave({
-            id: user?.id || crypto.randomUUID(),
             ...formData,
             role: fixedRole || formData.role, // Ensure role is respected
         } as User);

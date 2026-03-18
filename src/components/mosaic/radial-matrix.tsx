@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { KnowledgeNode, KnowledgeLevel, Assessment, Project, LibraryItem } from "@/lib/data";
+import { KnowledgeNode, KnowledgeLevel, Assessment, Project } from "@/lib/data";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { LibraryItem } from "@/types/library-item";
 
 interface RadialMatrixProps {
     data: KnowledgeNode[]; // Extracted from Admin Panel Tree

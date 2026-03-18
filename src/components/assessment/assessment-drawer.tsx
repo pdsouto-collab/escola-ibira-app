@@ -10,7 +10,8 @@ import { TreeRatingPicker } from "@/components/assessment/tree-rating-picker";
 import { useAppStore } from "@/lib/store";
 import { Assessment, AssessmentAttachment } from "@/lib/data";
 import { Camera, FileUp, X, Users, User, Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils";import { useSession } from "next-auth/react";
+import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
 
 
 interface AssessmentDrawerProps {
