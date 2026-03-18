@@ -56,7 +56,7 @@ const DAYS = [
 ];
 
 export function BulkRoutineDialog({ open, onOpenChange, classes, initialConfig, onSave }: BulkRoutineDialogProps) {
-    const { projects } = useAppStore();
+    const { projects, students } = useAppStore();
     const [config, setConfig] = useState<BulkRoutineConfig>({
         title: "",
         description: "",
@@ -98,6 +98,51 @@ export function BulkRoutineDialog({ open, onOpenChange, classes, initialConfig, 
                 : [...prev.daysOfWeek, day];
             return { ...prev, daysOfWeek: days };
         });
+    };
+
+    const handleProjectSelect = (value: string) => {
+        if (value === "none") {
+            setConfig({ ...config, projectId: undefined });
+            return;
+        }
+
+        const project = projects.find(p => p.id === value);
+        if (!project) return;
+
+        const classId = config.classId;
+        if (classId && classId !== "all") {
+            const hasWholeClass = project.classes?.includes(classId);
+            const hasAnyStudentInClass = project.students.some(sId => {
+                const s = students.find(st => st.id === sId);
+                return s?.classId === classId;
+            });
+
+            if (!hasWholeClass && !hasAnyStudentInClass) {
+                window.alert("Não existem alunos dessa turma vinculados ao projeto selecionado");
+                return;
+            }
+        }
+
+        setConfig({ ...config, projectId: value });
+    };
+
+    const handleClassSelect = (value: string) => {
+        if (config.projectId && value !== "all") {
+             const project = projects.find(p => p.id === config.projectId);
+             if (project) {
+                 const hasWholeClass = project.classes?.includes(value);
+                 const hasAnyStudentInClass = project.students.some(sId => {
+                     const s = students.find(st => st.id === sId);
+                     return s?.classId === value;
+                 });
+                 if (!hasWholeClass && !hasAnyStudentInClass) {
+                     window.alert("Não existem alunos dessa turma vinculados ao projeto selecionado. O projeto será desvinculado.");
+                     setConfig({ ...config, classId: value, projectId: undefined });
+                     return;
+                 }
+             }
+        }
+        setConfig({ ...config, classId: value });
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -154,7 +199,7 @@ export function BulkRoutineDialog({ open, onOpenChange, classes, initialConfig, 
                                 <Label htmlFor="projectId" className="text-right text-indigo-600 font-semibold">Projeto</Label>
                                 <Select
                                     value={config.projectId || "none"}
-                                    onValueChange={(value) => setConfig({ ...config, projectId: value === "none" ? undefined : value })}
+                                    onValueChange={handleProjectSelect}
                                 >
                                     <SelectTrigger className="col-span-3 border-indigo-200">
                                         <SelectValue placeholder="Vincular a um plano pedagógico" />
@@ -174,7 +219,7 @@ export function BulkRoutineDialog({ open, onOpenChange, classes, initialConfig, 
                             <Label htmlFor="classId" className="text-right">Turma</Label>
                             <Select
                                 value={config.classId}
-                                onValueChange={(value) => setConfig({ ...config, classId: value })}
+                                onValueChange={handleClassSelect}
                             >
                                 <SelectTrigger className="col-span-3">
                                     <SelectValue placeholder="Selecione a turma" />

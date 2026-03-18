@@ -39,8 +39,12 @@ const emptyItem: Omit<ScheduleItem, "id"> = {
 };
 
 export function ScheduleDialog({ open, onOpenChange, item, onSave }: ScheduleDialogProps) {
-    const { projects } = useAppStore();
+    const { projects, classes, students, currentUser } = useAppStore();
     const [formData, setFormData] = useState<Partial<ScheduleItem>>(item ? { ...item } : emptyItem);
+
+    const availableClasses = currentUser?.role === "teacher" 
+        ? classes.filter(c => c.teacherId === currentUser.id)
+        : classes;
 
     // Ensure we reset form when item changes and dialog opens
     useEffect(() => {
@@ -56,6 +60,32 @@ export function ScheduleDialog({ open, onOpenChange, item, onSave }: ScheduleDia
             ...formData
         } as ScheduleItem);
         onOpenChange(false);
+    };
+
+    const handleProjectSelect = (value: string) => {
+        if (value === "none") {
+            setFormData({ ...formData, projectId: undefined });
+            return;
+        }
+
+        const project = projects.find(p => p.id === value);
+        if (!project) return;
+
+        const classId = formData.classId;
+        if (classId) {
+            const hasWholeClass = project.classes?.includes(classId);
+            const hasAnyStudentInClass = project.students.some(sId => {
+                const s = students.find(st => st.id === sId);
+                return s?.classId === classId;
+            });
+
+            if (!hasWholeClass && !hasAnyStudentInClass) {
+                window.alert("Não existem alunos dessa turma vinculados ao projeto selecionado");
+                return;
+            }
+        }
+
+        setFormData({ ...formData, projectId: value });
     };
 
     return (
@@ -126,6 +156,28 @@ export function ScheduleDialog({ open, onOpenChange, item, onSave }: ScheduleDia
                             </Select>
                         </div>
 
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="classId" className="text-right">
+                                Turma
+                            </Label>
+                            <Select
+                                value={formData.classId || "none"}
+                                onValueChange={(value) => setFormData({ ...formData, classId: value === "none" ? undefined : value })}
+                            >
+                                <SelectTrigger className="col-span-3">
+                                    <SelectValue placeholder="Selecione a turma" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">Geral / Sem turma específica</SelectItem>
+                                    {availableClasses.map(c => (
+                                        <SelectItem key={c.id} value={c.id}>
+                                            {c.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
                         {/* Project / Learning Plan Selector - only show for Project Session type */}
                         {formData.type === "project" && (
                             <div className="grid grid-cols-4 items-center gap-4">
@@ -134,7 +186,7 @@ export function ScheduleDialog({ open, onOpenChange, item, onSave }: ScheduleDia
                                 </Label>
                                 <Select
                                     value={formData.projectId || "none"}
-                                    onValueChange={(value: string) => setFormData({ ...formData, projectId: value === "none" ? undefined : value })}
+                                    onValueChange={handleProjectSelect}
                                 >
                                     <SelectTrigger className="col-span-3 border-indigo-200 focus:border-indigo-500 bg-indigo-50/30">
                                         <SelectValue placeholder="Vincular a um projeto" />

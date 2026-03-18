@@ -77,9 +77,9 @@ export default function AgendaPage() {
     const handleSave = (item: ScheduleItem) => {
         const newItem = {
             ...item,
-            classId: selectedClassId === "all" ? availableClasses[0]?.id : selectedClassId,
+            classId: item.classId || (selectedClassId === "all" ? availableClasses[0]?.id : selectedClassId),
             date: item.date || format(currentDate, 'yyyy-MM-dd'),
-            projectId: item.projectId // Ensure projectId is passed
+            projectId: item.projectId
         };
 
         if (editingItem) {
@@ -304,11 +304,11 @@ export default function AgendaPage() {
                 onEditProjectSessionsBulk={(projectId, config) => {
                     // Remove all existing sessions for this project
                     const remaining = schedule.filter(s => s.projectId !== projectId);
-                    // Get the classIds from the existing sessions for this project
-                    const existingClassIds = [...new Set(
-                        schedule.filter(s => s.projectId === projectId && s.classId).map(s => s.classId as string)
-                    )];
-                    const effectiveClasses = existingClassIds.length > 0 ? existingClassIds : [undefined];
+                    
+                    const effectiveClasses = config.classId && config.classId !== "all"
+                        ? [config.classId]
+                        : classes.map(c => c.id); // For all classes
+
                     // Regenerate sessions for the new date range
                     const start = new Date(config.startDate + "T12:00:00");
                     const end = new Date(config.endDate + "T12:00:00");
