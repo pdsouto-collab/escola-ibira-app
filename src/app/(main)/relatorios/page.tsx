@@ -161,7 +161,7 @@ export default function ReportsPage() {
                         <div>
                             <h2 className="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2">
                                 <span className="w-1.5 h-6 bg-indigo-500 rounded-full" />
-                                Desenvolvimento por Áreas da BNCC
+                                Desenvolvimento por Áreas BNCC (Habilidades e Competências)
                             </h2>
                             <p className="text-slate-500 mb-6">Comparativo entre o currículo proposto e o nível de consolidação da criança.</p>
                             {selectedStudent ? (
@@ -194,7 +194,7 @@ export default function ReportsPage() {
                         <div>
                             <h2 className="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2">
                                 <span className="w-1.5 h-6 bg-green-500 rounded-full" />
-                                Desenvolvimento por Áreas Ibirá
+                                Desenvolvimento por Áreas IBIRÁ (Habilidades e Competências)
                             </h2>
                             <p className="text-slate-500 mb-6">Comparativo entre as habilidades e competências Ibirá propostas e o nível de consolidação da criança.</p>
                             {selectedStudent ? (
