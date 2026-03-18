@@ -96,7 +96,7 @@ export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all"
         <div className="w-full space-y-6">
             {/* Header Content */}
             <div>
-                <h2 className="text-2xl font-bold text-slate-800 mb-2">Biblioteca de Habilidades BNCC e Competências Gerais</h2>
+                <h2 className="text-2xl font-bold text-slate-800 mb-2">Biblioteca de Habilidades (BNCC / IBIRÁ) e Competências (BNCC / IBIRÁ)</h2>
                 <p className="text-slate-500">Selecione os itens da BNCC ou personalizados da escola para este projeto.</p>
             </div>
 
@@ -182,9 +182,9 @@ export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all"
                 {!loading && skills.length > 0 && (
                     <div className="space-y-3">
                         <h3 className="font-semibold text-sm text-slate-500 uppercase tracking-wider sticky top-0 bg-white/90 backdrop-blur pb-2 z-10">
-                            Habilidades BNCC ({skills.length})
+                            Habilidades (BNCC / IBIRÁ) ({skills.length})
                         </h3>
-                        <Accordion type="multiple" className="w-full space-y-3" defaultValue={sortedSkillKeys}>
+                        <Accordion type="multiple" className="w-full space-y-3" defaultValue={[]}>
                             {sortedSkillKeys.map(group => (
                                 <AccordionItem key={`skill-${group}`} value={group} className="border bg-white rounded-xl overflow-hidden data-[state=open]:shadow-sm">
                                     <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-slate-50 transition-colors">
@@ -215,9 +215,9 @@ export function LibrarySelector({ selectedIds = [], onSelect, typeFilter = "all"
                 {!loading && contents.length > 0 && (
                     <div className="space-y-3 pt-4">
                         <h3 className="font-semibold text-sm text-slate-500 uppercase tracking-wider sticky top-0 bg-white/90 backdrop-blur pb-2 z-10">
-                            Competências Gerais ({contents.length})
+                            Competências (BNCC / IBIRÁ) ({contents.length})
                         </h3>
-                        <Accordion type="multiple" className="w-full space-y-3" defaultValue={sortedContentKeys}>
+                        <Accordion type="multiple" className="w-full space-y-3" defaultValue={[]}>
                             {sortedContentKeys.map(group => (
                                 <AccordionItem key={`content-${group}`} value={group} className="border bg-white rounded-xl overflow-hidden data-[state=open]:shadow-sm">
                                     <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-slate-50 transition-colors">

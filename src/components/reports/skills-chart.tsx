@@ -77,7 +77,7 @@ const getAllEvaluatableNodes = (nodes: any[], parentName?: string): any[] => {
     return results;
 };
 
-export function SkillsChart({ studentId }: { studentId?: string }) {
+export function SkillsChart({ studentId, filter = "all" }: { studentId?: string; filter?: "bncc" | "ibira" | "all" }) {
 
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
 
@@ -85,7 +85,7 @@ export function SkillsChart({ studentId }: { studentId?: string }) {
         getListaBNCC();
     }, [])
 
-    async function getListaBNCC(){
+    async function getListaBNCC() {
         await getListBncc().then(setLibraryItems);
     }
 
@@ -118,9 +118,14 @@ export function SkillsChart({ studentId }: { studentId?: string }) {
     collectBaseIds(classRoots);
 
     // 2. The "Proposto" items are ONLY the library items present in the class Trilha Base
-    const proposedLibraryItems = libraryItems.filter(item =>
-        studentClassBaseTreeIds.has(item.id) || (item.code && studentClassBaseTreeIds.has(item.code))
-    );
+    // Additionally filter by isBNCC flag based on the `filter` prop
+    const proposedLibraryItems = libraryItems.filter(item => {
+        const inBase = studentClassBaseTreeIds.has(item.id) || (item.code && studentClassBaseTreeIds.has(item.code));
+        if (!inBase) return false;
+        if (filter === "bncc") return item.isBNCC === true;
+        if (filter === "ibira") return item.isBNCC === false;
+        return true;
+    });
 
     // Logic: "Proposto" is everything in the library (BNCC and Competencies) that is in the Trilha Base
     // Grouping must mirror the library's `subGroup` completely

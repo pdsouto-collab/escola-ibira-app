@@ -23,7 +23,7 @@ const LEVEL_LABELS = {
     skill: {
         macro: "Eixo do Saber",
         mesclado: "Componente Curricular",
-        micro: "Habilidade BNCC",
+        micro: "Habilidade",
         atomico: "Evidência da Habilidade"
     },
     content: {
@@ -73,7 +73,7 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
         getListaBNCC();
     }, [])
 
-    async function getListaBNCC(){
+    async function getListaBNCC() {
         await getListBncc().then(setLibraryItems);
     }
 

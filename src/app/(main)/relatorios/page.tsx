@@ -142,7 +142,10 @@ export default function ReportsPage() {
             <Tabs defaultValue="milestones" className="w-full">
                 <TabsList className="flex w-full mb-8 bg-slate-100/50 p-1.5 rounded-xl border">
                     <TabsTrigger value="milestones" className="flex-1 py-2.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-semibold">
-                        Relatório de Desenvolvimento
+                        Relatório BNCC
+                    </TabsTrigger>
+                    <TabsTrigger value="ibira" className="flex-1 py-2.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-green-600 data-[state=active]:shadow-sm transition-all font-semibold">
+                        Relatório Ibirá
                     </TabsTrigger>
                     <TabsTrigger value="portfolio" className="flex-1 py-2.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-semibold">
                         Galeria de Vivências
@@ -153,7 +156,7 @@ export default function ReportsPage() {
                 </TabsList>
                 <TabsContent value="milestones" className="animate-in fade-in-50 duration-500 slide-in-from-bottom-2">
                     <div className="mb-4 space-y-16">
-                        {/* 1. Skill Chart */}
+                        {/* 1. Skill Chart - filtrado por BNCC */}
                         <div>
                             <h2 className="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2">
                                 <span className="w-1.5 h-6 bg-indigo-500 rounded-full" />
@@ -161,21 +164,53 @@ export default function ReportsPage() {
                             </h2>
                             <p className="text-slate-500 mb-6">Comparativo entre o currículo proposto e o nível de consolidação da criança.</p>
                             {selectedStudent ? (
-                                <SkillsChart studentId={effectiveStudentId} />
+                                <SkillsChart studentId={effectiveStudentId} filter="bncc" />
                             ) : (
                                 <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
                             )}
                         </div>
 
 
-                        {/* 3. Milestone Grid */}
+                        {/* 2. Milestone Grid - filtrado por BNCC */}
                         <div>
                             <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
                                 <span className="w-1.5 h-6 bg-orange-500 rounded-full" />
                                 Trilha de Competências e Habilidades
                             </h2>
                             {selectedStudent ? (
-                                <MilestoneReport studentId={effectiveStudentId} />
+                                <MilestoneReport studentId={effectiveStudentId} filter="bncc" />
+                            ) : (
+                                <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
+                            )}
+                        </div>
+                    </div>
+                </TabsContent>
+
+                {/* ── ABA IBIRÁ ── */}
+                <TabsContent value="ibira" className="animate-in fade-in-50 duration-500 slide-in-from-bottom-2">
+                    <div className="mb-4 space-y-16">
+                        {/* Skill Chart - filtrado por Ibirá */}
+                        <div>
+                            <h2 className="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2">
+                                <span className="w-1.5 h-6 bg-green-500 rounded-full" />
+                                Desenvolvimento por Áreas Ibirá
+                            </h2>
+                            <p className="text-slate-500 mb-6">Comparativo entre as habilidades e competências Ibirá propostas e o nível de consolidação da criança.</p>
+                            {selectedStudent ? (
+                                <SkillsChart studentId={effectiveStudentId} filter="ibira" />
+                            ) : (
+                                <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
+                            )}
+                        </div>
+
+                        {/* Milestone Grid - filtrado por Ibirá */}
+                        <div>
+                            <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                                <span className="w-1.5 h-6 bg-green-500 rounded-full" />
+                                Trilha Ibirá de Competências e Habilidades
+                            </h2>
+                            {selectedStudent ? (
+                                <MilestoneReport studentId={effectiveStudentId} filter="ibira" />
                             ) : (
                                 <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
                             )}

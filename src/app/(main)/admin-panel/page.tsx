@@ -39,11 +39,11 @@ export default function AdminPanelPage() {
                                     <TabsList className="bg-slate-200/50 p-1 flex-wrap h-auto">
                                         <TabsTrigger value="skills" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 flex items-center gap-2 transition-all">
                                             <BookOpen className="w-4 h-4" />
-                                            Habilidades BNCC
+                                            Habilidades (BNCC / IBIRÁ)
                                         </TabsTrigger>
                                         <TabsTrigger value="contents" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 flex items-center gap-2 transition-all">
                                             <Layers className="w-4 h-4" />
-                                            Competências Gerais
+                                            Competências (BNCC / IBIRÁ)
                                         </TabsTrigger>
                                     </TabsList>
                                 </div>
@@ -66,14 +66,14 @@ export default function AdminPanelPage() {
 
                             <TabsContent value="skills" className="m-0 border-none outline-none focus-visible:ring-0">
                                 <div className="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
-                                    <h2 className="text-blue-900 font-bold tracking-wider uppercase text-sm">VISÃO ACADÊMICA / CURRICULAR (habilidades bncc)</h2>
+                                    <h2 className="text-blue-900 font-bold tracking-wider uppercase text-sm">VISÃO ACADÊMICA / CURRICULAR (habilidades bncc / ibirá)</h2>
                                 </div>
                                 <KnowledgeTreeEditor treeType="skill" />
                             </TabsContent>
 
                             <TabsContent value="contents" className="m-0 border-none outline-none focus-visible:ring-0">
                                 <div className="mb-6 p-4 bg-indigo-50 border-l-4 border-indigo-500 rounded-r-lg">
-                                    <h2 className="text-indigo-900 font-bold tracking-wider uppercase text-sm">VISÃO COMPORTAMENTAL / COGNITIVA (competências gerais)</h2>
+                                    <h2 className="text-indigo-900 font-bold tracking-wider uppercase text-sm">VISÃO COMPORTAMENTAL / COGNITIVA (competências bncc / ibirá)</h2>
                                 </div>
                                 <KnowledgeTreeEditor treeType="content" />
                             </TabsContent>

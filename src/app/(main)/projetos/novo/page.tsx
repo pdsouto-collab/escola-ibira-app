@@ -262,7 +262,7 @@ function NewProjectWizardContent() {
     const steps = [
         { id: 1, label: "Detalhes do Projeto" },
         { id: 2, label: "Participantes" },
-        { id: 3, label: "Habilidades BNCC e Competências" },
+        { id: 3, label: "Habilidades (BNCC / IBIRÁ) e Competências" },
         { id: 4, label: "Planejamento" }
     ];
 
@@ -573,7 +573,7 @@ function NewProjectWizardContent() {
                         <div className="flex h-full min-h-[600px] animate-in fade-in duration-300">
                             {/* Main Selection Area */}
                             <div className="flex-1 p-8">
-                                <h2 className="text-2xl font-bold text-slate-800 mb-2">Habilidades BNCC e Competências</h2>
+                                <h2 className="text-2xl font-bold text-slate-800 mb-2">Habilidades (BNCC / IBIRÁ) e Competências (BNCC / IBIRÁ)</h2>
                                 <p className="text-slate-500 mb-8">Clique em uma categoria para expandir e associar habilidades e competências ao projeto.</p>
 
                                 <div className="space-y-12">
@@ -584,7 +584,7 @@ function NewProjectWizardContent() {
                                                 <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
                                                     <BookOpen className="w-5 h-5 text-emerald-600" />
                                                 </div>
-                                                <h3 className="text-xl font-bold text-slate-800">Habilidades BNCC</h3>
+                                                <h3 className="text-xl font-bold text-slate-800">Habilidades (BNCC / IBIRÁ)</h3>
                                             </div>
                                             <div className="flex items-center gap-3">
                                                 <div className="relative">

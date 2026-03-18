@@ -17,7 +17,7 @@ const LEVEL_LABELS = {
     skill: {
         macro: "Eixo do Saber",
         mesclado: "Componente Curricular",
-        micro: "Habilidade BNCC",
+        micro: "Habilidade",
         atomico: "Evidência da Habilidade"
     },
     content: {
@@ -30,7 +30,7 @@ const LEVEL_LABELS = {
 
 const PLURAL_LABELS = {
     skill: {
-        micro: "Habilidades BNCC",
+        micro: "Habilidades (BNCC / IBIRÁ)",
         atomico: "Evidências da Habilidade"
     },
     content: {

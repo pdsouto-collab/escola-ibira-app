@@ -323,14 +323,14 @@ export function BibliotecaEditor() {
                             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-2 py-3 text-base font-medium text-slate-500 data-[state=active]:text-primary transition-all flex items-center gap-2"
                         >
                             <BookOpen className="w-4 h-4" />
-                            Habilidades BNCC
+                            Habilidades (BNCC / IBIRÁ)
                         </TabsTrigger>
                         <TabsTrigger
                             value="content"
                             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-2 py-3 text-base font-medium text-slate-500 data-[state=active]:text-primary transition-all flex items-center gap-2"
                         >
                             <Layers className="w-4 h-4" />
-                            Competências Gerais
+                            Competências (BNCC / IBIRÁ)
                         </TabsTrigger>
                     </TabsList>
                 </div>
@@ -342,7 +342,7 @@ export function BibliotecaEditor() {
                         <div className="h-10 bg-slate-200 animate-pulse rounded"></div>
                     </div>
                 ) : (
-                    <Accordion type="multiple" className="w-full space-y-4" defaultValue={sortedGroups}>
+                    <Accordion type="multiple" className="w-full space-y-4" defaultValue={[]}>
                         {sortedGroups.map(group => (
                             <AccordionItem key={group} value={group} className="border bg-white rounded-xl overflow-hidden data-[state=open]:shadow-sm">
                                 <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-slate-50 transition-colors">
@@ -366,8 +366,8 @@ export function BibliotecaEditor() {
                                                             Oficial BNCC
                                                         </Badge>
                                                     ) : (
-                                                        <Badge variant="secondary" className="bg-purple-100 text-purple-700 border-purple-200 uppercase text-[10px] tracking-wider">
-                                                            Personalizado
+                                                        <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200 uppercase text-[10px] tracking-wider">
+                                                            Ibirá
                                                         </Badge>
                                                     )}
 
@@ -450,8 +450,8 @@ export function BibliotecaEditor() {
                                     <SelectValue placeholder="Selecione o tipo" />
                                 </SelectTrigger>
                                 <SelectContent className="z-[9999]">
-                                    <SelectItem value="skill">Habilidades BNCC</SelectItem>
-                                    <SelectItem value="content">Competências Gerais</SelectItem>
+                                    <SelectItem value="skill">Habilidades (BNCC / IBIRÁ)</SelectItem>
+                                    <SelectItem value="content">Competências (BNCC / IBIRÁ)</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -569,7 +569,7 @@ export function BibliotecaEditor() {
                     <DialogHeader>
                         <DialogTitle>Gerenciar Grupos</DialogTitle>
                         <DialogDescription>
-                            Renomeie ou exclua os grupos existentes na aba atual ({activeTab === 'skill' ? 'Habilidades BNCC' : 'Competências Gerais'}).<br />
+                            Renomeie ou exclua os grupos existentes na aba atual ({activeTab === 'skill' ? 'Habilidades (BNCC / IBIRÁ)' : 'Competências (BNCC / IBIRÁ)'}).<br />
                             Itens da BNCC de um grupo excluído irão para a categoria "BNCC Sem Grupo".
                         </DialogDescription>
                     </DialogHeader>
