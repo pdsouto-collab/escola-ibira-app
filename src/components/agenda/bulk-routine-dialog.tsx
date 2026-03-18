@@ -151,7 +151,7 @@ export function BulkRoutineDialog({ open, onOpenChange, classes, initialConfig, 
                         {/* Project Selector - only show for Project Session type */}
                         {config.type === "project" && (
                             <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="projectId" className="text-right text-indigo-600 font-semibold">Projeto / Plano</Label>
+                                <Label htmlFor="projectId" className="text-right text-indigo-600 font-semibold">Projeto</Label>
                                 <Select
                                     value={config.projectId || "none"}
                                     onValueChange={(value) => setConfig({ ...config, projectId: value === "none" ? undefined : value })}

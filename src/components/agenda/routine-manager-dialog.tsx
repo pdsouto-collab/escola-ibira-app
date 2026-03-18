@@ -294,7 +294,7 @@ export function RoutineManagerDialog({
                                 onChange={e => setEditConfig(p => ({ ...p, endTime: e.target.value }))} />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="edit-projectId" className="text-right text-indigo-600 font-semibold">Projeto / Plano</Label>
+                            <Label htmlFor="edit-projectId" className="text-right text-indigo-600 font-semibold">Projeto</Label>
                             <Select
                                 value={editConfig.projectId || "none"}
                                 onValueChange={(value) => setEditConfig(p => ({ ...p, projectId: value === "none" ? undefined : value }))}

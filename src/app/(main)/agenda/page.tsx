@@ -78,7 +78,8 @@ export default function AgendaPage() {
         const newItem = {
             ...item,
             classId: selectedClassId === "all" ? availableClasses[0]?.id : selectedClassId,
-            date: item.date || format(currentDate, 'yyyy-MM-dd')
+            date: item.date || format(currentDate, 'yyyy-MM-dd'),
+            projectId: item.projectId // Ensure projectId is passed
         };
 
         if (editingItem) {
@@ -119,7 +120,8 @@ export default function AgendaPage() {
                 type: config.type,
                 date: format(date, 'yyyy-MM-dd'),
                 classId: cId,
-                routineId: routineId
+                routineId: routineId,
+                projectId: config.projectId // Pass the selected project
             });
         };
 
@@ -157,7 +159,8 @@ export default function AgendaPage() {
             startDate: exampleItem.date || "", // This might be lossy if not stored on routine level, but good enough for now
             endDate: exampleItem.date || "", // User will have to re-select range
             daysOfWeek: [1, 2, 3, 4, 5], // Default, hard to infer perfectly without better data structure
-            classId: exampleItem.classId || "all"
+            classId: exampleItem.classId || "all",
+            projectId: exampleItem.projectId
         });
         setIsBulkDialogOpen(true);
     };

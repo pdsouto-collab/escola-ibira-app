@@ -535,7 +535,7 @@ function StudentView({
                                 return (
                                     <div className="space-y-4">
                                         <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-2">
-                                            <FolderKanban className="w-4 h-4 text-indigo-500" /> Projetos & Planos de Aula
+                                            <FolderKanban className="w-4 h-4 text-indigo-500" /> Projetos
                                         </h3>
                                         <div className="grid grid-cols-1 gap-4">
                                             {studentProjects.map(project => {

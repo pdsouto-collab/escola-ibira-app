@@ -130,7 +130,7 @@ export function ScheduleDialog({ open, onOpenChange, item, onSave }: ScheduleDia
                         {formData.type === "project" && (
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="projectId" className="text-right text-indigo-600 font-semibold">
-                                    Projeto / Plano
+                                    Projeto
                                 </Label>
                                 <Select
                                     value={formData.projectId || "none"}
