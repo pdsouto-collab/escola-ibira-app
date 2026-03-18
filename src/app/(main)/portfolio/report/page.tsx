@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Printer, Download, ChevronLeft, Star, Target, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { MilestoneReport } from "@/components/reports/milestone-report";
+import { RadialMatrix } from "@/components/mosaic/radial-matrix";
 import { Badge } from "@/components/ui/badge";
 import { SkillsChart } from "@/components/reports/skills-chart";
 import { CalendarIcon } from "lucide-react";
@@ -391,6 +392,50 @@ function ReportCard({
                     </div>
                     <div className="print:shadow-none print:border-none">
                         <MilestoneReport studentId={student.id} filter="ibira" />
+                    </div>
+                </section>
+
+                {/* ── 5. BNCC: MATRIZ CIRCULAR ────────────────────── */}
+                <section className="break-inside-avoid page-break-inside-avoid" style={{ pageBreakInside: "avoid" }}>
+                    <div className="flex items-center gap-3 mb-8 mt-16">
+                        <div className="w-1.5 h-6 bg-orange-500 rounded-full" />
+                        <h2 className="text-xl font-bold text-slate-800">Trilha Habilidades BNCC (Matriz Circular)</h2>
+                    </div>
+                    <div className="border border-slate-100 rounded-3xl p-8 bg-white flex justify-center items-center print:border-none print:shadow-none min-h-[600px] shadow-sm">
+                        <div className="w-full h-full flex items-center justify-center">
+                            <RadialMatrix
+                                data={skillsTree}
+                                treeType="skill"
+                                assessments={relevantAssessments}
+                                projects={studentProjects}
+                                selectedProjectId={"all"}
+                                selectedStudentId={student.id}
+                                selectedClassId={student.classId}
+                                libraryItems={libraryItems}
+                            />
+                        </div>
+                    </div>
+                </section>
+
+                {/* ── 6. IBIRÁ: MATRIZ CIRCULAR ────────────────────── */}
+                <section className="break-inside-avoid page-break-inside-avoid" style={{ pageBreakInside: "avoid" }}>
+                    <div className="flex items-center gap-3 mb-8 mt-16">
+                        <div className="w-1.5 h-6 bg-green-600 rounded-full" />
+                        <h2 className="text-xl font-bold text-slate-800">Trilha de Competências Ibirá (Matriz Circular)</h2>
+                    </div>
+                    <div className="border border-slate-100 rounded-3xl p-8 bg-white flex justify-center items-center print:border-none print:shadow-none min-h-[600px] shadow-sm">
+                        <div className="w-full h-full flex items-center justify-center">
+                            <RadialMatrix
+                                data={contentsTree}
+                                treeType="content"
+                                assessments={relevantAssessments}
+                                projects={studentProjects}
+                                selectedProjectId={"all"}
+                                selectedStudentId={student.id}
+                                selectedClassId={student.classId}
+                                libraryItems={libraryItems}
+                            />
+                        </div>
                     </div>
                 </section>
 
