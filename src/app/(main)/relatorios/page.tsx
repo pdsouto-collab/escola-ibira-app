@@ -176,7 +176,7 @@ export default function ReportsPage() {
                         <div>
                             <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
                                 <span className="w-1.5 h-6 bg-orange-500 rounded-full" />
-                                Trilha de Competências e Habilidades
+                                Trilha de Habilidades e Competências (BNCC)
                             </h2>
                             {selectedStudent ? (
                                 <MilestoneReport studentId={effectiveStudentId} filter="bncc" />
@@ -208,7 +208,7 @@ export default function ReportsPage() {
                         <div>
                             <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
                                 <span className="w-1.5 h-6 bg-green-500 rounded-full" />
-                                Trilha Ibirá de Competências e Habilidades
+                                Trilha de Habilidades e Competências (IBIRÁ)
                             </h2>
                             {selectedStudent ? (
                                 <MilestoneReport studentId={effectiveStudentId} filter="ibira" />

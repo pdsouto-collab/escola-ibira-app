@@ -383,7 +383,7 @@ function ReportCard({
                 <section className="break-inside-avoid page-break-inside-avoid" style={{ pageBreakInside: "avoid" }}>
                     <div className="flex items-center gap-3 mb-8 mt-16">
                         <div className="w-1.5 h-6 bg-orange-500 rounded-full" />
-                        <h2 className="text-xl font-bold text-slate-800">Trilha de Competências e Habilidades</h2>
+                        <h2 className="text-xl font-bold text-slate-800">Trilha de Habilidades e Competências (BNCC)</h2>
                     </div>
                     <div className="print:shadow-none print:border-none">
                         <MilestoneReport studentId={student.id} filter="bncc" />
@@ -405,7 +405,7 @@ function ReportCard({
                 <section className="break-inside-avoid page-break-inside-avoid" style={{ pageBreakInside: "avoid" }}>
                     <div className="flex items-center gap-3 mb-8 mt-16">
                         <div className="w-1.5 h-6 bg-green-500 rounded-full" />
-                        <h2 className="text-xl font-bold text-slate-800">Trilha Ibirá de Competências e Habilidades</h2>
+                        <h2 className="text-xl font-bold text-slate-800">Trilha de Habilidades e Competências (IBIRÁ)</h2>
                     </div>
                     <div className="print:shadow-none print:border-none">
                         <MilestoneReport studentId={student.id} filter="ibira" />
