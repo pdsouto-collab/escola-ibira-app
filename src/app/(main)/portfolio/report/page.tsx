@@ -361,7 +361,7 @@ function ReportCard({
 
                 {/* ── 3. PROFESSOR OBSERVATIONS ───────────────────────────── */}
                 {relevantAssessments.filter(a => a.observations).length > 0 && (
-                    <section>
+                    <section className="print:break-before-page print:page-break-before-always print:pt-4">
                         <div className="flex items-center gap-3 mb-8 mt-16">
                             <div className="w-1.5 h-8 bg-indigo-500 rounded-full" />
                             <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Registros e Observações</h2>
@@ -372,7 +372,7 @@ function ReportCard({
                                 const trees = ["🌱", "🌿", "🌳", "🌲", "🍎"];
                                 const nodeInfo = resolveNodeInfo(a.knowledgeNodeId || "", skillsTree, contentsTree, libraryItems);
                                 return (
-                                    <div key={a.id} className="bg-slate-50/40 border border-slate-100 rounded-3xl p-6 flex gap-6 hover:bg-white hover:shadow-xl transition-all duration-300 group">
+                                    <div key={a.id} className="bg-slate-50/40 border border-slate-100 rounded-3xl p-6 flex gap-6 hover:bg-white hover:shadow-xl transition-all duration-300 group print:break-inside-avoid print:page-break-inside-avoid">
                                         <div className="flex flex-col items-center gap-1 shrink-0 bg-white p-3 rounded-2xl shadow-sm border border-slate-100 min-w-[65px] h-fit group-hover:border-indigo-100 transition-colors">
                                             {a.rating ? (
                                                 <>
@@ -399,7 +399,7 @@ function ReportCard({
 
                 {/* ── 4. SESSION COMPONENT (Full Width) ─────────────────── */}
                 {sessions.length > 0 && (
-                    <section>
+                    <section className="print:break-before-page print:page-break-before-always print:pt-4">
                         <div className="flex items-center gap-3 mb-8 mt-16">
                             <div className="w-1.5 h-8 bg-amber-500 rounded-full" />
                             <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Sessões em Projeto</h2>
@@ -417,7 +417,7 @@ function ReportCard({
                                 const trees = ["🌱", "🌿", "🌳", "🌲", "🍎"];
 
                                 return (
-                                    <div key={session.id} className="p-6 flex items-center gap-8 hover:bg-slate-50 transition-colors">
+                                    <div key={session.id} className="p-6 flex items-center gap-8 hover:bg-slate-50 transition-colors print:break-inside-avoid print:page-break-inside-avoid">
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2 mb-1">
                                                 <p className="text-lg font-bold text-slate-800 leading-tight tracking-tight">
@@ -446,7 +446,7 @@ function ReportCard({
                 )}
 
                 {/* ── 5. BNCC: PROPOSTO VS DESENVOLVIDO ────────────────── */}
-                <section className="break-inside-avoid" style={{ marginTop: "4rem" }}>
+                <section className="break-inside-avoid print:break-before-page print:page-break-before-always print:pt-4" style={{ marginTop: "4rem" }}>
                     <div className="flex items-center gap-3 mb-8">
                         <div className="w-1.5 h-8 bg-indigo-500 rounded-full" />
                         <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Desenvolvimento de Habilidades e Competências (por Áreas BNCC)</h2>
@@ -468,7 +468,7 @@ function ReportCard({
                 </section>
 
                 {/* ── 7. IBIRÁ: PROPOSTO VS DESENVOLVIDO ────────────────── */}
-                <section className="break-inside-avoid" style={{ marginTop: "4rem" }}>
+                <section className="break-inside-avoid print:break-before-page print:page-break-before-always print:pt-4" style={{ marginTop: "4rem" }}>
                     <div className="flex items-center gap-3 mb-8">
                         <div className="w-1.5 h-8 bg-green-500 rounded-full" />
                         <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Desenvolvimento de Habilidades e Competências (por Áreas IBIRÁ)</h2>
@@ -491,7 +491,7 @@ function ReportCard({
 
                 {/* ── 9. PHOTO GALLERY (Galeria de Vivências) ────────────────── */}
                 {studentGallery.length > 0 && (
-                    <section>
+                    <section className="print:break-before-page print:page-break-before-always print:pt-4">
                         <div className="flex items-center gap-3 mb-8 mt-16">
                             <div className="w-1.5 h-8 bg-emerald-500 rounded-full" />
                             <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Galeria de Vivências</h2>
@@ -503,7 +503,7 @@ function ReportCard({
                                     <div 
                                         key={vivencia.id} 
                                         onClick={() => setSelectedEntry(vivencia)}
-                                        className="group relative aspect-square overflow-hidden rounded-3xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer"
+                                        className="group relative aspect-square overflow-hidden rounded-3xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer print:break-inside-avoid print:page-break-inside-avoid"
                                     >
                                         <img
                                             src={firstImage || "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80&w=400&h=400"}
@@ -568,10 +568,6 @@ function ReportCardContent() {
             {/* Print styles */}
             <style>{`
                 @media print {
-                    @page {
-                        size: landscape;
-                        margin: 0;
-                    }
                     .no-print { display: none !important; }
                     body { background: white; margin: 0; padding: 0; }
                     .report-card { 
