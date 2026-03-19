@@ -238,37 +238,54 @@ function ReportCard({
             )}
 
             <div className="px-10 py-12 space-y-16">
-                {/* ── PHOTO GALLERY (Galeria de Vivências) ────────────────── */}
-                {studentGallery.length > 0 && (
-                    <section>
-                        <div className="flex items-center gap-3 mb-8">
-                            <div className="w-1.5 h-8 bg-emerald-500 rounded-full" />
-                            <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Galeria de Vivências</h2>
+                {/* ── 1. BNCC: MATRIZ CIRCULAR ────────────────────── */}
+                <section className="break-inside-avoid page-break-inside-avoid" style={{ pageBreakInside: "avoid" }}>
+                    <div className="flex items-center gap-3 mb-8">
+                        <div className="w-1.5 h-6 bg-orange-500 rounded-full" />
+                        <h2 className="text-xl font-bold text-slate-800">Trilha Habilidades (BNCC / IBIRÁ)</h2>
+                    </div>
+                    <div className="border border-slate-100 rounded-3xl p-8 bg-white flex justify-center items-center print:border-none print:shadow-none min-h-[600px] shadow-sm">
+                        <div className="w-full h-full flex items-center justify-center">
+                            <RadialMatrix
+                                data={skillsTree}
+                                treeType="skill"
+                                assessments={relevantAssessments}
+                                projects={studentProjects}
+                                selectedProjectId={"all"}
+                                selectedStudentId={student.id}
+                                selectedClassId={student.classId}
+                                libraryItems={libraryItems}
+                            />
                         </div>
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                            {studentGallery.map((vivencia: any) => (
-                                <div key={vivencia.id} className="group relative aspect-square overflow-hidden rounded-3xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300">
-                                    <img
-                                        src={vivencia.imageUrl || "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80&w=400&h=400"}
-                                        alt={vivencia.title}
-                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                    />
-                                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 opacity-100">
-                                        <p className="text-white text-[10px] font-black uppercase tracking-widest mb-1">
-                                            {vivencia.date.split("-").reverse().join("/")}
-                                        </p>
-                                        <p className="text-white text-xs font-bold line-clamp-2">{vivencia.title}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-                )}
+                    </div>
+                </section>
 
-                {/* ── PROFESSOR OBSERVATIONS ───────────────────────────── */}
+                {/* ── 2. IBIRÁ: MATRIZ CIRCULAR ────────────────────── */}
+                <section className="break-inside-avoid page-break-inside-avoid" style={{ pageBreakInside: "avoid" }}>
+                    <div className="flex items-center gap-3 mb-8 mt-16">
+                        <div className="w-1.5 h-6 bg-green-600 rounded-full" />
+                        <h2 className="text-xl font-bold text-slate-800">Trilha Competências (BNCC / IBIRÁ)</h2>
+                    </div>
+                    <div className="border border-slate-100 rounded-3xl p-8 bg-white flex justify-center items-center print:border-none print:shadow-none min-h-[600px] shadow-sm">
+                        <div className="w-full h-full flex items-center justify-center">
+                            <RadialMatrix
+                                data={contentsTree}
+                                treeType="content"
+                                assessments={relevantAssessments}
+                                projects={studentProjects}
+                                selectedProjectId={"all"}
+                                selectedStudentId={student.id}
+                                selectedClassId={student.classId}
+                                libraryItems={libraryItems}
+                            />
+                        </div>
+                    </div>
+                </section>
+
+                {/* ── 3. PROFESSOR OBSERVATIONS ───────────────────────────── */}
                 {relevantAssessments.filter(a => a.observations).length > 0 && (
                     <section>
-                        <div className="flex items-center gap-3 mb-8">
+                        <div className="flex items-center gap-3 mb-8 mt-16">
                             <div className="w-1.5 h-8 bg-indigo-500 rounded-full" />
                             <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Registros e Observações</h2>
                         </div>
@@ -303,10 +320,10 @@ function ReportCard({
                     </section>
                 )}
 
-                {/* ── SESSION COMPONENT (Full Width) ─────────────────── */}
+                {/* ── 4. SESSION COMPONENT (Full Width) ─────────────────── */}
                 {sessions.length > 0 && (
                     <section>
-                        <div className="flex items-center gap-3 mb-8">
+                        <div className="flex items-center gap-3 mb-8 mt-16">
                             <div className="w-1.5 h-8 bg-amber-500 rounded-full" />
                             <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Sessões em Projeto</h2>
                         </div>
@@ -351,8 +368,8 @@ function ReportCard({
                     </section>
                 )}
 
-                {/* ── 1. BNCC: PROPOSTO VS DESENVOLVIDO ────────────────── */}
-                <section className="break-inside-avoid">
+                {/* ── 5. BNCC: PROPOSTO VS DESENVOLVIDO ────────────────── */}
+                <section className="break-inside-avoid" style={{ marginTop: "4rem" }}>
                     <div className="flex items-center gap-3 mb-8">
                         <div className="w-1.5 h-8 bg-indigo-500 rounded-full" />
                         <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Desenvolvimento por Áreas BNCC (Habilidades e Competências)</h2>
@@ -362,7 +379,7 @@ function ReportCard({
                     </div>
                 </section>
 
-                {/* ── 2. BNCC: TRILHA DE COMPETÊNCIAS E HABILIDADES ────────────────────── */}
+                {/* ── 6. BNCC: TRILHA DE COMPETÊNCIAS E HABILIDADES ────────────────────── */}
                 <section className="break-inside-avoid page-break-inside-avoid" style={{ pageBreakInside: "avoid" }}>
                     <div className="flex items-center gap-3 mb-8 mt-16">
                         <div className="w-1.5 h-6 bg-orange-500 rounded-full" />
@@ -373,7 +390,7 @@ function ReportCard({
                     </div>
                 </section>
 
-                {/* ── 3. IBIRÁ: PROPOSTO VS DESENVOLVIDO ────────────────── */}
+                {/* ── 7. IBIRÁ: PROPOSTO VS DESENVOLVIDO ────────────────── */}
                 <section className="break-inside-avoid" style={{ marginTop: "4rem" }}>
                     <div className="flex items-center gap-3 mb-8">
                         <div className="w-1.5 h-8 bg-green-500 rounded-full" />
@@ -384,7 +401,7 @@ function ReportCard({
                     </div>
                 </section>
 
-                {/* ── 4. IBIRÁ: TRILHA DE COMPETÊNCIAS E HABILIDADES ────────────────────── */}
+                {/* ── 8. IBIRÁ: TRILHA DE COMPETÊNCIAS E HABILIDADES ────────────────────── */}
                 <section className="break-inside-avoid page-break-inside-avoid" style={{ pageBreakInside: "avoid" }}>
                     <div className="flex items-center gap-3 mb-8 mt-16">
                         <div className="w-1.5 h-6 bg-green-500 rounded-full" />
@@ -395,52 +412,35 @@ function ReportCard({
                     </div>
                 </section>
 
-                {/* ── 5. BNCC: MATRIZ CIRCULAR ────────────────────── */}
-                <section className="break-inside-avoid page-break-inside-avoid" style={{ pageBreakInside: "avoid" }}>
-                    <div className="flex items-center gap-3 mb-8 mt-16">
-                        <div className="w-1.5 h-6 bg-orange-500 rounded-full" />
-                        <h2 className="text-xl font-bold text-slate-800">Trilha Habilidades (BNCC / IBIRÁ)</h2>
-                    </div>
-                    <div className="border border-slate-100 rounded-3xl p-8 bg-white flex justify-center items-center print:border-none print:shadow-none min-h-[600px] shadow-sm">
-                        <div className="w-full h-full flex items-center justify-center">
-                            <RadialMatrix
-                                data={skillsTree}
-                                treeType="skill"
-                                assessments={relevantAssessments}
-                                projects={studentProjects}
-                                selectedProjectId={"all"}
-                                selectedStudentId={student.id}
-                                selectedClassId={student.classId}
-                                libraryItems={libraryItems}
-                            />
+                {/* ── 9. PHOTO GALLERY (Galeria de Vivências) ────────────────── */}
+                {studentGallery.length > 0 && (
+                    <section>
+                        <div className="flex items-center gap-3 mb-8 mt-16">
+                            <div className="w-1.5 h-8 bg-emerald-500 rounded-full" />
+                            <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Galeria de Vivências</h2>
                         </div>
-                    </div>
-                </section>
-
-                {/* ── 6. IBIRÁ: MATRIZ CIRCULAR ────────────────────── */}
-                <section className="break-inside-avoid page-break-inside-avoid" style={{ pageBreakInside: "avoid" }}>
-                    <div className="flex items-center gap-3 mb-8 mt-16">
-                        <div className="w-1.5 h-6 bg-green-600 rounded-full" />
-                        <h2 className="text-xl font-bold text-slate-800">Trilha Competências (BNCC / IBIRÁ)</h2>
-                    </div>
-                    <div className="border border-slate-100 rounded-3xl p-8 bg-white flex justify-center items-center print:border-none print:shadow-none min-h-[600px] shadow-sm">
-                        <div className="w-full h-full flex items-center justify-center">
-                            <RadialMatrix
-                                data={contentsTree}
-                                treeType="content"
-                                assessments={relevantAssessments}
-                                projects={studentProjects}
-                                selectedProjectId={"all"}
-                                selectedStudentId={student.id}
-                                selectedClassId={student.classId}
-                                libraryItems={libraryItems}
-                            />
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                            {studentGallery.map((vivencia: any) => (
+                                <div key={vivencia.id} className="group relative aspect-square overflow-hidden rounded-3xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300">
+                                    <img
+                                        src={vivencia.imageUrl || "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80&w=400&h=400"}
+                                        alt={vivencia.title}
+                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                    />
+                                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 opacity-100">
+                                        <p className="text-white text-[10px] font-black uppercase tracking-widest mb-1">
+                                            {vivencia.date.split("-").reverse().join("/")}
+                                        </p>
+                                        <p className="text-white text-xs font-bold line-clamp-2">{vivencia.title}</p>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                    </div>
-                </section>
+                    </section>
+                )}
 
-                {/* ── FOOTER ────────────────────────────────────────── */}
-                <footer className="pt-10 border-t border-slate-100 text-center">
+                {/* ── 10. FOOTER ────────────────────────────────────────── */}
+                <footer className="pt-10 border-t border-slate-100 text-center mt-16">
                     <div className="inline-block px-10 py-1 bg-slate-50 rounded-full border border-slate-100 mb-4">
                         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Escola Ibirá &bull; {today}</p>
                     </div>
