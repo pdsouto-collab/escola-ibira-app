@@ -170,21 +170,21 @@ export function AssessmentDrawer({
     const canSave = (observations.trim().length > 0 || rating !== undefined) && (hasContext || (!!propKnowledgeNodeId && !!selectedProjectId));
     const isFixedContext = !!propSessionId || !!propRoutineId || !!propKnowledgeNodeId;
 
-    useEffect(() => {
-        const fetchClasses = async () => {
-            try {
-                const data = await getClasses();
-                setClasses(data);
-                if (!classId && !defaultClassId && data.length > 0) {
-                    setClassId(data[0].id);
-                }
-            } catch (error) {
-                console.error("Erro ao carregar turmas", error);
-            } finally {
-                setIsLoadingClasses(false);
+    async function fetchClasses() {
+        try {
+            const data = await getClasses();
+            setClasses(data);
+            if (!classId && !defaultClassId && data.length > 0) {
+                setClassId(data[0].id);
             }
-        };
+        } catch (error) {
+            console.error("Erro ao carregar turmas", error);
+        } finally {
+            setIsLoadingClasses(false);
+        }
+    }
 
+    useEffect(() => {
         if (open) {
             fetchClasses();
         }

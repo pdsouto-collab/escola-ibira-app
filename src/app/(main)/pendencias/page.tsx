@@ -32,17 +32,18 @@ export default function PendenciasPage() {
     const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
+    async function fetchClasses() {
+        try {
+            const data = await getClasses();
+            setClasses(data);
+        } catch (error) {
+            console.error("Erro ao buscar turmas:", error);
+        } finally {
+            setIsLoadingClasses(false);
+        }
+    }
+
     useEffect(() => {
-        const fetchClasses = async () => {
-            try {
-                const data = await getClasses();
-                setClasses(data);
-            } catch (error) {
-                console.error("Erro ao buscar turmas:", error);
-            } finally {
-                setIsLoadingClasses(false);
-            }
-        };
         fetchClasses();
     }, []);
 

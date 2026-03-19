@@ -73,20 +73,20 @@ export function MosaicContainer() {
     const dataToRender = drilledNode ? [drilledNode] : filteredTreeData;
 
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setIsLoadingClasses(true);
-            try {
-                const data = await getClasses();
-                setClasses(data);
-            } catch (error) {
-                console.error("Erro ao carregar turmas", error);
-            } finally {
-                setIsLoadingClasses(false);
-            }
-        };
+    async function fetchClasses() {
+        setIsLoadingClasses(true);
+        try {
+            const data = await getClasses();
+            setClasses(data);
+        } catch (error) {
+            console.error("Erro ao carregar turmas", error);
+        } finally {
+            setIsLoadingClasses(false);
+        }
+    }
 
-        fetchData();
+    useEffect(() => {
+        fetchClasses();
         getListaBNCC();
     }, []);
 

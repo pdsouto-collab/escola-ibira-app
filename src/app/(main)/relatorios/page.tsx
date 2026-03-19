@@ -37,17 +37,18 @@ export default function ReportsPage() {
     // Class Filter State
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
 
+    async function fetchClasses() {
+        try {
+            const data = await getClasses();
+            setClasses(data);
+        } catch (error) {
+            console.error("Erro ao buscar turmas:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
     useEffect(() => {
-        const fetchClasses = async () => {
-            try {
-                const data = await getClasses();
-                setClasses(data);
-            } catch (error) {
-                console.error("Erro ao buscar turmas:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
         fetchClasses();
     }, []);
 

@@ -21,20 +21,21 @@ export default function TroncoPage() {
     const [selectedClassId, setSelectedClassId] = useState<string>("");
     const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
-    useEffect(() => {
-        const fetchClasses = async () => {
-            try {
-                const data = await getClasses();
-                setClasses(data);
-                if (data.length > 0) {
-                    setSelectedClassId(data[0].id);
-                }
-            } catch (error) {
-                console.error("Erro ao buscar turmas:", error);
-            } finally {
-                setIsLoading(false);
+    async function fetchClasses() {
+        try {
+            const data = await getClasses();
+            setClasses(data);
+            if (data.length > 0) {
+                setSelectedClassId(data[0].id);
             }
-        };
+        } catch (error) {
+            console.error("Erro ao buscar turmas:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    useEffect(() => {
         fetchClasses();
     }, []);
 

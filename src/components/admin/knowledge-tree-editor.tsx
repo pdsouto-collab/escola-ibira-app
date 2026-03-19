@@ -77,18 +77,19 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
     const [confirmDuplicateId, setConfirmDuplicateId] = useState<string | null>(null);
     const [confirmDuplicateChildrenCount, setConfirmDuplicateChildrenCount] = useState<number>(0);
 
+    async function fetchClasses() {
+        try {
+            const data = await getClasses();
+            setClasses(data);
+        } catch (error) {
+            console.error("Erro ao buscar turmas:", error);
+        } finally {
+            setIsLoadingClasses(false);
+        }
+    }
+
     useEffect(() => {
         getListaBNCC();
-        const fetchClasses = async () => {
-            try {
-                const data = await getClasses();
-                setClasses(data);
-            } catch (error) {
-                console.error("Erro ao buscar turmas:", error);
-            } finally {
-                setIsLoadingClasses(false);
-            }
-        };
         fetchClasses();
     }, [])
 

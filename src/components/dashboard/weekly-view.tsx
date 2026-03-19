@@ -13,20 +13,21 @@ export function WeeklyView() {
     const [selectedClassId, setSelectedClassId] = useState<string>("");
     const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchClasses = async () => {
-            try {
-                const data = await getClasses();
-                setClasses(data);
-                if (data.length > 0 && !selectedClassId) {
-                    setSelectedClassId(data[0].id);
-                }
-            } catch (error) {
-                console.error("Erro ao buscar turmas:", error);
-            } finally {
-                setIsLoading(false);
+    async function fetchClasses() {
+        try {
+            const data = await getClasses();
+            setClasses(data);
+            if (data.length > 0 && !selectedClassId) {
+                setSelectedClassId(data[0].id);
             }
-        };
+        } catch (error) {
+            console.error("Erro ao buscar turmas:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    useEffect(() => {
         fetchClasses();
     }, [selectedClassId]);
 

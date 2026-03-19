@@ -27,17 +27,18 @@ export default function ProjectsPage() {
     const [activeTab, setActiveTab] = useState("active");
     const [confirmDeleteProject, setConfirmDeleteProject] = useState<{ id: string; title: string } | null>(null);
 
+    async function fetchClasses() {
+        try {
+            const data = await getClasses();
+            setClasses(data);
+        } catch (error) {
+            console.error("Erro ao buscar turmas:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
     useEffect(() => {
-        const fetchClasses = async () => {
-            try {
-                const data = await getClasses();
-                setClasses(data);
-            } catch (error) {
-                console.error("Erro ao buscar turmas:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
         fetchClasses();
     }, []);
 

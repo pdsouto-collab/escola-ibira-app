@@ -750,21 +750,19 @@ function PortfolioContent() {
 
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
 
-    useEffect(() => {
-        const fetchClasses = async () => {
-            try {
-                const data = await getClasses();
-                setClasses(data);
-            } catch (error) {
-                console.error("Erro ao buscar turmas:", error);
-            } finally {
-                setIsLoadingClasses(false);
-            }
-        };
-        fetchClasses();
-    }, []);
+    async function fetchClasses() {
+        try {
+            const data = await getClasses();
+            setClasses(data);
+        } catch (error) {
+            console.error("Erro ao buscar turmas:", error);
+        } finally {
+            setIsLoadingClasses(false);
+        }
+    }
 
     useEffect(() => {
+        fetchClasses();
         getListaBNCC();
     }, []);
 
