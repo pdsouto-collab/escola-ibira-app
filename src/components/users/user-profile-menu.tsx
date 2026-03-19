@@ -106,11 +106,15 @@ export function UserProfileMenu() {
             setIsPasswordOpen(false);
             setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
             toast.success("Senha atualizada com sucesso! Você será deslogado para sua segurança.");
-            signOut({ callbackUrl: "/login" });
+            setTimeout(() => signOut({ callbackUrl: "/login" }), 3000);
         } catch (error: any) {
             console.error("Erro ao atualizar senha", error);
             const message = error.message || "Erro ao atualizar senha.";
-            toast.error(message.includes("401") ? "Senha atual incorreta." : "Erro ao atualizar senha.");
+            toast.error(
+                message.includes("401") ? "Senha atual incorreta." :
+                    message.includes("400") ? "A senha atual é obrigatória." :
+                        "Erro ao atualizar senha."
+            );
         } finally {
             setIsUpdatingPassword(false);
         }

@@ -89,13 +89,14 @@ export default function SettingsPage() {
             setCurrentPassword("");
             setNewPassword("");
             setConfirmPassword("");
-            setTimeout(() => signOut({ callbackUrl: "/login" }), 2000);
+            setTimeout(() => signOut({ callbackUrl: "/login" }), 3000);
         } catch (error: any) {
             console.error("Erro ao redefinir senha:", error);
             const message = error.message || "";
-            // Agora que o service inclui o status, podemos detectar o 401
             if (message.includes("401")) {
                 setPasswordMessage("A senha atual digitada está incorreta.");
+            } else if (message.includes("400")) {
+                setPasswordMessage("A senha atual é obrigatória.");
             } else {
                 setPasswordMessage("Ocorreu um erro ao tentar redefinir sua senha. Verifique os dados e tente novamente.");
             }

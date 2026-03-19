@@ -18,35 +18,33 @@ export async function PUT(
 
     // Se a senha estiver sendo atualizada, precisamos validar a antiga e fazer o hash da nova
     if (newPassword && newPassword.trim() !== "") {
+
       const dbUser = await prisma.user.findUnique({ where: { id } });
       if (!dbUser || !dbUser.password) {
         return new NextResponse("Usuário não encontrado ou sem senha", { status: 404 });
       }
 
-      // Verificar se o solicitante é admin ou o próprio usuário
-      const { getServerSession } = await import("next-auth/next");
-      const { authOptions } = await import("../../auth/[...nextauth]/route");
-      const session = await getServerSession(authOptions);
-      const isSelfUpdate = session?.user && (session.user as any).id === id;
-      const isAdminOrDirector = session?.user && ["admin", "director"].includes((session.user as any).role);
-
-      // Se for atualização própria, exige a senha atual
-      if (isSelfUpdate && !isAdminOrDirector) {
-        if (!currentPassword) {
-          return new NextResponse("Senha atual é obrigatória", { status: 400 });
-        }
-
+      // Se currentPassword foi enviado, SEMPRE valida — independente de sessão
+      if (currentPassword) {
         const bcrypt = await import("bcryptjs");
         const isPasswordValid = await bcrypt.compare(currentPassword, dbUser.password);
-
         if (!isPasswordValid) {
           return new NextResponse("Senha atual incorreta", { status: 401 });
+        }
+      } else {
+        // Se não foi enviada a senha atual, só permite se for admin/director na sessão
+        const { getServerSession } = await import("next-auth/next");
+        const { authOptions } = await import("../../auth/[...nextauth]/route");
+        const session = await getServerSession(authOptions);
+        const isAdminOrDirector = session?.user && ["admin", "director"].includes((session.user as any).role);
+        if (!isAdminOrDirector) {
+          return new NextResponse("Senha atual é obrigatória", { status: 400 });
         }
       }
 
       const bcrypt = await import("bcryptjs");
       updateData.password = await bcrypt.hash(newPassword, 10);
-      delete updateData.currentPassword; // Remover o campo auxiliar
+      delete updateData.currentPassword;
     } else {
       // Se newPassword estiver vazio, garante que não tentamos atualizar o campo senha
       delete updateData.password;
