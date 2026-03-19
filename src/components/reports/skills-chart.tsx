@@ -189,9 +189,9 @@ export function SkillsChart({ studentId, filter = "all" }: { studentId?: string;
     const chartData = Array.from(chartDataMap.values()).sort((a, b) => a.subject.localeCompare(b.subject));
 
     return (
-        <div className="bg-white p-6 rounded-xl border shadow-sm">
-            <h3 className="text-xl font-bold text-slate-800">Proposto vs. Desenvolvido</h3>
-            <p className="text-sm text-slate-500 mb-6 font-medium">Comparativo entre a Biblioteca da escola e o que já foi consolidado pela criança (avaliação 3-5).</p>
+        <div className="bg-white p-6 rounded-xl border shadow-sm w-full min-w-0 overflow-hidden">
+            <h3 className="text-xl font-bold text-slate-800 break-words">Proposto vs. Desenvolvido</h3>
+            <p className="text-sm text-slate-500 mb-6 font-medium break-words">Comparativo entre a Biblioteca da escola e o que já foi consolidado pela criança (avaliação 3-5).</p>
 
             <ProgressChart data={chartData} />
 

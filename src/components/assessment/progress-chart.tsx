@@ -106,7 +106,7 @@ export function ProgressChart({ data }: ProgressChartProps) {
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                     data={data}
-                    margin={{ top: 20, right: 30, left: 0, bottom: calculatedBottomMargin }}
+                    margin={{ top: 20, right: 50, left: 0, bottom: calculatedBottomMargin }}
                     barGap={8}
                 >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />

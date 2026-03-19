@@ -451,7 +451,7 @@ function ReportCard({
                         <div className="w-1.5 h-8 bg-indigo-500 rounded-full" />
                         <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Desenvolvimento de Habilidades e Competências (por Áreas BNCC)</h2>
                     </div>
-                    <div className="print:shadow-none print:border-none">
+                    <div className="print:shadow-none print:border-none w-full min-w-0 overflow-hidden">
                         <SkillsChart studentId={student.id} filter="bncc" />
                     </div>
                 </section>
@@ -462,7 +462,7 @@ function ReportCard({
                         <div className="w-1.5 h-6 bg-orange-500 rounded-full" />
                         <h2 className="text-xl font-bold text-slate-800">Trilha de Habilidades e Competências (BNCC)</h2>
                     </div>
-                    <div className="print:shadow-none print:border-none">
+                    <div className="print:shadow-none print:border-none w-full min-w-0 overflow-hidden">
                         <MilestoneReport studentId={student.id} filter="bncc" />
                     </div>
                 </section>
@@ -473,7 +473,7 @@ function ReportCard({
                         <div className="w-1.5 h-8 bg-green-500 rounded-full" />
                         <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Desenvolvimento de Habilidades e Competências (por Áreas IBIRÁ)</h2>
                     </div>
-                    <div className="print:shadow-none print:border-none">
+                    <div className="print:shadow-none print:border-none w-full min-w-0 overflow-hidden">
                         <SkillsChart studentId={student.id} filter="ibira" />
                     </div>
                 </section>
@@ -484,7 +484,7 @@ function ReportCard({
                         <div className="w-1.5 h-6 bg-green-500 rounded-full" />
                         <h2 className="text-xl font-bold text-slate-800">Trilha de Habilidades e Competências (IBIRÁ)</h2>
                     </div>
-                    <div className="print:shadow-none print:border-none">
+                    <div className="print:shadow-none print:border-none w-full min-w-0 overflow-hidden">
                         <MilestoneReport studentId={student.id} filter="ibira" />
                     </div>
                 </section>
