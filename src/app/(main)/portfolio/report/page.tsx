@@ -208,9 +208,17 @@ function ReportCard({
 
     return (
         <div className="report-card bg-white max-w-6xl mx-auto shadow-2xl rounded-3xl overflow-hidden print:shadow-none print:rounded-none print:max-w-none">
-
+            <style dangerouslySetInnerHTML={{ __html: `
+                @media print {
+                    @page {
+                        size: A4;
+                        margin: 10mm;
+                    }
+                }
+            ` }} />
+            
             {/* ── COVER PAGE (CAPA EXECUTIVA) ───────────────────────────────────────── */}
-            <div className="flex flex-col items-center justify-center bg-white relative break-after-page page-break-after-always print:h-[285mm] print:overflow-hidden py-12 px-8 border-b-8 border-slate-100 print:border-none">
+            <div className="flex flex-col items-center justify-center bg-white relative break-after-page page-break-after-always print:min-h-[270mm] print:h-[270mm] print:overflow-hidden py-12 px-8 border-b-8 border-slate-100 print:border-none">
                 <div className="absolute top-0 left-0 w-full h-4 bg-gradient-to-r from-emerald-600 via-teal-600 to-green-700 print:block" />
                 <div className="absolute bottom-0 left-0 w-full h-4 bg-gradient-to-r from-emerald-600 via-teal-600 to-green-700 print:block hidden" />
                 
@@ -297,7 +305,7 @@ function ReportCard({
 
             {/* ── OVERALL RATING ────────────────────────────────────── */}
             {overallRating && (
-                <div className="bg-gradient-to-b from-green-50 to-white px-10 py-8 flex flex-col items-center text-center border-b">
+                <div className="bg-gradient-to-b from-green-50 to-white px-10 py-8 flex flex-col items-center text-center border-b print:break-after-page print:page-break-after-always">
                     <p className="text-xs uppercase tracking-widest text-slate-500 mb-3">Desenvolvimento Geral do Aluno</p>
                     <TreeRatingPicker value={overallRating} readOnly size="lg" />
                     <p className="text-slate-500 text-sm mt-2">
@@ -306,15 +314,15 @@ function ReportCard({
                 </div>
             )}
 
-            <div className="px-10 py-12 space-y-16">
+            <div className="px-10 py-12 space-y-16 print:space-y-8 print:py-6">
                 {/* ── 1. BNCC: MATRIZ CIRCULAR ────────────────────── */}
-                <section className="break-inside-avoid page-break-inside-avoid" style={{ pageBreakInside: "avoid" }}>
-                    <div className="flex items-center gap-3 mb-8">
+                <section className="break-inside-avoid page-break-inside-avoid print:h-[277mm] print:flex print:flex-col print:justify-center print:break-after-page" style={{ pageBreakInside: "avoid" }}>
+                    <div className="flex items-center gap-3 mb-8 print:mb-2">
                         <div className="w-1.5 h-6 bg-orange-500 rounded-full" />
                         <h2 className="text-xl font-bold text-slate-800">Trilha Habilidades (BNCC / IBIRÁ)</h2>
                     </div>
-                    <div className="border border-slate-100 rounded-3xl p-8 bg-white flex justify-center items-center print:border-none print:shadow-none min-h-[600px] shadow-sm">
-                        <div className="w-full h-full flex items-center justify-center">
+                    <div className="border border-slate-100 rounded-3xl p-8 print:p-0 bg-white flex justify-center items-center print:border-none print:shadow-none min-h-[600px] print:min-h-0 print:flex-1 shadow-sm">
+                        <div className="w-full h-full flex items-center justify-center print:scale-90">
                             <RadialMatrix
                                 data={skillsTree}
                                 treeType="skill"
@@ -330,13 +338,13 @@ function ReportCard({
                 </section>
 
                 {/* ── 2. IBIRÁ: MATRIZ CIRCULAR ────────────────────── */}
-                <section className="break-inside-avoid page-break-inside-avoid" style={{ pageBreakInside: "avoid" }}>
-                    <div className="flex items-center gap-3 mb-8 mt-16">
+                <section className="break-inside-avoid page-break-inside-avoid print:h-[277mm] print:flex print:flex-col print:justify-center print:break-after-page" style={{ pageBreakInside: "avoid" }}>
+                    <div className="flex items-center gap-3 mb-8 mt-16 print:mt-0 print:mb-2">
                         <div className="w-1.5 h-6 bg-green-600 rounded-full" />
                         <h2 className="text-xl font-bold text-slate-800">Trilha Competências (BNCC / IBIRÁ)</h2>
                     </div>
-                    <div className="border border-slate-100 rounded-3xl p-8 bg-white flex justify-center items-center print:border-none print:shadow-none min-h-[600px] shadow-sm">
-                        <div className="w-full h-full flex items-center justify-center">
+                    <div className="border border-slate-100 rounded-3xl p-8 print:p-0 bg-white flex justify-center items-center print:border-none print:shadow-none min-h-[600px] print:min-h-0 print:flex-1 shadow-sm">
+                        <div className="w-full h-full flex items-center justify-center print:scale-90">
                             <RadialMatrix
                                 data={contentsTree}
                                 treeType="content"
