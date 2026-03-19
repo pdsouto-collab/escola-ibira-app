@@ -226,11 +226,17 @@ function ReportCard({
                 </h1>
                 
                 <div className="w-full max-w-2xl px-12 py-8 rounded-[3rem] border border-slate-100 flex flex-col items-center bg-slate-50/50 relative shadow-xl print:shadow-none print:bg-transparent print:border-2 print:border-slate-100 mt-6">
-                    <img 
-                        src={student.photo || "https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"} 
-                        alt={student.name}
-                        className="w-32 h-32 rounded-full object-cover shadow-2xl border-4 border-white mb-6 absolute -top-16 bg-white"
-                    />
+                    {student.photo ? (
+                        <img 
+                            src={student.photo} 
+                            alt={student.name}
+                            className="w-32 h-32 rounded-full object-cover shadow-2xl border-4 border-white mb-6 absolute -top-16 bg-white"
+                        />
+                    ) : (
+                        <div className="w-32 h-32 rounded-full border-4 border-white mb-6 absolute -top-16 bg-white flex items-center justify-center shadow-sm">
+                            <span className="text-4xl text-slate-300 font-bold">{student.name.charAt(0)}</span>
+                        </div>
+                    )}
                     <div className="mt-16 text-center w-full">
                         <p className="text-sm text-emerald-600 font-bold uppercase tracking-widest mb-1">Aluno(a)</p>
                         <h2 className="text-3xl font-bold text-slate-800">{student.name}</h2>
