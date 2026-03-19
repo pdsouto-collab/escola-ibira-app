@@ -13,6 +13,8 @@ import { RadialMatrix } from "@/components/mosaic/radial-matrix";
 import { Badge } from "@/components/ui/badge";
 import { SkillsChart } from "@/components/reports/skills-chart";
 import { CalendarIcon } from "lucide-react";
+import { PortfolioEntryViewer } from "@/components/portfolio/portfolio-entry-viewer";
+import { PortfolioEntry } from "@/lib/data";
 import { LibraryItem } from "@/types/library-item";
 import { getListBncc } from "@/services/bncc.service";
 
@@ -140,11 +142,18 @@ function avgRating(assessments: Assessment[]): number {
 function ReportCard({
     studentId,
     projectId,
+    singleProject,
+    dateRange,
 }: {
     studentId: string;
     projectId?: string | null;
+    singleProject?: any;
+    dateRange?: { start: string; end: string };
 }) {
     const { projects, students, classes, assessments, schedule, skillsTree, contentsTree, dailyLogs, portfolioEntries } = useAppStore();
+    const [selectedEntry, setSelectedEntry] = useState<PortfolioEntry | null>(null);
+
+    const formatShortGrade = (g: string) => g.replace("Educação Infantil -", "EI").trim();
 
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
     
@@ -420,21 +429,33 @@ function ReportCard({
                             <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Galeria de Vivências</h2>
                         </div>
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                            {studentGallery.map((vivencia: any) => (
-                                <div key={vivencia.id} className="group relative aspect-square overflow-hidden rounded-3xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300">
-                                    <img
-                                        src={vivencia.imageUrl || "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80&w=400&h=400"}
-                                        alt={vivencia.title}
-                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                    />
-                                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 opacity-100">
-                                        <p className="text-white text-[10px] font-black uppercase tracking-widest mb-1">
-                                            {vivencia.date.split("-").reverse().join("/")}
-                                        </p>
-                                        <p className="text-white text-xs font-bold line-clamp-2">{vivencia.title}</p>
+                            {studentGallery.map((vivencia: any) => {
+                                const firstImage = vivencia.images && vivencia.images.length > 0 ? vivencia.images[0] : vivencia.imageUrl;
+                                return (
+                                    <div 
+                                        key={vivencia.id} 
+                                        onClick={() => setSelectedEntry(vivencia)}
+                                        className="group relative aspect-square overflow-hidden rounded-3xl border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer"
+                                    >
+                                        <img
+                                            src={firstImage || "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80&w=400&h=400"}
+                                            alt={vivencia.title}
+                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                        />
+                                        {(vivencia.images?.length || 0) > 1 && (
+                                            <div className="absolute top-3 right-3 bg-black/60 text-white px-2 py-1 rounded-full text-[10px] font-bold z-10">
+                                                +{vivencia.images.length - 1} foto{(vivencia.images.length - 1) > 1 ? "s" : ""}
+                                            </div>
+                                        )}
+                                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 opacity-100 flex flex-col justify-end">
+                                            <p className="text-white text-[10px] font-black uppercase tracking-widest mb-1">
+                                                {vivencia.date.split("-").reverse().join("/")}
+                                            </p>
+                                            <p className="text-white text-xs font-bold line-clamp-2">{vivencia.title}</p>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </section>
                 )}
@@ -447,6 +468,12 @@ function ReportCard({
                     <p className="text-xs text-slate-300">Este documento é confidencial e destinado exclusivamente ao acompanhamento pedagógico da família.</p>
                 </footer>
             </div>
+            
+            <PortfolioEntryViewer
+                open={!!selectedEntry}
+                onOpenChange={(open) => !open && setSelectedEntry(null)}
+                entry={selectedEntry}
+            />
         </div>
     );
 }

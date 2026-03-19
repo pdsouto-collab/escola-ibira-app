@@ -3752,6 +3752,7 @@ export interface PortfolioEntry {
     title: string;
     description: string;
     imageUrl?: string;
+    images?: string[];
     tags: string[];
 }
 
