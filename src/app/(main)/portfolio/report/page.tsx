@@ -211,8 +211,15 @@ function ReportCard({
             <style dangerouslySetInnerHTML={{ __html: `
                 @media print {
                     @page {
-                        size: A4;
+                        size: A4 portrait;
                         margin: 10mm;
+                    }
+                    @page landscape-page {
+                        size: A4 landscape;
+                        margin: 10mm;
+                    }
+                    .landscape-mode {
+                        page: landscape-page;
                     }
                 }
             ` }} />
@@ -446,7 +453,7 @@ function ReportCard({
                 )}
 
                 {/* ── 5. BNCC: PROPOSTO VS DESENVOLVIDO ────────────────── */}
-                <section className="break-inside-avoid print:break-before-page print:page-break-before-always print:pt-4" style={{ marginTop: "4rem" }}>
+                <section className="break-inside-avoid print:break-before-page print:page-break-before-always print:pt-4 landscape-mode" style={{ marginTop: "4rem" }}>
                     <div className="flex items-center gap-3 mb-8">
                         <div className="w-1.5 h-8 bg-indigo-500 rounded-full" />
                         <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Desenvolvimento de Habilidades e Competências (por Áreas BNCC)</h2>
@@ -457,7 +464,7 @@ function ReportCard({
                 </section>
 
                 {/* ── 6. BNCC: TRILHA DE COMPETÊNCIAS E HABILIDADES ────────────────────── */}
-                <section className="break-inside-avoid page-break-inside-avoid" style={{ pageBreakInside: "avoid" }}>
+                <section className="break-inside-avoid page-break-inside-avoid landscape-mode" style={{ pageBreakInside: "avoid" }}>
                     <div className="flex items-center gap-3 mb-8 mt-16">
                         <div className="w-1.5 h-6 bg-orange-500 rounded-full" />
                         <h2 className="text-xl font-bold text-slate-800">Trilha de Habilidades e Competências (BNCC)</h2>
@@ -468,7 +475,7 @@ function ReportCard({
                 </section>
 
                 {/* ── 7. IBIRÁ: PROPOSTO VS DESENVOLVIDO ────────────────── */}
-                <section className="break-inside-avoid print:break-before-page print:page-break-before-always print:pt-4" style={{ marginTop: "4rem" }}>
+                <section className="break-inside-avoid print:break-before-page print:page-break-before-always print:pt-4 landscape-mode" style={{ marginTop: "4rem" }}>
                     <div className="flex items-center gap-3 mb-8">
                         <div className="w-1.5 h-8 bg-green-500 rounded-full" />
                         <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Desenvolvimento de Habilidades e Competências (por Áreas IBIRÁ)</h2>
@@ -479,7 +486,7 @@ function ReportCard({
                 </section>
 
                 {/* ── 8. IBIRÁ: TRILHA DE COMPETÊNCIAS E HABILIDADES ────────────────────── */}
-                <section className="break-inside-avoid page-break-inside-avoid" style={{ pageBreakInside: "avoid" }}>
+                <section className="break-inside-avoid page-break-inside-avoid landscape-mode" style={{ pageBreakInside: "avoid" }}>
                     <div className="flex items-center gap-3 mb-8 mt-16">
                         <div className="w-1.5 h-6 bg-green-500 rounded-full" />
                         <h2 className="text-xl font-bold text-slate-800">Trilha de Habilidades e Competências (IBIRÁ)</h2>
