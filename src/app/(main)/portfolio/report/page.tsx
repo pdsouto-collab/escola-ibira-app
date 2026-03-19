@@ -196,6 +196,13 @@ function ReportCard({
 
     const today = new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
 
+    // Period calculation
+    const currentMonth = new Date().getMonth() + 1;
+    const currentYear = new Date().getFullYear();
+    const isFirstSemester = currentMonth <= 6;
+    const defaultPeriodStart = isFirstSemester ? `02/${currentYear}` : `08/${currentYear}`;
+    const defaultPeriodEnd = isFirstSemester ? `07/${currentYear}` : `12/${currentYear}`;
+
     // Student Portfolio Entries (Galeria de Vivências)
     const studentGallery = portfolioEntries.filter((e: any) => e.studentId === studentId);
 
@@ -203,46 +210,46 @@ function ReportCard({
         <div className="report-card bg-white max-w-6xl mx-auto shadow-2xl rounded-3xl overflow-hidden print:shadow-none print:rounded-none print:max-w-none">
 
             {/* ── COVER PAGE (CAPA EXECUTIVA) ───────────────────────────────────────── */}
-            <div className="flex flex-col items-center justify-center bg-white relative break-after-page page-break-after-always print:min-h-[290mm] py-24 px-8 border-b-8 border-slate-100 print:border-none">
+            <div className="flex flex-col items-center justify-center bg-white relative break-after-page page-break-after-always print:h-[285mm] print:overflow-hidden py-12 px-8 border-b-8 border-slate-100 print:border-none">
                 <div className="absolute top-0 left-0 w-full h-4 bg-gradient-to-r from-emerald-600 via-teal-600 to-green-700 print:block" />
                 <div className="absolute bottom-0 left-0 w-full h-4 bg-gradient-to-r from-emerald-600 via-teal-600 to-green-700 print:block hidden" />
                 
                 <img 
                     src="/images/opcao2_v5_transparent_final.png" 
                     alt="Logo Trilha Ibirá" 
-                    className="w-72 mb-10 drop-shadow-sm" 
+                    className="w-56 mb-8 drop-shadow-sm" 
                 />
                 
-                <h1 className="text-4xl font-black text-slate-800 tracking-tight uppercase mb-24 text-center">
+                <h1 className="text-3xl font-black text-slate-800 tracking-tight uppercase mb-12 text-center">
                     Portfólio de Aprendizagem<br />
                     <span className="text-xl text-emerald-600 font-bold tracking-normal italic mt-2 inline-block">Relatório Individual Pedagógico</span>
                 </h1>
                 
-                <div className="w-full max-w-2xl px-12 py-10 rounded-[3rem] border border-slate-100 flex flex-col items-center bg-slate-50/50 relative shadow-xl print:shadow-none print:bg-transparent print:border-2 print:border-slate-100 mt-6">
+                <div className="w-full max-w-2xl px-12 py-8 rounded-[3rem] border border-slate-100 flex flex-col items-center bg-slate-50/50 relative shadow-xl print:shadow-none print:bg-transparent print:border-2 print:border-slate-100 mt-6">
                     <img 
                         src={student.photo || "https://images.unsplash.com/photo-1544717302-de2939b7ef71?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"} 
                         alt={student.name}
-                        className="w-40 h-40 rounded-full object-cover shadow-2xl border-4 border-white mb-6 absolute -top-20 bg-white"
+                        className="w-32 h-32 rounded-full object-cover shadow-2xl border-4 border-white mb-6 absolute -top-16 bg-white"
                     />
-                    <div className="mt-20 text-center w-full">
+                    <div className="mt-16 text-center w-full">
                         <p className="text-sm text-emerald-600 font-bold uppercase tracking-widest mb-1">Aluno(a)</p>
                         <h2 className="text-3xl font-bold text-slate-800">{student.name}</h2>
                         <p className="text-slate-500 font-medium text-lg mt-1 mb-8">{cls?.name || "Turma não definida"}</p>
                         
-                        <div className="grid grid-cols-2 gap-8 text-center border-t border-slate-200 pt-8 mt-4">
+                        <div className="grid grid-cols-2 gap-8 text-center border-t border-slate-200 pt-8 mt-2">
                             <div>
                                 <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Docente(s) Atribuído(s)</p>
                                 <p className="font-semibold text-slate-700 text-sm">{cls?.teacherId === 'u2' ? 'Prof.ª Cláudia' : 'Equipe Ibirá'}</p>
                             </div>
                             <div>
                                 <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Período Letivo (Relatório)</p>
-                                <p className="font-semibold text-slate-700 text-sm">{dateRange?.start || "02/2026"} até {dateRange?.end || "07/2026"}</p>
+                                <p className="font-semibold text-slate-700 text-sm">{dateRange?.start || defaultPeriodStart} até {dateRange?.end || defaultPeriodEnd}</p>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <div className="mt-24 text-center print:absolute print:bottom-12">
+                <div className="mt-16 text-center print:absolute print:bottom-8">
                     <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">
                         Documento gerado em {today}
                     </p>
