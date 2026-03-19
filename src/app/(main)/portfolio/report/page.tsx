@@ -381,7 +381,7 @@ function ReportCard({
                 <section className="break-inside-avoid" style={{ marginTop: "4rem" }}>
                     <div className="flex items-center gap-3 mb-8">
                         <div className="w-1.5 h-8 bg-indigo-500 rounded-full" />
-                        <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Desenvolvimento por Áreas BNCC (Habilidades e Competências)</h2>
+                        <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Desenvolvimento de Habilidades e Competências (por Áreas BNCC)</h2>
                     </div>
                     <div className="print:shadow-none print:border-none">
                         <SkillsChart studentId={student.id} filter="bncc" />
@@ -403,7 +403,7 @@ function ReportCard({
                 <section className="break-inside-avoid" style={{ marginTop: "4rem" }}>
                     <div className="flex items-center gap-3 mb-8">
                         <div className="w-1.5 h-8 bg-green-500 rounded-full" />
-                        <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Desenvolvimento por Áreas IBIRÁ (Habilidades e Competências)</h2>
+                        <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Desenvolvimento de Habilidades e Competências (por Áreas IBIRÁ)</h2>
                     </div>
                     <div className="print:shadow-none print:border-none">
                         <SkillsChart studentId={student.id} filter="ibira" />
