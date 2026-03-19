@@ -59,7 +59,7 @@ export function Sidebar() {
     };
 
     return (
-        <div className="flex h-full w-64 flex-col border-r bg-white text-slate-800 shadow-sm">
+        <div className="flex h-full w-64 flex-col border-r bg-white text-slate-800 shadow-sm print:hidden">
             <div className="flex h-20 items-center justify-center border-b px-6">
                 <SchoolLogo className="h-24 w-auto" />
             </div>
