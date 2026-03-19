@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +38,7 @@ export default function SignupPage() {
             }
         } catch (error: any) {
             console.error("Erro no cadastro", error);
-            alert(error.message || "Ocorreu um erro ao tentar criar sua conta.");
+            toast.error(error.message || "Ocorreu um erro ao tentar criar sua conta.");
         } finally {
             setIsLoading(false);
         }

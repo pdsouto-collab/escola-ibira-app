@@ -7,9 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Plus, Users, MoreVertical, Edit2, Trash2, FolderPlus } from "lucide-react";
 import { StudentDialog } from "@/components/students/student-dialog";
 import { ClassDialog } from "@/components/students/class-dialog";
-import { Student, SchoolClass } from "@/lib/data";
+import { Student } from "@/lib/data";
+import { SchoolClass } from "@/types/school-class";
+import { getClasses, createClass, updateClass, deleteClass } from "@/services/school-class.service";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
+import { useEffect } from "react";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 import {
     DropdownMenu,
@@ -19,9 +25,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export default function StudentsPage() {
-    const { students, classes, addStudent, updateStudent, removeStudent, addClass, updateClass, removeClass } = useAppStore();
+    const { students, addStudent, updateStudent, removeStudent } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
+
+    const [classes, setClasses] = useState<SchoolClass[]>([]);
+    const [isLoadingClasses, setIsLoadingClasses] = useState(true);
+    const [isActionLoading, setIsActionLoading] = useState(false);
 
     // Dialog States
     const [isStudentDialogOpen, setIsStudentDialogOpen] = useState(false);
@@ -31,6 +41,27 @@ export default function StudentsPage() {
     const [selectedClassId, setSelectedClassId] = useState<string | "all">("all");
     const [editingStudent, setEditingStudent] = useState<Student | null>(null);
     const [editingClass, setEditingClass] = useState<SchoolClass | null>(null);
+
+    // Confirmation Dialog States
+    const [confirmDeleteStudent, setConfirmDeleteStudent] = useState<Student | null>(null);
+    const [confirmDeleteClass, setConfirmDeleteClass] = useState<SchoolClass | null>(null);
+
+    useEffect(() => {
+        fetchClasses();
+    }, []);
+
+    const fetchClasses = async () => {
+        setIsLoadingClasses(true);
+        try {
+            const data = await getClasses();
+            setClasses(data);
+        } catch (error) {
+            console.error(error);
+            toast.error("Erro ao carregar turmas");
+        } finally {
+            setIsLoadingClasses(false);
+        }
+    };
 
     // Filter classes based on role
     const visibleClasses = currentUser?.role === "teacher"
@@ -62,9 +93,14 @@ export default function StudentsPage() {
     };
 
     const handleDeleteStudent = (student: Student) => {
+        setConfirmDeleteStudent(student);
+    };
 
-        if (confirm(`Tem certeza que deseja remover ${student.name}?`)) {
-            removeStudent(student.id);
+    const confirmDeleteStudentAction = () => {
+        if (confirmDeleteStudent) {
+            removeStudent(confirmDeleteStudent.id);
+            toast.success("Aluno removido com sucesso");
+            setConfirmDeleteStudent(null);
         }
     };
 
@@ -87,21 +123,48 @@ export default function StudentsPage() {
         setIsClassDialogOpen(true);
     };
 
-    const handleDeleteClass = (schoolClass: SchoolClass) => {
-
-        if (confirm(`Tem certeza que deseja remover a turma ${schoolClass.name}? Os alunos desta turma não serão excluídos, mas ficarão sem turma.`)) {
-            removeClass(schoolClass.id);
-            if (selectedClassId === schoolClass.id) {
-                setSelectedClassId("all");
+    const handleSaveClass = async (schoolClass: SchoolClass) => {
+        setIsActionLoading(true);
+        try {
+            const exists = classes.some(c => c.id === schoolClass.id);
+            if (exists) {
+                await updateClass(schoolClass.id, schoolClass);
+                toast.success("Turma atualizada com sucesso");
+            } else {
+                await createClass(schoolClass);
+                toast.success("Turma criada com sucesso");
             }
+            setIsClassDialogOpen(false);
+            await fetchClasses();
+        } catch (error) {
+            console.error(error);
+            toast.error("Erro ao salvar turma");
+        } finally {
+            setIsActionLoading(false);
         }
     };
 
-    const handleSaveClass = (schoolClass: SchoolClass) => {
-        if (schoolClass.id && classes.some(c => c.id === schoolClass.id)) {
-            updateClass(schoolClass.id, schoolClass);
-        } else {
-            addClass(schoolClass);
+    const handleDeleteClass = (schoolClass: SchoolClass) => {
+        setConfirmDeleteClass(schoolClass);
+    };
+
+    const confirmDeleteClassAction = async () => {
+        if (confirmDeleteClass) {
+            setIsActionLoading(true);
+            try {
+                await deleteClass(confirmDeleteClass.id);
+                toast.success("Turma removida com sucesso");
+                if (selectedClassId === confirmDeleteClass.id) {
+                    setSelectedClassId("all");
+                }
+                await fetchClasses();
+            } catch (error) {
+                console.error(error);
+                toast.error("Erro ao remover turma");
+            } finally {
+                setIsActionLoading(false);
+                setConfirmDeleteClass(null);
+            }
         }
     };
 
@@ -114,8 +177,18 @@ export default function StudentsPage() {
                 <div className="flex items-center justify-between">
                     <h2 className="font-semibold text-slate-900">Turmas</h2>
                     {canManageClasses && (
-                        <Button variant="ghost" size="icon" onClick={handleAddClass} title="Nova Turma">
-                            <FolderPlus className="h-4 w-4 text-slate-500 hover:text-primary" />
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={handleAddClass}
+                            disabled={isActionLoading}
+                            title="Nova Turma"
+                        >
+                            {isActionLoading ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <FolderPlus className="h-4 w-4 text-slate-500 hover:text-primary" />
+                            )}
                         </Button>
                     )}
                 </div>
@@ -137,51 +210,59 @@ export default function StudentsPage() {
                         </span>
                     </button>
 
-                    {visibleClasses.map((schoolClass) => (
-                        <div key={schoolClass.id} className="group relative">
-                            <button
-                                onClick={() => setSelectedClassId(schoolClass.id)}
-                                className={cn(
-                                    "w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors pr-8",
-                                    selectedClassId === schoolClass.id
-                                        ? "bg-white text-primary shadow-sm ring-1 ring-slate-200"
-                                        : "text-slate-600 hover:bg-white/50 hover:text-slate-900"
-                                )}
-                            >
-                                <span className={cn(
-                                    "h-2 w-2 rounded-full",
-                                    selectedClassId === schoolClass.id ? "bg-primary" : "bg-slate-300"
-                                )} />
-                                {schoolClass.name}
-                                <span className="ml-auto text-xs text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">
-                                    {students.filter(s => s.classId === schoolClass.id).length}
-                                </span>
-                            </button>
-
-                            {/* Class Actions Dropdown - Only for Admins/Directors */}
-                            {canManageClasses && (
-                                <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-6 w-6">
-                                                <MoreVertical className="h-3 w-3" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onClick={() => handleEditClass(schoolClass)}>
-                                                <Edit2 className="mr-2 h-3 w-3" />
-                                                Editar
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => handleDeleteClass(schoolClass)} className="text-red-600">
-                                                <Trash2 className="mr-2 h-3 w-3" />
-                                                Excluir
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </div>
-                            )}
+                    {isLoadingClasses ? (
+                        <div className="flex flex-col gap-2 p-3">
+                            <div className="h-8 w-full bg-slate-100 animate-pulse rounded" />
+                            <div className="h-8 w-full bg-slate-100 animate-pulse rounded" />
+                            <div className="h-8 w-full bg-slate-100 animate-pulse rounded" />
                         </div>
-                    ))}
+                    ) : (
+                        visibleClasses.map((schoolClass) => (
+                            <div key={schoolClass.id} className="group relative">
+                                <button
+                                    onClick={() => setSelectedClassId(schoolClass.id)}
+                                    className={cn(
+                                        "w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors pr-8",
+                                        selectedClassId === schoolClass.id
+                                            ? "bg-white text-primary shadow-sm ring-1 ring-slate-200"
+                                            : "text-slate-600 hover:bg-white/50 hover:text-slate-900"
+                                    )}
+                                >
+                                    <span className={cn(
+                                        "h-2 w-2 rounded-full",
+                                        selectedClassId === schoolClass.id ? "bg-primary" : "bg-slate-300"
+                                    )} />
+                                    {schoolClass.name}
+                                    <span className="ml-auto text-xs text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">
+                                        {students.filter(s => s.classId === schoolClass.id).length}
+                                    </span>
+                                </button>
+
+                                {/* Class Actions Dropdown - Only for Admins/Directors */}
+                                {canManageClasses && (
+                                    <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="h-6 w-6">
+                                                    <MoreVertical className="h-3 w-3" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuItem onClick={() => handleEditClass(schoolClass)}>
+                                                    <Edit2 className="mr-2 h-3 w-3" />
+                                                    Editar
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleDeleteClass(schoolClass)} className="text-red-600">
+                                                    <Trash2 className="mr-2 h-3 w-3" />
+                                                    Excluir
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+                                )}
+                            </div>
+                        ))
+                    )}
                 </nav>
             </aside>
 
@@ -208,6 +289,7 @@ export default function StudentsPage() {
 
                 <StudentList
                     students={filteredStudents}
+                    classes={classes}
                     onEdit={handleEditStudent}
                     onDelete={handleDeleteStudent}
                 />
@@ -217,6 +299,7 @@ export default function StudentsPage() {
                     open={isStudentDialogOpen}
                     onOpenChange={setIsStudentDialogOpen}
                     student={editingStudent}
+                    classes={classes}
                     onSave={handleSaveStudent}
                 />
 
@@ -226,6 +309,23 @@ export default function StudentsPage() {
                     onOpenChange={setIsClassDialogOpen}
                     schoolClass={editingClass}
                     onSave={handleSaveClass}
+                    isLoading={isActionLoading}
+                />
+
+                <ConfirmDialog
+                    open={!!confirmDeleteStudent}
+                    onOpenChange={(open) => !open && setConfirmDeleteStudent(null)}
+                    title="Excluir Aluno"
+                    description={`Tem certeza que deseja remover ${confirmDeleteStudent?.name}? Esta ação não pode ser desfeita.`}
+                    onConfirm={confirmDeleteStudentAction}
+                />
+
+                <ConfirmDialog
+                    open={!!confirmDeleteClass}
+                    onOpenChange={(open) => !open && setConfirmDeleteClass(null)}
+                    title="Excluir Turma"
+                    description={`Tem certeza que deseja remover a turma ${confirmDeleteClass?.name}? Os alunos desta turma não serão excluídos, mas ficarão sem turma.`}
+                    onConfirm={confirmDeleteClassAction}
                 />
             </main>
         </div>

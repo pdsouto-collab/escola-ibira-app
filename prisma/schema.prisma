@@ -92,3 +92,17 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
+
+//--------------------------------------------
+/// Tabela de Turmas Escolares
+//--------------------------------------------
+model SchoolClass {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  teacherId   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([teacherId])
+}

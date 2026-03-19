@@ -5,6 +5,8 @@ import { useAppStore } from "@/lib/store";
 import { KnowledgeNode } from "@/lib/data";
 import { RadialMatrix } from "./radial-matrix";
 import { MosaicDetailPanel } from "./mosaic-detail-panel";
+import { getClasses } from "@/services/school-class.service";
+import { SchoolClass } from "@/types/school-class";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { ArrowLeft } from "lucide-react";
@@ -17,10 +19,12 @@ import { getListBncc } from "@/services/bncc.service";
 
 
 export function MosaicContainer() {
-    const { skillsTree, contentsTree, classes, projects, students, assessments } = useAppStore();
+    const { skillsTree, contentsTree, projects, students, assessments } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
 
+    const [classes, setClasses] = useState<SchoolClass[]>([]);
+    const [isLoadingClasses, setIsLoadingClasses] = useState(true);
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
     const [loading, setLoading] = useState(false)
 
@@ -70,8 +74,21 @@ export function MosaicContainer() {
 
 
     useEffect(() => {
+        const fetchData = async () => {
+            setIsLoadingClasses(true);
+            try {
+                const data = await getClasses();
+                setClasses(data);
+            } catch (error) {
+                console.error("Erro ao carregar turmas", error);
+            } finally {
+                setIsLoadingClasses(false);
+            }
+        };
+
+        fetchData();
         getListaBNCC();
-    }, [])
+    }, []);
 
     async function getListaBNCC() {
         setLoading(true);

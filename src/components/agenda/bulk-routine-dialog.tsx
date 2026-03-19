@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -21,7 +22,8 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { SchoolClass, Project } from "@/lib/data";
+import { Project } from "@/lib/data";
+import { SchoolClass } from "@/types/school-class";
 import { useAppStore } from "@/lib/store";
 
 export interface BulkRoutineConfig {
@@ -118,7 +120,7 @@ export function BulkRoutineDialog({ open, onOpenChange, classes, initialConfig, 
             });
 
             if (!hasWholeClass && !hasAnyStudentInClass) {
-                window.alert("Não existem alunos dessa turma vinculados ao projeto selecionado");
+                toast.warning("Não existem alunos dessa turma vinculados ao projeto selecionado");
                 return;
             }
         }
@@ -136,7 +138,7 @@ export function BulkRoutineDialog({ open, onOpenChange, classes, initialConfig, 
                      return s?.classId === value;
                  });
                  if (!hasWholeClass && !hasAnyStudentInClass) {
-                     window.alert("Não existem alunos dessa turma vinculados ao projeto selecionado. O projeto será desvinculado.");
+                     toast.warning("Não existem alunos dessa turma vinculados ao projeto selecionado. O projeto será desvinculado.");
                      setConfig({ ...config, classId: value, projectId: undefined });
                      return;
                  }

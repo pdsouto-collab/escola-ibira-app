@@ -16,6 +16,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAppStore } from "@/lib/store";
 import { Project, ScheduleItem, KnowledgeNode } from "@/lib/data";
+import { SchoolClass } from "@/types/school-class";
+import { getClasses } from "@/services/school-class.service";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { LibraryItem } from "@/types/library-item";
@@ -31,7 +33,6 @@ function NewProjectWizardContent() {
         addProject,
         updateProject,
         projects,
-        classes,
         schedule,
         updateSchedule,
         finalProductTypes,
@@ -40,10 +41,24 @@ function NewProjectWizardContent() {
         contentsTree
     } = useAppStore();
 
+    const [classes, setClasses] = useState<SchoolClass[]>([]);
+    const [isLoadingClasses, setIsLoadingClasses] = useState(true);
+
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
 
     useEffect(() => {
         getListaBNCC();
+        const fetchClasses = async () => {
+            try {
+                const data = await getClasses();
+                setClasses(data);
+            } catch (error) {
+                console.error("Erro ao buscar turmas:", error);
+            } finally {
+                setIsLoadingClasses(false);
+            }
+        };
+        fetchClasses();
     }, [])
 
     async function getListaBNCC() {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { toast } from "sonner";
 import { Student, Guardian, EmergencyContact } from "@/lib/data";
 import { useAppStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { SchoolClass } from "@/lib/data";
+import { SchoolClass } from "@/types/school-class";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -34,6 +35,7 @@ interface StudentDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     student?: Student | null;
+    classes: SchoolClass[];
     onSave: (student: Student) => void;
 }
 
@@ -52,8 +54,8 @@ const emptyStudent: Omit<Student, "id"> = {
     }
 };
 
-export function StudentDialog({ open, onOpenChange, student, onSave }: StudentDialogProps) {
-    const { classes, addStudent } = useAppStore();
+export function StudentDialog({ open, onOpenChange, student, classes, onSave }: StudentDialogProps) {
+    const { addStudent } = useAppStore();
     const [formData, setFormData] = useState<Partial<Student>>(student ? { ...student } : emptyStudent);
     const [activeTab, setActiveTab] = useState("manual");
 
@@ -312,7 +314,7 @@ export function StudentDialog({ open, onOpenChange, student, onSave }: StudentDi
         const studentsToImport = parsedStudents.filter((_, i) => selectedIndices.has(i)) as Student[];
 
         if (studentsToImport.length === 0) {
-            alert("Nenhum aluno selecionado.");
+            toast.error("Nenhum aluno selecionado.");
             return;
         }
 
@@ -322,7 +324,7 @@ export function StudentDialog({ open, onOpenChange, student, onSave }: StudentDi
         setFile(null);
         setParsedStudents([]);
         setSelectedIndices(new Set());
-        alert(`${studentsToImport.length} alunos importados!`);
+        toast.success(`${studentsToImport.length} alunos importados!`);
     };
 
 

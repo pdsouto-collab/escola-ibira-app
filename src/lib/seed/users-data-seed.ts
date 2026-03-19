@@ -1,4 +1,6 @@
-export const usersDataSeed: any[] = [
+import { User } from "@/types/user";
+
+export const usersDataSeed: Omit<User, 'id'>[] = [
     {
         name: "Ana Pereira",
         role: "director",

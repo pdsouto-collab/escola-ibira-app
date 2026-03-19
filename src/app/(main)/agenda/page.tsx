@@ -1,13 +1,11 @@
-
 "use client";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format, addDays, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { DailySchedule } from "@/components/agenda/daily-schedule";
 import { useAppStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
-import { Plus, ChevronLeft, ChevronRight, Calendar as CalendarIcon, Copy, Settings2 } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Calendar as CalendarIcon, Copy, Settings2, Loader2 } from "lucide-react";
 import { ScheduleDialog } from "@/components/agenda/schedule-dialog";
 import { BulkRoutineDialog, BulkRoutineConfig } from "@/components/agenda/bulk-routine-dialog";
 import { RoutineManagerDialog } from "@/components/agenda/routine-manager-dialog";
@@ -19,6 +17,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
+import { getClasses } from "@/services/school-class.service";
+import { SchoolClass } from "@/types/school-class";
 
 import {
     DropdownMenu,
@@ -26,11 +26,15 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export default function AgendaPage() {
-    const { schedule, classes, updateSchedule } = useAppStore();
+    const { schedule, updateSchedule } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
+
+    const [classes, setClasses] = useState<SchoolClass[]>([]);
+    const [isLoadingClasses, setIsLoadingClasses] = useState(true);
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
     const [selectedType, setSelectedType] = useState<string>("all");
@@ -42,6 +46,23 @@ export default function AgendaPage() {
     const [editingRoutineId, setEditingRoutineId] = useState<string | null>(null);
     const [isDailyLogOpen, setIsDailyLogOpen] = useState(false);
     const [isBulkPortfolioOpen, setIsBulkPortfolioOpen] = useState(false);
+    const [confirmDeleteItem, setConfirmDeleteItem] = useState<ScheduleItem | null>(null);
+    const [confirmDeleteRoutineId, setConfirmDeleteRoutineId] = useState<string | null>(null);
+    const [confirmDeleteProjectId, setConfirmDeleteProjectId] = useState<string | null>(null);
+    
+    useEffect(() => {
+        const fetchClasses = async () => {
+            try {
+                const data = await getClasses();
+                setClasses(data);
+            } catch (error) {
+                console.error("Erro ao buscar turmas:", error);
+            } finally {
+                setIsLoadingClasses(false);
+            }
+        };
+        fetchClasses();
+    }, []);
 
     // Filter Logic
     const availableClasses = currentUser?.role === "teacher"
@@ -72,9 +93,13 @@ export default function AgendaPage() {
     };
 
     const handleDelete = (item: ScheduleItem) => {
+        setConfirmDeleteItem(item);
+    };
 
-        if (confirm("Remover este item da agenda?")) {
-            updateSchedule(schedule.filter(i => i.id !== item.id));
+    const confirmDeleteAction = () => {
+        if (confirmDeleteItem) {
+            updateSchedule(schedule.filter(i => i.id !== confirmDeleteItem.id));
+            setConfirmDeleteItem(null);
         }
     };
 
@@ -145,8 +170,13 @@ export default function AgendaPage() {
     };
 
     const handleDeleteRoutine = (routineId: string) => {
-        if (confirm("Tem certeza? Isso removerá TODAS as ocorrências desta rotina.")) {
-            updateSchedule(schedule.filter(i => i.routineId !== routineId));
+        setConfirmDeleteRoutineId(routineId);
+    };
+
+    const confirmDeleteRoutineAction = () => {
+        if (confirmDeleteRoutineId) {
+            updateSchedule(schedule.filter(i => i.routineId !== confirmDeleteRoutineId));
+            setConfirmDeleteRoutineId(null);
         }
     };
 
@@ -168,6 +198,15 @@ export default function AgendaPage() {
         });
         setIsBulkDialogOpen(true);
     };
+
+    if (isLoadingClasses) {
+        return (
+            <div className="flex items-center justify-center p-12 min-h-[500px]">
+                <Loader2 className="w-8 h-8 text-slate-400 animate-spin mr-3" />
+                <div className="text-slate-500 text-lg animate-pulse">Carregando agenda...</div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
@@ -284,6 +323,7 @@ export default function AgendaPage() {
                 open={isScheduleDialogOpen}
                 onOpenChange={setIsScheduleDialogOpen}
                 item={editingItem}
+                classes={classes}
                 onSave={handleSave}
             />
 
@@ -303,7 +343,7 @@ export default function AgendaPage() {
                 onDeleteRoutine={handleDeleteRoutine}
                 onEditRoutine={handleEditRoutine}
                 onDeleteProjectSessions={(projectId) => {
-                    updateSchedule(schedule.filter(s => s.projectId !== projectId));
+                    setConfirmDeleteProjectId(projectId);
                 }}
                 onEditProjectSessionsBulk={(projectId, config) => {
                     // Remove all existing sessions for this project
@@ -352,7 +392,37 @@ export default function AgendaPage() {
                 open={isBulkPortfolioOpen}
                 onOpenChange={setIsBulkPortfolioOpen}
                 date={currentDate}
+                classes={classes}
                 classId={selectedClassId}
+            />
+
+            <ConfirmDialog
+                open={!!confirmDeleteItem}
+                onOpenChange={(open) => !open && setConfirmDeleteItem(null)}
+                title="Remover Item"
+                description="Tem certeza que deseja remover este item da agenda?"
+                onConfirm={confirmDeleteAction}
+            />
+
+            <ConfirmDialog
+                open={!!confirmDeleteRoutineId}
+                onOpenChange={(open) => !open && setConfirmDeleteRoutineId(null)}
+                title="Excluir Rotina"
+                description="Tem certeza que deseja excluir esta rotina? Isso removerá TODAS as ocorrências desta rotina."
+                onConfirm={confirmDeleteRoutineAction}
+            />
+
+            <ConfirmDialog
+                open={!!confirmDeleteProjectId}
+                onOpenChange={(open) => !open && setConfirmDeleteProjectId(null)}
+                title="Excluir Sessões de Projeto"
+                description="Tem certeza que deseja excluir todas as sessões deste projeto?"
+                onConfirm={() => {
+                    if (confirmDeleteProjectId) {
+                        updateSchedule(schedule.filter(s => s.projectId !== confirmDeleteProjectId));
+                        setConfirmDeleteProjectId(null);
+                    }
+                }}
             />
         </div>
     );

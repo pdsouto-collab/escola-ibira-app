@@ -10,12 +10,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { cn } from "@/lib/utils";
 import {
     BookMarked, Calendar, User, Users, ClipboardList, Pencil, FileText,
-    Image as ImageIcon, File, FolderKanban, Star
+    Image as ImageIcon, File, FolderKanban, Star, Loader2
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { LibraryItem } from "@/types/library-item";
 import { getListBncc } from "@/services/bncc.service";
+import { getClasses } from "@/services/school-class.service";
+import { SchoolClass } from "@/types/school-class";
 
 // ────────────────────────────────────────────
 // Helper: find node name recursively
@@ -170,7 +172,7 @@ function AssessmentCard({ assessment, onEdit, students, classes }: {
     assessment: Assessment;
     onEdit: () => void;
     students: ReturnType<typeof useAppStore>["students"];
-    classes: ReturnType<typeof useAppStore>["classes"];
+    classes: SchoolClass[];
 }) {
     const student = assessment.studentId ? students.find(s => s.id === assessment.studentId) : null;
     const cls = assessment.classId
@@ -232,7 +234,7 @@ function ProjectView({
     assessments: Assessment[];
     schedule: ReturnType<typeof useAppStore>["schedule"];
     students: ReturnType<typeof useAppStore>["students"];
-    classes: ReturnType<typeof useAppStore>["classes"];
+    classes: SchoolClass[];
     skillsTree: ReturnType<typeof useAppStore>["skillsTree"];
     contentsTree: ReturnType<typeof useAppStore>["contentsTree"];
     libraryItems: LibraryItem[]
@@ -452,7 +454,7 @@ function StudentView({
 }: {
     assessments: Assessment[];
     students: ReturnType<typeof useAppStore>["students"];
-    classes: ReturnType<typeof useAppStore>["classes"];
+    classes: SchoolClass[];
     projects: ReturnType<typeof useAppStore>["projects"];
     schedule: ReturnType<typeof useAppStore>["schedule"];
     skillsTree: ReturnType<typeof useAppStore>["skillsTree"];
@@ -733,7 +735,9 @@ function StudentView({
 // Main Portfolio Page
 // ────────────────────────────────────────────
 function PortfolioContent() {
-    const { assessments, projects: allProjects, students, classes, schedule, skillsTree, contentsTree } = useAppStore();
+    const { assessments, projects: allProjects, students, schedule, skillsTree, contentsTree } = useAppStore();
+    const [classes, setClasses] = useState<SchoolClass[]>([]);
+    const [isLoadingClasses, setIsLoadingClasses] = useState(true);
     const searchParams = useSearchParams();
     const initialClassId = searchParams.get("classId");
 
@@ -747,8 +751,22 @@ function PortfolioContent() {
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
 
     useEffect(() => {
+        const fetchClasses = async () => {
+            try {
+                const data = await getClasses();
+                setClasses(data);
+            } catch (error) {
+                console.error("Erro ao buscar turmas:", error);
+            } finally {
+                setIsLoadingClasses(false);
+            }
+        };
+        fetchClasses();
+    }, []);
+
+    useEffect(() => {
         getListaBNCC();
-    }, [])
+    }, []);
 
     async function getListaBNCC() {
         await getListBncc().then(setLibraryItems);
@@ -770,6 +788,15 @@ function PortfolioContent() {
     const handleOpenReport = (projectId: string, studentId: string) => {
         window.open(`/portfolio/report?project=${projectId}&student=${studentId}`, "_blank");
     };
+
+    if (isLoadingClasses) {
+        return (
+            <div className="flex items-center justify-center p-12 min-h-screen">
+                <Loader2 className="w-8 h-8 text-slate-400 animate-spin mr-3" />
+                <div className="text-slate-500 text-lg animate-pulse">Carregando portfólio...</div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-slate-50">

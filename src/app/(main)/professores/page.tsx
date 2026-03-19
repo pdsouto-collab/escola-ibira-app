@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { UserPlus, MoreVertical, Edit2, Trash2, Mail, Phone, Calendar, MapPin, Briefcase } from "lucide-react";
 import { User } from "@/types/user";
 import { createUser, updateUser as updateUserService, deleteUser, getUsers } from "@/services/user.service";
 import { TeacherDialog } from "@/components/users/teacher-dialog";
+import { getClasses } from "@/services/school-class.service";
+import { SchoolClass } from "@/types/school-class";
 import { Badge } from "@/components/ui/badge";
 import {
     DropdownMenu,
@@ -16,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSession } from "next-auth/react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 import {
     Dialog,
@@ -32,22 +36,32 @@ export default function TeachersPage() {
     const currentUser = session?.user as any;
 
     const [localUsers, setLocalUsers] = useState<User[]>([]);
+    const [classes, setClasses] = useState<SchoolClass[]>([]);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [createdCredentials, setCreatedCredentials] = useState<{ email: string; password: string } | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [isLoadingClasses, setIsLoadingClasses] = useState(true);
+    const [confirmDeleteUser, setConfirmDeleteUser] = useState<User | null>(null);
 
-    const loadUsers = async () => {
+    const loadData = async () => {
+        setIsLoadingClasses(true);
         try {
-            const data = await getUsers();
-            setLocalUsers(data);
+            const [usersData, classesData] = await Promise.all([
+                getUsers(),
+                getClasses()
+            ]);
+            setLocalUsers(usersData);
+            setClasses(classesData);
         } catch (error) {
-            console.error("Erro ao carregar usuários", error);
+            console.error("Erro ao carregar dados", error);
+        } finally {
+            setIsLoadingClasses(false);
         }
     };
 
     useEffect(() => {
-        loadUsers();
+        loadData();
     }, []);
 
     // RBAC: Redirect if not Director or Admin
@@ -70,14 +84,21 @@ export default function TeachersPage() {
         setIsDialogOpen(true);
     };
 
-    const handleDeleteTeacher = async (teacher: User) => {
-        if (confirm(`Tem certeza que deseja remover o registro de ${teacher.name}?`)) {
+    const handleDeleteTeacher = (teacher: User) => {
+        setConfirmDeleteUser(teacher);
+    };
+
+    const confirmDeleteTeacherAction = async () => {
+        if (confirmDeleteUser) {
             try {
-                await deleteUser(teacher.id);
-                setLocalUsers(prev => prev.filter(u => u.id !== teacher.id));
+                await deleteUser(confirmDeleteUser.id);
+                setLocalUsers(prev => prev.filter(u => u.id !== confirmDeleteUser.id));
+                toast.success("Professor removido com sucesso");
             } catch (error) {
                 console.error("Erro ao deletar professor:", error);
-                alert("Ocorreu um erro ao tentar remover o professor.");
+                toast.error("Ocorreu um erro ao tentar remover o professor.");
+            } finally {
+                setConfirmDeleteUser(null);
             }
         }
     };
@@ -100,7 +121,7 @@ export default function TeachersPage() {
             setIsDialogOpen(false);
         } catch (error) {
             console.error("Erro ao salvar professor:", error);
-            alert("Ocorreu um erro ao tentar salvar os dados do professor.");
+            toast.error("Ocorreu um erro ao tentar salvar os dados do professor.");
         } finally {
             setIsSaving(false);
         }
@@ -212,6 +233,7 @@ export default function TeachersPage() {
                 open={isDialogOpen}
                 onOpenChange={setIsDialogOpen}
                 user={editingUser}
+                classes={classes}
                 onSave={handleSaveTeacher}
                 isLoading={isSaving}
             />
@@ -239,6 +261,14 @@ export default function TeachersPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <ConfirmDialog
+                open={!!confirmDeleteUser}
+                onOpenChange={(open) => !open && setConfirmDeleteUser(null)}
+                title="Remover Professor"
+                description={`Tem certeza que deseja remover o registro de ${confirmDeleteUser?.name}? Esta ação não pode ser desfeita.`}
+                onConfirm={confirmDeleteTeacherAction}
+            />
         </div>
     );
 }

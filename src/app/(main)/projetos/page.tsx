@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Search, Filter, MoreVertical, ChevronRight } from "lucide-react";
+import { Plus, Search, Filter, MoreVertical, ChevronRight, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/lib/store";
@@ -14,16 +14,41 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Edit, Trash2 } from "lucide-react";
 import Image from "next/image";
+import { getClasses } from "@/services/school-class.service";
+import { SchoolClass } from "@/types/school-class";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export default function ProjectsPage() {
-    const { projects, removeProject, classes } = useAppStore();
+    const { projects, removeProject } = useAppStore();
+    const [classes, setClasses] = useState<SchoolClass[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
-    const [activeTab, setActiveTab] = useState("active"); // default to Ongoing
+    const [activeTab, setActiveTab] = useState("active");
+    const [confirmDeleteProject, setConfirmDeleteProject] = useState<{ id: string; title: string } | null>(null);
+
+    useEffect(() => {
+        const fetchClasses = async () => {
+            try {
+                const data = await getClasses();
+                setClasses(data);
+            } catch (error) {
+                console.error("Erro ao buscar turmas:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchClasses();
+    }, []);
 
     const handleDelete = (id: string, title: string) => {
-        if (confirm(`Tem certeza que deseja excluir o projeto "${title}"?`)) {
-            removeProject(id);
+        setConfirmDeleteProject({ id, title });
+    };
+
+    const confirmDeleteAction = () => {
+        if (confirmDeleteProject) {
+            removeProject(confirmDeleteProject.id);
+            setConfirmDeleteProject(null);
         }
     };
 
@@ -49,6 +74,15 @@ export default function ProjectsPage() {
         if (!classIds || classIds.length === 0) return "Geral";
         return classIds.map(id => classes.find(c => c.id === id)?.name || id).join(", ");
     };
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center p-12 min-h-[500px]">
+                <Loader2 className="w-8 h-8 text-slate-400 animate-spin mr-3" />
+                <div className="text-slate-500 text-lg animate-pulse">Carregando projetos...</div>
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-7xl mx-auto pb-12">
@@ -223,6 +257,14 @@ export default function ProjectsPage() {
                     </TabsContent>
                 ))}
             </Tabs>
+
+            <ConfirmDialog
+                open={!!confirmDeleteProject}
+                onOpenChange={(open) => !open && setConfirmDeleteProject(null)}
+                title="Excluir Projeto"
+                description={`Tem certeza que deseja excluir o projeto "${confirmDeleteProject?.title}"?`}
+                onConfirm={confirmDeleteAction}
+            />
         </div>
     );
 }

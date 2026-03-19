@@ -1,14 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
     Plus, Trash2, CheckCircle2, Circle, FlaskConical, Calculator,
     BookOpen, Clock, AlertCircle, MessageSquare, GraduationCap,
-    Calendar, ChevronRight, NotebookPen, Info, Star
+    Calendar, ChevronRight, NotebookPen, Info, Star, Loader2
 } from "lucide-react";
 import { useAppStore } from "@/lib/store";
-import { Task, SchoolClass } from "@/lib/data";
+import { Task } from "@/lib/data";
+import { SchoolClass } from "@/types/school-class";
+import { getClasses } from "@/services/school-class.service";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -21,12 +23,28 @@ import { useSession } from "next-auth/react";
 
 
 export default function PendenciasPage() {
-    const { tasks, addTask, toggleTask, removeTask, dailyLogs, classes } = useAppStore();
+    const { tasks, addTask, toggleTask, removeTask, dailyLogs } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
+    const [classes, setClasses] = useState<SchoolClass[]>([]);
+    const [isLoadingClasses, setIsLoadingClasses] = useState(true);
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+
+    useEffect(() => {
+        const fetchClasses = async () => {
+            try {
+                const data = await getClasses();
+                setClasses(data);
+            } catch (error) {
+                console.error("Erro ao buscar turmas:", error);
+            } finally {
+                setIsLoadingClasses(false);
+            }
+        };
+        fetchClasses();
+    }, []);
 
     // Diário de Bordo Integration
     const [isDailyLogOpen, setIsDailyLogOpen] = useState(false);
@@ -101,7 +119,12 @@ export default function PendenciasPage() {
             </div>
 
             {/* Ações Estratégicas / Quick Actions */}
-            {isTeacher && teacherClasses.length > 0 && (
+            {isLoadingClasses ? (
+                <div className="flex items-center justify-center p-12 bg-white border border-slate-200 rounded-xl shadow-sm">
+                    <Loader2 className="w-6 h-6 text-slate-400 animate-spin mr-3" />
+                    <span className="text-slate-500 font-medium">Carregando informações das turmas...</span>
+                </div>
+            ) : isTeacher && teacherClasses.length > 0 && (
                 <div className="space-y-4">
                     <h2 className="text-xl font-bold text-slate-800">Tarefas e Mensagens</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

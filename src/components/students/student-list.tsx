@@ -6,13 +6,16 @@ import { StudentCard } from "./student-card";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 
+import { SchoolClass } from "@/types/school-class";
+
 interface StudentListProps {
     students: Student[];
+    classes: SchoolClass[];
     onEdit?: (student: Student) => void;
     onDelete?: (student: Student) => void;
 }
 
-export function StudentList({ students, onEdit, onDelete }: StudentListProps) {
+export function StudentList({ students, classes, onEdit, onDelete }: StudentListProps) {
     const [searchTerm, setSearchTerm] = useState("");
 
     const filteredStudents = students.filter(student =>
@@ -37,6 +40,7 @@ export function StudentList({ students, onEdit, onDelete }: StudentListProps) {
                     <StudentCard
                         key={student.id}
                         student={student}
+                        classes={classes}
                         onEdit={onEdit}
                         onDelete={onDelete}
                     />

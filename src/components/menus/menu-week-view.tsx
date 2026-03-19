@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { format, addDays, startOfWeek, isSameDay, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useAppStore } from "@/lib/store";
@@ -16,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useSession } from "next-auth/react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 
 export function MenuWeekView() {
@@ -30,6 +32,7 @@ export function MenuWeekView() {
     const [isEditing, setIsEditing] = useState(false);
     const [editingMenu, setEditingMenu] = useState<Menu | null>(null);
     const [editDate, setEditDate] = useState<Date | null>(null);
+    const [isConfirmClearOpen, setIsConfirmClearOpen] = useState(false);
 
     const navigateWeek = (direction: "prev" | "next") => {
         setCurrentDate(addDays(currentDate, direction === "next" ? 7 : -7));
@@ -102,10 +105,15 @@ export function MenuWeekView() {
 
     const handleClearDay = () => {
         if (!editingMenu || !editingMenu.id) return;
-        const confirmClear = window.confirm("Tem certeza que deseja apagar o cardápio deste dia?");
-        if (confirmClear) {
+        setIsConfirmClearOpen(true);
+    };
+
+    const confirmClearAction = () => {
+        if (editingMenu && editingMenu.id) {
             removeMenu(editingMenu.id);
+            toast.success("Cardápio removido com sucesso");
             setIsEditing(false);
+            setIsConfirmClearOpen(false);
         }
     };
 
@@ -113,7 +121,7 @@ export function MenuWeekView() {
         const sourceDate = addDays(targetDate, offsetDays);
         const sourceMenu = getMenuForDate(sourceDate);
         if (!sourceMenu) {
-            alert(`Nenhum cardápio encontrado no dia ${format(sourceDate, "dd/MM")}`);
+            toast.error(`Nenhum cardápio encontrado no dia ${format(sourceDate, "dd/MM")}`);
             return;
         }
 
@@ -294,6 +302,14 @@ export function MenuWeekView() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <ConfirmDialog
+                open={isConfirmClearOpen}
+                onOpenChange={setIsConfirmClearOpen}
+                title="Limpar Cardápio"
+                description="Tem certeza que deseja apagar o cardápio deste dia? Esta ação não pode ser desfeita."
+                onConfirm={confirmClearAction}
+            />
         </div>
     );
 }

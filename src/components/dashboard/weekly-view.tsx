@@ -1,18 +1,34 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAppStore } from "@/lib/store";
 import { CalendarDays, Users, FolderKanban } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { startOfWeek, addDays, format, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { getClasses } from "@/services/school-class.service";
+import { SchoolClass } from "@/types/school-class";
 
 export function WeeklyView() {
-    const { schedule, classes } = useAppStore();
-    const [selectedClassId, setSelectedClassId] = useState<string>(classes.length > 0 ? classes[0].id : "");
+    const { schedule } = useAppStore();
+    const [classes, setClasses] = useState<SchoolClass[]>([]);
+    const [selectedClassId, setSelectedClassId] = useState<string>("");
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Fallback if selectedClassId becomes invalid
-    if (!selectedClassId && classes.length > 0) {
-        setSelectedClassId(classes[0].id);
-    }
+    useEffect(() => {
+        const fetchClasses = async () => {
+            try {
+                const data = await getClasses();
+                setClasses(data);
+                if (data.length > 0 && !selectedClassId) {
+                    setSelectedClassId(data[0].id);
+                }
+            } catch (error) {
+                console.error("Erro ao buscar turmas:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchClasses();
+    }, [selectedClassId]);
 
     // Generate days for the current week (Mon-Fri)
     const today = new Date();
@@ -48,6 +64,14 @@ export function WeeklyView() {
             })
             .sort((a, b) => a.time.localeCompare(b.time));
     };
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center p-12">
+                <div className="text-slate-500 animate-pulse">Carregando turmas...</div>
+            </div>
+        );
+    }
 
     return (
         <section className="space-y-6">

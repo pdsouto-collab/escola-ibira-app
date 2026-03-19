@@ -2,13 +2,15 @@
 
 
 
-import { useState } from "react";
 import { Plus, Calendar, MapPin, MessageCircle, User, Edit2, Check, X, Users, MoreVertical, Trash2, Pencil, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useAppStore } from "@/lib/store";
 import { MuralEvent } from "@/lib/data";
+import { SchoolClass } from "@/types/school-class";
+import { getClasses } from "@/services/school-class.service";
 import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 
 import {
     Select,
@@ -23,13 +25,31 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export default function MuralPage() {
-    const { muralEvents, addMuralEvent, updateMuralEvent, removeMuralEvent, addCommentToEvent, classes } = useAppStore();
+    const { muralEvents, addMuralEvent, updateMuralEvent, removeMuralEvent, addCommentToEvent } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
+    const [classes, setClasses] = useState<SchoolClass[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [showNewEventForm, setShowNewEventForm] = useState(false);
     const [editingEventId, setEditingEventId] = useState<string | null>(null);
+    const [confirmDeleteEventId, setConfirmDeleteEventId] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchClasses = async () => {
+            try {
+                const data = await getClasses();
+                setClasses(data);
+            } catch (error) {
+                console.error("Erro ao buscar turmas:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchClasses();
+    }, []);
 
     // Filter State
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
@@ -109,8 +129,13 @@ export default function MuralPage() {
     };
 
     const handleDeleteClick = (id: string) => {
-        if (confirm("Tem certeza que deseja excluir este evento?")) {
-            removeMuralEvent(id);
+        setConfirmDeleteEventId(id);
+    };
+
+    const confirmDeleteAction = () => {
+        if (confirmDeleteEventId) {
+            removeMuralEvent(confirmDeleteEventId);
+            setConfirmDeleteEventId(null);
         }
     };
 
@@ -409,6 +434,14 @@ export default function MuralPage() {
                     </div>
                 ))}
             </div>
+
+            <ConfirmDialog
+                open={!!confirmDeleteEventId}
+                onOpenChange={(open) => !open && setConfirmDeleteEventId(null)}
+                title="Excluir Evento"
+                description="Tem certeza que deseja excluir este evento? Esta ação não pode ser desfeita."
+                onConfirm={confirmDeleteAction}
+            />
         </div>
     );
 }

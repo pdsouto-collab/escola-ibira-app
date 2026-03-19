@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useAppStore } from "@/lib/store";
-import { PortfolioEntry, Student, SchoolClass } from "@/lib/data";
+import { PortfolioEntry, Student } from "@/lib/data";
+import { SchoolClass } from "@/types/school-class";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -23,6 +25,7 @@ interface BulkPortfolioDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     date: Date;
+    classes: SchoolClass[];
     classId: string; // Now defaults to "all" but kept for compatibility
 }
 
@@ -33,8 +36,8 @@ interface StudentPortfolioForm {
     individualNote: string;
 }
 
-export function BulkPortfolioDialog({ open, onOpenChange, date }: BulkPortfolioDialogProps) {
-    const { students, classes, portfolioEntries, addPortfolioEntry, updatePortfolioEntry, removePortfolioEntry, addPegadaPost } = useAppStore();
+export function BulkPortfolioDialog({ open, onOpenChange, date, classes }: BulkPortfolioDialogProps) {
+    const { students, portfolioEntries, addPortfolioEntry, updatePortfolioEntry, removePortfolioEntry, addPegadaPost } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -114,7 +117,7 @@ export function BulkPortfolioDialog({ open, onOpenChange, date }: BulkPortfolioD
 
     const handleNext = () => {
         if (selectedStudentIds.length === 0) {
-            alert("Por favor, selecione pelo menos um aluno.");
+            toast.warning("Por favor, selecione pelo menos um aluno.");
             return;
         }
 
@@ -200,7 +203,7 @@ export function BulkPortfolioDialog({ open, onOpenChange, date }: BulkPortfolioD
 
     const handleSave = () => {
         if (!title.trim()) {
-            alert("Por favor, dê um título para a vivência.");
+            toast.warning("Por favor, dê um título para a vivência.");
             return;
         }
 

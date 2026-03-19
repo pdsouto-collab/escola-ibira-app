@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { SchoolClass } from "@/lib/data";
+import { SchoolClass } from "@/types/school-class";
 import { User } from "@/types/user";
 import { useAppStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,7 @@ interface TeacherDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     user?: User | null;
+    classes: SchoolClass[];
     onSave: (user: User) => void;
     isLoading?: boolean;
 }
@@ -53,8 +54,8 @@ const emptyTeacher: Omit<User, "id"> = {
     password: "",
 };
 
-export function TeacherDialog({ open, onOpenChange, user, onSave, isLoading = false }: TeacherDialogProps) {
-    const { classes, students } = useAppStore();
+export function TeacherDialog({ open, onOpenChange, user, classes, onSave, isLoading = false }: TeacherDialogProps) {
+    const { students } = useAppStore();
     const [formData, setFormData] = useState<Partial<User>>(emptyTeacher);
     const [activeTab, setActiveTab] = useState("personal");
 
@@ -251,27 +252,29 @@ export function TeacherDialog({ open, onOpenChange, user, onSave, isLoading = fa
                             <TabsContent value="classes" className="mt-0 space-y-4">
                                 <div className="p-4 bg-white border rounded-xl shadow-sm">
                                     <Label className="text-sm font-bold block mb-4">Escolha as turmas que este docente atende:</Label>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        {classes.map(c => (
-                                            <div key={c.id} className="flex items-center space-x-3 p-3 border rounded-lg hover:border-indigo-200 hover:bg-indigo-50/30 transition-all cursor-pointer group">
-                                                <Checkbox
-                                                    id={`class-${c.id}`}
-                                                    checked={(formData.assignedClassIds || []).includes(c.id)}
-                                                    onCheckedChange={() => toggleClass(c.id)}
-                                                    className="w-5 h-5 rounded border-slate-300"
-                                                />
-                                                <Label
-                                                    htmlFor={`class-${c.id}`}
-                                                    className="text-sm font-medium cursor-pointer flex-1 group-hover:text-indigo-700"
-                                                >
-                                                    {c.name}
-                                                    <span className="block text-[10px] text-slate-400 font-normal">
-                                                        {students.filter(s => s.classId === c.id).length} alunos registrados
-                                                    </span>
-                                                </Label>
-                                            </div>
-                                        ))}
-                                    </div>
+                                    <ScrollArea className="h-[300px] pr-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            {classes.map(c => (
+                                                <div key={c.id} className="flex items-center space-x-3 p-3 border rounded-lg hover:border-indigo-200 hover:bg-indigo-50/30 transition-all cursor-pointer group">
+                                                    <Checkbox
+                                                        id={`class-${c.id}`}
+                                                        checked={(formData.assignedClassIds || []).includes(c.id)}
+                                                        onCheckedChange={() => toggleClass(c.id)}
+                                                        className="w-5 h-5 rounded border-slate-300"
+                                                    />
+                                                    <Label
+                                                        htmlFor={`class-${c.id}`}
+                                                        className="text-sm font-medium cursor-pointer flex-1 group-hover:text-indigo-700"
+                                                    >
+                                                        {c.name}
+                                                        <span className="block text-[10px] text-slate-400 font-normal">
+                                                            {students.filter(s => s.classId === c.id).length} alunos registrados
+                                                        </span>
+                                                    </Label>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </ScrollArea>
                                 </div>
                             </TabsContent>
                         </ScrollArea>

@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { ScheduleItem, Project } from "@/lib/data";
+import { SchoolClass } from "@/types/school-class";
 import { useAppStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +14,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { useSession } from "next-auth/react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -27,6 +30,7 @@ interface ScheduleDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     item?: ScheduleItem | null;
+    classes: SchoolClass[];
     onSave: (item: ScheduleItem) => void;
 }
 
@@ -38,8 +42,10 @@ const emptyItem: Omit<ScheduleItem, "id"> = {
     projectId: undefined
 };
 
-export function ScheduleDialog({ open, onOpenChange, item, onSave }: ScheduleDialogProps) {
-    const { projects, classes, students, currentUser } = useAppStore();
+export function ScheduleDialog({ open, onOpenChange, item, classes, onSave }: ScheduleDialogProps) {
+    const { projects, students } = useAppStore();
+    const { data: session } = useSession();
+    const currentUser = session?.user as any;
     const [formData, setFormData] = useState<Partial<ScheduleItem>>(item ? { ...item } : emptyItem);
 
     const availableClasses = currentUser?.role === "teacher" 
@@ -80,7 +86,7 @@ export function ScheduleDialog({ open, onOpenChange, item, onSave }: ScheduleDia
             });
 
             if (!hasWholeClass && !hasAnyStudentInClass) {
-                window.alert("Não existem alunos dessa turma vinculados ao projeto selecionado");
+                toast.warning("Não existem alunos dessa turma vinculados ao projeto selecionado");
                 return;
             }
         }

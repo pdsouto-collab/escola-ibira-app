@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { useAppStore } from "@/lib/store";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -199,7 +200,7 @@ export default function FinanceiroPage() {
                                                     <DropdownMenuSeparator />
                                                     <DropdownMenuItem
                                                         className="text-indigo-600 focus:text-indigo-600 focus:bg-indigo-50 cursor-pointer"
-                                                        onClick={() => alert(`Sincronizando fatura ${inv.id} com Itaú API...`)}
+                                                        onClick={() => toast.info(`Sincronizando fatura ${inv.id} com Itaú API...`)}
                                                     >
                                                         <TrendingUp className="mr-2 h-4 w-4" /> Sincronizar com Itaú
                                                     </DropdownMenuItem>

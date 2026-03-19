@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ScheduleItem, SchoolClass } from "@/lib/data";
+import { toast } from "sonner";
+import { ScheduleItem } from "@/lib/data";
+import { SchoolClass } from "@/types/school-class";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -180,7 +182,7 @@ export function RoutineManagerDialog({
             });
 
             if (!hasWholeClass && !hasAnyStudentInClass) {
-                window.alert("Não existem alunos dessa turma vinculados ao projeto selecionado");
+                toast.warning("Não existem alunos dessa turma vinculados ao projeto selecionado");
                 return;
             }
         }
@@ -198,7 +200,7 @@ export function RoutineManagerDialog({
                      return s?.classId === value;
                  });
                  if (!hasWholeClass && !hasAnyStudentInClass) {
-                     window.alert("Não existem alunos dessa turma vinculados ao projeto selecionado. O projeto será desvinculado.");
+                     toast.warning("Não existem alunos dessa turma vinculados ao projeto selecionado. O projeto será desvinculado.");
                      setEditConfig({ ...editConfig, classId: value, projectId: undefined });
                      return;
                  }

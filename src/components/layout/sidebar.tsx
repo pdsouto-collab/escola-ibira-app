@@ -28,6 +28,8 @@ import {
 import { SchoolLogo } from "@/components/ui/school-logo";
 import { useAppStore } from "@/lib/store";
 import { useSession, signOut } from "next-auth/react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useState } from "react";
 
 const navigation = [
     { name: "Início", href: "/", icon: LayoutDashboard },
@@ -53,6 +55,7 @@ export function Sidebar() {
     const { resetData } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
+    const [isConfirmResetOpen, setIsConfirmResetOpen] = useState(false);
 
     const handleLogout = async () => {
         await signOut({ redirect: true, callbackUrl: "/login" });
@@ -93,7 +96,7 @@ export function Sidebar() {
             </div>
             <div className="border-t p-4 space-y-1">
                 <button
-                    onClick={resetData}
+                    onClick={() => setIsConfirmResetOpen(true)}
                     className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors mb-2"
                 >
                     <RefreshCw className="h-4 w-4" />
@@ -107,6 +110,14 @@ export function Sidebar() {
                     Sair
                 </button>
             </div>
+
+            <ConfirmDialog
+                open={isConfirmResetOpen}
+                onOpenChange={setIsConfirmResetOpen}
+                title="Resetar Dados"
+                description="Isso apagará todos os dados locais e restaurará o padrão da aplicação. Esta ação não pode ser desfeita. Deseja continuar?"
+                onConfirm={resetData}
+            />
         </div>
     );
 }

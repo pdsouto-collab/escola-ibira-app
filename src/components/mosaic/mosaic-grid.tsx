@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Check, Clock, Circle, FileText, AlertCircle, Plus, Link as LinkIcon } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface MosaicGridProps {
     classId?: string;
@@ -33,6 +34,7 @@ export function MosaicGrid({ classId, projectId, treeType = "skill" }: MosaicGri
     const { projects, students, bnccProgress, updateBNCCStatus, skillsTree, contentsTree } = useAppStore();
     const [selectedNode, setSelectedNode] = useState<KnowledgeNode | null>(null);
     const [comment, setComment] = useState("");
+    const [automationConfig, setAutomationConfig] = useState<{ status: "not-started" | "in-progress" | "achieved", node: KnowledgeNode } | null>(null);
 
     const currentTree = treeType === "skill" ? skillsTree : contentsTree;
 
@@ -89,17 +91,24 @@ export function MosaicGrid({ classId, projectId, treeType = "skill" }: MosaicGri
         updateBNCCStatus(identifier, status);
 
         // Teacher Automation: Automatically suggest updating parent/linked nodes
-        // For Content tree: if we mark content as achieved/progress, we can automatically mark linked skills
         if (treeType === "content" && selectedNode.linkedNodeIds && selectedNode.linkedNodeIds.length > 0) {
-            if (confirm(`Deseja aplicar o mesmo status de "${status === 'achieved' ? 'Conquistada' : 'Em Progresso'}" para as Habilidades Vinculadas? (${selectedNode.linkedNodeIds.length} habilidades)`)) {
-                selectedNode.linkedNodeIds.forEach(linkedId => {
-                    updateBNCCStatus(linkedId, status); // we use linkedId directly assuming it corresponds to bnccProgress key mapping
-                });
-            }
+            setAutomationConfig({ status, node: selectedNode });
+        } else {
+            setComment("");
+            setSelectedNode(null);
         }
+    };
 
-        setComment("");
-        setSelectedNode(null);
+    const confirmAutomationAction = () => {
+        if (automationConfig) {
+            const { status, node } = automationConfig;
+            node.linkedNodeIds?.forEach(linkedId => {
+                updateBNCCStatus(linkedId, status);
+            });
+            setAutomationConfig(null);
+            setComment("");
+            setSelectedNode(null);
+        }
     };
 
     // Build the grid data structure
@@ -321,6 +330,16 @@ export function MosaicGrid({ classId, projectId, treeType = "skill" }: MosaicGri
                     </ScrollArea>
                 </DialogContent>
             </Dialog>
+
+            <ConfirmDialog
+                open={!!automationConfig}
+                onOpenChange={(open) => !open && setAutomationConfig(null)}
+                title="Sincronizar Habilidades"
+                description={`Deseja aplicar o mesmo status de "${automationConfig?.status === 'achieved' ? 'Conquistada' : 'Em Progresso'}" para as Habilidades Vinculadas? (${automationConfig?.node.linkedNodeIds?.length} habilidades)`}
+                onConfirm={confirmAutomationAction}
+                variant="default"
+                confirmText="Sincronizar"
+            />
         </div>
     );
 }

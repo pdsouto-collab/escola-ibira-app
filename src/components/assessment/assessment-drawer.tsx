@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,9 +10,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { TreeRatingPicker } from "@/components/assessment/tree-rating-picker";
 import { useAppStore } from "@/lib/store";
 import { Assessment, AssessmentAttachment } from "@/lib/data";
-import { Camera, FileUp, X, Users, User, Trash2 } from "lucide-react";
+import { getClasses } from "@/services/school-class.service";
+import { SchoolClass } from "@/types/school-class";
+import { Camera, FileUp, X, Users, User, Trash2, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 
 interface AssessmentDrawerProps {
@@ -51,9 +55,12 @@ export function AssessmentDrawer({
     initialObservations,
     initialAttachments,
 }: AssessmentDrawerProps) {
-    const { students, classes, projects, schedule, addAssessment, updateAssessment, removeAssessment, assessments } = useAppStore();
+    const { students, projects, schedule, addAssessment, updateAssessment, removeAssessment, assessments } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
+
+    const [classes, setClasses] = useState<SchoolClass[]>([]);
+    const [isLoadingClasses, setIsLoadingClasses] = useState(true);
 
     const [activeAssessmentId, setActiveAssessmentId] = useState<string | undefined>(assessmentId);
 
@@ -65,11 +72,12 @@ export function AssessmentDrawer({
 
     // Scope & Basic Info
     const [scope, setScope] = useState<"class" | "student">(defaultStudentId ? "student" : "class");
-    const [classId, setClassId] = useState(defaultClassId || classes[0]?.id || "");
+    const [classId, setClassId] = useState(defaultClassId || "");
     const [studentId, setStudentId] = useState(defaultStudentId || "");
     const [rating, setRating] = useState<1 | 2 | 3 | 4 | 5 | undefined>(initialRating);
     const [observations, setObservations] = useState(initialObservations || "");
     const [attachments, setAttachments] = useState<AssessmentAttachment[]>(initialAttachments || []);
+    const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const studentsInClass = students.filter(s => s.classId === classId);
@@ -81,7 +89,7 @@ export function AssessmentDrawer({
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
         if (attachments.length + files.length > 3) {
-            alert("Máximo de 3 arquivos por avaliação.");
+            toast.error("Máximo de 3 arquivos por avaliação.");
             return;
         }
         files.forEach(file => {
@@ -141,8 +149,15 @@ export function AssessmentDrawer({
     };
 
     const handleDelete = () => {
-        if (activeAssessmentId && confirm("Tem certeza que deseja apagar (zerar) esta avaliação?")) {
+        if (activeAssessmentId) {
+            setIsConfirmDeleteOpen(true);
+        }
+    };
+
+    const confirmDeleteAction = () => {
+        if (activeAssessmentId) {
             removeAssessment(activeAssessmentId);
+            toast.success("Avaliação removida com sucesso");
             handleClose();
         }
     };
@@ -154,6 +169,26 @@ export function AssessmentDrawer({
     // If we have a knowledge node (skill/content) and a project, we can save even without a session
     const canSave = (observations.trim().length > 0 || rating !== undefined) && (hasContext || (!!propKnowledgeNodeId && !!selectedProjectId));
     const isFixedContext = !!propSessionId || !!propRoutineId || !!propKnowledgeNodeId;
+
+    useEffect(() => {
+        const fetchClasses = async () => {
+            try {
+                const data = await getClasses();
+                setClasses(data);
+                if (!classId && !defaultClassId && data.length > 0) {
+                    setClassId(data[0].id);
+                }
+            } catch (error) {
+                console.error("Erro ao carregar turmas", error);
+            } finally {
+                setIsLoadingClasses(false);
+            }
+        };
+
+        if (open) {
+            fetchClasses();
+        }
+    }, [open, defaultClassId, classId]);
 
     useEffect(() => {
         if (open) {
@@ -434,6 +469,14 @@ export function AssessmentDrawer({
                     </Button>
                 </div>
             </DialogContent>
+
+            <ConfirmDialog
+                open={isConfirmDeleteOpen}
+                onOpenChange={setIsConfirmDeleteOpen}
+                title="Excluir Avaliação"
+                description="Tem certeza que deseja apagar (zerar) esta avaliação? Esta ação não pode ser desfeita."
+                onConfirm={confirmDeleteAction}
+            />
         </Dialog>
     );
 }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAppStore } from "@/lib/store";
 import { KnowledgeNode, KnowledgeLevel } from "@/lib/data";
-import { ChevronRight, ChevronDown, Plus, Edit2, Trash2, Link as LinkIcon, BookOpen, Search, X, Copy, Filter } from "lucide-react";
+import { ChevronRight, ChevronDown, Plus, Edit2, Trash2, Link as LinkIcon, BookOpen, Search, X, Copy, Filter, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -14,6 +14,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getListBncc } from "@/services/bncc.service";
 import { LibraryItem } from "@/types/library-item";
+import { getClasses } from "@/services/school-class.service";
+import { SchoolClass } from "@/types/school-class";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface Props {
     treeType: "skill" | "content";
@@ -52,7 +55,9 @@ const LEVEL_COLORS = {
 export function KnowledgeTreeEditor({ treeType }: Props) {
 
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
-    const { skillsTree, contentsTree, classes, addKnowledgeNode, updateKnowledgeNode, removeKnowledgeNode, duplicateKnowledgeNode } = useAppStore();
+    const [classes, setClasses] = useState<SchoolClass[]>([]);
+    const [isLoadingClasses, setIsLoadingClasses] = useState(true);
+    const { skillsTree, contentsTree, addKnowledgeNode, updateKnowledgeNode, removeKnowledgeNode, duplicateKnowledgeNode } = useAppStore();
 
     const treeData = treeType === "skill" ? skillsTree : contentsTree;
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
@@ -68,9 +73,23 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
     const [editMode, setEditMode] = useState<"add" | "edit" | null>(null);
     const [currentNode, setCurrentNode] = useState<Partial<KnowledgeNode> | null>(null);
     const [parentLevel, setParentLevel] = useState<KnowledgeLevel | null>(null); // To determine new node's level if adding
+    const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+    const [confirmDuplicateId, setConfirmDuplicateId] = useState<string | null>(null);
+    const [confirmDuplicateChildrenCount, setConfirmDuplicateChildrenCount] = useState<number>(0);
 
     useEffect(() => {
         getListaBNCC();
+        const fetchClasses = async () => {
+            try {
+                const data = await getClasses();
+                setClasses(data);
+            } catch (error) {
+                console.error("Erro ao buscar turmas:", error);
+            } finally {
+                setIsLoadingClasses(false);
+            }
+        };
+        fetchClasses();
     }, [])
 
     async function getListaBNCC() {
@@ -119,8 +138,20 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
     };
 
     const handleDelete = (id: string) => {
-        if (confirm("Tem certeza que deseja excluir este item e todos os seus filhos?")) {
-            removeKnowledgeNode(treeType, id);
+        setConfirmDeleteId(id);
+    };
+
+    const confirmDeleteAction = () => {
+        if (confirmDeleteId) {
+            removeKnowledgeNode(treeType, confirmDeleteId);
+            setConfirmDeleteId(null);
+        }
+    };
+
+    const confirmDuplicateAction = () => {
+        if (confirmDuplicateId) {
+            duplicateKnowledgeNode(treeType, confirmDuplicateId);
+            setConfirmDuplicateId(null);
         }
     };
 
@@ -243,9 +274,8 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
                                 </Button>
                             )}
                             <Button size="sm" variant="ghost" className="h-8 px-2 text-slate-500 hover:text-blue-600" onClick={() => {
-                                if (confirm(`Deseja duplicar este item e todos os seus ${node.children?.length || 0} filhos?`)) {
-                                    duplicateKnowledgeNode(treeType, node.id);
-                                }
+                                setConfirmDuplicateId(node.id);
+                                setConfirmDuplicateChildrenCount(node.children?.length || 0);
                             }} title="Duplicar">
                                 <Copy className="w-4 h-4" />
                             </Button>
@@ -280,17 +310,24 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
                     <div className="h-8 w-px bg-slate-200" />
                     <div className="flex items-center gap-2">
                         <Label className="text-slate-500 text-xs font-semibold uppercase tracking-wider">Turma:</Label>
-                        <Select value={selectedClassId} onValueChange={setSelectedClassId}>
-                            <SelectTrigger className="w-[200px] h-9 bg-white">
-                                <SelectValue placeholder="Selecione a Turma" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Todas as Turmas</SelectItem>
-                                {classes.map(c => (
-                                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        {isLoadingClasses ? (
+                            <div className="flex items-center gap-2 text-slate-400 text-xs font-medium bg-white px-3 py-1.5 rounded-md border w-[200px]">
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                Carregando...
+                            </div>
+                        ) : (
+                            <Select value={selectedClassId} onValueChange={setSelectedClassId}>
+                                <SelectTrigger className="w-[200px] h-9 bg-white">
+                                    <SelectValue placeholder="Selecione a Turma" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Todas as Turmas</SelectItem>
+                                    {classes.map(c => (
+                                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        )}
                     </div>
                 </div>
                 <Button onClick={handleAddRoot} className="gap-2">
@@ -554,6 +591,24 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <ConfirmDialog
+                open={!!confirmDeleteId}
+                onOpenChange={(open) => !open && setConfirmDeleteId(null)}
+                title="Excluir Item"
+                description="Tem certeza que deseja excluir este item e todos os seus filhos? Esta ação não pode ser desfeita."
+                onConfirm={confirmDeleteAction}
+            />
+
+            <ConfirmDialog
+                open={!!confirmDuplicateId}
+                onOpenChange={(open) => !open && setConfirmDuplicateId(null)}
+                title="Duplicar Item"
+                description={`Deseja duplicar este item e todos os seus ${confirmDuplicateChildrenCount} filhos?`}
+                onConfirm={confirmDuplicateAction}
+                variant="default"
+                confirmText="Duplicar"
+            />
         </div>
     );
 }

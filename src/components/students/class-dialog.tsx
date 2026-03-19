@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { SchoolClass } from "@/lib/data";
+import { SchoolClass } from "@/types/school-class";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -13,15 +13,17 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Loader2 } from "lucide-react";
 
 interface ClassDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     schoolClass?: SchoolClass | null;
     onSave: (schoolClass: SchoolClass) => void;
+    isLoading?: boolean;
 }
 
-const emptyClass: Omit<SchoolClass, "id"> = {
+const emptyClass: Partial<SchoolClass> = {
     name: "",
     description: "",
 };
@@ -38,12 +40,13 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 
-export function ClassDialog({ open, onOpenChange, schoolClass, onSave }: ClassDialogProps) {
+export function ClassDialog({ open, onOpenChange, schoolClass, onSave, isLoading }: ClassDialogProps) {
     const [teachers, setTeachers] = useState<User[]>([]);
     const [formData, setFormData] = useState<Partial<SchoolClass>>(schoolClass ? { ...schoolClass } : emptyClass);
 
     useEffect(() => {
         if (open) {
+            setFormData(schoolClass ? { ...schoolClass } : emptyClass);
             getUsers().then(users => {
                 setTeachers(users.filter(u => u.role === "teacher"));
             });
@@ -56,7 +59,6 @@ export function ClassDialog({ open, onOpenChange, schoolClass, onSave }: ClassDi
             id: schoolClass?.id || formData.name?.toLowerCase().replace(/\s+/g, '-') || crypto.randomUUID(),
             ...formData
         } as SchoolClass);
-        onOpenChange(false);
     };
 
     return (
@@ -74,13 +76,18 @@ export function ClassDialog({ open, onOpenChange, schoolClass, onSave }: ClassDi
                             <Label htmlFor="className" className="text-right">
                                 Nome
                             </Label>
-                            <Input
-                                id="className"
-                                value={formData.name || ""}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                className="col-span-3"
-                                required
-                            />
+                            <div className="col-span-3 space-y-1">
+                                <Input
+                                    id="className"
+                                    value={formData.name || ""}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    disabled={!!schoolClass}
+                                    required
+                                />
+                                {!!schoolClass && (
+                                    <p className="text-xs text-slate-400">O nome da turma não pode ser alterado.</p>
+                                )}
+                            </div>
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="classDesc" className="text-right">
@@ -118,7 +125,16 @@ export function ClassDialog({ open, onOpenChange, schoolClass, onSave }: ClassDi
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button type="submit">Salvar</Button>
+                        <Button type="submit" disabled={isLoading}>
+                            {isLoading ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Salvando...
+                                </>
+                            ) : (
+                                "Salvar"
+                            )}
+                        </Button>
                     </DialogFooter>
                 </form>
             </DialogContent>

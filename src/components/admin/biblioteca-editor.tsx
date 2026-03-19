@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { LibraryItem } from "@/types/library-item";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +31,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 import { getListBncc, createBncc, updateBncc, deleteBncc, renameSubGroupBncc, deleteSubGroupBncc } from "@/services/bncc.service";
 
@@ -58,7 +60,9 @@ export function BibliotecaEditor() {
     const [manageGroupNewName, setManageGroupNewName] = useState("");
     const [isCreatingNewGroup, setIsCreatingNewGroup] = useState(false);
     const [newGroupName, setNewGroupName] = useState("");
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(false);
+    const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+    const [confirmDeleteGroup, setConfirmDeleteGroup] = useState<string | null>(null);
 
     // Get unique existing groups for the active tab (to populate the combobox)
     const existingGroups = Array.from(new Set(libraryItems.filter(i => i.type === activeTab).map(i => i.subGroup))).sort();
@@ -123,7 +127,7 @@ export function BibliotecaEditor() {
             setIsDialogOpen(false);
 
         } catch (error: any) {
-            alert("Não foi possível salvar/editar o item: " + error.message);
+            toast.error("Não foi possível salvar/editar o item: " + error.message);
         } finally {
             setLoading(false);
             getListaBNCC();
@@ -152,7 +156,7 @@ export function BibliotecaEditor() {
             setIsCreatingNewGroup(false);
 
         } catch (error: any) {
-            alert("Não foi possível salvar o grupo: " + error.message);
+            toast.error("Não foi possível salvar o grupo: " + error.message);
         } finally {
             setLoading(false);
             getListaBNCC();
@@ -163,21 +167,25 @@ export function BibliotecaEditor() {
 
     const handleDelete = async (id: string, isBNCC: boolean) => {
         if (isBNCC) {
-            alert("Itens da BNCC não podem ser excluídos.");
+            toast.error("Itens da BNCC não podem ser excluídos.");
             return;
         }
-        if (confirm("Tem certeza que deseja excluir este item? Projetos que o utilizam não serão afetados, mas ele não aparecerá mais na busca.")) {
+        setConfirmDeleteId(id);
+    };
 
+    const confirmDeleteAction = async () => {
+        if (confirmDeleteId) {
             setLoading(true);
             try {
-                await deleteBncc(id);
+                await deleteBncc(confirmDeleteId);
+                toast.success("Item removido com sucesso");
             } catch (error: any) {
-                alert("Não foi possível deletar o item: " + error.message);
+                toast.error("Não foi possível deletar o item: " + error.message);
             } finally {
                 setLoading(false);
+                setConfirmDeleteId(null);
                 getListaBNCC();
             };
-
         }
     };
 
@@ -202,11 +210,24 @@ export function BibliotecaEditor() {
     }
 
     async function deleteSubGroup(nameSubGroup: string) {
-        setLoading(true);
-        setIsManageGroupsOpen(false);
-        await deleteSubGroupBncc(nameSubGroup);
-        setLoading(false);
-        getListaBNCC();
+        setConfirmDeleteGroup(nameSubGroup);
+    }
+
+    async function confirmDeleteGroupAction() {
+        if (confirmDeleteGroup) {
+            setLoading(true);
+            setIsManageGroupsOpen(false);
+            try {
+                await deleteSubGroupBncc(confirmDeleteGroup);
+                toast.success("Grupo removido com sucesso");
+            } catch (error: any) {
+                toast.error("Não foi possível deletar o grupo: " + error.message);
+            } finally {
+                setLoading(false);
+                setConfirmDeleteGroup(null);
+                getListaBNCC();
+            }
+        }
     }
 
     // Filter items based on tab, search and grade
@@ -627,9 +648,7 @@ export function BibliotecaEditor() {
                                                 size="icon"
                                                 className="h-7 w-7 text-slate-400 hover:text-red-600 hover:bg-red-50"
                                                 onClick={() => {
-                                                    if (confirm(`Tem certeza que deseja excluir o grupo "${group}"? Itens personalizados serão apagados.`)) {
-                                                        deleteSubGroup(group);
-                                                    }
+                                                    deleteSubGroup(group);
                                                 }}
                                             >
                                                 <Trash2 className="w-3.5 h-3.5" />
@@ -674,6 +693,22 @@ export function BibliotecaEditor() {
                     </div>
                 </DialogContent>
             </Dialog>
+
+            <ConfirmDialog
+                open={!!confirmDeleteId}
+                onOpenChange={(open) => !open && setConfirmDeleteId(null)}
+                title="Excluir Item"
+                description="Tem certeza que deseja excluir este item? Projetos que o utilizam não serão afetados, mas ele não aparecerá mais na busca."
+                onConfirm={confirmDeleteAction}
+            />
+
+            <ConfirmDialog
+                open={!!confirmDeleteGroup}
+                onOpenChange={(open) => !open && setConfirmDeleteGroup(null)}
+                title="Excluir Grupo"
+                description={`Tem certeza que deseja excluir o grupo "${confirmDeleteGroup}"? Itens personalizados serão apagados.`}
+                onConfirm={confirmDeleteGroupAction}
+            />
         </div>
     );
 }

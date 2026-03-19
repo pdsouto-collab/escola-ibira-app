@@ -6,14 +6,16 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { Button } from "@/components/ui/button";
 import { User, Edit2, Trash2, Check } from "lucide-react";
 
+import { SchoolClass } from "@/types/school-class";
+
 interface StudentCardProps {
     student: Student;
+    classes: SchoolClass[];
     onEdit?: (student: Student) => void;
     onDelete?: (student: Student) => void;
 }
 
-export function StudentCard({ student, onEdit, onDelete }: StudentCardProps) {
-    const { classes } = useAppStore();
+export function StudentCard({ student, classes, onEdit, onDelete }: StudentCardProps) {
     const studentClass = classes.find(c => c.id === student.classId);
 
     return (

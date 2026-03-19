@@ -1,11 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAppStore } from "@/lib/store";
 import {
     ArrowRight, BookOpen, Calendar, Calculator, FlaskConical,
     CheckCircle2, Circle, Clock, User, AlertCircle,
-    NotebookPen, ChevronRight, MessageSquare, Star
+    NotebookPen, ChevronRight, MessageSquare, Star, Loader2
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "../ui/dialog";
@@ -16,12 +16,17 @@ import { Task } from "@/lib/data";
 import { Badge } from "../ui/badge";
 import { DailyLogDialog } from "../agenda/daily-log-dialog";
 import { useSession } from "next-auth/react";
+import { getClasses } from "@/services/school-class.service";
+import { SchoolClass } from "@/types/school-class";
 
 
 export function DailyHighlights() {
-    const { tasks, toggleTask, addTask, classes } = useAppStore();
+    const { tasks, toggleTask, addTask } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
+    const [classes, setClasses] = useState<SchoolClass[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -29,6 +34,20 @@ export function DailyHighlights() {
     // Diário de Bordo Integration
     const [isDailyLogOpen, setIsDailyLogOpen] = useState(false);
     const [activeClassId, setActiveClassId] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchClasses = async () => {
+            try {
+                const data = await getClasses();
+                setClasses(data);
+            } catch (error) {
+                console.error("Erro ao buscar turmas:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchClasses();
+    }, []);
 
     const isTeacher = currentUser?.role === "teacher";
     const teacherClasses = isTeacher
@@ -73,6 +92,15 @@ export function DailyHighlights() {
             default: return { bg: "bg-slate-50 border-slate-100", iconBg: "bg-slate-200 text-slate-700", icon: BookOpen, label: "Normal" };
         }
     };
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center p-12">
+                <Loader2 className="w-6 h-6 text-slate-400 animate-spin mr-2" />
+                <div className="text-slate-500 animate-pulse">Carregando informações...</div>
+            </div>
+        );
+    }
 
     return (
         <section className="mb-10 space-y-6">

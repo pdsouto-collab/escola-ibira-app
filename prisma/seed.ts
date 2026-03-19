@@ -3,7 +3,9 @@ import { bnccDataSeed } from "../src/lib/seed/bncc-data-seed"
 import { competenciasGeraisDataSeed } from "../src/lib/seed/competencias-gerais-data-seed"
 import { customCategoryExamplesDataSeed } from "../src/lib/seed/custom-category-examples-data-seed"
 import { usersDataSeed } from "@/lib/seed/users-data-seed"
+import { schoolClassesDataSeed } from "@/lib/seed/school-class-seed"
 import { User } from "@/types/user"
+import { SchoolClass } from "@/types/school-class"
 
 const prisma = new PrismaClient()
 
@@ -11,6 +13,7 @@ async function main() {
 
   await prisma.bncc.deleteMany();
   await prisma.user.deleteMany();
+  await prisma.schoolClass.deleteMany();
 
   // BNCC
   console.log("Importando BNCC...");
@@ -45,10 +48,18 @@ async function main() {
   // Users
   console.log("Importando Users...");
   await prisma.user.createMany({
-    data: usersDataSeed as User[],
+    data: usersDataSeed as any,
     skipDuplicates: false
   })
   console.log("Users importados com sucesso!")
+
+  // Turmas
+  console.log("Importando Turmas...");
+  await prisma.schoolClass.createMany({
+    data: schoolClassesDataSeed as SchoolClass[],
+    skipDuplicates: false
+  })
+  console.log("Turmas importados com sucesso!")
 
 }
 

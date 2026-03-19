@@ -7,7 +7,7 @@ import { DailyLogReport } from "@/components/reports/daily-log-report";
 import { PortfolioReport } from "@/components/reports/portfolio-report";
 import { SkillsChart } from "@/components/reports/skills-chart";
 import { ObservationList } from "@/components/reports/observation-list";
-import { User } from "lucide-react";
+import { User, Loader2 } from "lucide-react";
 import { BulkPortfolioDialog } from "@/components/portfolio/bulk-portfolio-dialog";
 import { DailyLogDialog } from "@/components/agenda/daily-log-dialog";
 import { parseISO } from "date-fns";
@@ -22,15 +22,34 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSession } from "next-auth/react";
+import { getClasses } from "@/services/school-class.service";
+import { SchoolClass } from "@/types/school-class";
 
 
 export default function ReportsPage() {
-    const { students, classes } = useAppStore();
+    const { students } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
 
+    const [classes, setClasses] = useState<SchoolClass[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
     // Class Filter State
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
+
+    useEffect(() => {
+        const fetchClasses = async () => {
+            try {
+                const data = await getClasses();
+                setClasses(data);
+            } catch (error) {
+                console.error("Erro ao buscar turmas:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchClasses();
+    }, []);
 
     // Default to the first student if available
     const [manualSelection, setManualSelection] = useState<string>("");
@@ -65,6 +84,15 @@ export default function ReportsPage() {
         setEditDate(parseISO(dateStr));
         setIsDailyLogEditOpen(true);
     };
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center p-12 min-h-[500px]">
+                <Loader2 className="w-8 h-8 text-slate-400 animate-spin mr-3" />
+                <div className="text-slate-500 text-lg animate-pulse">Carregando relatórios...</div>
+            </div>
+        );
+    }
 
     if (!selectedStudent && visibleStudents.length === 0) {
         return <div className="p-8 text-center text-slate-500">Nenhum aluno encontrado ou permissão insuficiente.</div>;
@@ -251,6 +279,7 @@ export default function ReportsPage() {
                         open={isPortfolioEditOpen}
                         onOpenChange={setIsPortfolioEditOpen}
                         date={editDate}
+                        classes={classes}
                         classId={selectedStudent.classId}
                     />
                     <DailyLogDialog

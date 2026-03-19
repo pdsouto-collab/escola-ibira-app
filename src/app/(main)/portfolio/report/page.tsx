@@ -8,6 +8,8 @@ import { TreeRatingPicker } from "@/components/assessment/tree-rating-picker";
 import { Button } from "@/components/ui/button";
 import { Printer, Download, ChevronLeft, Star, Target, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
+import { getClasses } from "@/services/school-class.service";
+import { SchoolClass } from "@/types/school-class";
 import { MilestoneReport } from "@/components/reports/milestone-report";
 import { RadialMatrix } from "@/components/mosaic/radial-matrix";
 import { Badge } from "@/components/ui/badge";
@@ -150,7 +152,9 @@ function ReportCard({
     singleProject?: any;
     dateRange?: { start: string; end: string };
 }) {
-    const { projects, students, classes, assessments, schedule, skillsTree, contentsTree, dailyLogs, portfolioEntries } = useAppStore();
+    const { projects, students, assessments, schedule, skillsTree, contentsTree, dailyLogs, portfolioEntries } = useAppStore();
+    const [classes, setClasses] = useState<SchoolClass[]>([]);
+    const [isLoadingClasses, setIsLoadingClasses] = useState(true);
     const [selectedEntry, setSelectedEntry] = useState<PortfolioEntry | null>(null);
 
     const formatShortGrade = (g: string) => g.replace("Educação Infantil -", "EI").trim();
@@ -159,6 +163,17 @@ function ReportCard({
     
     useEffect(() => {
         getListaBNCC();
+        const fetchClasses = async () => {
+            try {
+                const data = await getClasses();
+                setClasses(data);
+            } catch (error) {
+                console.error("Erro ao buscar turmas:", error);
+            } finally {
+                setIsLoadingClasses(false);
+            }
+        };
+        fetchClasses();
     }, [])
 
     async function getListaBNCC(){
@@ -167,7 +182,11 @@ function ReportCard({
 
     const student = students.find(s => s.id === studentId);
     if (!student) {
-        return <div className="text-center py-20 text-slate-400">Aluno n&#xE3;o encontrado.</div>;
+        return <div className="text-center py-20 text-slate-400">Aluno não encontrado.</div>;
+    }
+
+    if (isLoadingClasses) {
+        return <div className="text-center py-20 text-slate-400 italic">Carregando dados da turma...</div>;
     }
     const cls = classes.find(c => c.id === student.classId);
 

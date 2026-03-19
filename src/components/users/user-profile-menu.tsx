@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -84,7 +85,7 @@ export function UserProfileMenu() {
             setIsProfileOpen(false);
         } catch (error) {
             console.error("Erro ao atualizar perfil", error);
-            alert("Erro ao atualizar perfil.");
+            toast.error("Erro ao atualizar perfil.");
         } finally {
             setIsUpdatingProfile(false);
         }
@@ -92,7 +93,7 @@ export function UserProfileMenu() {
 
     const handlePasswordSave = async () => {
         if (passwordData.newPassword !== passwordData.confirmPassword) {
-            alert("As novas senhas não coincidem.");
+            toast.error("As novas senhas não coincidem.");
             return;
         }
 
@@ -104,12 +105,12 @@ export function UserProfileMenu() {
             });
             setIsPasswordOpen(false);
             setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
-            alert("Senha atualizada com sucesso! Você será deslogado para sua segurança.");
+            toast.success("Senha atualizada com sucesso! Você será deslogado para sua segurança.");
             signOut({ callbackUrl: "/login" });
         } catch (error: any) {
             console.error("Erro ao atualizar senha", error);
             const message = error.message || "Erro ao atualizar senha.";
-            alert(message.includes("401") ? "Senha atual incorreta." : "Erro ao atualizar senha.");
+            toast.error(message.includes("401") ? "Senha atual incorreta." : "Erro ao atualizar senha.");
         } finally {
             setIsUpdatingPassword(false);
         }
