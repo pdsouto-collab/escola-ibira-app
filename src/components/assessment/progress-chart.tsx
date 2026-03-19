@@ -18,7 +18,7 @@ interface ProgressChartProps {
 export function ProgressChart({ data }: ProgressChartProps) {
     if (!data || data.length === 0) {
         return (
-            <div className="w-full h-40 flex items-center justify-center text-slate-400 bg-slate-50 rounded-xl border border-dashed">
+            <div className="empty-state w-full h-40 flex items-center justify-center text-slate-400 bg-slate-50 rounded-xl border border-dashed">
                 Sem dados para exibição
             </div>
         );

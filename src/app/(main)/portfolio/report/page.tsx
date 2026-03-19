@@ -305,7 +305,7 @@ function ReportCard({
 
             {/* ── OVERALL RATING ────────────────────────────────────── */}
             {overallRating && (
-                <div className="bg-gradient-to-b from-green-50 to-white px-10 py-8 flex flex-col items-center text-center border-b print:break-after-page print:page-break-after-always">
+                <div className="bg-gradient-to-b from-green-50 to-white px-10 py-8 flex flex-col items-center text-center border-b">
                     <p className="text-xs uppercase tracking-widest text-slate-500 mb-3">Desenvolvimento Geral do Aluno</p>
                     <TreeRatingPicker value={overallRating} readOnly size="lg" />
                     <p className="text-slate-500 text-sm mt-2">
@@ -316,7 +316,7 @@ function ReportCard({
 
             <div className="px-10 py-12 space-y-16 print:space-y-8 print:py-6">
                 {/* ── 1. BNCC: MATRIZ CIRCULAR ────────────────────── */}
-                <section className="break-inside-avoid page-break-inside-avoid print:h-[277mm] print:flex print:flex-col print:justify-center print:break-after-page" style={{ pageBreakInside: "avoid" }}>
+                <section className="break-inside-avoid page-break-inside-avoid print:h-[250mm] print:flex print:flex-col print:justify-center print:break-before-page print:page-break-before-always [&:has(.empty-state)]:print:hidden" style={{ pageBreakInside: "avoid" }}>
                     <div className="flex items-center gap-3 mb-8 print:mb-2">
                         <div className="w-1.5 h-6 bg-orange-500 rounded-full" />
                         <h2 className="text-xl font-bold text-slate-800">Trilha Habilidades (BNCC / IBIRÁ)</h2>
@@ -338,7 +338,7 @@ function ReportCard({
                 </section>
 
                 {/* ── 2. IBIRÁ: MATRIZ CIRCULAR ────────────────────── */}
-                <section className="break-inside-avoid page-break-inside-avoid print:h-[277mm] print:flex print:flex-col print:justify-center print:break-after-page" style={{ pageBreakInside: "avoid" }}>
+                <section className="break-inside-avoid page-break-inside-avoid print:h-[250mm] print:flex print:flex-col print:justify-center print:break-before-page print:page-break-before-always [&:has(.empty-state)]:print:hidden" style={{ pageBreakInside: "avoid" }}>
                     <div className="flex items-center gap-3 mb-8 mt-16 print:mt-0 print:mb-2">
                         <div className="w-1.5 h-6 bg-green-600 rounded-full" />
                         <h2 className="text-xl font-bold text-slate-800">Trilha Competências (BNCC / IBIRÁ)</h2>
@@ -446,7 +446,7 @@ function ReportCard({
                 )}
 
                 {/* ── 5. BNCC: PROPOSTO VS DESENVOLVIDO ────────────────── */}
-                <section className="break-inside-avoid print:break-before-page print:page-break-before-always print:pt-4 mt-16 print:mt-0">
+                <section className="break-inside-avoid print:break-before-page print:page-break-before-always print:pt-4 mt-16 print:mt-0 [&:has(.empty-state)]:print:hidden">
                     <div className="flex items-center gap-3 mb-8">
                         <div className="w-1.5 h-8 bg-indigo-500 rounded-full" />
                         <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Desenvolvimento de Habilidades e Competências (por Áreas BNCC)</h2>
@@ -457,8 +457,8 @@ function ReportCard({
                 </section>
 
                 {/* ── 6. BNCC: TRILHA DE COMPETÊNCIAS E HABILIDADES ────────────────────── */}
-                <section className="break-inside-avoid page-break-inside-avoid" style={{ pageBreakInside: "avoid" }}>
-                    <div className="flex items-center gap-3 mb-8 mt-16">
+                <section className="break-inside-avoid page-break-inside-avoid print:break-before-page print:page-break-before-always print:pt-4 mt-16 print:mt-0 [&:has(.empty-state)]:print:hidden" style={{ pageBreakInside: "avoid" }}>
+                    <div className="flex items-center gap-3 mb-8">
                         <div className="w-1.5 h-6 bg-orange-500 rounded-full" />
                         <h2 className="text-xl font-bold text-slate-800">Trilha de Habilidades e Competências (BNCC)</h2>
                     </div>
@@ -468,7 +468,7 @@ function ReportCard({
                 </section>
 
                 {/* ── 7. IBIRÁ: PROPOSTO VS DESENVOLVIDO ────────────────── */}
-                <section className="break-inside-avoid print:break-before-page print:page-break-before-always print:pt-4 mt-16 print:mt-0">
+                <section className="break-inside-avoid print:break-before-page print:page-break-before-always print:pt-4 mt-16 print:mt-0 [&:has(.empty-state)]:print:hidden">
                     <div className="flex items-center gap-3 mb-8">
                         <div className="w-1.5 h-8 bg-green-500 rounded-full" />
                         <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Desenvolvimento de Habilidades e Competências (por Áreas IBIRÁ)</h2>
@@ -479,8 +479,8 @@ function ReportCard({
                 </section>
 
                 {/* ── 8. IBIRÁ: TRILHA DE COMPETÊNCIAS E HABILIDADES ────────────────────── */}
-                <section className="break-inside-avoid page-break-inside-avoid" style={{ pageBreakInside: "avoid" }}>
-                    <div className="flex items-center gap-3 mb-8 mt-16">
+                <section className="break-inside-avoid page-break-inside-avoid print:break-before-page print:page-break-before-always print:pt-4 mt-16 print:mt-0 [&:has(.empty-state)]:print:hidden" style={{ pageBreakInside: "avoid" }}>
+                    <div className="flex items-center gap-3 mb-8">
                         <div className="w-1.5 h-6 bg-green-500 rounded-full" />
                         <h2 className="text-xl font-bold text-slate-800">Trilha de Habilidades e Competências (IBIRÁ)</h2>
                     </div>

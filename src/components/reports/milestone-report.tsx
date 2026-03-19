@@ -202,6 +202,14 @@ export function MilestoneReport({ studentId, filter = "all" }: MilestoneReportPr
         return colors[index % colors.length];
     };
 
+    if (groups.length === 0) {
+        return (
+            <div className="empty-state w-full h-40 flex items-center justify-center text-slate-400 bg-slate-50 rounded-xl border border-dashed">
+                Nenhuma habilidade atribuída a este grupo
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6">
             <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-2">
