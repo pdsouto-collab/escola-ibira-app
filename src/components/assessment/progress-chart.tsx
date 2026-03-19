@@ -102,7 +102,15 @@ export function ProgressChart({ data }: ProgressChartProps) {
     const chartHeight = Math.max(400, 310 + calculatedBottomMargin);
 
     return (
-        <div className="w-full pt-4 transition-all duration-300" style={{ height: `${chartHeight}px` }}>
+        <div className="w-full pt-4 transition-all duration-300 print:page-break-inside-avoid print:break-inside-avoid print-limit-h" style={{ height: `${chartHeight}px` }}>
+            <style>{`
+                @media print {
+                    .print-limit-h {
+                        height: 350px !important;
+                        max-height: 45vh !important;
+                    }
+                }
+            `}</style>
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                     data={data}

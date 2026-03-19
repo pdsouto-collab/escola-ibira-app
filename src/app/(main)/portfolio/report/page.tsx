@@ -453,7 +453,7 @@ function ReportCard({
                 )}
 
                 {/* ── 5. BNCC: PROPOSTO VS DESENVOLVIDO ────────────────── */}
-                <section className="break-inside-avoid print:break-before-page print:page-break-before-always print:pt-4 landscape-mode" style={{ marginTop: "4rem" }}>
+                <section className="break-inside-avoid print:break-before-page print:page-break-before-always print:pt-4 landscape-mode mt-16 print:mt-0">
                     <div className="flex items-center gap-3 mb-8">
                         <div className="w-1.5 h-8 bg-indigo-500 rounded-full" />
                         <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Desenvolvimento de Habilidades e Competências (por Áreas BNCC)</h2>
@@ -475,7 +475,7 @@ function ReportCard({
                 </section>
 
                 {/* ── 7. IBIRÁ: PROPOSTO VS DESENVOLVIDO ────────────────── */}
-                <section className="break-inside-avoid print:break-before-page print:page-break-before-always print:pt-4 landscape-mode" style={{ marginTop: "4rem" }}>
+                <section className="break-inside-avoid print:break-before-page print:page-break-before-always print:pt-4 landscape-mode mt-16 print:mt-0">
                     <div className="flex items-center gap-3 mb-8">
                         <div className="w-1.5 h-8 bg-green-500 rounded-full" />
                         <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Desenvolvimento de Habilidades e Competências (por Áreas IBIRÁ)</h2>
