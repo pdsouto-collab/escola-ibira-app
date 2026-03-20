@@ -2,7 +2,12 @@
 
 import { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
-import { Student, Guardian, EmergencyContact } from "@/lib/data";
+import { Student } from "@/types/student";
+import { StudentGuardian } from "@/types/student-guardian";
+import { StudentEmergencyContact } from "@/types/student-emergency-contact";
+import { StudentFinancialResponsible } from "@/types/student-financial-responsible";
+import { StudentHealth } from "@/types/student-health";
+import { StudentDocuments } from "@/types/student-documents";
 import { useAppStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import {
@@ -80,22 +85,22 @@ export function StudentDialog({ open, onOpenChange, student, classes, onSave }: 
 
     // --- Manual Entry Helpers ---
 
-    const updateGuardian = (index: number, field: keyof Guardian, value: string) => {
+    const updateGuardian = (index: number, field: keyof StudentGuardian, value: string) => {
         const newGuardians = [...(formData.guardians || [])];
         if (!newGuardians[index]) newGuardians[index] = { name: "", kinship: "", phone: "" };
         newGuardians[index] = { ...newGuardians[index], [field]: value };
         setFormData({ ...formData, guardians: newGuardians });
     };
 
-    const updateFinancial = (field: string, value: string) => {
-        setFormData({ ...formData, financialResponsible: { ...formData.financialResponsible, [field]: value } as any });
+    const updateFinancial = (field: keyof StudentFinancialResponsible, value: string) => {
+        setFormData({ ...formData, financialResponsible: { ...formData.financialResponsible, [field]: value } as StudentFinancialResponsible });
     };
 
-    const updateHealth = (field: string, value: any) => {
-        setFormData({ ...formData, health: { ...formData.health, [field]: value } as any });
+    const updateHealth = (field: keyof StudentHealth, value: any) => {
+        setFormData({ ...formData, health: { ...formData.health, [field]: value } as StudentHealth });
     };
 
-    const updateEmergency = (index: number, field: keyof EmergencyContact, value: string) => {
+    const updateEmergency = (index: number, field: keyof StudentEmergencyContact, value: string) => {
         const newContacts = [...(formData.emergencyContacts || [])];
         if (!newContacts[index]) newContacts[index] = { name: "", kinship: "", phone: "" };
         newContacts[index] = { ...newContacts[index], [field]: value };
@@ -163,11 +168,11 @@ export function StudentDialog({ open, onOpenChange, student, classes, onSave }: 
                 };
 
                 // Temporary variables
-                let g1: Partial<Guardian> = { kinship: "Responsável" };
-                let g2: Partial<Guardian> = { kinship: "Responsável" };
+                let g1: Partial<StudentGuardian> = { kinship: "Responsável" };
+                let g2: Partial<StudentGuardian> = { kinship: "Responsável" };
                 let fin: any = {};
-                let em1: Partial<EmergencyContact> = {};
-                let em2: Partial<EmergencyContact> = {};
+                let em1: Partial<StudentEmergencyContact> = {};
+                let em2: Partial<StudentEmergencyContact> = {};
 
                 const getValue = (idx: number) => (row[idx] || "").trim();
 

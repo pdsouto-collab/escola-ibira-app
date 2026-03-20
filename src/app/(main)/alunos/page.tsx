@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Users, MoreVertical, Edit2, Trash2, FolderPlus } from "lucide-react";
 import { StudentDialog } from "@/components/students/student-dialog";
 import { ClassDialog } from "@/components/students/class-dialog";
-import { Student } from "@/lib/data";
+import { Student } from "@/types/student";
 import { SchoolClass } from "@/types/school-class";
 import { getClasses, createClass, updateClass, deleteClass } from "@/services/school-class.service";
 import { cn } from "@/lib/utils";

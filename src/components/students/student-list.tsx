@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Student } from "@/lib/data";
+import { Student } from "@/types/student";
 import { StudentCard } from "./student-card";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";

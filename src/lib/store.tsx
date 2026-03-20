@@ -1,8 +1,9 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { Student } from "@/types/student";
 import {
-    mockStudents, Student,
+    mockStudents,
     mockSchedule, ScheduleItem,
     mockDailyLogs, DailyLog,
     mockRecursiveDataSkills, MosaicNode,

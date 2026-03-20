@@ -3244,81 +3244,6 @@ export const mockSchedule: ScheduleItem[] = [
     }
 ];
 
-export interface Guardian {
-    name: string;
-    cpf?: string;
-    kinship: string;
-    phone: string;
-    address?: string;
-    email?: string;
-}
-
-export interface EmergencyContact {
-    name: string;
-    kinship: string;
-    phone: string;
-}
-
-export interface Student {
-    id: string;
-    // Child Data
-    name: string;
-    dateOfBirth: string; // YYYY-MM-DD
-    document?: string; // CPF/RG/Cert
-    schoolStage?: string;
-    period?: "integral" | "matutino";
-    photo?: string;
-    classId: string;
-    status: "presente" | "ausente";
-
-    // Kept for compatibility but derived if needed
-    age: number; // Will try to compute or keep manual
-
-    // Guardians (Max 2 usually)
-    guardians: Guardian[];
-    // Parent Name for quick display compatibility
-    parentName: string;
-
-    // Financial
-    financialResponsible?: {
-        name: string;
-        phone: string;
-        cpf: string;
-        address: string;
-        email: string;
-    };
-
-    // Health
-    health?: {
-        hasChronicIssue: boolean;
-        chronicIssueDetail?: string;
-        hasAllergy: boolean;
-        allergyDetail?: string;
-        hasDietaryRestriction: boolean;
-        dietaryRestrictionDetail?: string;
-        emergencyAction?: string; // "Em caso de manifestação alérgica..."
-        feverProcedure?: string; // "Em caso de febre..."
-        pediatricianName?: string;
-        pediatricianPhone?: string;
-        hasHealthInsurance: boolean;
-        healthInsuranceDetail?: string;
-        otherInfo?: string;
-    };
-
-    // Emergency
-    emergencyContacts?: EmergencyContact[];
-    hospitalPreference?: string;
-    hospitalAddress?: string;
-
-    // Docs (URLs/Paths)
-    documents?: {
-        childDoc?: string;
-        vaccinationCard?: string;
-        guardianDoc?: string;
-        insuranceCard?: string;
-    }
-}
-
 export interface Invoice {
     id: string;
     studentId: string;
@@ -3363,6 +3288,7 @@ export const mockInvoices: Invoice[] = [
     }
 ];
 
+import { Student } from "@/types/student";
 export const mockStudents: Student[] = [
     {
         id: "1",
