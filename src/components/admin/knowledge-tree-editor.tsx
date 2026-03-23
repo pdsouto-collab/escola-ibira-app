@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAppStore } from "@/lib/store";
-import { KnowledgeNode, KnowledgeLevel } from "@/lib/data";
+import { KnowledgeNode, KnowledgeLevel, SEMESTERS } from "@/lib/data";
 import { ChevronRight, ChevronDown, Plus, Edit2, Trash2, Link as LinkIcon, BookOpen, Search, X, Copy, Filter, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -61,12 +61,15 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
 
     const treeData = treeType === "skill" ? skillsTree : contentsTree;
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
+    const [selectedPeriod, setSelectedPeriod] = useState<string>("all");
     const [selectedGrade, setSelectedGrade] = useState<string>("all");
 
     // Filter only the roots. Children belong to whatever root they are in.
-    const filteredTreeData = selectedClassId === "all"
-        ? treeData
-        : treeData.filter(node => node.classId === selectedClassId);
+    const filteredTreeData = treeData.filter(node => {
+        const classMatch = selectedClassId === "all" || node.classId === selectedClassId;
+        const periodMatch = selectedPeriod === "all" || node.period === selectedPeriod;
+        return classMatch && periodMatch;
+    });
 
     // Dialog State
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -105,7 +108,8 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
             level: "macro",
             name: "",
             description: "",
-            classId: selectedClassId, // Assign to the currently selected class view
+            classId: selectedClassId === "all" ? undefined : selectedClassId, // Assign to the currently selected class view
+            period: selectedPeriod === "all" ? undefined : selectedPeriod,
             children: []
         });
         setParentLevel(null);
@@ -225,8 +229,9 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
 
                     {/* Class Identification Badge */}
                     {node.level === "macro" && (
-                        <div className="absolute -top-2.5 left-3 px-2 py-0.5 bg-slate-600 text-white text-[9px] font-bold rounded uppercase tracking-wider shadow-sm z-20 pointer-events-none">
-                            TURMA: {classes.find(c => c.id === node.classId)?.name || "GERAL/BASE"}
+                        <div className="absolute -top-2.5 left-3 px-2 py-0.5 bg-slate-600 text-white text-[9px] font-bold rounded uppercase tracking-wider shadow-sm z-20 pointer-events-none flex gap-2">
+                            <span>TURMA: {classes.find(c => c.id === node.classId)?.name || "GERAL/BASE"}</span>
+                            {node.period && <span className="border-l border-white/30 pl-2">PERÍODO: {node.period}</span>}
                         </div>
                     )}
 
@@ -318,7 +323,7 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
                             </div>
                         ) : (
                             <Select value={selectedClassId} onValueChange={setSelectedClassId}>
-                                <SelectTrigger className="w-[200px] h-9 bg-white">
+                                <SelectTrigger className="w-[180px] h-9 bg-white">
                                     <SelectValue placeholder="Selecione a Turma" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -329,6 +334,20 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
                                 </SelectContent>
                             </Select>
                         )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Label className="text-slate-500 text-xs font-semibold uppercase tracking-wider">Período:</Label>
+                        <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+                            <SelectTrigger className="w-[180px] h-9 bg-white">
+                                <SelectValue placeholder="Selecione o Período" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Todos (Padrão)</SelectItem>
+                                {SEMESTERS.map(sem => (
+                                    <SelectItem key={sem} value={sem}>{sem}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
                 <Button onClick={handleAddRoot} className="gap-2">
@@ -525,22 +544,41 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
                             )}
 
                             {currentNode.level === "macro" && (
-                                <div className="space-y-2">
-                                    <Label>Turma Associada</Label>
-                                    <Select
-                                        value={currentNode.classId || "all"}
-                                        onValueChange={(val) => setCurrentNode(prev => ({ ...prev, classId: val }))}
-                                    >
-                                        <SelectTrigger className="w-full bg-white">
-                                            <SelectValue placeholder="Selecione a Turma" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">Todas as Turmas (Padrão)</SelectItem>
-                                            {classes.map(c => (
-                                                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Turma Associada</Label>
+                                        <Select
+                                            value={currentNode.classId || "all"}
+                                            onValueChange={(val) => setCurrentNode(prev => ({ ...prev, classId: val === "all" ? undefined : val }))}
+                                        >
+                                            <SelectTrigger className="w-full bg-white">
+                                                <SelectValue placeholder="Selecione a Turma" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">Todas as Turmas (Padrão)</SelectItem>
+                                                {classes.map(c => (
+                                                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Semestre/Ano</Label>
+                                        <Select
+                                            value={currentNode.period || "all"}
+                                            onValueChange={(val) => setCurrentNode(prev => ({ ...prev, period: val === "all" ? undefined : val }))}
+                                        >
+                                            <SelectTrigger className="w-full bg-white">
+                                                <SelectValue placeholder="Selecione o Período" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">Todos (Padrão)</SelectItem>
+                                                {SEMESTERS.map(sem => (
+                                                    <SelectItem key={sem} value={sem}>{sem}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </div>
                             )}
 

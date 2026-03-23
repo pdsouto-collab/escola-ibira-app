@@ -78,7 +78,7 @@ const getAllEvaluatableNodes = (nodes: any[], parentName?: string): any[] => {
     return results;
 };
 
-export function SkillsChart({ student, filter = "all" }: { student: Student | undefined; filter?: "bncc" | "ibira" | "all" }) {
+export function SkillsChart({ student, filter = "all", period = "all" }: { student: Student | undefined; filter?: "bncc" | "ibira" | "all"; period?: string }) {
 
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
 
@@ -102,7 +102,10 @@ export function SkillsChart({ student, filter = "all" }: { student: Student | un
 
     const { assessments, skillsTree, contentsTree } = useAppStore();
 
-    const studentAssessments = assessments.filter(a => a.studentId === studentId || (a.scope === "class" && a.classId === student.classId));
+    const studentAssessments = assessments.filter(a => 
+        (a.studentId === studentId || (a.scope === "class" && a.classId === student.classId)) &&
+        (period === "all" || a.period === period)
+    );
 
     // 1. Identify which Library Items belong to the "Trilha Base" for the student's class
     const studentClassBaseTreeIds = new Set<string>();
@@ -114,7 +117,10 @@ export function SkillsChart({ student, filter = "all" }: { student: Student | un
     };
 
     const allTrees = [...skillsTree, ...contentsTree];
-    const classRoots = allTrees.filter(node => node.classId === student.classId);
+    const classRoots = allTrees.filter(node => 
+        node.classId === student.classId && 
+        (period === "all" || node.period === period)
+    );
     collectBaseIds(classRoots);
 
     // 2. The "Proposto" items are ONLY the library items present in the class Trilha Base

@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAppStore } from "@/lib/store";
-import { Assessment } from "@/lib/data";
+import { Assessment, SEMESTERS } from "@/lib/data";
 import { AssessmentDrawer } from "@/components/assessment/assessment-drawer";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -816,6 +816,7 @@ function PortfolioContent() {
 
     const [view, setView] = useState<"project" | "student">(initialClassId ? "student" : "project");
     const [projectFilter, setProjectFilter] = useState("all");
+    const [periodFilter, setPeriodFilter] = useState("all");
     const [classFilter, setClassFilter] = useState(initialClassId || "all");
     const [studentFilter, setStudentFilter] = useState("all");
     const [drawerCtx, setDrawerCtx] = useState<(Partial<Assessment> & { contextLabel: string }) | null>(null);
@@ -872,6 +873,11 @@ function PortfolioContent() {
         window.open(`/portfolio/report?project=${projectId}&student=${studentId}`, "_blank");
     };
 
+    const filteredProjects = useMemo(() => {
+        if (periodFilter === "all") return allProjects;
+        return allProjects.filter(p => p.period === periodFilter);
+    }, [allProjects, periodFilter]);
+
     if (isLoadingClasses || isLoadingStudents) {
         return (
             <div className="flex items-center justify-center p-12 min-h-screen">
@@ -910,12 +916,20 @@ function PortfolioContent() {
             </div>
 
             <div className="bg-white border-b px-8 py-3 flex items-center gap-3">
+                <Select value={periodFilter} onValueChange={setPeriodFilter}>
+                    <SelectTrigger className="w-48 h-8 text-sm"><SelectValue placeholder="Todo o período" /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Todo o período</SelectItem>
+                        {SEMESTERS.map(sem => <SelectItem key={sem} value={sem}>{sem}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+
                 {view === "project" && (
                     <Select value={projectFilter} onValueChange={setProjectFilter}>
                         <SelectTrigger className="w-56 h-8 text-sm"><SelectValue placeholder="Todos os projetos" /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">Todos os projetos</SelectItem>
-                            {allProjects.map(p => <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>)}
+                            {filteredProjects.map(p => <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>)}
                         </SelectContent>
                     </Select>
                 )}
@@ -953,6 +967,11 @@ function PortfolioContent() {
                             <FileText className="w-3.5 h-3.5" /> Gerar Report Card do Projeto
                         </Button>
                     )}
+                    {periodFilter !== "all" && projectFilter === "all" && studentFilter !== "all" && (
+                        <Button size="sm" variant="outline" className="text-xs gap-1.5 border-violet-200 text-violet-700 hover:bg-violet-50" onClick={() => window.open(`/portfolio/report?student=${studentFilter}&period=${periodFilter}`, "_blank")}>
+                            <FileText className="w-3.5 h-3.5" /> Report Card do Semestre
+                        </Button>
+                    )}
                 </div>
             </div>
 
@@ -960,7 +979,7 @@ function PortfolioContent() {
                 {view === "project" ? (
                     <ProjectView
                         projectFilter={projectFilter}
-                        allProjects={allProjects}
+                        allProjects={filteredProjects}
                         assessments={assessments}
                         schedule={schedule}
                         students={students}
@@ -976,7 +995,7 @@ function PortfolioContent() {
                         assessments={assessments}
                         students={students}
                         classes={classes}
-                        projects={allProjects}
+                        projects={filteredProjects}
                         schedule={schedule}
                         skillsTree={skillsTree}
                         contentsTree={contentsTree}

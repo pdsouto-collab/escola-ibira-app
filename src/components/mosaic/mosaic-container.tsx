@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAppStore } from "@/lib/store";
-import { KnowledgeNode } from "@/lib/data";
+import { KnowledgeNode, SEMESTERS } from "@/lib/data";
 import { RadialMatrix } from "./radial-matrix";
 import { MosaicDetailPanel } from "./mosaic-detail-panel";
 import { getClasses } from "@/services/school-class.service";
@@ -41,6 +41,7 @@ export function MosaicContainer() {
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
     const [selectedProjectId, setSelectedProjectId] = useState<string>("all");
     const [selectedStudentId, setSelectedStudentId] = useState<string>("all");
+    const [selectedPeriod, setSelectedPeriod] = useState<string>("all");
 
     // Assessment Drawer State
     const [drawerCtx, setDrawerCtx] = useState<Partial<Assessment> & { contextLabel: string } | null>(null);
@@ -71,7 +72,8 @@ export function MosaicContainer() {
             }
         }
 
-        return activeClassId === "all" || (node.classId || "all") === activeClassId;
+        const periodMatch = selectedPeriod === "all" || node.period === selectedPeriod;
+        return (activeClassId === "all" || (node.classId || "all") === activeClassId) && periodMatch;
     });
 
     // If drilled down, we only render the drilled node as the root.
@@ -207,6 +209,19 @@ export function MosaicContainer() {
                             <SelectItem value="all">Todos os Alunos</SelectItem>
                             {filteredStudents.map(s => (
                                 <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
+                    {/* Filter: Período */}
+                    <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+                        <SelectTrigger className={selectTriggerClass}>
+                            <SelectValue placeholder="Todos os Períodos" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todos os Períodos</SelectItem>
+                            {SEMESTERS.map(sem => (
+                                <SelectItem key={sem} value={sem}>{sem}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>

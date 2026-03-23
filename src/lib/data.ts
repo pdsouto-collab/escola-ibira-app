@@ -14,8 +14,16 @@ export interface KnowledgeNode {
     libraryItemId?: string; // ONLY for L3 (Micro): points to an item in `libraryItems`
     linkedNodeIds?: string[]; // For Cross-Linking: L3/L4 Contenúdo mapping to L3/L4 Habilidades
     classId?: string; // e.g. "all" or a specific class ID. Usually set at the macro (root) level.
+    period?: string; // e.g. "1º Semestre / 2026". Usually set at the macro (root) level.
     children: KnowledgeNode[]; // Nested nodes down the hierarchy
 }
+
+export const SEMESTERS = [
+    "1º Semestre / 2026",
+    "2º Semestre / 2026",
+    "1º Semestre / 2027",
+    "2º Semestre / 2027"
+];
 
 // Initial mock data to bootstrap the trees
 export const mockSkillsTree: KnowledgeNode[] = [
@@ -3757,6 +3765,7 @@ export interface Project {
     endDate?: string;
     students: string[]; // IDs
     classes?: string[]; // IDs of SchoolClass
+    period?: string; // e.g. "1º Semestre / 2026"
     tags: string[];
     bnccSkillIds?: string[]; // IDs of BNCC Skills
     contentIds?: string[]; // IDs of Custom Content
@@ -3822,6 +3831,8 @@ export interface Assessment {
     sessionId?: string;        // ScheduleItem.id
     routineId?: string;
     knowledgeNodeId?: string;  // KnowledgeNode.id
+    period?: string;           // Optional explicit period
+
 
     // Scope
     scope: "class" | "student";

@@ -15,7 +15,7 @@ import { BulkSessionDialog } from "@/components/projetos/bulk-session-dialog";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAppStore } from "@/lib/store";
-import { Project, ScheduleItem, KnowledgeNode } from "@/lib/data";
+import { Project, ScheduleItem, KnowledgeNode, SEMESTERS } from "@/lib/data";
 import { SchoolClass } from "@/types/school-class";
 import { getClasses } from "@/services/school-class.service";
 import { getStudents } from "@/services/student.service";
@@ -82,6 +82,7 @@ function NewProjectWizardContent() {
         summary: "",
         objectives: "",
         finalProduct: "None",
+        period: "",
         description: "",
         classes: [] as string[],
         students: [] as string[],
@@ -186,6 +187,7 @@ function NewProjectWizardContent() {
                     summary: projectToEdit.summary || "",
                     objectives: projectToEdit.objectives || "",
                     finalProduct: projectToEdit.finalProduct || "None",
+                    period: projectToEdit.period || "",
                     description: projectToEdit.description,
                     classes: projectToEdit.classes || [],
                     students: projectToEdit.students || [],
@@ -214,6 +216,7 @@ function NewProjectWizardContent() {
             summary: formData.summary,
             objectives: formData.objectives,
             finalProduct: formData.finalProduct,
+            period: formData.period || undefined,
             tags: [],
             bnccSkillIds: formData.bnccSkills,
             contentIds: formData.customContent,
@@ -248,6 +251,7 @@ function NewProjectWizardContent() {
             summary: formData.summary,
             objectives: formData.objectives,
             finalProduct: formData.finalProduct,
+            period: formData.period || undefined,
             tags: [],
             bnccSkillIds: formData.bnccSkills,
             contentIds: formData.customContent,
@@ -389,6 +393,20 @@ function NewProjectWizardContent() {
                                         <Select value={formData.type} onValueChange={v => setFormData({ ...formData, type: v })}>
                                             <SelectTrigger className="mt-2 text-slate-700"><SelectValue /></SelectTrigger>
                                             <SelectContent><SelectItem value="Project">Projeto</SelectItem><SelectItem value="Workshop">Oficina</SelectItem></SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div>
+                                        <Label className="font-semibold text-slate-700">Semestre/Ano</Label>
+                                        <Select value={formData.period || "all"} onValueChange={v => setFormData({ ...formData, period: v === "all" ? "" : v })}>
+                                            <SelectTrigger className="mt-2 text-slate-700">
+                                                <SelectValue placeholder="Selecione..." />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">Nenhum</SelectItem>
+                                                {SEMESTERS.map(sem => (
+                                                    <SelectItem key={sem} value={sem}>{sem}</SelectItem>
+                                                ))}
+                                            </SelectContent>
                                         </Select>
                                     </div>
                                 </div>
