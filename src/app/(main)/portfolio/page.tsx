@@ -530,12 +530,33 @@ function StudentView({
                             {(() => {
                                 // Find projects linked to this student
                                 const studentProjects = projects.filter(p => {
+                                    const stuClass = classes.find(c => String(c.id) === String(student.classId));
+                                    const classNameSlug = stuClass ? stuClass.name.toLowerCase().replace(/\s+/g, '-').replace(/ii/g, 'ii').replace(/i/g, 'i') : ""; // basic normalization
+
                                     const studentMatch = (p.students || []).some(id => String(id) === String(student.id));
-                                    const classMatch = (p.classes || []).some(id => String(id) === String(student.classId));
-                                    return studentMatch || classMatch;
+                                    const classMatch = (p.classes || []).some(id => {
+                                        const strId = String(id);
+                                        return strId === String(student.classId) || 
+                                               strId.toLowerCase() === classNameSlug ||
+                                               (stuClass && strId.toLowerCase().includes(stuClass.name.split(" ")[0].toLowerCase()));
+                                    });
+
+                                    // Fallback if no specific assignment
+                                    const hasAssignments = (p.classes && p.classes.length > 0) || (p.students && p.students.length > 0);
+                                    
+                                    // If we matched or the project is global
+                                    return studentMatch || classMatch || !hasAssignments;
                                 });
 
-                                if (studentProjects.length === 0) return null;
+                                if (studentProjects.length === 0) {
+                                    return (
+                                        <div className="p-8 text-center bg-slate-50 rounded-xl border border-dashed">
+                                            <FolderKanban className="w-8 h-8 text-slate-300 mx-auto mb-3" />
+                                            <p className="text-slate-500 font-medium">Nenhum projeto associado a este aluno.</p>
+                                            <p className="text-slate-400 text-xs mt-1">Crie um projeto e associe à turma deste aluno para realizar avaliações estruturadas.</p>
+                                        </div>
+                                    );
+                                }
 
                                 return (
                                     <div className="space-y-8">
