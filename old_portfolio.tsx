@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useMemo, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
@@ -10,21 +10,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { cn } from "@/lib/utils";
 import {
     BookMarked, Calendar, User, Users, ClipboardList, Pencil, FileText,
-    Image as ImageIcon, File, FolderKanban, Star, Loader2
+    Image as ImageIcon, File, FolderKanban, Star
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { ProgressChart, ProgressChartData } from "@/components/assessment/progress-chart";
 import { LibraryItem } from "@/types/library-item";
 import { getListBncc } from "@/services/bncc.service";
-import { getClasses } from "@/services/school-class.service";
-import { getStudents } from "@/services/student.service";
-import { SchoolClass } from "@/types/school-class";
-import { Student } from "@/types/student";
 
-// ────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 // Helper: find node name recursively
-// ────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 const resolveNodeInfo = (id: string, skillsTree: any[], contentsTree: any[], libraryItems: any[]) => {
     // Collect possible matching IDs (including codes)
     const validIds = new Set<string>([id]);
@@ -139,12 +134,12 @@ const getProjectNodes = (project: any, skillsTree: any[], contentsTree: any[], l
 };
 
 
-// ────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 // Mini tree indicator (read-only, compact)
-// ────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 function MiniTree({ rating }: { rating?: number }) {
     if (!rating) return <span className="text-slate-300 text-xs italic">Sem nota</span>;
-    const trees = ["🌱", "🌿", "🌳", "🌲", "🍎"];
+    const trees = ["≡ƒî▒", "≡ƒî┐", "≡ƒî│", "≡ƒî▓", "≡ƒìÄ"];
     const colors = ["text-green-300", "text-green-400", "text-green-500", "text-green-600", "text-green-700"];
     return (
         <span className={cn("text-base font-bold", colors[rating - 1])}>
@@ -153,9 +148,9 @@ function MiniTree({ rating }: { rating?: number }) {
     );
 }
 
-// ────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 // Small attachment thumbnail
-// ────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 function AttachmentThumb({ att }: { att: Assessment["attachments"][0] }) {
     if (att.type === "photo") {
         // eslint-disable-next-line @next/next/no-img-element
@@ -168,14 +163,14 @@ function AttachmentThumb({ att }: { att: Assessment["attachments"][0] }) {
     );
 }
 
-// ────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 // Assessment Card
-// ────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 function AssessmentCard({ assessment, onEdit, students, classes }: {
     assessment: Assessment;
     onEdit: () => void;
-    students: Student[];
-    classes: SchoolClass[];
+    students: ReturnType<typeof useAppStore>["students"];
+    classes: ReturnType<typeof useAppStore>["classes"];
 }) {
     const student = assessment.studentId ? students.find(s => s.id === assessment.studentId) : null;
     const cls = assessment.classId
@@ -226,9 +221,9 @@ function AssessmentCard({ assessment, onEdit, students, classes }: {
     );
 }
 
-// ────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 // View: By Project
-// ────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 function ProjectView({
     projectFilter, allProjects, assessments, schedule, students, classes, skillsTree, contentsTree, libraryItems, onAvaliacao, onEdit
 }: {
@@ -236,8 +231,8 @@ function ProjectView({
     allProjects: ReturnType<typeof useAppStore>["projects"];
     assessments: Assessment[];
     schedule: ReturnType<typeof useAppStore>["schedule"];
-    students: Student[];
-    classes: SchoolClass[];
+    students: ReturnType<typeof useAppStore>["students"];
+    classes: ReturnType<typeof useAppStore>["classes"];
     skillsTree: ReturnType<typeof useAppStore>["skillsTree"];
     contentsTree: ReturnType<typeof useAppStore>["contentsTree"];
     libraryItems: LibraryItem[]
@@ -270,12 +265,12 @@ function ProjectView({
                                 <FolderKanban className="w-5 h-5 text-white/80" />
                                 <div>
                                     <h2 className="text-white font-bold text-lg">{project.title}</h2>
-                                    <p className="text-violet-200 text-sm">{sessions.length} sessões &bull; {projectAssessments.length} avaliações</p>
+                                    <p className="text-violet-200 text-sm">{sessions.length} sess├╡es &bull; {projectAssessments.length} avalia├º├╡es</p>
                                 </div>
                             </div>
                             {avgRating > 0 && (
                                 <div className="bg-white/20 rounded-xl px-3 py-1.5 text-right">
-                                    <p className="text-[10px] text-white/70 uppercase tracking-wide">Média</p>
+                                    <p className="text-[10px] text-white/70 uppercase tracking-wide">M├⌐dia</p>
                                     <p className="text-white font-bold text-sm">{avgRating.toFixed(1)}/5</p>
                                 </div>
                             )}
@@ -285,7 +280,7 @@ function ProjectView({
                             {sessions.length > 0 && (
                                 <div>
                                     <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                        <Calendar className="w-4 h-4 text-slate-400" /> Sessões
+                                        <Calendar className="w-4 h-4 text-slate-400" /> Sess├╡es
                                     </h3>
                                     <div className="space-y-3">
                                         {sessions.map(session => {
@@ -300,14 +295,14 @@ function ProjectView({
                                                         <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
                                                             <Calendar className="w-3 h-3" /> {dateStr}
                                                             <span className="text-slate-300">&#xB7;</span>
-                                                            {session.time} – {session.endTime}
+                                                            {session.time} ΓÇô {session.endTime}
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-3">
                                                         {sessionAssessments.length > 0 ? (
                                                             <MiniTree rating={sessionAssessments[sessionAssessments.length - 1]?.rating} />
                                                         ) : (
-                                                            <span className="text-xs text-slate-400 italic">Sem avaliação</span>
+                                                            <span className="text-xs text-slate-400 italic">Sem avalia├º├úo</span>
                                                         )}
                                                         <Button
                                                             size="sm"
@@ -316,7 +311,7 @@ function ProjectView({
                                                             onClick={() => onAvaliacao({
                                                                 sessionId: session.id,
                                                                 projectId: project.id,
-                                                                contextLabel: `${session.title} · ${dateStr}`
+                                                                contextLabel: `${session.title} ┬╖ ${dateStr}`
                                                             })}
                                                         >
                                                             <ClipboardList className="w-3 h-3 mr-1" />Avaliar
@@ -339,7 +334,7 @@ function ProjectView({
                                         {microNodes.length > 0 && (
                                             <div>
                                                 <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                                    <Star className="w-4 h-4 text-amber-500" /> Habilidades & Competências
+                                                    <Star className="w-4 h-4 text-amber-500" /> Habilidades & Compet├¬ncias
                                                 </h3>
                                                 <div className="grid grid-cols-1 gap-2">
                                                     {microNodes.map(node => (
@@ -380,7 +375,7 @@ function ProjectView({
                                         {atomicoNodes.length > 0 && (
                                             <div className="mt-6">
                                                 <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                                    <Star className="w-4 h-4 text-amber-500" /> Habilidades Específicas & Evidências
+                                                    <Star className="w-4 h-4 text-amber-500" /> Habilidades Espec├¡ficas & Evid├¬ncias
                                                 </h3>
                                                 <div className="grid grid-cols-1 gap-2">
                                                     {atomicoNodes.map(node => (
@@ -423,7 +418,7 @@ function ProjectView({
 
                             {projectAssessments.length > 0 && (
                                 <div>
-                                    <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-3">Avaliações Registradas</h3>
+                                    <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-3">Avalia├º├╡es Registradas</h3>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         {projectAssessments.map(a => (
                                             <AssessmentCard
@@ -439,7 +434,7 @@ function ProjectView({
                             )}
 
                             {projectAssessments.length === 0 && sessions.length === 0 && (
-                                <p className="text-slate-400 text-sm text-center py-4">Nenhuma sessão ou avaliação ainda.</p>
+                                <p className="text-slate-400 text-sm text-center py-4">Nenhuma sess├úo ou avalia├º├úo ainda.</p>
                             )}
                         </div>
                     </div>
@@ -449,15 +444,15 @@ function ProjectView({
     );
 }
 
-// ────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 // View: By Student
-// ────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 function StudentView({
     assessments, students, classes, projects, schedule, skillsTree, contentsTree, libraryItems, studentFilter, classFilter, projectFilter, setProjectFilter, onAvaliacao, onEdit
 }: {
     assessments: Assessment[];
-    students: Student[];
-    classes: SchoolClass[];
+    students: ReturnType<typeof useAppStore>["students"];
+    classes: ReturnType<typeof useAppStore>["classes"];
     projects: ReturnType<typeof useAppStore>["projects"];
     schedule: ReturnType<typeof useAppStore>["schedule"];
     skillsTree: ReturnType<typeof useAppStore>["skillsTree"];
@@ -508,19 +503,19 @@ function StudentView({
                                 </div>
                                 <div>
                                     <h2 className="text-white font-bold text-lg">{student.name}</h2>
-                                    <p className="text-emerald-100 text-sm">{cls?.name} &bull; {studentAssessments.length} avaliações</p>
+                                    <p className="text-emerald-100 text-sm">{cls?.name} &bull; {studentAssessments.length} avalia├º├╡es</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-3">
                                 {avgRating > 0 && (
                                     <div className="bg-white/20 rounded-xl px-3 py-1.5 text-right">
-                                        <p className="text-[10px] text-white/70">Média geral</p>
+                                        <p className="text-[10px] text-white/70">M├⌐dia geral</p>
                                         <p className="text-white font-bold text-sm">{avgRating.toFixed(1)}/5</p>
                                     </div>
                                 )}
                                 <Link href={`/portfolio/report?student=${student.id}`}>
                                     <Button size="sm" variant="outline" className="h-9 gap-1.5 bg-white/10 text-white border-white/20 hover:bg-white/20 hover:text-white transition-colors">
-                                        <FileText className="w-4 h-4" /> Relatório
+                                        <FileText className="w-4 h-4" /> Relat├│rio
                                     </Button>
                                 </Link>
                             </div>
@@ -538,52 +533,11 @@ function StudentView({
                                 if (studentProjects.length === 0) return null;
 
                                 return (
-                                    <div className="space-y-8">
-                                        {/* Chart Section */}
-                                        {(() => {
-                                            const allMicro: any[] = [];
-                                            const allAtomico: any[] = [];
-                                            studentProjects.forEach(p => {
-                                                const { microNodes, atomicoNodes } = getProjectNodes(p, skillsTree, contentsTree, libraryItems);
-                                                allMicro.push(...microNodes);
-                                                allAtomico.push(...atomicoNodes);
-                                            });
-
-                                            const map = new Map();
-                                            [...allMicro, ...allAtomico].forEach(n => map.set(n.id, n));
-                                            const allNodes = Array.from(map.values());
-
-                                            if (allNodes.length === 0) return null;
-
-                                            const chartDataMap = new Map<string, ProgressChartData>();
-                                            allNodes.forEach(node => {
-                                                const subject = node.subject || "Outros";
-                                                if (!chartDataMap.has(subject)) {
-                                                    chartDataMap.set(subject, { subject, proposto: 0, desenvolvido: 0, total: 0 });
-                                                }
-                                                const data = chartDataMap.get(subject)!;
-                                                data.proposto += 1;
-                                                data.total += 1;
-                                                const nodeAssessment = studentAssessments.find(a => a.knowledgeNodeId === node.id);
-                                                if (nodeAssessment && (nodeAssessment.rating ?? 0) >= 3) {
-                                                    data.desenvolvido += 1;
-                                                }
-                                            });
-                                            const chartData = Array.from(chartDataMap.values()).sort((a, b) => a.subject.localeCompare(b.subject));
-
-                                            return (
-                                                <div className="border rounded-2xl bg-white p-2 shadow-sm mb-6">
-                                                    <ProgressChart data={chartData} />
-                                                </div>
-                                            );
-                                        })()}
-
-                                        {/* Projects Section */}
-                                        <div className="space-y-4">
-                                            <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-2">
-                                                <FolderKanban className="w-4 h-4 text-indigo-500" /> Projetos & Planos de Aula
-                                            </h3>
-                                            <div className="grid grid-cols-1 gap-4">
+                                    <div className="space-y-4">
+                                        <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-2">
+                                            <FolderKanban className="w-4 h-4 text-indigo-500" /> Projetos
+                                        </h3>
+                                        <div className="grid grid-cols-1 gap-4">
                                             {studentProjects.map(project => {
                                                 const projectSessions = schedule.filter(s => s.projectId === project.id);
                                                 const { microNodes, atomicoNodes } = getProjectNodes(project, skillsTree, contentsTree, libraryItems);
@@ -596,14 +550,14 @@ function StudentView({
                                                                 <span className="text-sm font-bold text-slate-700">{project.title}</span>
                                                             </div>
                                                             <div className="flex items-center gap-3">
-                                                                <Badge variant="outline" className="text-[10px] bg-white text-slate-500">{projectSessions.length} sessões</Badge>
+                                                                <Badge variant="outline" className="text-[10px] bg-white text-slate-500">{projectSessions.length} sess├╡es</Badge>
                                                             </div>
                                                         </div>
                                                         <div className="p-4 space-y-6">
                                                             {projectSessions.length > 0 && (
                                                                 <div className="space-y-3">
                                                                     <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                                                                        <Calendar className="w-3 h-3" /> Sessões do Projeto
+                                                                        <Calendar className="w-3 h-3" /> Sess├╡es do Projeto
                                                                     </h4>
                                                                     <div className="space-y-2">
                                                                         {projectSessions.map(session => {
@@ -613,13 +567,13 @@ function StudentView({
                                                                                 <div key={session.id} className="flex items-center justify-between border rounded-xl px-4 py-2.5 bg-slate-50/30 hover:bg-slate-50 transition-colors group">
                                                                                     <div className="min-w-0">
                                                                                         <p className="font-semibold text-slate-800 text-xs truncate">{session.title}</p>
-                                                                                        <p className="text-[10px] text-slate-400 mt-0.5">{dateStr} · {session.time}</p>
+                                                                                        <p className="text-[10px] text-slate-400 mt-0.5">{dateStr} ┬╖ {session.time}</p>
                                                                                     </div>
                                                                                     <div className="flex items-center gap-3 shrink-0">
                                                                                         {sessionAssessment ? (
                                                                                             <MiniTree rating={sessionAssessment.rating} />
                                                                                         ) : (
-                                                                                            <span className="text-[10px] text-slate-400 italic">Sem avaliação</span>
+                                                                                            <span className="text-[10px] text-slate-400 italic">Sem avalia├º├úo</span>
                                                                                         )}
                                                                                         <Button
                                                                                             size="sm"
@@ -645,7 +599,7 @@ function StudentView({
                                                             {microNodes.length > 0 && (
                                                                 <div className="space-y-3">
                                                                     <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                                                                        <Star className="w-3 h-3 text-amber-500" /> Habilidades & Competências
+                                                                        <Star className="w-3 h-3 text-amber-500" /> Habilidades & Compet├¬ncias
                                                                     </h4>
                                                                     <div className="space-y-2">
                                                                         {microNodes.map(node => {
@@ -663,7 +617,7 @@ function StudentView({
                                                                                             {nodeAssessment ? (
                                                                                                 <MiniTree rating={nodeAssessment.rating} />
                                                                                             ) : (
-                                                                                                <span className="text-[10px] text-slate-400 italic">Sem avaliação</span>
+                                                                                                <span className="text-[10px] text-slate-400 italic">Sem avalia├º├úo</span>
                                                                                             )}
                                                                                             <Button
                                                                                                 size="sm"
@@ -697,7 +651,7 @@ function StudentView({
                                                             {atomicoNodes.length > 0 && (
                                                                 <div className="space-y-3">
                                                                     <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                                                                        <Star className="w-3 h-3 text-amber-500" /> Habilidades Específicas & Evidências
+                                                                        <Star className="w-3 h-3 text-amber-500" /> Habilidades Espec├¡ficas & Evid├¬ncias
                                                                     </h4>
                                                                     <div className="space-y-2">
                                                                         {atomicoNodes.map(node => {
@@ -715,7 +669,7 @@ function StudentView({
                                                                                             {nodeAssessment ? (
                                                                                                 <MiniTree rating={nodeAssessment.rating} />
                                                                                             ) : (
-                                                                                                <span className="text-[10px] text-slate-400 italic">Sem avaliação</span>
+                                                                                                <span className="text-[10px] text-slate-400 italic">Sem avalia├º├úo</span>
                                                                                             )}
                                                                                             <Button
                                                                                                 size="sm"
@@ -751,14 +705,13 @@ function StudentView({
                                             })}
                                         </div>
                                     </div>
-                                </div>
                                 );
                             })()}
 
                             {photos.length > 0 && (
                                 <div>
                                     <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                        <ImageIcon className="w-4 h-4" /> Galeria de Vivências ({photos.length})
+                                        <ImageIcon className="w-4 h-4" /> Galeria de Viv├¬ncias ({photos.length})
                                     </h3>
                                     <div className="grid grid-cols-4 gap-2">
                                         {photos.map((p, i) => (
@@ -776,15 +729,11 @@ function StudentView({
     );
 }
 
-// ────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 // Main Portfolio Page
-// ────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 function PortfolioContent() {
-    const { assessments, projects: allProjects, schedule, skillsTree, contentsTree } = useAppStore();
-    const [classes, setClasses] = useState<SchoolClass[]>([]);
-    const [students, setStudents] = useState<Student[]>([]);
-    const [isLoadingClasses, setIsLoadingClasses] = useState(true);
-    const [isLoadingStudents, setIsLoadingStudents] = useState(true);
+    const { assessments, projects: allProjects, students, classes, schedule, skillsTree, contentsTree } = useAppStore();
     const searchParams = useSearchParams();
     const initialClassId = searchParams.get("classId");
 
@@ -797,33 +746,9 @@ function PortfolioContent() {
 
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
 
-    async function fetchClasses() {
-        try {
-            const data = await getClasses();
-            setClasses(data);
-        } catch (error) {
-            console.error("Erro ao buscar turmas:", error);
-        } finally {
-            setIsLoadingClasses(false);
-        }
-    }
-
-    async function fetchStudents() {
-        try {
-            const data = await getStudents();
-            setStudents(data);
-        } catch (error) {
-            console.error("Erro ao buscar alunos:", error);
-        } finally {
-            setIsLoadingStudents(false);
-        }
-    }
-
     useEffect(() => {
-        fetchClasses();
-        fetchStudents();
         getListaBNCC();
-    }, []);
+    }, [])
 
     async function getListaBNCC() {
         await getListBncc().then(setLibraryItems);
@@ -846,15 +771,6 @@ function PortfolioContent() {
         window.open(`/portfolio/report?project=${projectId}&student=${studentId}`, "_blank");
     };
 
-    if (isLoadingClasses || isLoadingStudents) {
-        return (
-            <div className="flex items-center justify-center p-12 min-h-screen">
-                <Loader2 className="w-8 h-8 text-slate-400 animate-spin mr-3" />
-                <div className="text-slate-500 text-lg animate-pulse">Carregando portfólio...</div>
-            </div>
-        );
-    }
-
     return (
         <div className="min-h-screen bg-slate-50">
             <div className="bg-white border-b px-8 py-5 flex items-center justify-between">
@@ -863,8 +779,8 @@ function PortfolioContent() {
                         <BookMarked className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900">Portfólio</h1>
-                        <p className="text-slate-500 text-sm">{assessments.length} avaliações registradas</p>
+                        <h1 className="text-2xl font-bold text-slate-900">Portf├│lio</h1>
+                        <p className="text-slate-500 text-sm">{assessments.length} avalia├º├╡es registradas</p>
                     </div>
                 </div>
                 <div className="flex bg-slate-100 rounded-xl p-1 gap-1">
@@ -969,7 +885,6 @@ function PortfolioContent() {
                 <AssessmentDrawer
                     open={!!drawerCtx}
                     onOpenChange={(open) => { if (!open) setDrawerCtx(null); }}
-                    students={students}
                     knowledgeNodeId={drawerCtx.knowledgeNodeId}
                     sessionId={drawerCtx.sessionId}
                     projectId={drawerCtx.projectId}
@@ -983,7 +898,6 @@ function PortfolioContent() {
                 <AssessmentDrawer
                     open={!!editingAssessment}
                     onOpenChange={(open) => { if (!open) setEditingAssessment(null); }}
-                    students={students}
                     assessmentId={editingAssessment.id}
                     initialRating={editingAssessment.rating}
                     initialObservations={editingAssessment.observations}
@@ -1001,7 +915,7 @@ function PortfolioContent() {
 
 export default function PortfolioPage() {
     return (
-        <Suspense fallback={<div className="p-8 text-center">Carregando portfólio...</div>}>
+        <Suspense fallback={<div className="p-8 text-center">Carregando portf├│lio...</div>}>
             <PortfolioContent />
         </Suspense>
     );

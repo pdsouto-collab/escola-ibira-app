@@ -1,88 +1,154 @@
-﻿diff --git a/src/components/admin/knowledge-tree-editor.tsx b/src/components/admin/knowledge-tree-editor.tsx
-index fc50b18..7bacd9b 100644
---- a/src/components/admin/knowledge-tree-editor.tsx
-+++ b/src/components/admin/knowledge-tree-editor.tsx
-@@ -48,9 +48,13 @@ const LEVEL_COLORS = {
- };
+﻿diff --git a/src/app/(main)/portfolio/page.tsx b/src/app/(main)/portfolio/page.tsx
+index f72bf26d..473ba92c 100644
+--- a/src/app/(main)/portfolio/page.tsx
++++ b/src/app/(main)/portfolio/page.tsx
+@@ -10,12 +10,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
+ import { cn } from "@/lib/utils";
+ import {
+     BookMarked, Calendar, User, Users, ClipboardList, Pencil, FileText,
+-    Image as ImageIcon, File, FolderKanban, Star
++    Image as ImageIcon, File, FolderKanban, Star, Loader2
+ } from "lucide-react";
+ import { Badge } from "@/components/ui/badge";
+ import Link from "next/link";
+ import { LibraryItem } from "@/types/library-item";
+ import { getListBncc } from "@/services/bncc.service";
++import { getClasses } from "@/services/school-class.service";
++import { getStudents } from "@/services/student.service";
++import { SchoolClass } from "@/types/school-class";
++import { Student } from "@/types/student";
  
- export function KnowledgeTreeEditor({ treeType }: Props) {
--    const { skillsTree, contentsTree, libraryItems, addKnowledgeNode, updateKnowledgeNode, removeKnowledgeNode } = useAppStore();
-+    const { skillsTree, contentsTree, libraryItems, classes, addKnowledgeNode, updateKnowledgeNode, removeKnowledgeNode } = useAppStore();
+ // ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+ // Helper: find node name recursively
+@@ -169,8 +173,8 @@ function AttachmentThumb({ att }: { att: Assessment["attachments"][0] }) {
+ function AssessmentCard({ assessment, onEdit, students, classes }: {
+     assessment: Assessment;
+     onEdit: () => void;
+-    students: ReturnType<typeof useAppStore>["students"];
+-    classes: ReturnType<typeof useAppStore>["classes"];
++    students: Student[];
++    classes: SchoolClass[];
+ }) {
+     const student = assessment.studentId ? students.find(s => s.id === assessment.studentId) : null;
+     const cls = assessment.classId
+@@ -231,8 +235,8 @@ function ProjectView({
+     allProjects: ReturnType<typeof useAppStore>["projects"];
+     assessments: Assessment[];
+     schedule: ReturnType<typeof useAppStore>["schedule"];
+-    students: ReturnType<typeof useAppStore>["students"];
+-    classes: ReturnType<typeof useAppStore>["classes"];
++    students: Student[];
++    classes: SchoolClass[];
+     skillsTree: ReturnType<typeof useAppStore>["skillsTree"];
+     contentsTree: ReturnType<typeof useAppStore>["contentsTree"];
+     libraryItems: LibraryItem[]
+@@ -451,8 +455,8 @@ function StudentView({
+     assessments, students, classes, projects, schedule, skillsTree, contentsTree, libraryItems, studentFilter, classFilter, projectFilter, setProjectFilter, onAvaliacao, onEdit
+ }: {
+     assessments: Assessment[];
+-    students: ReturnType<typeof useAppStore>["students"];
+-    classes: ReturnType<typeof useAppStore>["classes"];
++    students: Student[];
++    classes: SchoolClass[];
+     projects: ReturnType<typeof useAppStore>["projects"];
+     schedule: ReturnType<typeof useAppStore>["schedule"];
+     skillsTree: ReturnType<typeof useAppStore>["skillsTree"];
+@@ -513,6 +517,18 @@ function StudentView({
+                                         <p className="text-white font-bold text-sm">{avgRating.toFixed(1)}/5</p>
+                                     </div>
+                                 )}
++                                <Button
++                                    size="sm"
++                                    variant="outline"
++                                    className="h-9 gap-1.5 bg-white/10 text-white border-white/20 hover:bg-white/20 hover:text-white transition-colors"
++                                    onClick={() => onAvaliacao({
++                                        studentId: student.id,
++                                        classId: student.classId,
++                                        contextLabel: `Avalia├º├úo: ${student.name.split(" ")[0]}`
++                                    })}
++                                >
++                                    <ClipboardList className="w-4 h-4" /> Avaliar
++                                </Button>
+                                 <Link href={`/portfolio/report?student=${student.id}`}>
+                                     <Button size="sm" variant="outline" className="h-9 gap-1.5 bg-white/10 text-white border-white/20 hover:bg-white/20 hover:text-white transition-colors">
+                                         <FileText className="w-4 h-4" /> Relat├│rio
+@@ -733,7 +749,11 @@ function StudentView({
+ // Main Portfolio Page
+ // ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+ function PortfolioContent() {
+-    const { assessments, projects: allProjects, students, classes, schedule, skillsTree, contentsTree } = useAppStore();
++    const { assessments, projects: allProjects, schedule, skillsTree, contentsTree } = useAppStore();
++    const [classes, setClasses] = useState<SchoolClass[]>([]);
++    const [students, setStudents] = useState<Student[]>([]);
++    const [isLoadingClasses, setIsLoadingClasses] = useState(true);
++    const [isLoadingStudents, setIsLoadingStudents] = useState(true);
+     const searchParams = useSearchParams();
+     const initialClassId = searchParams.get("classId");
  
-     const treeData = treeType === "skill" ? skillsTree : contentsTree;
-+    const [selectedClassId, setSelectedClassId] = useState<string>("all");
+@@ -746,9 +766,33 @@ function PortfolioContent() {
+ 
+     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
+ 
++    async function fetchClasses() {
++        try {
++            const data = await getClasses();
++            setClasses(data);
++        } catch (error) {
++            console.error("Erro ao buscar turmas:", error);
++        } finally {
++            setIsLoadingClasses(false);
++        }
++    }
 +
-+    // Filter only the roots. Children belong to whatever root they are in.
-+    const filteredTreeData = treeData.filter(node => (node.classId || "all") === selectedClassId);
++    async function fetchStudents() {
++        try {
++            const data = await getStudents();
++            setStudents(data);
++        } catch (error) {
++            console.error("Erro ao buscar alunos:", error);
++        } finally {
++            setIsLoadingStudents(false);
++        }
++    }
++
+     useEffect(() => {
++        fetchClasses();
++        fetchStudents();
+         getListaBNCC();
+-    }, [])
++    }, []);
  
-     // Dialog State
-     const [isDialogOpen, setIsDialogOpen] = useState(false);
-@@ -66,6 +70,7 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
-             level: "macro",
-             name: "",
-             description: "",
-+            classId: selectedClassId, // Assign to the currently selected class view
-             children: []
-         });
-         setParentLevel(null);
-@@ -215,8 +220,25 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
+     async function getListaBNCC() {
+         await getListBncc().then(setLibraryItems);
+@@ -771,6 +815,15 @@ function PortfolioContent() {
+         window.open(`/portfolio/report?project=${projectId}&student=${studentId}`, "_blank");
+     };
+ 
++    if (isLoadingClasses || isLoadingStudents) {
++        return (
++            <div className="flex items-center justify-center p-12 min-h-screen">
++                <Loader2 className="w-8 h-8 text-slate-400 animate-spin mr-3" />
++                <div className="text-slate-500 text-lg animate-pulse">Carregando portf├│lio...</div>
++            </div>
++        );
++    }
++
      return (
-         <div className="space-y-6">
-             <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-200 border-dashed">
--                <div className="text-sm text-slate-600">
--                    Construa as ramifica├º├╡es hier├írquicas, come├ºando pelas <strong>├üreas/Eixos</strong> at├⌐ as <strong>Evid├¬ncias</strong> at├┤micas.
-+                <div className="flex items-center gap-4">
-+                    <div className="text-sm text-slate-600 max-w-md">
-+                        Construa as ramifica├º├╡es hier├írquicas, come├ºando pelas <strong>├üreas/Eixos</strong> at├⌐ as <strong>Evid├¬ncias</strong> at├┤micas.
-+                    </div>
-+                    <div className="h-8 w-px bg-slate-200" />
-+                    <div className="flex items-center gap-2">
-+                        <Label className="text-slate-500 text-xs font-semibold uppercase tracking-wider">Turma:</Label>
-+                        <Select value={selectedClassId} onValueChange={setSelectedClassId}>
-+                            <SelectTrigger className="w-[200px] h-9 bg-white">
-+                                <SelectValue placeholder="Selecione a Turma" />
-+                            </SelectTrigger>
-+                            <SelectContent>
-+                                <SelectItem value="all">Todas as Turmas</SelectItem>
-+                                {classes.map(c => (
-+                                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-+                                ))}
-+                            </SelectContent>
-+                        </Select>
-+                    </div>
-                 </div>
-                 <Button onClick={handleAddRoot} className="gap-2">
-                     <Plus className="w-4 h-4" />
-@@ -225,17 +247,17 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
-             </div>
- 
-             <div className="border border-slate-200 rounded-xl p-6 bg-white overflow-hidden relative min-h-[400px]">
--                {treeData.length === 0 ? (
-+                {filteredTreeData.length === 0 ? (
-                     <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
-                         <div className="bg-slate-50 p-4 rounded-full mb-3">
-                             <Plus className="w-8 h-8 opacity-50" />
-                         </div>
--                        <p>A ├írvore ainda est├í vazia.</p>
-+                        <p>A ├írvore ainda est├í vazia para esta sele├º├úo.</p>
-                         <p className="text-sm">Clique em "Criar N├¡vel Macro" para iniciar.</p>
-                     </div>
-                 ) : (
-                     <div className="space-y-4 -ml-4">
--                        {treeData.map(node => (
-+                        {filteredTreeData.map(node => (
-                             <TreeNode key={node.id} node={node} />
-                         ))}
-                     </div>
-diff --git a/src/lib/data.ts b/src/lib/data.ts
-index 826765a..2d05a96 100644
---- a/src/lib/data.ts
-+++ b/src/lib/data.ts
-@@ -13,6 +13,7 @@ export interface KnowledgeNode {
-     description?: string; // Optional detailed description
-     libraryItemId?: string; // ONLY for L3 (Micro): points to an item in `libraryItems`
-     linkedNodeIds?: string[]; // For Cross-Linking: L3/L4 Conten├║do mapping to L3/L4 Habilidades
-+    classId?: string; // e.g. "all" or a specific class ID. Usually set at the macro (root) level.
-     children: KnowledgeNode[]; // Nested nodes down the hierarchy
- }
- 
+         <div className="min-h-screen bg-slate-50">
+             <div className="bg-white border-b px-8 py-5 flex items-center justify-between">
+@@ -885,6 +938,7 @@ function PortfolioContent() {
+                 <AssessmentDrawer
+                     open={!!drawerCtx}
+                     onOpenChange={(open) => { if (!open) setDrawerCtx(null); }}
++                    students={students}
+                     knowledgeNodeId={drawerCtx.knowledgeNodeId}
+                     sessionId={drawerCtx.sessionId}
+                     projectId={drawerCtx.projectId}
+@@ -898,6 +952,7 @@ function PortfolioContent() {
+                 <AssessmentDrawer
+                     open={!!editingAssessment}
+                     onOpenChange={(open) => { if (!open) setEditingAssessment(null); }}
++                    students={students}
+                     assessmentId={editingAssessment.id}
+                     initialRating={editingAssessment.rating}
+                     initialObservations={editingAssessment.observations}
