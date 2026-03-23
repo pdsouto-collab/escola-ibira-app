@@ -80,7 +80,7 @@ export function TeacherDialog({ open, onOpenChange, user, classes, onSave, isLoa
 
         onSave({
             ...dataToSave,
-            role: "teacher",
+            role: formData.role || "teacher",
             avatar: formData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.name || 'teacher'}`,
         } as User);
         // Do NOT close dialog here - let the parent handle it after success
@@ -200,6 +200,21 @@ export function TeacherDialog({ open, onOpenChange, user, classes, onSave, isLoa
                             </TabsContent>
 
                             <TabsContent value="professional" className="mt-0 space-y-6">
+                                <div className="space-y-2">
+                                    <Label htmlFor="role" className="text-sm font-semibold italic text-slate-400">Tipo de Docente</Label>
+                                    <Select
+                                        value={formData.role || "teacher"}
+                                        onValueChange={val => setFormData({ ...formData, role: val as "teacher" | "assistant" })}
+                                    >
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="teacher">Professor(a)</SelectItem>
+                                            <SelectItem value="assistant">Auxiliar Pedagógico(a)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label htmlFor="hiringDate" className="text-sm font-semibold italic text-slate-400">Data de Admissão</Label>

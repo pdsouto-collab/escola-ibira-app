@@ -71,8 +71,8 @@ export default function TeachersPage() {
         }
     }, [router, currentUser]);
 
-    // Filter only teachers
-    const teachers = localUsers.filter(u => u.role === "teacher");
+    // Filter only teachers and assistants
+    const teachers = localUsers.filter(u => u.role === "teacher" || u.role === "assistant");
 
     const handleAddTeacher = () => {
         setEditingUser(null);
@@ -95,8 +95,8 @@ export default function TeachersPage() {
                 setLocalUsers(prev => prev.filter(u => u.id !== confirmDeleteUser.id));
                 toast.success("Professor removido com sucesso");
             } catch (error) {
-                console.error("Erro ao deletar professor:", error);
-                toast.error("Ocorreu um erro ao tentar remover o professor.");
+                console.error("Erro ao deletar docente:", error);
+                toast.error("Ocorreu um erro ao tentar remover o docente.");
             } finally {
                 setConfirmDeleteUser(null);
             }
@@ -110,7 +110,7 @@ export default function TeachersPage() {
                 const updated = await updateUserService(teacher.id, teacher);
                 setLocalUsers(prev => prev.map(u => u.id === teacher.id ? updated : u));
             } else {
-                teacher.password = '123456'; // Senha padrão para criação de professores
+                teacher.password = '123456'; // Senha padrão para criação de docentes
                 const newUser = await createUser(teacher);
                 setLocalUsers(prev => [...prev, newUser]);
                 setCreatedCredentials({
@@ -120,8 +120,8 @@ export default function TeachersPage() {
             }
             setIsDialogOpen(false);
         } catch (error) {
-            console.error("Erro ao salvar professor:", error);
-            toast.error("Ocorreu um erro ao tentar salvar os dados do professor.");
+            console.error("Erro ao salvar docente:", error);
+            toast.error("Ocorreu um erro ao tentar salvar os dados do docente.");
         } finally {
             setIsSaving(false);
         }
@@ -135,12 +135,12 @@ export default function TeachersPage() {
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-slate-900">Professores</h1>
-                    <p className="text-slate-500 text-sm">Gerencie o cadastro dos professores da escola.</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-900">Docentes</h1>
+                    <p className="text-slate-500 text-sm">Gerencie o cadastro dos docentes da escola.</p>
                 </div>
                 <Button onClick={handleAddTeacher} className="bg-primary hover:bg-primary/90 text-white gap-2 shadow-sm">
                     <UserPlus className="w-4 h-4" />
-                    Novo Professor
+                    Novo Docente
                 </Button>
             </div>
 
@@ -241,9 +241,9 @@ export default function TeachersPage() {
             <Dialog open={!!createdCredentials} onOpenChange={(open) => !open && setCreatedCredentials(null)}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Professor Cadastrado!</DialogTitle>
+                        <DialogTitle>Docente Cadastrado!</DialogTitle>
                         <DialogDescription>
-                            O professor foi cadastrado com sucesso. Compartilhe as credenciais abaixo:
+                            O docente foi cadastrado com sucesso. Compartilhe as credenciais abaixo:
                         </DialogDescription>
                     </DialogHeader>
                     <div className="bg-slate-100 p-4 rounded-md space-y-2 text-sm">

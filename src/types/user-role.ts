@@ -1,1 +1,1 @@
-export type UserRole = "director" | "teacher" | "guardian" | "admin" | "nutritionist";
+export type UserRole = "director" | "teacher" | "assistant" | "guardian" | "admin" | "nutritionist";

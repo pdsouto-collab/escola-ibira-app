@@ -42,6 +42,7 @@ import {
 
 export function ClassDialog({ open, onOpenChange, schoolClass, onSave, isLoading }: ClassDialogProps) {
     const [teachers, setTeachers] = useState<User[]>([]);
+    const [assistants, setAssistants] = useState<User[]>([]);
     const [formData, setFormData] = useState<Partial<SchoolClass>>(schoolClass ? { ...schoolClass } : emptyClass);
 
     useEffect(() => {
@@ -49,6 +50,7 @@ export function ClassDialog({ open, onOpenChange, schoolClass, onSave, isLoading
             setFormData(schoolClass ? { ...schoolClass } : emptyClass);
             getUsers().then(users => {
                 setTeachers(users.filter(u => u.role === "teacher"));
+                setAssistants(users.filter(u => u.role === "assistant"));
             });
         }
     }, [open]);
@@ -117,6 +119,29 @@ export function ClassDialog({ open, onOpenChange, schoolClass, onSave, isLoading
                                         {teachers.map(teacher => (
                                             <SelectItem key={teacher.id} value={teacher.id}>
                                                 {teacher.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="assistant" className="text-right whitespace-nowrap">
+                                Auxiliar Pedagógico(a)
+                            </Label>
+                            <div className="col-span-3">
+                                <Select
+                                    value={formData.assistantId || "none"}
+                                    onValueChange={(value) => setFormData({ ...formData, assistantId: value === "none" ? undefined : value })}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Selecione um auxiliar..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="none">-- Sem Auxiliar --</SelectItem>
+                                        {assistants.map(assistant => (
+                                            <SelectItem key={assistant.id} value={assistant.id}>
+                                                {assistant.name}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
