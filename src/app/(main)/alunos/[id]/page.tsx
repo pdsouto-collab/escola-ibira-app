@@ -1,32 +1,67 @@
-import { mockStudents, getStudentCurriculum } from "@/lib/data";
+"use client";
+import React, { useState, useEffect, use } from "react";
+import { getStudentById } from "@/services/student.service";
+import { getStudentCurriculum } from "@/lib/data";
 import { getClassById } from "@/services/school-class.service";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { Student } from "@/types/student";
+import { SchoolClass } from "@/types/school-class";
 
 interface StudentProfilePageProps {
     params: Promise<{ id: string }>;
 }
 
-export async function generateStaticParams() {
-    return mockStudents.map((student) => ({
-        id: student.id,
-    }));
-}
 
-export default async function StudentProfilePage({ params }: StudentProfilePageProps) {
-    const { id } = await params;
-    const student = mockStudents.find((s) => s.id === id);
+export default function StudentProfilePage({ params }: StudentProfilePageProps) {
+    const { id } = use(params);
+    const [student, setStudent] = useState<Student | null>(null);
+    const [studentClass, setStudentClass] = useState<SchoolClass | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
-    if (!student) {
-        notFound();
+    useEffect(() => {
+        async function loadData() {
+            setIsLoading(true);
+            try {
+                const studentData = await getStudentById(id);
+                if (studentData) {
+                    setStudent(studentData);
+                    if (studentData.classId) {
+                        const classData = await getClassById(studentData.classId);
+                        setStudentClass(classData);
+                    }
+                }
+            } catch (error) {
+                console.error("Erro ao carregar dados do aluno:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        loadData();
+    }, [id]);
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-full min-h-[400px]">
+                <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+            </div>
+        );
     }
 
-    const educationPlan = getStudentCurriculum(id);
-    const studentClass = student.classId 
-        ? await getClassById(student.classId)
-        : null;
+    if (!student) {
+        return (
+            <div className="flex flex-col items-center justify-center h-full min-h-[400px] gap-4">
+                <p className="text-slate-500 font-medium">Aluno não encontrado.</p>
+                <Link href="/alunos">
+                    <Button variant="outline" className="gap-2">
+                        <ArrowLeft className="h-4 w-4" /> Voltar para a lista
+                    </Button>
+                </Link>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
