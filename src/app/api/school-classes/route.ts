@@ -16,7 +16,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { id, name, description, teacherId } = body;
+    const { id, name, description, teacherId, assistantId } = body;
     
     if (!name) {
       return new NextResponse("Nome é obrigatório", { status: 400 });
@@ -27,7 +27,8 @@ export async function POST(req: Request) {
         id,
         name,
         description,
-        teacherId
+        teacherId,
+        assistantId
       }
     });
 

@@ -30,7 +30,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await req.json();
-    const { name, description, teacherId } = body;
+    const { name, description, teacherId, assistantId } = body;
 
     const schoolClass = await prisma.schoolClass.update({
       where: {
@@ -39,7 +39,8 @@ export async function PUT(
       data: {
         name,
         description,
-        teacherId
+        teacherId,
+        assistantId
       }
     });
 
