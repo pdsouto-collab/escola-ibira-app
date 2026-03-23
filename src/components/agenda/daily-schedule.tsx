@@ -4,7 +4,6 @@ import { ScheduleItem } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { Utensils, Moon, BookOpen, Clock, Pencil, Trash2, FolderKanban, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AssessmentDrawer } from "@/components/assessment/assessment-drawer";
 import { useState } from "react";
 import { useAppStore } from "@/lib/store";
 
@@ -34,7 +33,6 @@ function getColors(type: ScheduleItem["type"]) {
 
 export function DailySchedule({ items, onEdit, onDelete }: DailyScheduleProps) {
     const { menus } = useAppStore();
-    const [assessingItem, setAssessingItem] = useState<ScheduleItem | null>(null);
 
     const getMenuDescription = (itemTitle: string, itemDate?: string) => {
         if (!itemDate) return "";
@@ -96,15 +94,7 @@ export function DailySchedule({ items, onEdit, onDelete }: DailyScheduleProps) {
 
                                     {onEdit && (
                                         <div className="absolute top-2 right-2 opacity-0 group-hover/card:opacity-100 transition-opacity flex gap-1 bg-white/80 p-1 rounded-md">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-6 px-2 text-xs text-green-600 hover:text-green-700 hover:bg-green-50 font-semibold"
-                                                onClick={() => setAssessingItem(item)}
-                                            >
-                                                <ClipboardList className="h-3 w-3 mr-1" />
-                                                Avaliar
-                                            </Button>
+
                                             <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => onEdit(item)}>
                                                 <Pencil className="h-3 w-3 text-slate-500" />
                                             </Button>
@@ -120,15 +110,7 @@ export function DailySchedule({ items, onEdit, onDelete }: DailyScheduleProps) {
                 })}
             </div>
 
-            {/* Assessment Dialog */}
-            <AssessmentDrawer
-                open={!!assessingItem}
-                onOpenChange={(open) => { if (!open) setAssessingItem(null); }}
-                sessionId={assessingItem?.id}
-                projectId={assessingItem?.projectId}
-                defaultClassId={assessingItem?.classId}
-                contextLabel={assessingItem ? `${assessingItem.title} \u00b7 ${assessingItem.time ?? ''}` : undefined}
-            />
+
         </>
     );
 }
