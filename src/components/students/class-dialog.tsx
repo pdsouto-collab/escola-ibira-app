@@ -65,7 +65,7 @@ export function ClassDialog({ open, onOpenChange, schoolClass, onSave, isLoading
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                     <DialogTitle>{schoolClass ? "Editar Turma" : "Adicionar Nova Turma"}</DialogTitle>
                     <DialogDescription>
@@ -74,11 +74,11 @@ export function ClassDialog({ open, onOpenChange, schoolClass, onSave, isLoading
                 </DialogHeader>
                 <form onSubmit={handleSubmit}>
                     <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-4 items-center gap-4">
+                        <div className="grid grid-cols-[150px_1fr] items-center gap-4">
                             <Label htmlFor="className" className="text-right">
                                 Nome
                             </Label>
-                            <div className="col-span-3 space-y-1">
+                            <div className="space-y-1">
                                 <Input
                                     id="className"
                                     value={formData.name || ""}
@@ -91,7 +91,7 @@ export function ClassDialog({ open, onOpenChange, schoolClass, onSave, isLoading
                                 )}
                             </div>
                         </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
+                        <div className="grid grid-cols-[150px_1fr] items-center gap-4">
                             <Label htmlFor="classDesc" className="text-right">
                                 Descrição
                             </Label>
@@ -99,14 +99,13 @@ export function ClassDialog({ open, onOpenChange, schoolClass, onSave, isLoading
                                 id="classDesc"
                                 value={formData.description || ""}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                className="col-span-3"
                             />
                         </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
+                        <div className="grid grid-cols-[150px_1fr] items-center gap-4">
                             <Label htmlFor="teacher" className="text-right">
                                 Professor(a)
                             </Label>
-                            <div className="col-span-3">
+                            <div>
                                 <Select
                                     value={formData.teacherId || "none"}
                                     onValueChange={(value) => setFormData({ ...formData, teacherId: value === "none" ? undefined : value })}
@@ -125,11 +124,11 @@ export function ClassDialog({ open, onOpenChange, schoolClass, onSave, isLoading
                                 </Select>
                             </div>
                         </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="assistant" className="text-right whitespace-nowrap">
+                        <div className="grid grid-cols-[150px_1fr] items-center gap-4">
+                            <Label htmlFor="assistant" className="text-right">
                                 Auxiliar Pedagógico(a)
                             </Label>
-                            <div className="col-span-3">
+                            <div>
                                 <Select
                                     value={formData.assistantId || "none"}
                                     onValueChange={(value) => setFormData({ ...formData, assistantId: value === "none" ? undefined : value })}
