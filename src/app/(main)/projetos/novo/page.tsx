@@ -18,6 +18,7 @@ import { useAppStore } from "@/lib/store";
 import { Project, ScheduleItem, KnowledgeNode } from "@/lib/data";
 import { SchoolClass } from "@/types/school-class";
 import { getClasses } from "@/services/school-class.service";
+import { getStudents } from "@/services/student.service";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { LibraryItem } from "@/types/library-item";
@@ -36,22 +37,26 @@ function NewProjectWizardContent() {
         schedule,
         updateSchedule,
         finalProductTypes,
-        students,
         skillsTree,
         contentsTree
     } = useAppStore();
 
     const [classes, setClasses] = useState<SchoolClass[]>([]);
+    const [students, setStudents] = useState<any[]>([]);
     const [isLoadingClasses, setIsLoadingClasses] = useState(true);
 
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
 
-    async function fetchClasses() {
+    async function fetchClassesAndStudents() {
         try {
-            const data = await getClasses();
-            setClasses(data);
+            const [classesData, studentsData] = await Promise.all([
+                getClasses(),
+                getStudents()
+            ]);
+            setClasses(classesData);
+            setStudents(studentsData);
         } catch (error) {
-            console.error("Erro ao buscar turmas:", error);
+            console.error("Erro ao buscar dados:", error);
         } finally {
             setIsLoadingClasses(false);
         }
@@ -59,7 +64,7 @@ function NewProjectWizardContent() {
 
     useEffect(() => {
         getListaBNCC();
-        fetchClasses();
+        fetchClassesAndStudents();
     }, [])
 
     async function getListaBNCC() {
