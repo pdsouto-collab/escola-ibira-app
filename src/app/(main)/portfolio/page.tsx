@@ -109,22 +109,26 @@ const getProjectNodes = (project: any, skillsTree: any[], contentsTree: any[], l
     const recursiveNodes = findEvaluatableNodes([...skillsTree, ...contentsTree], Array.from(targetSet));
 
     const displayedNodeIds = new Set<string>();
+    const displayedKeys = new Set<string>(); // to prevent duplicates with same BNCC code
     const microNodes: any[] = [];
     const atomicoNodes: any[] = [];
 
     // 1. Add direct skills/contents
     [...directSkillIds, ...directContentIds].forEach(id => {
         const info = resolveNodeInfo(id, skillsTree, contentsTree, libraryItems);
-        if (!displayedNodeIds.has(info.id)) {
+        const dedupKey = info.code || info.libraryItemId || info.name;
+        if (!displayedNodeIds.has(info.id) && !displayedKeys.has(dedupKey)) {
             if (info.level === "atomico") atomicoNodes.push(info);
             else microNodes.push(info);
             displayedNodeIds.add(info.id);
+            if (dedupKey) displayedKeys.add(dedupKey);
         }
     });
 
     // 2. Add recursive evaluatable nodes (if not already displayed)
     recursiveNodes.forEach(node => {
-        if (!displayedNodeIds.has(node.id)) {
+        const dedupKey = node.code || node.libraryItemId || node.name;
+        if (!displayedNodeIds.has(node.id) && !displayedKeys.has(dedupKey)) {
             const info = {
                 ...node,
                 code: node.code || (node.libraryItemId ? node.libraryItemId : null)
@@ -132,6 +136,7 @@ const getProjectNodes = (project: any, skillsTree: any[], contentsTree: any[], l
             if (info.level === "atomico") atomicoNodes.push(info);
             else microNodes.push(info);
             displayedNodeIds.add(node.id);
+            if (dedupKey) displayedKeys.add(dedupKey);
         }
     });
 
