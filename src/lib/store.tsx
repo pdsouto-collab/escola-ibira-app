@@ -1,9 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { Student } from "@/types/student";
 import {
-    mockStudents,
     mockSchedule, ScheduleItem,
     mockDailyLogs, DailyLog,
     mockRecursiveDataSkills, MosaicNode,
@@ -20,7 +18,6 @@ import {
 } from "@/lib/data";
 
 interface AppState {
-    students: Student[];
     schedule: ScheduleItem[];
     dailyLogs: DailyLog[];
     tasks: Task[];
@@ -43,11 +40,6 @@ interface AppState {
 }
 
 interface AppContextType extends AppState {
-    // Actions
-    addStudent: (student: Student) => void;
-    updateStudent: (id: string, updates: Partial<Student>) => void;
-    removeStudent: (id: string) => void;
-
     toggleTask: (id: string) => void;
     addTask: (task: Task) => void;
     removeTask: (id: string) => void;
@@ -217,7 +209,6 @@ const initialMessages: ChatMessage[] = mockMessages.map(m => ({
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
     // Initialize state from LocalStorage or Default
-    const [students, setStudents] = useState<Student[]>(mockStudents);
     const [schedule, setSchedule] = useState<ScheduleItem[]>(mockSchedule);
     const [dailyLogs, setDailyLogs] = useState<DailyLog[]>(mockDailyLogs);
     const [tasks, setTasks] = useState<Task[]>(initialTasks);
@@ -269,7 +260,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             setAssessments(mockAssessments);
             setPortfolioEntries(mockPortfolio);
             setDailyLogs(mockDailyLogs);
-            setStudents(mockStudents);
             setClassBoardPosts(mockClassBoardPosts);
             setPostInteractions(mockPostInteractions);
 
@@ -279,7 +269,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem("app_version", CURRENT_VERSION);
         } else {
             // Normal Load
-            load("students", setStudents, mockStudents);
             load("schedule", setSchedule, mockSchedule);
             load("dailyLogs", setDailyLogs, mockDailyLogs);
             load("tasks", setTasks, initialTasks);
@@ -309,7 +298,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (!isLoaded) return;
         try {
-            localStorage.setItem("app_students", JSON.stringify(students));
             localStorage.setItem("app_schedule", JSON.stringify(schedule));
             localStorage.setItem("app_dailyLogs", JSON.stringify(dailyLogs));
             localStorage.setItem("app_tasks", JSON.stringify(tasks));
@@ -331,25 +319,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
             console.error("Erro ao salvar no cache local. O limite de armazenamento pode ter sido atingido.", error);
         }
-    }, [students, schedule, dailyLogs, tasks, muralEvents, projects, messages, mosaicData, bnccProgress, skillsTree, contentsTree, menus, portfolioEntries, assessments, invoices, notifications, pegadaPosts, classBoardPosts, postInteractions, isLoaded]);
-
-    // Actions
-    const addStudent = (student: Student) => {
-        setStudents(prev => [...prev, student]);
-        addNotification({
-            id: Math.random().toString(36).substr(2, 9),
-            userId: "admin",
-            title: "Novo Aluno Matriculado",
-            message: `${student.name} foi adicionado à turma.`,
-            type: "info",
-            isRead: false,
-            createdAt: new Date().toISOString()
-        });
-    };
-    const updateStudent = (id: string, updates: Partial<Student>) => {
-        setStudents(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
-    };
-    const removeStudent = (id: string) => setStudents(prev => prev.filter(s => s.id !== id));
+    }, [schedule, dailyLogs, tasks, muralEvents, projects, messages, mosaicData, bnccProgress, skillsTree, contentsTree, menus, portfolioEntries, assessments, invoices, notifications, pegadaPosts, classBoardPosts, postInteractions, isLoaded]);
 
     const toggleTask = (id: string) => {
         setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
@@ -627,8 +597,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <AppContext.Provider value={{
-            students, schedule, dailyLogs, tasks, muralEvents, projects, messages,
-            addStudent, updateStudent, removeStudent, toggleTask, addTask, removeTask,
+            schedule, dailyLogs, tasks, muralEvents, projects, messages,
+            toggleTask, addTask, removeTask,
             addMuralEvent, updateMuralEvent, removeMuralEvent, addCommentToEvent,
             updateSchedule, addProject, updateProject, removeProject, sendMessage, resetData,
             mosaicData, updateMosaicNode, replaceMosaicData,

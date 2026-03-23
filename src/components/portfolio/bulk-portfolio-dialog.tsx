@@ -28,6 +28,7 @@ interface BulkPortfolioDialogProps {
     date: Date;
     classes: SchoolClass[];
     classId: string; // Now defaults to "all" but kept for compatibility
+    students: Student[];
 }
 
 interface StudentPortfolioForm {
@@ -37,8 +38,8 @@ interface StudentPortfolioForm {
     individualNote: string;
 }
 
-export function BulkPortfolioDialog({ open, onOpenChange, date, classes }: BulkPortfolioDialogProps) {
-    const { students, portfolioEntries, addPortfolioEntry, updatePortfolioEntry, removePortfolioEntry, addPegadaPost } = useAppStore();
+export function BulkPortfolioDialog({ open, onOpenChange, date, classes, students }: BulkPortfolioDialogProps) {
+    const { portfolioEntries, addPortfolioEntry, updatePortfolioEntry, removePortfolioEntry, addPegadaPost } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -328,7 +329,7 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes }: BulkP
                                             <Input
                                                 placeholder="Buscar aluno..."
                                                 className="h-8 pl-8 text-xs w-48 bg-white"
-                                                value={studentSearch}
+                                                value={studentSearch || ""}
                                                 onChange={e => setStudentSearch(e.target.value)}
                                             />
                                         </div>
@@ -392,7 +393,7 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes }: BulkP
                                         <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Título da Vivência</Label>
                                         <Input
                                             placeholder="Ex: Explorando Texturas"
-                                            value={title}
+                                            value={title || ""}
                                             onChange={e => setTitle(e.target.value)}
                                             className="mt-1 font-bold border-slate-200 focus-visible:ring-indigo-500"
                                         />
@@ -402,7 +403,7 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes }: BulkP
                                         <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tags / Habilidades</Label>
                                         <Input
                                             placeholder="Ex: Natureza, Sensorial, Artes"
-                                            value={tagsInput}
+                                            value={tagsInput || ""}
                                             onChange={e => setTagsInput(e.target.value)}
                                             className="mt-1 border-slate-200 focus-visible:ring-indigo-500"
                                         />
@@ -451,7 +452,7 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes }: BulkP
                                     <Textarea
                                         placeholder="Descreva o que aconteceu de forma geral para contextualizar as notas individuais..."
                                         className="h-32 resize-none text-xs border-slate-200 focus-visible:ring-indigo-500 bg-slate-50/50"
-                                        value={baseNarrative}
+                                        value={baseNarrative || ""}
                                         onChange={e => setBaseNarrative(e.target.value)}
                                     />
                                 </div>
@@ -498,7 +499,7 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes }: BulkP
                                                             <Textarea
                                                                 placeholder={`Como foi a vivência de ${student.name.split(' ')[0]}?`}
                                                                 className="min-h-[100px] text-xs resize-none bg-slate-50 border-slate-100 focus:bg-white transition-all rounded-xl"
-                                                                value={form.individualNote}
+                                                                value={form.individualNote || ""}
                                                                 onChange={e => updateForm(sid, { individualNote: e.target.value })}
                                                                 disabled={!form.selected}
                                                             />

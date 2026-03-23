@@ -3,6 +3,7 @@
 import { useAppStore } from "@/lib/store";
 import { User, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Student } from "@/types/student";
 
 const labels = ["Muda", "Broto", "Jovem", "Adulta", "Com frutos"];
 
@@ -79,14 +80,14 @@ const resolveNodeInfo = (id: string, skillsTree: any[], contentsTree: any[]) => 
     return searchTrees([...skillsTree, ...contentsTree]) || { name: id };
 };
 
-export function ObservationList({ studentId }: { studentId: string }) {
-    const { assessments, skillsTree, contentsTree, students } = useAppStore();
-    const student = students.find((s) => s.id === studentId);
+export function ObservationList({ student }: { student: Student }) {
+    const { assessments, skillsTree, contentsTree } = useAppStore();
     if (!student) return null;
+    const studentId = student.id;
 
     const relevantAssessments = assessments
-        .filter((a) => (a.studentId === studentId || (a.scope === "class" && a.classId === student.classId)) && a.observations)
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        .filter((a: any) => (a.studentId === studentId || (a.scope === "class" && a.classId === student.classId)) && a.observations)
+        .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     if (relevantAssessments.length === 0) {
         return (
@@ -98,7 +99,7 @@ export function ObservationList({ studentId }: { studentId: string }) {
 
     return (
         <div className="space-y-4 w-full">
-            {relevantAssessments.map((assessment) => {
+            {relevantAssessments.map((assessment: any) => {
                 const nodeInfo = resolveNodeInfo(assessment.knowledgeNodeId || "", skillsTree, contentsTree);
                 return (
                     <div key={assessment.id} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex gap-4 items-start hover:shadow-md transition-shadow">

@@ -9,6 +9,8 @@ import { User } from "@/types/user";
 import { createUser, updateUser as updateUserService, deleteUser, getUsers } from "@/services/user.service";
 import { TeacherDialog } from "@/components/users/teacher-dialog";
 import { getClasses } from "@/services/school-class.service";
+import { getStudents } from "@/services/student.service";
+import { Student } from "@/types/student";
 import { SchoolClass } from "@/types/school-class";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -37,6 +39,7 @@ export default function TeachersPage() {
 
     const [localUsers, setLocalUsers] = useState<User[]>([]);
     const [classes, setClasses] = useState<SchoolClass[]>([]);
+    const [students, setStudents] = useState<Student[]>([]);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [createdCredentials, setCreatedCredentials] = useState<{ email: string; password: string } | null>(null);
@@ -47,12 +50,14 @@ export default function TeachersPage() {
     const loadData = async () => {
         setIsLoadingClasses(true);
         try {
-            const [usersData, classesData] = await Promise.all([
+            const [usersData, classesData, studentsData] = await Promise.all([
                 getUsers(),
-                getClasses()
+                getClasses(),
+                getStudents()
             ]);
             setLocalUsers(usersData);
             setClasses(classesData);
+            setStudents(studentsData);
         } catch (error) {
             console.error("Erro ao carregar dados", error);
         } finally {
@@ -234,6 +239,7 @@ export default function TeachersPage() {
                 onOpenChange={setIsDialogOpen}
                 user={editingUser}
                 classes={classes}
+                students={students}
                 onSave={handleSaveTeacher}
                 isLoading={isSaving}
             />

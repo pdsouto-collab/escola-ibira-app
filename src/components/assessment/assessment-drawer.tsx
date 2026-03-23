@@ -18,9 +18,12 @@ import { useSession } from "next-auth/react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 
+import { Student } from "@/types/student";
+
 interface AssessmentDrawerProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    students: Student[];
     // Context — at least one recommended
     sessionId?: string;
     routineId?: string;
@@ -42,6 +45,7 @@ interface AssessmentDrawerProps {
 export function AssessmentDrawer({
     open,
     onOpenChange,
+    students,
     sessionId: propSessionId,
     routineId: propRoutineId,
     knowledgeNodeId: propKnowledgeNodeId,
@@ -55,7 +59,7 @@ export function AssessmentDrawer({
     initialObservations,
     initialAttachments,
 }: AssessmentDrawerProps) {
-    const { students, projects, schedule, addAssessment, updateAssessment, removeAssessment, assessments } = useAppStore();
+    const { projects, schedule, addAssessment, updateAssessment, removeAssessment, assessments } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
 

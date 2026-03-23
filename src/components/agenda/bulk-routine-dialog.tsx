@@ -26,6 +26,8 @@ import { Project } from "@/lib/data";
 import { SchoolClass } from "@/types/school-class";
 import { useAppStore } from "@/lib/store";
 
+import { Student } from "@/types/student";
+
 export interface BulkRoutineConfig {
     title: string;
     description: string;
@@ -43,6 +45,7 @@ interface BulkRoutineDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     classes: SchoolClass[];
+    students: Student[];
     initialConfig?: BulkRoutineConfig;
     onSave: (config: BulkRoutineConfig) => void;
 }
@@ -57,8 +60,8 @@ const DAYS = [
     { label: "Sáb", value: 6 },
 ];
 
-export function BulkRoutineDialog({ open, onOpenChange, classes, initialConfig, onSave }: BulkRoutineDialogProps) {
-    const { projects, students } = useAppStore();
+export function BulkRoutineDialog({ open, onOpenChange, classes, students, initialConfig, onSave }: BulkRoutineDialogProps) {
+    const { projects } = useAppStore();
     const [config, setConfig] = useState<BulkRoutineConfig>({
         title: "",
         description: "",

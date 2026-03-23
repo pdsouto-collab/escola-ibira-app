@@ -17,7 +17,9 @@ import Link from "next/link";
 import { LibraryItem } from "@/types/library-item";
 import { getListBncc } from "@/services/bncc.service";
 import { getClasses } from "@/services/school-class.service";
+import { getStudents } from "@/services/student.service";
 import { SchoolClass } from "@/types/school-class";
+import { Student } from "@/types/student";
 
 // ────────────────────────────────────────────
 // Helper: find node name recursively
@@ -171,7 +173,7 @@ function AttachmentThumb({ att }: { att: Assessment["attachments"][0] }) {
 function AssessmentCard({ assessment, onEdit, students, classes }: {
     assessment: Assessment;
     onEdit: () => void;
-    students: ReturnType<typeof useAppStore>["students"];
+    students: Student[];
     classes: SchoolClass[];
 }) {
     const student = assessment.studentId ? students.find(s => s.id === assessment.studentId) : null;
@@ -233,7 +235,7 @@ function ProjectView({
     allProjects: ReturnType<typeof useAppStore>["projects"];
     assessments: Assessment[];
     schedule: ReturnType<typeof useAppStore>["schedule"];
-    students: ReturnType<typeof useAppStore>["students"];
+    students: Student[];
     classes: SchoolClass[];
     skillsTree: ReturnType<typeof useAppStore>["skillsTree"];
     contentsTree: ReturnType<typeof useAppStore>["contentsTree"];
@@ -453,7 +455,7 @@ function StudentView({
     assessments, students, classes, projects, schedule, skillsTree, contentsTree, libraryItems, studentFilter, classFilter, projectFilter, setProjectFilter, onAvaliacao, onEdit
 }: {
     assessments: Assessment[];
-    students: ReturnType<typeof useAppStore>["students"];
+    students: Student[];
     classes: SchoolClass[];
     projects: ReturnType<typeof useAppStore>["projects"];
     schedule: ReturnType<typeof useAppStore>["schedule"];
@@ -735,9 +737,11 @@ function StudentView({
 // Main Portfolio Page
 // ────────────────────────────────────────────
 function PortfolioContent() {
-    const { assessments, projects: allProjects, students, schedule, skillsTree, contentsTree } = useAppStore();
+    const { assessments, projects: allProjects, schedule, skillsTree, contentsTree } = useAppStore();
     const [classes, setClasses] = useState<SchoolClass[]>([]);
+    const [students, setStudents] = useState<Student[]>([]);
     const [isLoadingClasses, setIsLoadingClasses] = useState(true);
+    const [isLoadingStudents, setIsLoadingStudents] = useState(true);
     const searchParams = useSearchParams();
     const initialClassId = searchParams.get("classId");
 
@@ -761,8 +765,20 @@ function PortfolioContent() {
         }
     }
 
+    async function fetchStudents() {
+        try {
+            const data = await getStudents();
+            setStudents(data);
+        } catch (error) {
+            console.error("Erro ao buscar alunos:", error);
+        } finally {
+            setIsLoadingStudents(false);
+        }
+    }
+
     useEffect(() => {
         fetchClasses();
+        fetchStudents();
         getListaBNCC();
     }, []);
 
@@ -787,7 +803,7 @@ function PortfolioContent() {
         window.open(`/portfolio/report?project=${projectId}&student=${studentId}`, "_blank");
     };
 
-    if (isLoadingClasses) {
+    if (isLoadingClasses || isLoadingStudents) {
         return (
             <div className="flex items-center justify-center p-12 min-h-screen">
                 <Loader2 className="w-8 h-8 text-slate-400 animate-spin mr-3" />
@@ -910,6 +926,7 @@ function PortfolioContent() {
                 <AssessmentDrawer
                     open={!!drawerCtx}
                     onOpenChange={(open) => { if (!open) setDrawerCtx(null); }}
+                    students={students}
                     knowledgeNodeId={drawerCtx.knowledgeNodeId}
                     sessionId={drawerCtx.sessionId}
                     projectId={drawerCtx.projectId}
@@ -923,6 +940,7 @@ function PortfolioContent() {
                 <AssessmentDrawer
                     open={!!editingAssessment}
                     onOpenChange={(open) => { if (!open) setEditingAssessment(null); }}
+                    students={students}
                     assessmentId={editingAssessment.id}
                     initialRating={editingAssessment.rating}
                     initialObservations={editingAssessment.observations}

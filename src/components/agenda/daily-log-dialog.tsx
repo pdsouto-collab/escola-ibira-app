@@ -21,6 +21,7 @@ interface DailyLogDialogProps {
     onOpenChange: (open: boolean) => void;
     date: Date;
     classId: string;
+    students: Student[];
 }
 
 // Helper types
@@ -41,8 +42,8 @@ interface StudentLogForm {
     missingItems: string;
 }
 
-export function DailyLogDialog({ open, onOpenChange, date, classId }: DailyLogDialogProps) {
-    const { students, schedule, addDailyLog, dailyLogs, updateDailyLog, removeDailyLog, menus } = useAppStore();
+export function DailyLogDialog({ open, onOpenChange, date, classId, students }: DailyLogDialogProps) {
+    const { schedule, addDailyLog, dailyLogs, updateDailyLog, removeDailyLog, menus } = useAppStore();
 
     const [forms, setForms] = useState<Record<string, StudentLogForm>>({});
     const [selectedActivities, setSelectedActivities] = useState<Record<string, boolean>>({});

@@ -3,6 +3,7 @@
 import React, { useMemo } from "react";
 import { KnowledgeNode, KnowledgeLevel, Assessment, Project } from "@/lib/data";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Student } from "@/types/student";
 import { LibraryItem } from "@/types/library-item";
 
 interface RadialMatrixProps {
@@ -10,6 +11,7 @@ interface RadialMatrixProps {
     treeType: "skill" | "content";
     assessments: Assessment[];
     projects: Project[];
+    students: Student[];
     selectedStudentId: string;
     selectedClassId: string;
     selectedProjectId?: string;
@@ -206,6 +208,7 @@ export function RadialMatrix({
     treeType,
     assessments,
     projects,
+    students,
     selectedStudentId,
     selectedClassId,
     selectedProjectId = "all",

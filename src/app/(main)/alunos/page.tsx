@@ -10,6 +10,7 @@ import { ClassDialog } from "@/components/students/class-dialog";
 import { Student } from "@/types/student";
 import { SchoolClass } from "@/types/school-class";
 import { getClasses, createClass, updateClass, deleteClass } from "@/services/school-class.service";
+import { getStudents, createStudent, updateStudent, deleteStudent } from "@/services/student.service";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
@@ -25,7 +26,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export default function StudentsPage() {
-    const { students, addStudent, updateStudent, removeStudent } = useAppStore();
+    const [students, setStudents] = useState<Student[]>([]);
+    const [isLoadingStudents, setIsLoadingStudents] = useState(true);
     const { data: session } = useSession();
     const currentUser = session?.user as any;
 
@@ -48,9 +50,23 @@ export default function StudentsPage() {
 
     useEffect(() => {
         fetchClasses();
+        fetchStudents();
     }, []);
 
-    const fetchClasses = async () => {
+    async function fetchStudents() {
+        setIsLoadingStudents(true);
+        try {
+            const data = await getStudents();
+            setStudents(data);
+        } catch (error) {
+            console.error(error);
+            toast.error("Erro ao carregar alunos");
+        } finally {
+            setIsLoadingStudents(false);
+        }
+    }
+
+    async function fetchClasses() {
         setIsLoadingClasses(true);
         try {
             const data = await getClasses();
@@ -61,7 +77,7 @@ export default function StudentsPage() {
         } finally {
             setIsLoadingClasses(false);
         }
-    };
+    }
 
     // Filter classes based on role
     const visibleClasses = currentUser?.role === "teacher"
@@ -96,19 +112,41 @@ export default function StudentsPage() {
         setConfirmDeleteStudent(student);
     };
 
-    const confirmDeleteStudentAction = () => {
+    const confirmDeleteStudentAction = async () => {
         if (confirmDeleteStudent) {
-            removeStudent(confirmDeleteStudent.id);
-            toast.success("Aluno removido com sucesso");
-            setConfirmDeleteStudent(null);
+            setIsActionLoading(true);
+            try {
+                await deleteStudent(confirmDeleteStudent.id);
+                toast.success("Aluno removido com sucesso");
+                await fetchStudents();
+                setConfirmDeleteStudent(null);
+            } catch (error) {
+                console.error(error);
+                toast.error("Erro ao remover aluno");
+            } finally {
+                setIsActionLoading(false);
+            }
         }
     };
 
-    const handleSaveStudent = (student: Student) => {
-        if (student.id && students.some(s => s.id === student.id)) {
-            updateStudent(student.id, student);
-        } else {
-            addStudent(student);
+    const handleSaveStudent = async (student: Student) => {
+        setIsActionLoading(true);
+        try {
+            const exists = students.some(s => s.id === student.id);
+            if (exists) {
+                await updateStudent(student.id, student);
+                toast.success("Aluno atualizado com sucesso");
+            } else {
+                await createStudent(student);
+                toast.success("Aluno criado com sucesso");
+            }
+            setIsStudentDialogOpen(false);
+            await fetchStudents();
+        } catch (error) {
+            console.error(error);
+            toast.error("Erro ao salvar aluno");
+        } finally {
+            setIsActionLoading(false);
         }
     };
 
@@ -210,7 +248,7 @@ export default function StudentsPage() {
                         </span>
                     </button>
 
-                    {isLoadingClasses ? (
+                    {isLoadingClasses || isLoadingStudents ? (
                         <div className="flex flex-col gap-2 p-3">
                             <div className="h-8 w-full bg-slate-100 animate-pulse rounded" />
                             <div className="h-8 w-full bg-slate-100 animate-pulse rounded" />
@@ -287,12 +325,18 @@ export default function StudentsPage() {
                     </div>
                 </div>
 
-                <StudentList
-                    students={filteredStudents}
-                    classes={classes}
-                    onEdit={handleEditStudent}
-                    onDelete={handleDeleteStudent}
-                />
+                {isLoadingStudents ? (
+                    <div className="flex items-center justify-center py-10">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                ) : (
+                    <StudentList
+                        students={filteredStudents}
+                        classes={classes}
+                        onEdit={handleEditStudent}
+                        onDelete={handleDeleteStudent}
+                    />
+                )}
 
                 <StudentDialog
                     key={editingStudent?.id || 'new-student'}

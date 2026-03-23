@@ -1,6 +1,7 @@
 "use client";
 
 import { useAppStore } from "@/lib/store";
+import { Student } from "@/types/student";
 import { ProgressChart, ProgressChartData } from "@/components/assessment/progress-chart";
 import { useEffect, useState } from "react";
 import { LibraryItem } from "@/types/library-item";
@@ -77,7 +78,7 @@ const getAllEvaluatableNodes = (nodes: any[], parentName?: string): any[] => {
     return results;
 };
 
-export function SkillsChart({ studentId, filter = "all" }: { studentId?: string; filter?: "bncc" | "ibira" | "all" }) {
+export function SkillsChart({ student, filter = "all" }: { student: Student | undefined; filter?: "bncc" | "ibira" | "all" }) {
 
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
 
@@ -89,9 +90,7 @@ export function SkillsChart({ studentId, filter = "all" }: { studentId?: string;
         await getListBncc().then(setLibraryItems);
     }
 
-    const { students, assessments, skillsTree, contentsTree } = useAppStore();
-
-    if (!studentId) {
+    if (!student) {
         return (
             <div className="bg-white p-6 rounded-xl border shadow-sm text-center text-slate-400">
                 Selecione um aluno para exibir o gráfico.
@@ -99,8 +98,9 @@ export function SkillsChart({ studentId, filter = "all" }: { studentId?: string;
         );
     }
 
-    const student = students.find(s => s.id === studentId);
-    if (!student) return null;
+    const studentId = student.id;
+
+    const { assessments, skillsTree, contentsTree } = useAppStore();
 
     const studentAssessments = assessments.filter(a => a.studentId === studentId || (a.scope === "class" && a.classId === student.classId));
 

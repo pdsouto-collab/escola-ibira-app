@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getStudents } from "@/services/student.service";
+import { Student } from "@/types/student";
 import { toast } from "sonner";
 import { useAppStore } from "@/lib/store";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -40,8 +42,26 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export default function FinanceiroPage() {
-    const { invoices, students } = useAppStore();
+    const { invoices } = useAppStore();
+    const [students, setStudents] = useState<Student[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+
+    async function fetchStudents() {
+        setIsLoading(true);
+        try {
+            const data = await getStudents();
+            setStudents(data);
+        } catch (error) {
+            console.error("Erro ao buscar alunos:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        fetchStudents();
+    }, []);
 
     const totalPaid = invoices.filter(i => i.status === "pago").reduce((acc, curr) => acc + curr.amount, 0);
     const totalPending = invoices.filter(i => i.status === "pendente").reduce((acc, curr) => acc + curr.amount, 0);

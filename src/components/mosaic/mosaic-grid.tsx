@@ -12,9 +12,12 @@ import { Check, Clock, Circle, FileText, AlertCircle, Plus, Link as LinkIcon } f
 import { Textarea } from "@/components/ui/textarea";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
+import { Student } from "@/types/student";
+
 interface MosaicGridProps {
     classId?: string;
     projectId?: string;
+    students: Student[];
     treeType?: "skill" | "content";
 }
 
@@ -30,8 +33,8 @@ function getMicroNodes(node: KnowledgeNode): KnowledgeNode[] {
     return results;
 }
 
-export function MosaicGrid({ classId, projectId, treeType = "skill" }: MosaicGridProps) {
-    const { projects, students, bnccProgress, updateBNCCStatus, skillsTree, contentsTree } = useAppStore();
+export function MosaicGrid({ classId, projectId, students, treeType = "skill" }: MosaicGridProps) {
+    const { projects, bnccProgress, updateBNCCStatus, skillsTree, contentsTree } = useAppStore();
     const [selectedNode, setSelectedNode] = useState<KnowledgeNode | null>(null);
     const [comment, setComment] = useState("");
     const [automationConfig, setAutomationConfig] = useState<{ status: "not-started" | "in-progress" | "achieved", node: KnowledgeNode } | null>(null);

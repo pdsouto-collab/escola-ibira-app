@@ -9,7 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Printer, Download, ChevronLeft, Star, Target, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { getClasses } from "@/services/school-class.service";
+import { getStudents } from "@/services/student.service";
 import { SchoolClass } from "@/types/school-class";
+import { Student } from "@/types/student";
 import { MilestoneReport } from "@/components/reports/milestone-report";
 import { RadialMatrix } from "@/components/mosaic/radial-matrix";
 import { Badge } from "@/components/ui/badge";
@@ -152,9 +154,11 @@ function ReportCard({
     singleProject?: any;
     dateRange?: { start: string; end: string };
 }) {
-    const { projects, students, assessments, schedule, skillsTree, contentsTree, dailyLogs, portfolioEntries } = useAppStore();
+    const { projects, assessments, schedule, skillsTree, contentsTree, dailyLogs, portfolioEntries } = useAppStore();
     const [classes, setClasses] = useState<SchoolClass[]>([]);
+    const [students, setStudents] = useState<Student[]>([]);
     const [isLoadingClasses, setIsLoadingClasses] = useState(true);
+    const [isLoadingStudents, setIsLoadingStudents] = useState(true);
     const [selectedEntry, setSelectedEntry] = useState<PortfolioEntry | null>(null);
 
     const formatShortGrade = (g: string) => g.replace("Educação Infantil -", "EI").trim();
@@ -172,9 +176,21 @@ function ReportCard({
         }
     }
 
+    async function fetchStudents() {
+        try {
+            const data = await getStudents();
+            setStudents(data);
+        } catch (error) {
+            console.error("Erro ao buscar alunos:", error);
+        } finally {
+            setIsLoadingStudents(false);
+        }
+    }
+
     useEffect(() => {
         getListaBNCC();
         fetchClasses();
+        fetchStudents();
     }, [])
 
     async function getListaBNCC(){
@@ -186,8 +202,8 @@ function ReportCard({
         return <div className="text-center py-20 text-slate-400">Aluno não encontrado.</div>;
     }
 
-    if (isLoadingClasses) {
-        return <div className="text-center py-20 text-slate-400 italic">Carregando dados da turma...</div>;
+    if (isLoadingClasses || isLoadingStudents) {
+        return <div className="text-center py-20 text-slate-400 italic">Carregando dados...</div>;
     }
     const cls = classes.find(c => c.id === student.classId);
 
@@ -348,6 +364,7 @@ function ReportCard({
                                 treeType="skill"
                                 assessments={relevantAssessments}
                                 projects={studentProjects}
+                                students={students}
                                 selectedProjectId={"all"}
                                 selectedStudentId={student.id}
                                 selectedClassId={student.classId}
@@ -370,6 +387,7 @@ function ReportCard({
                                 treeType="content"
                                 assessments={relevantAssessments}
                                 projects={studentProjects}
+                                students={students}
                                 selectedProjectId={"all"}
                                 selectedStudentId={student.id}
                                 selectedClassId={student.classId}
@@ -472,7 +490,7 @@ function ReportCard({
                         <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Desenvolvimento de Habilidades e Competências (por Áreas BNCC)</h2>
                     </div>
                     <div className="print:shadow-none print:border-none w-full min-w-0 overflow-hidden">
-                        <SkillsChart studentId={student.id} filter="bncc" />
+                        <SkillsChart student={student} filter="bncc" />
                     </div>
                 </section>
 
@@ -483,7 +501,7 @@ function ReportCard({
                         <h2 className="text-xl font-bold text-slate-800">Trilha de Habilidades e Competências (BNCC)</h2>
                     </div>
                     <div className="print:shadow-none print:border-none w-full min-w-0 overflow-hidden">
-                        <MilestoneReport studentId={student.id} filter="bncc" />
+                        <MilestoneReport student={student} filter="bncc" />
                     </div>
                 </section>
 
@@ -494,7 +512,7 @@ function ReportCard({
                         <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Desenvolvimento de Habilidades e Competências (por Áreas IBIRÁ)</h2>
                     </div>
                     <div className="print:shadow-none print:border-none w-full min-w-0 overflow-hidden">
-                        <SkillsChart studentId={student.id} filter="ibira" />
+                        <SkillsChart student={student} filter="ibira" />
                     </div>
                 </section>
 
@@ -505,7 +523,7 @@ function ReportCard({
                         <h2 className="text-xl font-bold text-slate-800">Trilha de Habilidades e Competências (IBIRÁ)</h2>
                     </div>
                     <div className="print:shadow-none print:border-none w-full min-w-0 overflow-hidden">
-                        <MilestoneReport studentId={student.id} filter="ibira" />
+                        <MilestoneReport student={student} filter="ibira" />
                     </div>
                 </section>
 

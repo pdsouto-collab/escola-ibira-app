@@ -18,6 +18,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { getClasses } from "@/services/school-class.service";
+import { getStudents } from "@/services/student.service";
+import { Student } from "@/types/student";
 import { SchoolClass } from "@/types/school-class";
 
 import {
@@ -34,7 +36,8 @@ export default function AgendaPage() {
     const currentUser = session?.user as any;
 
     const [classes, setClasses] = useState<SchoolClass[]>([]);
-    const [isLoadingClasses, setIsLoadingClasses] = useState(true);
+    const [students, setStudents] = useState<Student[]>([]);
+    const [isLoadingData, setIsLoadingData] = useState(true);
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
     const [selectedType, setSelectedType] = useState<string>("all");
@@ -50,19 +53,24 @@ export default function AgendaPage() {
     const [confirmDeleteRoutineId, setConfirmDeleteRoutineId] = useState<string | null>(null);
     const [confirmDeleteProjectId, setConfirmDeleteProjectId] = useState<string | null>(null);
     
-    async function fetchClasses() {
+    async function fetchData() {
+        setIsLoadingData(true);
         try {
-            const data = await getClasses();
-            setClasses(data);
+            const [classesData, studentsData] = await Promise.all([
+                getClasses(),
+                getStudents()
+            ]);
+            setClasses(classesData);
+            setStudents(studentsData);
         } catch (error) {
-            console.error("Erro ao buscar turmas:", error);
+            console.error("Erro ao carregar dados:", error);
         } finally {
-            setIsLoadingClasses(false);
+            setIsLoadingData(false);
         }
     }
 
     useEffect(() => {
-        fetchClasses();
+        fetchData();
     }, []);
 
     // Filter Logic
@@ -200,7 +208,7 @@ export default function AgendaPage() {
         setIsBulkDialogOpen(true);
     };
 
-    if (isLoadingClasses) {
+    if (isLoadingData) {
         return (
             <div className="flex items-center justify-center p-12 min-h-[500px]">
                 <Loader2 className="w-8 h-8 text-slate-400 animate-spin mr-3" />
@@ -325,22 +333,25 @@ export default function AgendaPage() {
                 onOpenChange={setIsScheduleDialogOpen}
                 item={editingItem}
                 classes={classes}
+                students={students}
                 onSave={handleSave}
             />
 
             <BulkRoutineDialog
                 open={isBulkDialogOpen}
                 onOpenChange={setIsBulkDialogOpen}
-                classes={availableClasses}
-                initialConfig={bulkConfig}
+                classes={classes}
+                students={students}
                 onSave={handleBulkSave}
             />
+
 
             <RoutineManagerDialog
                 open={isManagerDialogOpen}
                 onOpenChange={setIsManagerDialogOpen}
                 schedule={schedule}
                 classes={classes}
+                students={students}
                 onDeleteRoutine={handleDeleteRoutine}
                 onEditRoutine={handleEditRoutine}
                 onDeleteProjectSessions={(projectId) => {
@@ -386,6 +397,7 @@ export default function AgendaPage() {
                 onOpenChange={setIsDailyLogOpen}
                 date={currentDate}
                 classId={selectedClassId}
+                students={students}
             />
 
             <BulkPortfolioDialog
@@ -395,6 +407,7 @@ export default function AgendaPage() {
                 date={currentDate}
                 classes={classes}
                 classId={selectedClassId}
+                students={students}
             />
 
             <ConfirmDialog

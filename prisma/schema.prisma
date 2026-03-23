@@ -104,7 +104,39 @@ model SchoolClass {
   assistantId String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  students    Student[]
 
   @@index([teacherId])
   @@index([assistantId])
+}
+
+model Student {
+  id                   String        @id @default(cuid())
+  name                 String
+  dateOfBirth          String        // YYYY-MM-DD
+  document             String?
+  schoolStage          String?
+  period               String?       // "integral" | "matutino"
+  photo                String?
+  classId              String
+  schoolClass          SchoolClass   @relation(fields: [classId], references: [id])
+  status               String        @default("presente") // "presente" | "ausente"
+  
+  age                  Int?
+  parentName           String?
+  
+  guardians            Json?         // StudentGuardian[]
+  financialResponsible Json?         // StudentFinancialResponsible
+  health               Json?         // StudentHealth
+  emergencyContacts    Json?         // StudentEmergencyContact[]
+  documents            Json?         // StudentDocuments
+  
+  hospitalPreference   String?
+  hospitalAddress      String?
+
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  @@index([classId])
+  @@index([status])
 }

@@ -16,10 +16,12 @@ import { Assessment } from "@/lib/data";
 import { useSession } from "next-auth/react";
 import { LibraryItem } from "@/types/library-item";
 import { getListBncc } from "@/services/bncc.service";
+import { Student } from "@/types/student";
+import { getStudents } from "@/services/student.service";
 
 
 export function MosaicContainer() {
-    const { skillsTree, contentsTree, projects, students, assessments } = useAppStore();
+    const { skillsTree, contentsTree, projects, assessments } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
 
@@ -49,7 +51,10 @@ export function MosaicContainer() {
     // Active projects only
     const filteredProjects = projects.filter(p => p.status === 'active');
 
-    // Students filtered by selected class
+    const [students, setStudents] = useState<Student[]>([]);
+    const [isLoadingStudents, setIsLoadingStudents] = useState(true);
+
+    // Filter Students
     const filteredStudents = selectedClassId === "all"
         ? students
         : students.filter(s => s.classId === selectedClassId);
@@ -72,6 +77,17 @@ export function MosaicContainer() {
     // If drilled down, we only render the drilled node as the root.
     const dataToRender = drilledNode ? [drilledNode] : filteredTreeData;
 
+    async function fetchStudents() {
+        setIsLoadingStudents(true);
+        try {
+            const data = await getStudents();
+            setStudents(data);
+        } catch (error) {
+            console.error("Erro ao carregar alunos", error);
+        } finally {
+            setIsLoadingStudents(false);
+        }
+    }
 
     async function fetchClasses() {
         setIsLoadingClasses(true);
@@ -86,8 +102,10 @@ export function MosaicContainer() {
     }
 
     useEffect(() => {
-        fetchClasses();
-        getListaBNCC();
+        const loadData = async () => {
+            await Promise.all([fetchClasses(), fetchStudents(), getListaBNCC()]);
+        };
+        loadData();
     }, []);
 
     async function getListaBNCC() {
@@ -248,6 +266,7 @@ export function MosaicContainer() {
                             assessments={assessments}
                             projects={projects}
                             libraryItems={libraryItems}
+                            students={students}
                             selectedStudentId={selectedStudentId}
                             selectedClassId={selectedClassId}
                             selectedProjectId={selectedProjectId}
@@ -271,15 +290,16 @@ export function MosaicContainer() {
             {/* Assessment Drawer */}
             {drawerCtx && (
                 <AssessmentDrawer
-                    open={!!drawerCtx}
-                    onOpenChange={(open) => !open && setDrawerCtx(null)}
-                    knowledgeNodeId={drawerCtx.knowledgeNodeId}
-                    projectId={drawerCtx.projectId}
-                    defaultClassId={drawerCtx.classId}
-                    defaultStudentId={drawerCtx.studentId}
-                    contextLabel={drawerCtx.contextLabel}
-                    contextDescription={(drawerCtx as any).contextDescription}
-                />
+                open={!!drawerCtx}
+                onOpenChange={(open) => !open && setDrawerCtx(null)}
+                students={students}
+                knowledgeNodeId={drawerCtx.knowledgeNodeId}
+                projectId={drawerCtx.projectId}
+                defaultClassId={drawerCtx.classId}
+                defaultStudentId={drawerCtx.studentId}
+                contextLabel={drawerCtx.contextLabel}
+                contextDescription={(drawerCtx as any).contextDescription}
+            />
             )}
         </div>
     );

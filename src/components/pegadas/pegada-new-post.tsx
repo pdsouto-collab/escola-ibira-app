@@ -21,7 +21,9 @@ import { BulkPortfolioDialog } from "@/components/portfolio/bulk-portfolio-dialo
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { getClasses } from "@/services/school-class.service";
+import { getStudents } from "@/services/student.service";
 import { SchoolClass } from "@/types/school-class";
+import { Student } from "@/types/student";
 
 export function PegadaNewPost() {
     const { addPegadaPost } = useAppStore();
@@ -32,13 +34,15 @@ export function PegadaNewPost() {
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [isBulkOpen, setIsBulkOpen] = useState(false);
-    const [mediaUrls, setMediaUrls] = useState<string[]>([]);
+     const [mediaUrls, setMediaUrls] = useState<string[]>([]);
     const [classes, setClasses] = useState<SchoolClass[]>([]);
+    const [students, setStudents] = useState<Student[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const videoInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         getClasses().then(setClasses).catch(console.error);
+        getStudents().then(setStudents).catch(console.error);
     }, []);
 
     const canPost = currentUser?.role === "teacher" || currentUser?.role === "director" || currentUser?.role === "admin";
@@ -156,14 +160,14 @@ export function PegadaNewPost() {
 
                         <Input
                             placeholder="Título da Descoberta"
-                            value={title}
+                            value={title || ""}
                             onChange={(e) => setTitle(e.target.value)}
                             className="bg-white border-indigo-100 focus-visible:ring-indigo-500 font-bold"
                         />
 
                         <Textarea
                             placeholder="Compartilhe um momento, uma fala ou uma conquista..."
-                            value={content}
+                            value={content || ""}
                             onChange={(e) => setContent(e.target.value)}
                             className="bg-white border-indigo-100 focus-visible:ring-indigo-500 min-h-[100px] resize-none"
                         />
@@ -277,6 +281,7 @@ export function PegadaNewPost() {
                 date={new Date()}
                 classId="all"
                 classes={classes}
+                students={students}
             />
         </Card>
     );

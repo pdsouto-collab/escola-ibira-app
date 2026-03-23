@@ -1,4 +1,5 @@
 import { useAppStore } from "@/lib/store";
+import { Student } from "@/types/student";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, Circle, AlertCircle } from "lucide-react";
@@ -8,7 +9,7 @@ import { getListBncc } from "@/services/bncc.service";
 import { LibraryItem } from "@/types/library-item";
 
 interface MilestoneReportProps {
-    studentId: string;
+    student: Student | undefined;
     filter?: "bncc" | "ibira" | "all";
 }
 
@@ -82,7 +83,7 @@ const getAllEvaluatableNodes = (nodes: any[], parentName?: string, level: string
     return results;
 };
 
-export function MilestoneReport({ studentId, filter = "all" }: MilestoneReportProps) {
+export function MilestoneReport({ student, filter = "all" }: MilestoneReportProps) {
 
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
 
@@ -94,10 +95,10 @@ export function MilestoneReport({ studentId, filter = "all" }: MilestoneReportPr
         await getListBncc().then(setLibraryItems);
     }
 
-    const { assessments, skillsTree, contentsTree, students } = useAppStore();
+    const { assessments, skillsTree, contentsTree } = useAppStore();
 
-    const student = students.find(s => s.id === studentId);
     if (!student) return null;
+    const studentId = student.id;
 
     const studentAssessments = assessments.filter(a => a.studentId === studentId || (a.scope === "class" && a.classId === student.classId));
 

@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { SchoolClass } from "@/types/school-class";
+import { Student } from "@/types/student";
 import { User } from "@/types/user";
-import { useAppStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -33,6 +33,7 @@ interface TeacherDialogProps {
     onOpenChange: (open: boolean) => void;
     user?: User | null;
     classes: SchoolClass[];
+    students: Student[];
     onSave: (user: User) => void;
     isLoading?: boolean;
 }
@@ -54,8 +55,7 @@ const emptyTeacher: Omit<User, "id"> = {
     password: "",
 };
 
-export function TeacherDialog({ open, onOpenChange, user, classes, onSave, isLoading = false }: TeacherDialogProps) {
-    const { students } = useAppStore();
+export function TeacherDialog({ open, onOpenChange, user, classes, students, onSave, isLoading = false }: TeacherDialogProps) {
     const [formData, setFormData] = useState<Partial<User>>(emptyTeacher);
     const [activeTab, setActiveTab] = useState("personal");
 

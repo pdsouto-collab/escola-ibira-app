@@ -8,7 +8,6 @@ import { StudentEmergencyContact } from "@/types/student-emergency-contact";
 import { StudentFinancialResponsible } from "@/types/student-financial-responsible";
 import { StudentHealth } from "@/types/student-health";
 import { StudentDocuments } from "@/types/student-documents";
-import { useAppStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -60,7 +59,6 @@ const emptyStudent: Omit<Student, "id"> = {
 };
 
 export function StudentDialog({ open, onOpenChange, student, classes, onSave }: StudentDialogProps) {
-    const { addStudent } = useAppStore();
     const [formData, setFormData] = useState<Partial<Student>>(student ? { ...student } : emptyStudent);
     const [activeTab, setActiveTab] = useState("manual");
 
@@ -323,7 +321,7 @@ export function StudentDialog({ open, onOpenChange, student, classes, onSave }: 
             return;
         }
 
-        studentsToImport.forEach(s => addStudent(s));
+        studentsToImport.forEach(s => onSave(s));
 
         onOpenChange(false);
         setFile(null);

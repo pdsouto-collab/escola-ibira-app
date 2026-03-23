@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useAppStore } from "@/lib/store";
+import { getStudents } from "@/services/student.service";
+import { Student } from "@/types/student";
 import { MilestoneReport } from "@/components/reports/milestone-report";
 import { DailyLogReport } from "@/components/reports/daily-log-report";
 import { PortfolioReport } from "@/components/reports/portfolio-report";
 import { SkillsChart } from "@/components/reports/skills-chart";
-import { ObservationList } from "@/components/reports/observation-list";
 import { User, Loader2 } from "lucide-react";
 import { BulkPortfolioDialog } from "@/components/portfolio/bulk-portfolio-dialog";
 import { DailyLogDialog } from "@/components/agenda/daily-log-dialog";
@@ -25,17 +26,21 @@ import { useSession } from "next-auth/react";
 import { getClasses } from "@/services/school-class.service";
 import { SchoolClass } from "@/types/school-class";
 
-
 export default function ReportsPage() {
-    const { students } = useAppStore();
+    const [students, setStudents] = useState<Student[]>([]);
+    const [classes, setClasses] = useState<SchoolClass[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const { data: session } = useSession();
     const currentUser = session?.user as any;
 
-    const [classes, setClasses] = useState<SchoolClass[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-
     // Class Filter State
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
+    const [manualSelection, setManualSelection] = useState<string>("");
+
+    // Edit Modal State
+    const [isPortfolioEditOpen, setIsPortfolioEditOpen] = useState(false);
+    const [isDailyLogEditOpen, setIsDailyLogEditOpen] = useState(false);
+    const [editDate, setEditDate] = useState<Date>(new Date());
 
     async function fetchClasses() {
         try {
@@ -43,17 +48,26 @@ export default function ReportsPage() {
             setClasses(data);
         } catch (error) {
             console.error("Erro ao buscar turmas:", error);
-        } finally {
-            setIsLoading(false);
+        }
+    }
+
+    async function fetchStudents() {
+        try {
+            const data = await getStudents();
+            setStudents(data);
+        } catch (error) {
+            console.error("Erro ao buscar alunos:", error);
         }
     }
 
     useEffect(() => {
-        fetchClasses();
+        const loadData = async () => {
+            setIsLoading(true);
+            await Promise.all([fetchClasses(), fetchStudents()]);
+            setIsLoading(false);
+        };
+        loadData();
     }, []);
-
-    // Default to the first student if available
-    const [manualSelection, setManualSelection] = useState<string>("");
 
     // Filter students based on class and role
     const visibleStudents = currentUser?.role === "guardian"
@@ -66,15 +80,6 @@ export default function ReportsPage() {
         : (visibleStudents.length > 0 ? visibleStudents[0].id : "");
 
     const selectedStudent = students.find(s => s.id === effectiveStudentId);
-
-    const showMilestones = currentUser?.role !== "nutritionist";
-    const showPortfolio = currentUser?.role !== "nutritionist";
-    const showDaily = true;
-
-    // Edit Modal State
-    const [isPortfolioEditOpen, setIsPortfolioEditOpen] = useState(false);
-    const [isDailyLogEditOpen, setIsDailyLogEditOpen] = useState(false);
-    const [editDate, setEditDate] = useState<Date>(new Date());
 
     const handleEditPortfolio = (dateStr: string) => {
         setEditDate(parseISO(dateStr));
@@ -194,12 +199,11 @@ export default function ReportsPage() {
                             </h2>
                             <p className="text-slate-500 mb-6">Comparativo entre o currículo proposto e o nível de consolidação da criança.</p>
                             {selectedStudent ? (
-                                <SkillsChart studentId={effectiveStudentId} filter="bncc" />
+                                <SkillsChart student={selectedStudent} filter="bncc" />
                             ) : (
                                 <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
                             )}
                         </div>
-
 
                         {/* 2. Milestone Grid - filtrado por BNCC */}
                         <div>
@@ -208,7 +212,7 @@ export default function ReportsPage() {
                                 Trilha de Habilidades e Competências (BNCC)
                             </h2>
                             {selectedStudent ? (
-                                <MilestoneReport studentId={effectiveStudentId} filter="bncc" />
+                                <MilestoneReport student={selectedStudent} filter="bncc" />
                             ) : (
                                 <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
                             )}
@@ -227,7 +231,7 @@ export default function ReportsPage() {
                             </h2>
                             <p className="text-slate-500 mb-6">Comparativo entre as habilidades e competências Ibirá propostas e o nível de consolidação da criança.</p>
                             {selectedStudent ? (
-                                <SkillsChart studentId={effectiveStudentId} filter="ibira" />
+                                <SkillsChart student={selectedStudent} filter="ibira" />
                             ) : (
                                 <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
                             )}
@@ -240,7 +244,7 @@ export default function ReportsPage() {
                                 Trilha de Habilidades e Competências (IBIRÁ)
                             </h2>
                             {selectedStudent ? (
-                                <MilestoneReport studentId={effectiveStudentId} filter="ibira" />
+                                <MilestoneReport student={selectedStudent} filter="ibira" />
                             ) : (
                                 <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
                             )}
@@ -282,6 +286,7 @@ export default function ReportsPage() {
                         date={editDate}
                         classes={classes}
                         classId={selectedStudent.classId}
+                        students={students}
                     />
                     <DailyLogDialog
                         key={`edit-log-${editDate.toISOString()}-${selectedStudent.classId}`}
@@ -289,6 +294,7 @@ export default function ReportsPage() {
                         onOpenChange={setIsDailyLogEditOpen}
                         date={editDate}
                         classId={selectedStudent.classId}
+                        students={students}
                     />
                 </>
             )}

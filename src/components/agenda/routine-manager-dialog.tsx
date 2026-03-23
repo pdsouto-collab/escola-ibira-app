@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ScheduleItem } from "@/lib/data";
 import { SchoolClass } from "@/types/school-class";
+import { Student } from "@/types/student";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -56,6 +57,7 @@ interface RoutineManagerDialogProps {
     onOpenChange: (open: boolean) => void;
     schedule: ScheduleItem[];
     classes: SchoolClass[];
+    students: Student[];
     onDeleteRoutine: (routineId: string) => void;
     onEditRoutine: (routineId: string, exampleItem: ScheduleItem) => void;
     onDeleteProjectSessions?: (projectId: string) => void;
@@ -83,9 +85,10 @@ export function RoutineManagerDialog({
     onEditRoutine,
     onDeleteProjectSessions,
     onEditProjectSessionsBulk,
+    students,
 }: RoutineManagerDialogProps) {
 
-    const { projects, students } = useAppStore();
+    const { projects } = useAppStore();
     const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
     const [editConfig, setEditConfig] = useState<ProjectSessionBulkEdit>({
         title: "", description: "", time: "08:00", endTime: "09:00",
@@ -176,8 +179,8 @@ export function RoutineManagerDialog({
         const classId = editConfig.classId;
         if (classId && classId !== "all") {
             const hasWholeClass = project.classes?.includes(classId);
-            const hasAnyStudentInClass = project.students.some(sId => {
-                const s = students.find(st => st.id === sId);
+            const hasAnyStudentInClass = project.students.some((sId: string) => {
+                const s = students.find((st: Student) => st.id === sId);
                 return s?.classId === classId;
             });
 

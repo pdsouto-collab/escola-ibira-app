@@ -170,8 +170,8 @@ export function PegadaPostCard({ post }: PegadaPostCardProps) {
                     {isEditing ? (
                         <div className="space-y-3 mt-2">
                             <textarea
-                                className="w-full min-h-[100px] p-3 text-sm bg-slate-50 border border-slate-200 rounded-lg focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500"
-                                value={editContent}
+                                className="w-full min-h-[100px] p-3 text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-none transition-all leading-relaxed"
+                                value={editContent || ""}
                                 onChange={(e) => setEditContent(e.target.value)}
                             />
                             <div className="flex justify-end gap-2">
@@ -254,10 +254,10 @@ export function PegadaPostCard({ post }: PegadaPostCardProps) {
                         <div className="flex gap-2 items-center">
                             <Input
                                 placeholder="Escreva um comentário..."
-                                value={comment}
+                                value={comment || ""}
                                 onChange={(e) => setComment(e.target.value)}
-                                className="h-9 text-xs bg-slate-50 border-slate-200 focus-visible:ring-indigo-500"
                                 onKeyDown={(e) => e.key === 'Enter' && handleComment()}
+                                className="bg-slate-50 border-slate-200 focus-visible:ring-indigo-500 rounded-xl h-10 text-sm"
                             />
                             <div className="flex gap-1 shrink-0">
                                 <Button size="icon" variant="ghost" className="h-9 w-9 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">
