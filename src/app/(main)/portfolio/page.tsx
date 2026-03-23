@@ -517,6 +517,18 @@ function StudentView({
                                         <p className="text-white font-bold text-sm">{avgRating.toFixed(1)}/5</p>
                                     </div>
                                 )}
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-9 gap-1.5 bg-white/10 text-white border-white/20 hover:bg-white/20 hover:text-white transition-colors"
+                                    onClick={() => onAvaliacao({
+                                        studentId: student.id,
+                                        classId: student.classId,
+                                        contextLabel: `Avaliação: ${student.name.split(" ")[0]}`
+                                    })}
+                                >
+                                    <ClipboardList className="w-4 h-4" /> Avaliar
+                                </Button>
                                 <Link href={`/portfolio/report?student=${student.id}`}>
                                     <Button size="sm" variant="outline" className="h-9 gap-1.5 bg-white/10 text-white border-white/20 hover:bg-white/20 hover:text-white transition-colors">
                                         <FileText className="w-4 h-4" /> Relatório
