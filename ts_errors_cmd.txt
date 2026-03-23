@@ -1,0 +1,61 @@
+debug_bncc.ts(2,30): error TS2307: Cannot find module '@prisma/client' or its corresponding type declarations.
+prisma/seed.ts(1,30): error TS2307: Cannot find module '@prisma/client' or its corresponding type declarations.
+src/app/(auth)/cadastro/page.tsx(4,23): error TS2307: Cannot find module 'sonner' or its corresponding type declarations.
+src/app/(auth)/cadastro/page.tsx(11,24): error TS2307: Cannot find module 'next-auth/react' or its corresponding type declarations.
+src/app/(auth)/login/page.tsx(5,24): error TS2307: Cannot find module 'next-auth/react' or its corresponding type declarations.
+src/app/(main)/agenda/page.tsx(19,28): error TS2307: Cannot find module 'next-auth/react' or its corresponding type declarations.
+src/app/(main)/alunos/page.tsx(14,28): error TS2307: Cannot find module 'next-auth/react' or its corresponding type declarations.
+src/app/(main)/alunos/page.tsx(17,23): error TS2307: Cannot find module 'sonner' or its corresponding type declarations.
+src/app/(main)/configuracoes/page.tsx(9,37): error TS2307: Cannot find module 'next-auth/react' or its corresponding type declarations.
+src/app/(main)/financeiro/page.tsx(4,23): error TS2307: Cannot find module 'sonner' or its corresponding type declarations.
+src/app/(main)/mural/page.tsx(12,28): error TS2307: Cannot find module 'next-auth/react' or its corresponding type declarations.
+src/app/(main)/pegadas/page.tsx(7,28): error TS2307: Cannot find module 'next-auth/react' or its corresponding type declarations.
+src/app/(main)/pendencias/page.tsx(22,28): error TS2307: Cannot find module 'next-auth/react' or its corresponding type declarations.
+src/app/(main)/professores/page.tsx(4,23): error TS2307: Cannot find module 'sonner' or its corresponding type declarations.
+src/app/(main)/professores/page.tsx(21,28): error TS2307: Cannot find module 'next-auth/react' or its corresponding type declarations.
+src/app/(main)/relatorios/page.tsx(24,28): error TS2307: Cannot find module 'next-auth/react' or its corresponding type declarations.
+src/app/(main)/tronco/page.tsx(9,28): error TS2307: Cannot find module 'next-auth/react' or its corresponding type declarations.
+src/app/api/auth/[...nextauth]/route.ts(1,43): error TS2307: Cannot find module 'next-auth' or its corresponding type declarations.
+src/app/api/auth/[...nextauth]/route.ts(2,33): error TS2307: Cannot find module 'next-auth/providers/credentials' or its corresponding type declarations.
+src/app/api/auth/[...nextauth]/route.ts(4,31): error TS2307: Cannot find module '@auth/prisma-adapter' or its corresponding type declarations.
+src/app/api/auth/[...nextauth]/route.ts(5,20): error TS2307: Cannot find module 'bcryptjs' or its corresponding type declarations.
+src/app/api/auth/[...nextauth]/route.ts(16,29): error TS7006: Parameter 'credentials' implicitly has an 'any' type.
+src/app/api/auth/[...nextauth]/route.ts(53,21): error TS7031: Binding element 'token' implicitly has an 'any' type.
+src/app/api/auth/[...nextauth]/route.ts(53,28): error TS7031: Binding element 'user' implicitly has an 'any' type.
+src/app/api/auth/[...nextauth]/route.ts(53,34): error TS7031: Binding element 'trigger' implicitly has an 'any' type.
+src/app/api/auth/[...nextauth]/route.ts(53,43): error TS7031: Binding element 'session' implicitly has an 'any' type.
+src/app/api/auth/[...nextauth]/route.ts(65,25): error TS7031: Binding element 'session' implicitly has an 'any' type.
+src/app/api/auth/[...nextauth]/route.ts(65,34): error TS7031: Binding element 'token' implicitly has an 'any' type.
+src/app/api/users/[id]/route.ts(29,37): error TS2307: Cannot find module 'bcryptjs' or its corresponding type declarations.
+src/app/api/users/[id]/route.ts(36,51): error TS2307: Cannot find module 'next-auth/next' or its corresponding type declarations.
+src/app/api/users/[id]/route.ts(45,35): error TS2307: Cannot find module 'bcryptjs' or its corresponding type declarations.
+src/app/api/users/route.ts(3,20): error TS2307: Cannot find module 'bcryptjs' or its corresponding type declarations.
+src/app/layout.tsx(26,25): error TS2307: Cannot find module 'sonner' or its corresponding type declarations.
+src/components/admin/biblioteca-editor.tsx(4,23): error TS2307: Cannot find module 'sonner' or its corresponding type declarations.
+src/components/agenda/bulk-routine-dialog.tsx(4,23): error TS2307: Cannot find module 'sonner' or its corresponding type declarations.
+src/components/agenda/routine-manager-dialog.tsx(4,23): error TS2307: Cannot find module 'sonner' or its corresponding type declarations.
+src/components/agenda/schedule-dialog.tsx(4,23): error TS2307: Cannot find module 'sonner' or its corresponding type declarations.
+src/components/agenda/schedule-dialog.tsx(17,28): error TS2307: Cannot find module 'next-auth/react' or its corresponding type declarations.
+src/components/assessment/assessment-drawer.tsx(4,23): error TS2307: Cannot find module 'sonner' or its corresponding type declarations.
+src/components/assessment/assessment-drawer.tsx(17,28): error TS2307: Cannot find module 'next-auth/react' or its corresponding type declarations.
+src/components/dashboard/daily-highlights.tsx(18,28): error TS2307: Cannot find module 'next-auth/react' or its corresponding type declarations.
+src/components/dashboard/hero.tsx(9,28): error TS2307: Cannot find module 'next-auth/react' or its corresponding type declarations.
+src/components/dashboard/notification-popover.tsx(18,28): error TS2307: Cannot find module 'next-auth/react' or its corresponding type declarations.
+src/components/layout/sidebar.tsx(30,37): error TS2307: Cannot find module 'next-auth/react' or its corresponding type declarations.
+src/components/menus/menu-week-view.tsx(4,23): error TS2307: Cannot find module 'sonner' or its corresponding type declarations.
+src/components/menus/menu-week-view.tsx(19,28): error TS2307: Cannot find module 'next-auth/react' or its corresponding type declarations.
+src/components/mosaic/mosaic-container.tsx(16,28): error TS2307: Cannot find module 'next-auth/react' or its corresponding type declarations.
+src/components/pegadas/pegada-new-post.tsx(21,28): error TS2307: Cannot find module 'next-auth/react' or its corresponding type declarations.
+src/components/pegadas/pegada-post-card.tsx(15,28): error TS2307: Cannot find module 'next-auth/react' or its corresponding type declarations.
+src/components/portfolio/bulk-portfolio-dialog.tsx(4,23): error TS2307: Cannot find module 'sonner' or its corresponding type declarations.
+src/components/portfolio/bulk-portfolio-dialog.tsx(22,28): error TS2307: Cannot find module 'next-auth/react' or its corresponding type declarations.
+src/components/providers.tsx(4,33): error TS2307: Cannot find module 'next-auth/react' or its corresponding type declarations.
+src/components/reports/observation-list.tsx(89,52): error TS2339: Property 'libraryItems' does not exist on type 'AppContextType'.
+src/components/students/student-dialog.tsx(4,23): error TS2307: Cannot find module 'sonner' or its corresponding type declarations.
+src/components/tronco/tronco-feed.tsx(10,28): error TS2307: Cannot find module 'next-auth/react' or its corresponding type declarations.
+src/components/tronco/tronco-new-post.tsx(11,28): error TS2307: Cannot find module 'next-auth/react' or its corresponding type declarations.
+src/components/users/user-profile-menu.tsx(4,23): error TS2307: Cannot find module 'sonner' or its corresponding type declarations.
+src/components/users/user-profile-menu.tsx(28,37): error TS2307: Cannot find module 'next-auth/react' or its corresponding type declarations.
+src/lib/prisma.ts(1,30): error TS2307: Cannot find module '@prisma/client' or its corresponding type declarations.
+src/middleware.ts(1,26): error TS2307: Cannot find module 'next-auth/middleware' or its corresponding type declarations.
+src/services/auth.service.ts(1,33): error TS2307: Cannot find module 'next-auth/react' or its corresponding type declarations.

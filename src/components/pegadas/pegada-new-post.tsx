@@ -19,7 +19,9 @@ import {
 import { useRef } from "react";
 import { BulkPortfolioDialog } from "@/components/portfolio/bulk-portfolio-dialog";
 import { useSession } from "next-auth/react";
-
+import { useEffect } from "react";
+import { getClasses } from "@/services/school-class.service";
+import { SchoolClass } from "@/types/school-class";
 
 export function PegadaNewPost() {
     const { addPegadaPost } = useAppStore();
@@ -31,8 +33,13 @@ export function PegadaNewPost() {
     const [content, setContent] = useState("");
     const [isBulkOpen, setIsBulkOpen] = useState(false);
     const [mediaUrls, setMediaUrls] = useState<string[]>([]);
+    const [classes, setClasses] = useState<SchoolClass[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const videoInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        getClasses().then(setClasses).catch(console.error);
+    }, []);
 
     const canPost = currentUser?.role === "teacher" || currentUser?.role === "director" || currentUser?.role === "admin";
 
@@ -120,7 +127,7 @@ export function PegadaNewPost() {
                 {!isExpanded ? (
                     <div className="flex items-center gap-4">
                         <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold shrink-0">
-                            {currentUser.name.substring(0, 2).toUpperCase()}
+                            {(currentUser?.name || "US").substring(0, 2).toUpperCase()}
                         </div>
                         <button
                             onClick={() => setIsExpanded(true)}
@@ -269,6 +276,7 @@ export function PegadaNewPost() {
                 onOpenChange={setIsBulkOpen}
                 date={new Date()}
                 classId="all"
+                classes={classes}
             />
         </Card>
     );

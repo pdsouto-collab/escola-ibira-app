@@ -58,21 +58,15 @@ export const TreeIcon = ({ rating, size = "sm" }: { rating: number; size?: "sm" 
     }
 };
 
-const resolveNodeInfo = (id: string, skillsTree: any[], contentsTree: any[], libraryItems: any[]) => {
-    const validIds = new Set<string>([id]);
-    const libraryItem = libraryItems.find((item) => item.id === id || item.code === id);
-    if (libraryItem) {
-        validIds.add(libraryItem.id);
-        if (libraryItem.code) validIds.add(libraryItem.code);
-    }
+const resolveNodeInfo = (id: string, skillsTree: any[], contentsTree: any[]) => {
     const searchTrees = (nodes: any[], parentName?: string): any | null => {
         for (const node of nodes) {
             const currentSubject = node.level === "mesclado" ? node.name : parentName;
-            if (validIds.has(node.id) || (node.libraryItemId && validIds.has(node.libraryItemId))) {
+            if (node.id === id) {
                 return {
                     id: node.id,
                     name: node.name,
-                    subject: currentSubject || libraryItem?.subGroup || "Outros",
+                    subject: currentSubject || "Outros",
                 };
             }
             if (node.children) {
@@ -82,11 +76,11 @@ const resolveNodeInfo = (id: string, skillsTree: any[], contentsTree: any[], lib
         }
         return null;
     };
-    return searchTrees([...skillsTree, ...contentsTree]) || (libraryItem ? { name: libraryItem.name } : { name: id });
+    return searchTrees([...skillsTree, ...contentsTree]) || { name: id };
 };
 
 export function ObservationList({ studentId }: { studentId: string }) {
-    const { assessments, skillsTree, contentsTree, libraryItems, students } = useAppStore();
+    const { assessments, skillsTree, contentsTree, students } = useAppStore();
     const student = students.find((s) => s.id === studentId);
     if (!student) return null;
 
@@ -105,7 +99,7 @@ export function ObservationList({ studentId }: { studentId: string }) {
     return (
         <div className="space-y-4 w-full">
             {relevantAssessments.map((assessment) => {
-                const nodeInfo = resolveNodeInfo(assessment.knowledgeNodeId || "", skillsTree, contentsTree, libraryItems);
+                const nodeInfo = resolveNodeInfo(assessment.knowledgeNodeId || "", skillsTree, contentsTree);
                 return (
                     <div key={assessment.id} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex gap-4 items-start hover:shadow-md transition-shadow">
                         <div className="bg-slate-50 p-3 rounded-xl flex flex-col items-center gap-1 min-w-[64px]">

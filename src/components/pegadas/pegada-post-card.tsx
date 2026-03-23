@@ -73,11 +73,11 @@ export function PegadaPostCard({ post }: PegadaPostCardProps) {
         <Card className="overflow-hidden border-slate-200 hover:shadow-md transition-shadow">
             <CardHeader className="p-4 flex flex-row items-center gap-3">
                 <Avatar className="h-10 w-10 border border-slate-100">
-                    <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorName}`} />
-                    <AvatarFallback>{post.authorName.substring(0, 2)}</AvatarFallback>
+                    <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${post.authorName || 'user'}`} />
+                    <AvatarFallback>{(post.authorName || "US").substring(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                    <h4 className="text-sm font-bold text-slate-900">{post.authorName}</h4>
+                    <h4 className="text-sm font-bold text-slate-900">{post.authorName || "Usuário"}</h4>
                     <p className="text-[10px] text-slate-500">
                         {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ptBR })}
                     </p>
@@ -224,11 +224,11 @@ export function PegadaPostCard({ post }: PegadaPostCardProps) {
                             {post.interactions.filter(i => i.type === 'comment' || i.type === 'audio').map((int) => (
                                 <div key={int.id} className="flex gap-3 animate-in slide-in-from-bottom-2">
                                     <Avatar className="h-8 w-8 shrink-0">
-                                        <AvatarFallback className="text-[10px] bg-slate-100 text-slate-600">{int.userName.substring(0, 2).toUpperCase()}</AvatarFallback>
+                                        <AvatarFallback className="text-[10px] bg-slate-100 text-slate-600">{(int.userName || "U").substring(0, 2).toUpperCase()}</AvatarFallback>
                                     </Avatar>
                                     <div className="flex-1 bg-slate-50 rounded-2xl p-3 text-xs">
                                         <div className="flex justify-between items-center mb-1">
-                                            <span className="font-bold text-slate-900">{int.userName}</span>
+                                            <span className="font-bold text-slate-900">{int.userName || "Usuário"}</span>
                                             <span className="text-[9px] text-slate-400">
                                                 {formatDistanceToNow(new Date(int.createdAt), { locale: ptBR })}
                                             </span>
