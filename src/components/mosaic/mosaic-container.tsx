@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAppStore } from "@/lib/store";
-import { KnowledgeNode, SEMESTERS } from "@/lib/data";
+import { KnowledgeNode, SEMESTERS, YEARS } from "@/lib/data";
 import { RadialMatrix } from "./radial-matrix";
 import { MosaicDetailPanel } from "./mosaic-detail-panel";
 import { getClasses } from "@/services/school-class.service";
@@ -214,17 +214,36 @@ export function MosaicContainer() {
                     </Select>
 
                     {/* Filter: Período */}
-                    <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                        <SelectTrigger className={selectTriggerClass}>
-                            <SelectValue placeholder="Todos os Períodos" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">Todos os Períodos</SelectItem>
-                            {SEMESTERS.map(sem => (
-                                <SelectItem key={sem} value={sem}>{sem}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <div className="flex gap-2">
+                        <Select value={selectedPeriod === "all" ? "all" : selectedPeriod.split(" / ")[0]} onValueChange={(val) => {
+                            if (val === "all") setSelectedPeriod("all");
+                            else setSelectedPeriod(`${val} / ${selectedPeriod === "all" ? new Date().getFullYear() : selectedPeriod.split(" / ")[1] || new Date().getFullYear()}`);
+                        }}>
+                            <SelectTrigger className="h-9 text-xs bg-white border-slate-200 w-32">
+                                <SelectValue placeholder="Semestre" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Todo Semestre</SelectItem>
+                                {SEMESTERS.map(sem => (
+                                    <SelectItem key={sem} value={sem}>{sem}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Select value={selectedPeriod === "all" ? "all" : selectedPeriod.split(" / ")[1]} onValueChange={(val) => {
+                            if (val === "all") setSelectedPeriod("all");
+                            else setSelectedPeriod(`${selectedPeriod === "all" ? "1º Semestre" : selectedPeriod.split(" / ")[0] || "1º Semestre"} / ${val}`);
+                        }}>
+                            <SelectTrigger className="h-9 text-xs bg-white border-slate-200 w-28">
+                                <SelectValue placeholder="Ano" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Todo Ano</SelectItem>
+                                {YEARS.map(y => (
+                                    <SelectItem key={y} value={y}>{y}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
 
                     {/* Habilidades / Conteúdos Toggle */}
                     <div className="flex flex-col gap-1 items-end ml-auto">

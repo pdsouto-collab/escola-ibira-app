@@ -15,7 +15,7 @@ import { BulkSessionDialog } from "@/components/projetos/bulk-session-dialog";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAppStore } from "@/lib/store";
-import { Project, ScheduleItem, KnowledgeNode, SEMESTERS } from "@/lib/data";
+import { Project, ScheduleItem, KnowledgeNode, SEMESTERS, YEARS } from "@/lib/data";
 import { SchoolClass } from "@/types/school-class";
 import { getClasses } from "@/services/school-class.service";
 import { getStudents } from "@/services/student.service";
@@ -397,17 +397,37 @@ function NewProjectWizardContent() {
                                     </div>
                                     <div>
                                         <Label className="font-semibold text-slate-700">Semestre/Ano</Label>
-                                        <Select value={formData.period || "all"} onValueChange={v => setFormData({ ...formData, period: v === "all" ? "" : v })}>
-                                            <SelectTrigger className="mt-2 text-slate-700">
-                                                <SelectValue placeholder="Selecione..." />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="all">Nenhum</SelectItem>
-                                                {SEMESTERS.map(sem => (
-                                                    <SelectItem key={sem} value={sem}>{sem}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                        <div className="flex gap-2 mt-2">
+                                            <Select value={(!formData.period || formData.period === "all") ? "all" : formData.period.split(" / ")[0]} onValueChange={v => {
+                                                if (v === "all") setFormData({ ...formData, period: "" });
+                                                else setFormData({ ...formData, period: `${v} / ${(!formData.period || formData.period === "all") ? new Date().getFullYear() : formData.period.split(" / ")[1] || new Date().getFullYear()}` });
+                                            }}>
+                                                <SelectTrigger className="text-slate-700">
+                                                    <SelectValue placeholder="Semestre" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">Nenhum</SelectItem>
+                                                    {SEMESTERS.map(sem => (
+                                                        <SelectItem key={sem} value={sem}>{sem}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+
+                                            <Select value={(!formData.period || formData.period === "all") ? "all" : formData.period.split(" / ")[1]} onValueChange={v => {
+                                                if (v === "all") setFormData({ ...formData, period: "" });
+                                                else setFormData({ ...formData, period: `${(!formData.period || formData.period === "all") ? "1º Semestre" : formData.period.split(" / ")[0] || "1º Semestre"} / ${v}` });
+                                            }}>
+                                                <SelectTrigger className="text-slate-700">
+                                                    <SelectValue placeholder="Ano" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">Nenhum</SelectItem>
+                                                    {YEARS.map(y => (
+                                                        <SelectItem key={y} value={y}>{y}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
                                     </div>
                                 </div>
 

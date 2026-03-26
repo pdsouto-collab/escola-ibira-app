@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAppStore } from "@/lib/store";
-import { Assessment, SEMESTERS } from "@/lib/data";
+import { Assessment, SEMESTERS, YEARS } from "@/lib/data";
 import { AssessmentDrawer } from "@/components/assessment/assessment-drawer";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -916,11 +916,24 @@ function PortfolioContent() {
             </div>
 
             <div className="bg-white border-b px-8 py-3 flex items-center gap-3">
-                <Select value={periodFilter} onValueChange={setPeriodFilter}>
-                    <SelectTrigger className="w-48 h-8 text-sm"><SelectValue placeholder="Todo o período" /></SelectTrigger>
+                <Select value={periodFilter === "all" ? "all" : periodFilter.split(" / ")[0]} onValueChange={(val) => {
+                    if (val === "all") setPeriodFilter("all");
+                    else setPeriodFilter(`${val} / ${periodFilter === "all" ? new Date().getFullYear() : periodFilter.split(" / ")[1] || new Date().getFullYear()}`);
+                }}>
+                    <SelectTrigger className="w-32 h-8 text-sm"><SelectValue placeholder="Semestre" /></SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="all">Todo o período</SelectItem>
+                        <SelectItem value="all">Todo Sem.</SelectItem>
                         {SEMESTERS.map(sem => <SelectItem key={sem} value={sem}>{sem}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+                <Select value={periodFilter === "all" ? "all" : periodFilter.split(" / ")[1]} onValueChange={(val) => {
+                    if (val === "all") setPeriodFilter("all");
+                    else setPeriodFilter(`${periodFilter === "all" ? "1º Semestre" : periodFilter.split(" / ")[0] || "1º Semestre"} / ${val}`);
+                }}>
+                    <SelectTrigger className="w-28 h-8 text-sm"><SelectValue placeholder="Ano" /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Todo Ano</SelectItem>
+                        {YEARS.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
                     </SelectContent>
                 </Select>
 

@@ -18,12 +18,8 @@ export interface KnowledgeNode {
     children: KnowledgeNode[]; // Nested nodes down the hierarchy
 }
 
-const currentYear = new Date().getFullYear();
-export const SEMESTERS = Array.from({ length: 12 }, (_, i) => {
-    const year = currentYear - 2 + Math.floor(i / 2);
-    const semester = (i % 2) + 1;
-    return `${semester}º Semestre / ${year}`;
-});
+export const SEMESTERS = ["1º Semestre", "2º Semestre"];
+export const YEARS = Array.from({ length: 2099 - 2020 + 1 }, (_, i) => (2020 + i).toString());
 
 // Initial mock data to bootstrap the trees
 export const mockSkillsTree: KnowledgeNode[] = [

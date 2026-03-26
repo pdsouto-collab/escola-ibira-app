@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useAppStore } from "@/lib/store";
 import { getStudents } from "@/services/student.service";
 import { Student } from "@/types/student";
-import { SEMESTERS } from "@/lib/data";
+import { SEMESTERS, YEARS } from "@/lib/data";
 import { MilestoneReport } from "@/components/reports/milestone-report";
 import { DailyLogReport } from "@/components/reports/daily-log-report";
 import { PortfolioReport } from "@/components/reports/portfolio-report";
@@ -136,17 +136,37 @@ export default function ReportsPage() {
                     )}
 
                     {/* Period Filter */}
-                    <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                        <SelectTrigger className="w-[180px] bg-white">
-                            <SelectValue placeholder="Semestre/Ano" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">Todo o Período</SelectItem>
-                            {SEMESTERS.map(sem => (
-                                <SelectItem key={sem} value={sem}>{sem}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <div className="flex items-center gap-2">
+                        <Select value={selectedPeriod === "all" ? "all" : selectedPeriod.split(" / ")[0]} onValueChange={(val) => {
+                            if (val === "all") setSelectedPeriod("all");
+                            else setSelectedPeriod(`${val} / ${selectedPeriod === "all" ? new Date().getFullYear() : selectedPeriod.split(" / ")[1] || new Date().getFullYear()}`);
+                        }}>
+                            <SelectTrigger className="w-[150px] bg-white">
+                                <SelectValue placeholder="Semestre" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Qualquer Sem.</SelectItem>
+                                {SEMESTERS.map(sem => (
+                                    <SelectItem key={sem} value={sem}>{sem}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+
+                        <Select value={selectedPeriod === "all" ? "all" : selectedPeriod.split(" / ")[1]} onValueChange={(val) => {
+                            if (val === "all") setSelectedPeriod("all");
+                            else setSelectedPeriod(`${selectedPeriod === "all" ? "1º Semestre" : selectedPeriod.split(" / ")[0] || "1º Semestre"} / ${val}`);
+                        }}>
+                            <SelectTrigger className="w-[110px] bg-white">
+                                <SelectValue placeholder="Ano" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Qualquer Ano</SelectItem>
+                                {YEARS.map(ano => (
+                                    <SelectItem key={ano} value={ano}>{ano}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
 
                     {/* Student Selector - Hide if only one student visible */}
                     {visibleStudents.length > 1 && (
