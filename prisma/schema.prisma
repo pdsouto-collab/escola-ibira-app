@@ -172,3 +172,36 @@ model MuralComment {
 
   @@index([muralEventId])
 }
+
+//--------------------------------------------
+/// Pegadas dos Ibiritos (Postagens e Feed)
+//--------------------------------------------
+model PegadaPost {
+  id          String   @id @default(cuid())
+  authorId    String
+  authorName  String
+  type        String   // 'photo' | 'video' | 'note'
+  title       String
+  content     String   @db.Text
+  mediaUrl    String?
+  mediaUrls   String[] // Array for multiple images
+  tags        String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  interactions PegadaInteraction[]
+}
+
+model PegadaInteraction {
+  id           String     @id @default(cuid())
+  userId       String
+  userName     String
+  type         String     // 'like' | 'comment' | 'audio'
+  content      String?    @db.Text
+  audioUrl     String?
+  createdAt    DateTime   @default(now())
+  
+  pegadaPostId String
+  pegadaPost   PegadaPost @relation(fields: [pegadaPostId], references: [id], onDelete: Cascade)
+
+  @@index([pegadaPostId])
+}

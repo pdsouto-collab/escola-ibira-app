@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { useAppStore } from "@/lib/store";
-import { PegadaPost } from "@/lib/data";
+import { PegadaPost } from "@/types/pegada-post";
+import { createPegada } from "@/services/pegada.service";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,8 +27,11 @@ import { getStudents } from "@/services/student.service";
 import { SchoolClass } from "@/types/school-class";
 import { Student } from "@/types/student";
 
-export function PegadaNewPost() {
-    const { addPegadaPost } = useAppStore();
+interface PegadaNewPostProps {
+    onSuccess?: () => void;
+}
+
+export function PegadaNewPost({ onSuccess }: PegadaNewPostProps = {}) {
     const { data: session } = useSession();
     const currentUser = session?.user as any;
     const [isExpanded, setIsExpanded] = useState(false);
@@ -39,6 +44,7 @@ export function PegadaNewPost() {
     const [students, setStudents] = useState<Student[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const videoInputRef = useRef<HTMLInputElement>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         getClasses().then(setClasses).catch(console.error);
@@ -49,27 +55,40 @@ export function PegadaNewPost() {
 
     if (!canPost) return null;
 
-    const handlePost = () => {
+    const handlePost = async () => {
         if (!title.trim() || !content.trim()) return;
 
-        const newPost: PegadaPost = {
-            id: `p-${Date.now()}`,
-            authorId: currentUser.id,
-            authorName: currentUser.name,
-            type,
-            title: title.trim(),
-            content: content.trim(),
-            mediaUrl: mediaUrls.length > 0 ? mediaUrls[0] : (type === 'photo' ? "https://images.unsplash.com/photo-1502086223501-7ea244b05ffb?q=80&w=800&auto=format&fit=crop" : undefined),
-            mediaUrls: mediaUrls.length > 0 ? mediaUrls : undefined,
-            createdAt: new Date().toISOString(),
-            interactions: []
-        };
+        if ((type === 'photo' || type === 'video') && mediaUrls.length === 0) {
+            toast.warning(`É obrigatório anexar pelo menos um arquivo para o tipo ${type === 'photo' ? 'Experiência' : 'Vídeo'}.`);
+            return;
+        }
 
-        addPegadaPost(newPost);
-        setTitle("");
-        setContent("");
-        setMediaUrls([]);
-        setIsExpanded(false);
+        setIsSubmitting(true);
+        try {
+            const newPost = {
+                authorId: currentUser.id,
+                authorName: currentUser.name,
+                type,
+                title: title.trim(),
+                content: content.trim(),
+                mediaUrl: mediaUrls.length > 0 ? mediaUrls[0] : undefined,
+                mediaUrls: mediaUrls.length > 0 ? mediaUrls : undefined,
+                tags: []
+            };
+
+            await createPegada(newPost as Partial<PegadaPost>);
+            
+            setTitle("");
+            setContent("");
+            setMediaUrls([]);
+            setIsExpanded(false);
+            if (onSuccess) onSuccess();
+        } catch (error) {
+            console.error("Erro ao postar pegada:", error);
+            toast.error("Ocorreu um erro ao postar. Tente novamente.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, fileType: 'photo' | 'video') => {
@@ -267,8 +286,8 @@ export function PegadaNewPost() {
                                 </Button>
                             </div>
 
-                            <Button onClick={handlePost} disabled={!title.trim() || !content.trim()} className="bg-indigo-600 hover:bg-indigo-700 shadow-md px-6">
-                                Postar
+                            <Button onClick={handlePost} disabled={!title.trim() || !content.trim() || isSubmitting} className="bg-indigo-600 hover:bg-indigo-700 shadow-md px-6">
+                                {isSubmitting ? "Postando..." : "Postar"}
                             </Button>
                         </div>
                     </div>

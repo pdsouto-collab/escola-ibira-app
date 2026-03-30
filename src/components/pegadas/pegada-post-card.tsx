@@ -1,14 +1,15 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { PegadaPost, PegadaInteraction } from "@/lib/data";
-import { useAppStore } from "@/lib/store";
+import { PegadaPost } from "@/types/pegada-post";
+import { PegadaInteraction } from "@/types/pegada-interaction";
+import { updatePegada, deletePegada, addPegadaInteraction } from "@/services/pegada.service";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { TreeDeciduous, MessageSquare, Mic, Send, MoreVertical, Play, Pencil, Trash, X, Save, ChevronLeft, ChevronRight } from "lucide-react";
+import { TreeDeciduous, MessageSquare, Mic, Send, MoreVertical, Play, Pencil, Trash, X, Save, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -17,16 +18,20 @@ import { useSession } from "next-auth/react";
 
 interface PegadaPostCardProps {
     post: PegadaPost;
+    onUpdated?: () => void;
+    onDeleted?: () => void;
 }
 
-export function PegadaPostCard({ post }: PegadaPostCardProps) {
-    const { addPegadaInteraction, updatePegadaPost, deletePegadaPost } = useAppStore();
+export function PegadaPostCard({ post, onUpdated, onDeleted }: PegadaPostCardProps) {
     const { data: session } = useSession();
     const currentUser = session?.user as any;
     const [comment, setComment] = useState("");
     const [showComments, setShowComments] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState(post.content);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isLiking, setIsLiking] = useState(false);
+    const [isCommenting, setIsCommenting] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
 
     const hasLiked = post.interactions.some(i => i.type === 'like' && i.userId === currentUser?.id);
@@ -41,32 +46,70 @@ export function PegadaPostCard({ post }: PegadaPostCardProps) {
         }
     };
 
-    const handleLike = () => {
-        if (!currentUser || hasLiked) return;
+    const handleLike = async () => {
+        if (!currentUser || hasLiked || isLiking) return;
 
-        const interaction: PegadaInteraction = {
-            id: `int-${Date.now()}`,
-            userId: currentUser.id,
-            userName: currentUser.name,
-            type: 'like',
-            createdAt: new Date().toISOString()
-        };
-        addPegadaInteraction(post.id, interaction);
+        setIsLiking(true);
+        try {
+            const interaction = {
+                userId: currentUser.id,
+                userName: currentUser.name,
+                type: 'like'
+            };
+            await addPegadaInteraction(post.id, interaction as Omit<PegadaInteraction, 'id' | 'createdAt' | 'pegadaPostId'>);
+            if (onUpdated) onUpdated();
+        } catch (error) {
+            console.error("Erro ao curtir:", error);
+        } finally {
+            setIsLiking(false);
+        }
     };
 
-    const handleComment = () => {
-        if (!currentUser || !comment.trim()) return;
+    const handleComment = async () => {
+        if (!currentUser || !comment.trim() || isCommenting) return;
 
-        const interaction: PegadaInteraction = {
-            id: `int-${Date.now()}`,
-            userId: currentUser.id,
-            userName: currentUser.name,
-            type: 'comment',
-            content: comment.trim(),
-            createdAt: new Date().toISOString()
-        };
-        addPegadaInteraction(post.id, interaction);
-        setComment("");
+        setIsCommenting(true);
+        try {
+            const interaction = {
+                userId: currentUser.id,
+                userName: currentUser.name,
+                type: 'comment',
+                content: comment.trim()
+            };
+            await addPegadaInteraction(post.id, interaction as Omit<PegadaInteraction, 'id' | 'createdAt' | 'pegadaPostId'>);
+            setComment("");
+            if (onUpdated) onUpdated();
+        } catch (error) {
+            console.error("Erro ao comentar:", error);
+        } finally {
+            setIsCommenting(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!confirm("Tem certeza que deseja excluir esta pegada?")) return;
+        setIsLoading(true);
+        try {
+            await deletePegada(post.id);
+            if (onDeleted) onDeleted();
+        } catch (error) {
+            console.error("Erro ao excluir pegada:", error);
+            setIsLoading(false);
+        }
+    };
+
+    const handleUpdate = async () => {
+        if (!editContent.trim()) return;
+        setIsLoading(true);
+        try {
+            await updatePegada(post.id, { content: editContent.trim() });
+            setIsEditing(false);
+            if (onUpdated) onUpdated();
+        } catch (error) {
+            console.error("Erro ao atualizar pegada:", error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -90,10 +133,10 @@ export function PegadaPostCard({ post }: PegadaPostCardProps) {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                            <DropdownMenuItem onClick={() => setIsEditing(true)} disabled={isLoading}>
                                 <Pencil className="h-4 w-4 mr-2" /> Editar Post
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => deletePegadaPost(post.id)} className="text-red-600 focus:bg-red-50 focus:text-red-600">
+                            <DropdownMenuItem onClick={handleDelete} disabled={isLoading} className="text-red-600 focus:bg-red-50 focus:text-red-600">
                                 <Trash className="h-4 w-4 mr-2" /> Excluir Post
                             </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -136,7 +179,7 @@ export function PegadaPostCard({ post }: PegadaPostCardProps) {
                                 </>
                             )}
                         </div>
-                    ) : post.mediaUrl ? (
+                    ) : post.mediaUrl && post.mediaUrl.trim() !== "" && post.mediaUrl !== "null" && !post.mediaUrl.includes("photo-1502086223501") ? (
                         <div className="relative aspect-video bg-slate-100">
                             <img src={post.mediaUrl} alt={post.title} className="w-full h-full object-cover" />
                         </div>
@@ -178,7 +221,7 @@ export function PegadaPostCard({ post }: PegadaPostCardProps) {
                                 <Button variant="outline" size="sm" onClick={() => { setIsEditing(false); setEditContent(post.content); }}>
                                     <X className="h-4 w-4 mr-2" /> Cancelar
                                 </Button>
-                                <Button size="sm" onClick={() => { updatePegadaPost(post.id, { content: editContent }); setIsEditing(false); }} className="bg-indigo-600 hover:bg-indigo-700">
+                                <Button size="sm" onClick={handleUpdate} disabled={isLoading} className="bg-indigo-600 hover:bg-indigo-700">
                                     <Save className="h-4 w-4 mr-2" /> Salvar
                                 </Button>
                             </div>
@@ -196,9 +239,10 @@ export function PegadaPostCard({ post }: PegadaPostCardProps) {
                     <div className="flex items-center gap-4">
                         <button
                             onClick={handleLike}
-                            className={`flex items-center gap-1.5 transition-all active:scale-125 ${hasLiked ? 'text-emerald-600' : 'text-slate-500 hover:text-emerald-500'}`}
+                            disabled={isLiking || hasLiked}
+                            className={`flex items-center gap-1.5 transition-all ${!isLiking && !hasLiked ? 'active:scale-125' : ''} ${hasLiked ? 'text-emerald-600' : 'text-slate-500 hover:text-emerald-500'} ${isLiking ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
-                            <TreeDeciduous className={`h-5 w-5 ${hasLiked ? 'fill-emerald-100' : ''}`} />
+                            {isLiking ? <Loader2 className="h-5 w-5 animate-spin" /> : <TreeDeciduous className={`h-5 w-5 ${hasLiked ? 'fill-emerald-100' : ''}`} />}
                             <span className="text-xs font-bold">{likeCount}</span>
                         </button>
 
@@ -263,8 +307,8 @@ export function PegadaPostCard({ post }: PegadaPostCardProps) {
                                 <Button size="icon" variant="ghost" className="h-9 w-9 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">
                                     <Mic className="h-4 w-4" />
                                 </Button>
-                                <Button size="icon" onClick={handleComment} disabled={!comment.trim()} className="h-9 w-9 bg-indigo-600 hover:bg-indigo-700 shadow-sm shrink-0">
-                                    <Send className="h-4 w-4" />
+                                <Button size="icon" onClick={handleComment} disabled={!comment.trim() || isCommenting} className="h-9 w-9 bg-indigo-600 hover:bg-indigo-700 shadow-sm shrink-0">
+                                    {isCommenting ? <Loader2 className="h-4 w-4 animate-spin text-white" /> : <Send className="h-4 w-4" />}
                                 </Button>
                             </div>
                         </div>

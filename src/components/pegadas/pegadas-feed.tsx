@@ -1,22 +1,53 @@
 "use client";
 
-import { useAppStore } from "@/lib/store";
+import { useEffect, useState } from "react";
 import { PegadaPostCard } from "./pegada-post-card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { getPegadas } from "@/services/pegada.service";
+import { PegadaPost } from "@/types/pegada-post";
+import { Loader2 } from "lucide-react";
 
-export function PegadasFeed() {
-    const { pegadaPosts } = useAppStore();
+interface PegadasFeedProps {
+    refreshTrigger?: number;
+}
+
+export function PegadasFeed({ refreshTrigger = 0 }: PegadasFeedProps) {
+    const [pegadaPosts, setPegadaPosts] = useState<PegadaPost[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const loadPosts = async () => {
+        try {
+            setLoading(true);
+            const posts = await getPegadas();
+            setPegadaPosts(posts);
+        } catch (error) {
+            console.error("Erro ao carregar pegadas:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadPosts();
+    }, [refreshTrigger]);
 
     // Sort by most recent
     const sortedPosts = [...pegadaPosts].sort((a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center py-12">
+                <Loader2 className="h-8 w-8 text-indigo-600 animate-spin" />
+            </div>
+        );
+    }
+
     return (
         <div className="max-w-2xl mx-auto py-4 space-y-6">
             {sortedPosts.length > 0 ? (
                 sortedPosts.map(post => (
-                    <PegadaPostCard key={post.id} post={post} />
+                    <PegadaPostCard key={post.id} post={post} onDeleted={loadPosts} onUpdated={loadPosts} />
                 ))
             ) : (
                 <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-slate-200 p-8">

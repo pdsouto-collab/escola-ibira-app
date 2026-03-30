@@ -13,7 +13,6 @@ import {
     PortfolioEntry, mockPortfolio,
     Invoice, mockInvoices,
     AppNotification, mockNotifications,
-    PegadaPost, mockPegadas, PegadaInteraction,
     ClassBoardPost, mockClassBoardPosts, PostInteraction, mockPostInteractions
 } from "@/lib/data";
 
@@ -34,7 +33,6 @@ interface AppState {
     portfolioEntries: PortfolioEntry[];
     invoices: Invoice[];
     notifications: AppNotification[];
-    pegadaPosts: PegadaPost[];
     classBoardPosts: ClassBoardPost[];
     postInteractions: PostInteraction[];
 }
@@ -101,11 +99,6 @@ interface AppContextType extends AppState {
     addNotification: (notification: AppNotification) => void;
     markNotificationAsRead: (id: string) => void;
     markAllNotificationsAsRead: () => void;
-    // Pegadas
-    addPegadaPost: (post: PegadaPost) => void;
-    updatePegadaPost: (postId: string, updates: Partial<PegadaPost>) => void;
-    deletePegadaPost: (postId: string) => void;
-    addPegadaInteraction: (postId: string, interaction: PegadaInteraction) => void;
 
     // Class Board
     addClassBoardPost: (post: ClassBoardPost) => void;
@@ -194,7 +187,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [portfolioEntries, setPortfolioEntries] = useState<PortfolioEntry[]>(mockPortfolio);
     const [invoices, setInvoices] = useState<Invoice[]>(mockInvoices);
     const [notifications, setNotifications] = useState<AppNotification[]>(mockNotifications);
-    const [pegadaPosts, setPegadaPosts] = useState<PegadaPost[]>(mockPegadas);
     const [classBoardPosts, setClassBoardPosts] = useState<ClassBoardPost[]>(mockClassBoardPosts);
     const [postInteractions, setPostInteractions] = useState<PostInteraction[]>(mockPostInteractions);
 
@@ -252,7 +244,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             load("assessments", setAssessments, mockAssessments);
             load("invoices", setInvoices, mockInvoices);
             load("notifications", setNotifications, mockNotifications);
-            load("pegadaPosts", setPegadaPosts, mockPegadas);
             load("classBoardPosts", setClassBoardPosts, mockClassBoardPosts);
             load("postInteractions", setPostInteractions, mockPostInteractions);
         }
@@ -280,13 +271,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem("app_assessments", JSON.stringify(assessments));
             localStorage.setItem("app_invoices", JSON.stringify(invoices));
             localStorage.setItem("app_notifications", JSON.stringify(notifications));
-            localStorage.setItem("app_pegadaPosts", JSON.stringify(pegadaPosts));
             localStorage.setItem("app_classBoardPosts", JSON.stringify(classBoardPosts));
             localStorage.setItem("app_postInteractions", JSON.stringify(postInteractions));
         } catch (error) {
             console.error("Erro ao salvar no cache local. O limite de armazenamento pode ter sido atingido.", error);
         }
-    }, [schedule, dailyLogs, tasks, projects, messages, mosaicData, bnccProgress, skillsTree, contentsTree, menus, portfolioEntries, assessments, invoices, notifications, pegadaPosts, classBoardPosts, postInteractions, isLoaded]);
+    }, [schedule, dailyLogs, tasks, projects, messages, mosaicData, bnccProgress, skillsTree, contentsTree, menus, portfolioEntries, assessments, invoices, notifications, classBoardPosts, postInteractions, isLoaded]);
 
     const toggleTask = (id: string) => {
         setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
@@ -526,19 +516,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const markNotificationAsRead = (id: string) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
     const markAllNotificationsAsRead = () => setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
 
-    const addPegadaPost = (post: PegadaPost) => setPegadaPosts((prev: PegadaPost[]) => [post, ...prev]);
-    const updatePegadaPost = (postId: string, updates: Partial<PegadaPost>) => setPegadaPosts((prev: PegadaPost[]) => prev.map(p => p.id === postId ? { ...p, ...updates } : p));
-    const deletePegadaPost = (postId: string) => setPegadaPosts((prev: PegadaPost[]) => prev.filter(p => p.id !== postId));
-    const addPegadaInteraction = (postId: string, interaction: PegadaInteraction) => {
-        setPegadaPosts((prev: PegadaPost[]) => prev.map((p: PegadaPost) => {
-            if (p.id !== postId) return p;
-            return {
-                ...p,
-                interactions: [...p.interactions, interaction]
-            };
-        }));
-    };
-
     const addClassBoardPost = (post: ClassBoardPost) => setClassBoardPosts(prev => [post, ...prev]);
     const addPostInteraction = (interaction: PostInteraction) => setPostInteractions(prev => [...prev, interaction]);
 
@@ -582,12 +559,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             addNotification: (n) => setNotifications(prev => [n, ...prev]),
             markNotificationAsRead: (id) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n)),
             markAllNotificationsAsRead: () => setNotifications(prev => prev.map(n => ({ ...n, isRead: true }))),
-
-            pegadaPosts,
-            addPegadaPost,
-            updatePegadaPost,
-            deletePegadaPost,
-            addPegadaInteraction,
 
             classBoardPosts,
             postInteractions,

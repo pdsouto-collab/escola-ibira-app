@@ -1,0 +1,39 @@
+import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    try {
+        const { id } = await params;
+        const data = await req.json();
+
+        const post = await prisma.pegadaPost.update({
+            where: { id },
+            data,
+            include: {
+                interactions: true,
+            },
+        });
+
+        return NextResponse.json(post);
+    } catch (error) {
+        console.error("PUT /api/pegadas/[id] error:", error);
+        return NextResponse.json({ error: "Erro ao atualizar pegada" }, { status: 500 });
+    }
+}
+
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    try {
+        const { id } = await params;
+
+        await prisma.pegadaPost.delete({
+            where: { id },
+        });
+
+        return new NextResponse(null, { status: 204 });
+    } catch (error) {
+        console.error("DELETE /api/pegadas/[id] error:", error);
+        return NextResponse.json({ error: "Erro ao excluir pegada" }, { status: 500 });
+    }
+}

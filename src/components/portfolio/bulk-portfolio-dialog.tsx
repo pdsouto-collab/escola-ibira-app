@@ -12,6 +12,7 @@ import { PortfolioEntry } from "@/lib/data";
 import { SchoolClass } from "@/types/school-class";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { createPegada } from "@/services/pegada.service";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ImagePlus, Images, Sparkles, Trash2, Users, Target, Check, ChevronRight, ChevronLeft, Search } from "lucide-react";
@@ -39,7 +40,7 @@ interface StudentPortfolioForm {
 }
 
 export function BulkPortfolioDialog({ open, onOpenChange, date, classes, students }: BulkPortfolioDialogProps) {
-    const { portfolioEntries, addPortfolioEntry, updatePortfolioEntry, removePortfolioEntry, addPegadaPost } = useAppStore();
+    const { portfolioEntries, addPortfolioEntry, updatePortfolioEntry, removePortfolioEntry } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -57,6 +58,7 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
     const [tagsInput, setTagsInput] = useState("");
     const [images, setImages] = useState<string[]>(["https://images.unsplash.com/photo-1544717297-fa95b6ee9643?q=80&w=600&auto=format&fit=crop"]);
     const [baseNarrative, setBaseNarrative] = useState("");
+    const [isSaving, setIsSaving] = useState(false);
 
     // Step 2: Individualization State
     const [forms, setForms] = useState<Record<string, StudentPortfolioForm>>({});
@@ -176,7 +178,7 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
             };
             reader.readAsDataURL(file);
         });
-        
+
         // Clear input value to allow selecting same file again
         if (e.target) e.target.value = '';
     };
@@ -203,9 +205,14 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
         });
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!title.trim()) {
             toast.warning("Por favor, dê um título para a vivência.");
+            return;
+        }
+
+        if (images.length === 0) {
+            toast.warning("Como esta vivência será postada no feed (Experiência), é obrigatório anexar pelo menos uma foto.");
             return;
         }
 
@@ -231,21 +238,27 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
             addPortfolioEntry(entryData);
         });
 
-        // Add a single PegadaPost to the feed as well
-        addPegadaPost({
-            id: `pegada-${Date.now()}`,
-            authorId: currentUser?.id || "u2",
-            authorName: currentUser?.name || "Professor",
-            type: "photo",
-            title: title.trim(),
-            content: baseNarrative.trim() || "Nova vivência registrada para a turma.",
-            mediaUrl: images[0] || "",
-            tags: tagsArray,
-            interactions: [],
-            createdAt: new Date().toISOString()
-        });
+        setIsSaving(true);
+        try {
+            // Add a single PegadaPost to the feed as well
+            await createPegada({
+                authorId: currentUser?.id,
+                authorName: currentUser?.name,
+                type: "photo",
+                title: title.trim(),
+                content: baseNarrative.trim() || "Nova vivência registrada para a turma.",
+                mediaUrl: images[0] || undefined,
+                tags: tagsArray,
+            });
 
-        onOpenChange(false);
+            onOpenChange(false);
+            toast.success("Vivência registrada no portfólio de todos os selecionados!");
+        } catch (error) {
+            console.error(error);
+            toast.error("Ocorreu um erro ao salvar o registro no Feed.");
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -281,12 +294,12 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
                 </DialogHeader>
 
                 {/* Main Content Area */}
-                <div className="flex-1 overflow-hidden">
+                <div className="flex-1 flex flex-col overflow-hidden min-h-0">
                     {currentStep === 1 ? (
                         /* STEP 1: SELECTION UI */
-                        <div className="h-full flex flex-col animate-in fade-in slide-in-from-right-4 duration-300 p-6 gap-6">
+                        <div className="flex-1 min-h-0 overflow-y-auto flex flex-col animate-in fade-in slide-in-from-right-4 duration-300 p-6 gap-6">
                             {/* Classes Selection Grid */}
-                            <div className="space-y-3">
+                            <div className="space-y-3 shrink-0">
                                 <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
                                     <Users className="h-3.5 w-3.5" /> 1. Selecionar Turmas
                                 </Label>
@@ -318,8 +331,8 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
                             </div>
 
                             {/* Students Selection Grid */}
-                            <div className="flex-1 flex flex-col min-h-0 space-y-4">
-                                <div className="flex items-center justify-between">
+                            <div className="flex flex-col space-y-4 min-h-0">
+                                <div className="flex items-center justify-between shrink-0">
                                     <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
                                         <Target className="h-3.5 w-3.5" /> 2. Selecionar Alunos Participantes
                                     </Label>
@@ -342,7 +355,7 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
                                     </div>
                                 </div>
 
-                                <ScrollArea className="flex-1 bg-white rounded-2xl border border-slate-200 p-4">
+                                <div className="bg-white rounded-2xl border border-slate-200 p-4">
                                     {filteredStudents.length > 0 ? (
                                         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                                             {filteredStudents.map(student => {
@@ -375,17 +388,17 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
                                             })}
                                         </div>
                                     ) : (
-                                        <div className="h-full flex flex-col items-center justify-center py-20 text-slate-400">
+                                        <div className="flex flex-col items-center justify-center py-20 text-slate-400">
                                             <Target className="h-8 w-8 mb-2 opacity-20" />
                                             <p className="text-sm font-medium italic">Nenhum aluno encontrado para os critérios selecionados.</p>
                                         </div>
                                     )}
-                                </ScrollArea>
+                                </div>
                             </div>
                         </div>
                     ) : (
                         /* STEP 2: FILLING UI */
-                        <div className="h-full flex overflow-hidden animate-in fade-in slide-in-from-right-4 duration-300">
+                        <div className="flex-1 min-h-0 flex overflow-hidden animate-in fade-in slide-in-from-right-4 duration-300">
                             {/* Left Side: Context & Global Narrative */}
                             <div className="w-1/3 bg-white border-r flex flex-col overflow-y-auto p-6 space-y-6">
                                 <div className="space-y-4">
@@ -417,13 +430,13 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
                                         <Badge variant="secondary" className="text-[10px]">{images.length} fotos</Badge>
                                     </div>
                                     <input type="file" multiple ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageChange} />
-                                    
+
                                     <ScrollArea className="w-full whitespace-nowrap pb-4">
                                         <div className="flex gap-3">
                                             {images.map((img, idx) => (
                                                 <div key={idx} className="w-32 h-32 shrink-0 border border-slate-200 rounded-2xl p-1 bg-slate-50 relative group overflow-hidden">
                                                     <img src={img} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover rounded-xl" />
-                                                    <button 
+                                                    <button
                                                         onClick={() => setImages(prev => prev.filter((_, i) => i !== idx))}
                                                         className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
                                                     >
@@ -459,16 +472,16 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
                             </div>
 
                             {/* Right Side: Individual Notes */}
-                            <div className="flex-1 flex flex-col bg-slate-100/30">
-                                <div className="px-6 py-4 bg-white border-b flex justify-between items-center">
+                            <div className="flex-1 flex flex-col bg-slate-100/30 min-h-0">
+                                <div className="px-6 py-4 bg-white border-b flex justify-between items-center shrink-0">
                                     <Label className="text-sm font-bold text-slate-700">Participantes Escolhidos</Label>
                                     <Badge variant="secondary" className="bg-indigo-100 text-indigo-700 font-bold">
                                         {Object.values(forms).filter(f => f.selected).length} de {selectedStudentIds.length} Alunos
                                     </Badge>
                                 </div>
 
-                                <ScrollArea className="flex-1 p-6">
-                                    <div className="space-y-4">
+                                <div className="flex-1 min-h-0 overflow-y-auto">
+                                    <div className="p-6 space-y-4">
                                         {selectedStudentIds.map((sid) => {
                                             const student = students.find(s => s.id === sid);
                                             const form = forms[sid];
@@ -509,7 +522,7 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
                                             );
                                         })}
                                     </div>
-                                </ScrollArea>
+                                </div>
                             </div>
                         </div>
                     )}

@@ -5,11 +5,15 @@ import { PegadaNewPost } from "@/components/pegadas/pegada-new-post";
 import { PegadasFeed } from "@/components/pegadas/pegadas-feed";
 import { TreeDeciduous, Info } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { useState } from "react";
 
 
 export default function PegadasPage() {
     const { data: session } = useSession();
     const currentUser = session?.user as any;
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+    const triggerRefresh = () => setRefreshTrigger(prev => prev + 1);
 
     const isTeacherOrAdmin = currentUser?.role === "teacher" || currentUser?.role === "director" || currentUser?.role === "admin";
 
@@ -49,10 +53,10 @@ export default function PegadasPage() {
                     )}
 
                     {/* New Post Creator (Teachers/Admins only) */}
-                    <PegadaNewPost />
+                    <PegadaNewPost onSuccess={triggerRefresh} />
 
                     {/* Feed */}
-                    <PegadasFeed />
+                    <PegadasFeed refreshTrigger={refreshTrigger} />
                 </div>
             </main>
         </div>
