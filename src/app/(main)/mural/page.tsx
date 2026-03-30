@@ -2,15 +2,16 @@
 
 
 
-import { Plus, Calendar, MapPin, MessageCircle, User, Edit2, Check, X, Users, MoreVertical, Trash2, Pencil, Clock } from "lucide-react";
+import { Plus, Calendar, MapPin, MessageCircle, User, Edit2, Check, X, Users, MoreVertical, Trash2, Pencil, Clock, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { useAppStore } from "@/lib/store";
-import { MuralEvent } from "@/lib/data";
+import { toast } from "sonner";
+import { getMuralEvents, createMuralEvent, updateMuralEvent, deleteMuralEvent, addMuralComment } from "@/services/mural.service";
+import { MuralEvent } from "@/types/mural";
 import { SchoolClass } from "@/types/school-class";
 import { getClasses } from "@/services/school-class.service";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 import {
     Select,
@@ -28,16 +29,37 @@ import {
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export default function MuralPage() {
-    const { muralEvents, addMuralEvent, updateMuralEvent, removeMuralEvent, addCommentToEvent } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
+
+    // State
+    const [muralEvents, setMuralEvents] = useState<MuralEvent[]>([]);
     const [classes, setClasses] = useState<SchoolClass[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isEventsLoading, setIsEventsLoading] = useState(true);
+
+    // UI State
     const [showNewEventForm, setShowNewEventForm] = useState(false);
     const [editingEventId, setEditingEventId] = useState<string | null>(null);
     const [confirmDeleteEventId, setConfirmDeleteEventId] = useState<string | null>(null);
+    const [selectedClassId, setSelectedClassId] = useState<string>("all");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submittingCommentId, setSubmittingCommentId] = useState<string | null>(null);
 
-    async function fetchClasses() {
+    // Fetching Data
+    const fetchMuralEvents = useCallback(async (classId?: string) => {
+        setIsEventsLoading(true);
+        try {
+            const data = await getMuralEvents(classId === "all" ? undefined : classId);
+            setMuralEvents(data);
+        } catch (error) {
+            console.error("Erro ao buscar eventos do mural:", error);
+        } finally {
+            setIsEventsLoading(false);
+        }
+    }, []);
+
+    const fetchClasses = async () => {
         try {
             const data = await getClasses();
             setClasses(data);
@@ -46,14 +68,12 @@ export default function MuralPage() {
         } finally {
             setIsLoading(false);
         }
-    }
+    };
 
     useEffect(() => {
         fetchClasses();
-    }, []);
-
-    // Filter State
-    const [selectedClassId, setSelectedClassId] = useState<string>("all");
+        fetchMuralEvents(selectedClassId);
+    }, [selectedClassId, fetchMuralEvents]);
 
     // New Event Form State
     const [newEvent, setNewEvent] = useState({
@@ -63,16 +83,11 @@ export default function MuralPage() {
         time: "",
         location: "",
         image: "",
-        classId: "all" // Default to all classes
+        classId: "all"
     });
 
     // Comment Form State
     const [newCommentText, setNewCommentText] = useState<{ [key: string]: string }>({});
-
-    const filteredEvents = muralEvents.filter(event => {
-        if (selectedClassId === "all") return true;
-        return event.classId === selectedClassId || !event.classId || event.classId === "all";
-    });
 
     const resetForm = () => {
         setNewEvent({ title: "", description: "", date: "", time: "", location: "", image: "", classId: "all" });
@@ -80,37 +95,38 @@ export default function MuralPage() {
         setShowNewEventForm(false);
     };
 
-    const handleCreateEvent = () => {
+    const handleCreateEvent = async () => {
         if (!newEvent.title || !newEvent.date || !currentUser) return;
 
+        setIsSubmitting(true);
         const eventDate = `${newEvent.date}T${newEvent.time || "00:00"}`;
+        const eventData = {
+            title: newEvent.title,
+            description: newEvent.description,
+            date: eventDate,
+            location: newEvent.location,
+            image: newEvent.image,
+            classId: newEvent.classId === "all" ? null : newEvent.classId,
+            author: currentUser.name,
+            type: "event" as const,
+        };
 
-        if (editingEventId) {
-            updateMuralEvent(editingEventId, {
-                title: newEvent.title,
-                description: newEvent.description,
-                date: eventDate,
-                location: newEvent.location,
-                image: newEvent.image,
-                classId: newEvent.classId === "all" ? undefined : newEvent.classId,
-            });
-        } else {
-            const event: MuralEvent = {
-                id: Math.random().toString(36).substr(2, 9),
-                title: newEvent.title,
-                description: newEvent.description,
-                date: eventDate,
-                author: currentUser.name,
-                type: "event",
-                location: newEvent.location,
-                image: newEvent.image,
-                classId: newEvent.classId === "all" ? undefined : newEvent.classId,
-                comments: [],
-                likes: 0
-            };
-            addMuralEvent(event);
+        try {
+            if (editingEventId) {
+                await updateMuralEvent(editingEventId, eventData);
+                toast.success("Evento atualizado com sucesso");
+            } else {
+                await createMuralEvent(eventData);
+                toast.success("Evento criado com sucesso");
+            }
+            fetchMuralEvents(selectedClassId);
+            resetForm();
+        } catch (error) {
+            console.error("Erro ao salvar evento:", error);
+            toast.error("Erro ao salvar evento");
+        } finally {
+            setIsSubmitting(false);
         }
-        resetForm();
     };
 
     const handleEditClick = (event: MuralEvent) => {
@@ -133,18 +149,38 @@ export default function MuralPage() {
         setConfirmDeleteEventId(id);
     };
 
-    const confirmDeleteAction = () => {
+    const confirmDeleteAction = async () => {
         if (confirmDeleteEventId) {
-            removeMuralEvent(confirmDeleteEventId);
-            setConfirmDeleteEventId(null);
+            try {
+                await deleteMuralEvent(confirmDeleteEventId);
+                setMuralEvents(prev => prev.filter(e => e.id !== confirmDeleteEventId));
+                setConfirmDeleteEventId(null);
+            } catch (error) {
+                console.error("Erro ao deletar evento:", error);
+                toast.error("Erro ao excluir evento");
+            }
         }
     };
 
-    const handleAddComment = (eventId: string) => {
+    const handleAddComment = async (eventId: string) => {
         const text = newCommentText[eventId];
-        if (!text?.trim()) return;
-        addCommentToEvent(eventId, text);
-        setNewCommentText({ ...newCommentText, [eventId]: "" });
+        if (!text?.trim() || !currentUser) return;
+
+        setSubmittingCommentId(eventId);
+        try {
+            await addMuralComment(eventId, {
+                author: currentUser.name,
+                text: text
+            });
+            fetchMuralEvents(selectedClassId);
+            setNewCommentText({ ...newCommentText, [eventId]: "" });
+            toast.success("Comentário adicionado");
+        } catch (error) {
+            console.error("Erro ao adicionar comentário:", error);
+            toast.error("Erro ao adicionar comentário");
+        } finally {
+            setSubmittingCommentId(null);
+        }
     };
 
     return (
@@ -281,7 +317,7 @@ export default function MuralPage() {
                                     value={newEvent.image}
                                     onChange={(e) => setNewEvent({ ...newEvent, image: e.target.value })}
                                     className="flex-1 rounded-md border p-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                                    placeholder="Cole a URL da imagem aqui..."
+                                    placeholder="Faça upload da imagem..."
                                 />
                                 <div className="relative">
                                     <input
@@ -321,14 +357,23 @@ export default function MuralPage() {
                         <div className="flex gap-2 pt-2">
                             <button
                                 onClick={handleCreateEvent}
-                                className="flex-1 bg-primary text-white p-2.5 rounded-md font-medium hover:bg-primary/90 transition-colors shadow-sm"
+                                disabled={isSubmitting}
+                                className="flex-1 bg-primary text-white p-2.5 rounded-md font-medium hover:bg-primary/90 transition-colors shadow-sm flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                             >
-                                {editingEventId ? "Salvar Alterações" : "Publicar Evento"}
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        {editingEventId ? "Salvando..." : "Publicando..."}
+                                    </>
+                                ) : (
+                                    editingEventId ? "Salvar Alterações" : "Publicar Evento"
+                                )}
                             </button>
                             {editingEventId && (
                                 <button
                                     onClick={resetForm}
-                                    className="px-6 py-2.5 bg-slate-100 text-slate-700 rounded-md font-medium hover:bg-slate-200 transition-colors"
+                                    disabled={isSubmitting}
+                                    className="px-6 py-2.5 bg-slate-100 text-slate-700 rounded-md font-medium hover:bg-slate-200 transition-colors disabled:opacity-50"
                                 >
                                     Cancelar
                                 </button>
@@ -339,101 +384,118 @@ export default function MuralPage() {
             )}
 
             <div className="grid gap-6">
-                {filteredEvents.map((event) => (
-                    <div key={event.id} className="rounded-xl border bg-white shadow-sm overflow-hidden relative group transition-all hover:shadow-md">
-                        {/* RBAC: Only allowed roles can edit/delete */}
-                        {["admin", "director", "teacher"].includes(currentUser?.role || "") && (
-                            <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <button className="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm border hover:bg-white text-slate-600 transition-colors">
-                                            <MoreVertical className="h-4 w-4" />
-                                        </button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuItem onClick={() => handleEditClick(event)}>
-                                            <Pencil className="mr-2 h-4 w-4" />
-                                            Editar
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-50" onClick={() => handleDeleteClick(event.id)}>
-                                            <Trash2 className="mr-2 h-4 w-4" />
-                                            Excluir
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
-                        )}
+                {isEventsLoading ? (
+                    <div className="flex flex-col items-center justify-center py-20 text-slate-400 gap-4">
+                        <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                        <p>Carregando mural...</p>
+                    </div>
+                ) : muralEvents.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-20 text-slate-400 gap-4 border rounded-xl bg-slate-50/50 border-dashed">
+                        <Calendar className="h-12 w-12 opacity-20" />
+                        <p>Nenhum evento encontrado.</p>
+                    </div>
+                ) : (
+                    muralEvents.map((event) => (
+                        <div key={event.id} className="rounded-xl border bg-white shadow-sm overflow-hidden relative group transition-all hover:shadow-md">
+                            {/* RBAC: Only allowed roles can edit/delete */}
+                            {["admin", "director", "teacher"].includes(currentUser?.role || "") && (
+                                <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <button className="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm border hover:bg-white text-slate-600 transition-colors">
+                                                <MoreVertical className="h-4 w-4" />
+                                            </button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={() => handleEditClick(event)}>
+                                                <Pencil className="mr-2 h-4 w-4" />
+                                                Editar
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-50" onClick={() => handleDeleteClick(event.id)}>
+                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                Excluir
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                            )}
 
-                        {event.image && (
-                            <div className="h-48 w-full overflow-hidden bg-slate-100">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={event.image} alt={event.title} className="h-full w-full object-cover" />
-                            </div>
-                        )}
-                        <div className="p-6">
-                            <div className="flex justify-between items-start mb-4">
-                                <div>
-                                    <h2 className="text-xl font-bold text-slate-900">{event.title}</h2>
-                                    <div className="flex items-center gap-4 text-sm text-slate-500 mt-2">
-                                        <span className="flex items-center gap-1">
-                                            <Calendar className="h-4 w-4" />
-                                            {format(new Date(event.date), "dd 'de' MMMM 'às' HH:mm", { locale: ptBR })}
-                                        </span>
-                                        {event.location && (
+                            {event.image && (
+                                <div className="h-48 w-full overflow-hidden bg-slate-100">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={event.image} alt={event.title} className="h-full w-full object-cover" />
+                                </div>
+                            )}
+                            <div className="p-6">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div>
+                                        <h2 className="text-xl font-bold text-slate-900">{event.title}</h2>
+                                        <div className="flex items-center gap-4 text-sm text-slate-500 mt-2">
                                             <span className="flex items-center gap-1">
-                                                <MapPin className="h-4 w-4" />
-                                                {event.location}
+                                                <Calendar className="h-4 w-4" />
+                                                {format(new Date(event.date), "dd 'de' MMMM 'às' HH:mm", { locale: ptBR })}
                                             </span>
-                                        )}
+                                            {event.location && (
+                                                <span className="flex items-center gap-1">
+                                                    <MapPin className="h-4 w-4" />
+                                                    {event.location}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <p className="text-slate-600 mb-6">{event.description}</p>
+
+                                <div className="border-t pt-4">
+                                    <div className="flex items-center gap-2 text-slate-900 font-medium mb-4">
+                                        <MessageCircle className="h-5 w-5" />
+                                        Comentários ({event.comments?.length || 0})
+                                    </div>
+
+                                    <div className="space-y-4 mb-4">
+                                        {event.comments?.map((comment) => (
+                                            <div key={comment.id} className="bg-slate-50 p-3 rounded-lg text-sm">
+                                                <div className="flex justify-between items-center mb-1">
+                                                    <span className="font-semibold text-slate-900 flex items-center gap-2">
+                                                        <User className="h-3 w-3" />
+                                                        {comment.author}
+                                                    </span>
+                                                    <span className="text-slate-400 text-xs">
+                                                        {format(new Date(comment.date), "dd/MM HH:mm")}
+                                                    </span>
+                                                </div>
+                                                <p className="text-slate-700">{comment.text}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            placeholder="Escreva um comentário..."
+                                            value={newCommentText[event.id] || ""}
+                                            onChange={(e) => setNewCommentText({ ...newCommentText, [event.id]: e.target.value })}
+                                            onKeyDown={(e) => e.key === "Enter" && handleAddComment(event.id)}
+                                            className="flex-1 rounded-md border border-slate-200 px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                                        />
+                                        <button
+                                            onClick={() => handleAddComment(event.id)}
+                                            disabled={submittingCommentId === event.id}
+                                            className="px-4 py-2 bg-slate-900 text-white rounded-md text-sm font-medium hover:bg-slate-800 disabled:opacity-70 flex items-center gap-2 min-w-[80px] justify-center"
+                                        >
+                                            {submittingCommentId === event.id ? (
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                            ) : (
+                                                "Enviar"
+                                            )}
+                                        </button>
                                     </div>
                                 </div>
                             </div>
-
-                            <p className="text-slate-600 mb-6">{event.description}</p>
-
-                            <div className="border-t pt-4">
-                                <div className="flex items-center gap-2 text-slate-900 font-medium mb-4">
-                                    <MessageCircle className="h-5 w-5" />
-                                    Comentários ({event.comments.length})
-                                </div>
-
-                                <div className="space-y-4 mb-4">
-                                    {event.comments.map((comment) => (
-                                        <div key={comment.id} className="bg-slate-50 p-3 rounded-lg text-sm">
-                                            <div className="flex justify-between items-center mb-1">
-                                                <span className="font-semibold text-slate-900 flex items-center gap-2">
-                                                    <User className="h-3 w-3" />
-                                                    {comment.author}
-                                                </span>
-                                                <span className="text-slate-400 text-xs">
-                                                    {format(new Date(comment.date), "dd/MM HH:mm")}
-                                                </span>
-                                            </div>
-                                            <p className="text-slate-700">{comment.text}</p>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        placeholder="Escreva um comentário..."
-                                        value={newCommentText[event.id] || ""}
-                                        onChange={(e) => setNewCommentText({ ...newCommentText, [event.id]: e.target.value })}
-                                        onKeyDown={(e) => e.key === "Enter" && handleAddComment(event.id)}
-                                        className="flex-1 rounded-md border border-slate-200 px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                                    />
-                                    <button
-                                        onClick={() => handleAddComment(event.id)}
-                                        className="px-4 py-2 bg-slate-900 text-white rounded-md text-sm font-medium hover:bg-slate-800"
-                                    >
-                                        Enviar
-                                    </button>
-                                </div>
-                            </div>
                         </div>
-                    </div>
-                ))}
+                    ))
+                )}
             </div>
 
             <ConfirmDialog

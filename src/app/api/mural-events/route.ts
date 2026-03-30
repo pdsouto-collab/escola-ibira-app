@@ -1,0 +1,54 @@
+import { NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
+
+export async function GET(request: Request) {
+    const { searchParams } = new URL(request.url);
+    const classId = searchParams.get("classId");
+
+    try {
+        const events = await prisma.muralEvent.findMany({
+            where: classId ? { classId } : {},
+            include: {
+                comments: {
+                    orderBy: {
+                        date: "asc"
+                    }
+                }
+            },
+            orderBy: {
+                date: "desc"
+            }
+        });
+        return NextResponse.json(events);
+    } catch (error) {
+        console.error("Erro ao buscar mural:", error);
+        return NextResponse.json({ error: "Erro ao buscar mural" }, { status: 500 });
+    }
+}
+
+export async function POST(request: Request) {
+    try {
+        const body = await request.json();
+        const { title, description, date, author, type, location, image, classId } = body;
+
+        const newEvent = await prisma.muralEvent.create({
+            data: {
+                title,
+                description,
+                date: new Date(date),
+                author,
+                type,
+                location,
+                image,
+                classId
+            },
+            include: {
+                comments: true
+            }
+        });
+        return NextResponse.json(newEvent);
+    } catch (error) {
+        console.error("Erro ao criar evento:", error);
+        return NextResponse.json({ error: "Erro ao criar evento" }, { status: 500 });
+    }
+}

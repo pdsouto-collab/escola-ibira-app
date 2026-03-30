@@ -140,3 +140,35 @@ model Student {
   @@index([classId])
   @@index([status])
 }
+
+//--------------------------------------------
+/// Mural de Eventos e Comunicados
+//--------------------------------------------
+model MuralEvent {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  date        DateTime
+  author      String
+  type        String   // "event" | "notice" | "activity"
+  location    String?
+  image       String?  @db.Text
+  classId     String?
+  likes       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  comments    MuralComment[]
+
+  @@index([classId])
+}
+
+model MuralComment {
+  id           String   @id @default(cuid())
+  author       String
+  text         String   @db.Text
+  date         DateTime @default(now())
+  muralEventId String
+  muralEvent   MuralEvent @relation(fields: [muralEventId], references: [id], onDelete: Cascade)
+
+  @@index([muralEventId])
+}

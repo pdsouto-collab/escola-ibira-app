@@ -5,7 +5,7 @@ import {
     mockSchedule, ScheduleItem,
     mockDailyLogs, DailyLog,
     mockRecursiveDataSkills, MosaicNode,
-    Task, MuralEvent, Project, ChatMessage,
+    Task, Project, ChatMessage,
     mockMessages,
     KnowledgeNode, mockSkillsTree, mockContentsTree,
     FinalProductType, mockFinalProductTypes,
@@ -17,11 +17,11 @@ import {
     ClassBoardPost, mockClassBoardPosts, PostInteraction, mockPostInteractions
 } from "@/lib/data";
 
+
 interface AppState {
     schedule: ScheduleItem[];
     dailyLogs: DailyLog[];
     tasks: Task[];
-    muralEvents: MuralEvent[];
     projects: Project[];
     messages: ChatMessage[];
     mosaicData: MosaicNode[];
@@ -44,10 +44,6 @@ interface AppContextType extends AppState {
     addTask: (task: Task) => void;
     removeTask: (id: string) => void;
 
-    addMuralEvent: (event: MuralEvent) => void;
-    updateMuralEvent: (id: string, updates: Partial<MuralEvent>) => void;
-    removeMuralEvent: (id: string) => void;
-    addCommentToEvent: (eventId: string, comment: string) => void;
 
     updateSchedule: (items: ScheduleItem[]) => void;
 
@@ -127,32 +123,6 @@ const initialTasks: Task[] = [
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
-const initialMuralEvents: MuralEvent[] = [
-    {
-        id: "e1",
-        title: "Festa da Primavera",
-        description: "Vamos celebrar a chegada da primavera com muita música e dança!",
-        date: "2024-09-22T14:00:00",
-        author: "Coordenação",
-        type: "event",
-        location: "Pátio Central",
-        image: `${basePath}images/festa-primavera.svg`,
-        comments: [],
-        likes: 12
-    },
-    {
-        id: "e2",
-        title: "Reunião Pedagógica",
-        description: "Alinhamento das pautas do próximo semestre.",
-        date: "2024-08-15",
-        author: "Direção",
-        type: "notice",
-        comments: [
-            { id: "c1", author: "Ana Pereira", text: "Confirmada!", date: "2024-08-10" }
-        ],
-        likes: 5
-    }
-];
 
 const initialProjects: Project[] = [
     {
@@ -212,7 +182,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [schedule, setSchedule] = useState<ScheduleItem[]>(mockSchedule);
     const [dailyLogs, setDailyLogs] = useState<DailyLog[]>(mockDailyLogs);
     const [tasks, setTasks] = useState<Task[]>(initialTasks);
-    const [muralEvents, setMuralEvents] = useState<MuralEvent[]>(initialMuralEvents);
     const [projects, setProjects] = useState<Project[]>(initialProjects);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [mosaicData, setMosaicData] = useState<MosaicNode[]>(mockRecursiveDataSkills);
@@ -272,7 +241,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             load("schedule", setSchedule, mockSchedule);
             load("dailyLogs", setDailyLogs, mockDailyLogs);
             load("tasks", setTasks, initialTasks);
-            load("muralEvents", setMuralEvents, initialMuralEvents);
             load("projects", setProjects, initialProjects);
             load("messages", setMessages, initialMessages);
             load("mosaicData", setMosaicData, mockRecursiveDataSkills);
@@ -301,7 +269,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem("app_schedule", JSON.stringify(schedule));
             localStorage.setItem("app_dailyLogs", JSON.stringify(dailyLogs));
             localStorage.setItem("app_tasks", JSON.stringify(tasks));
-            localStorage.setItem("app_muralEvents", JSON.stringify(muralEvents));
             localStorage.setItem("app_projects", JSON.stringify(projects));
             localStorage.setItem("app_messages", JSON.stringify(messages));
             localStorage.setItem("app_mosaicData", JSON.stringify(mosaicData));
@@ -319,7 +286,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
             console.error("Erro ao salvar no cache local. O limite de armazenamento pode ter sido atingido.", error);
         }
-    }, [schedule, dailyLogs, tasks, muralEvents, projects, messages, mosaicData, bnccProgress, skillsTree, contentsTree, menus, portfolioEntries, assessments, invoices, notifications, pegadaPosts, classBoardPosts, postInteractions, isLoaded]);
+    }, [schedule, dailyLogs, tasks, projects, messages, mosaicData, bnccProgress, skillsTree, contentsTree, menus, portfolioEntries, assessments, invoices, notifications, pegadaPosts, classBoardPosts, postInteractions, isLoaded]);
 
     const toggleTask = (id: string) => {
         setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
@@ -327,26 +294,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const addTask = (task: Task) => setTasks(prev => [...prev, task]);
     const removeTask = (id: string) => setTasks(prev => prev.filter(t => t.id !== id));
 
-    const addMuralEvent = (event: MuralEvent) => setMuralEvents(prev => [event, ...prev]);
-    const updateMuralEvent = (id: string, updates: Partial<MuralEvent>) => {
-        setMuralEvents(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e));
-    };
-    const removeMuralEvent = (id: string) => setMuralEvents(prev => prev.filter(e => e.id !== id));
-
-    const addCommentToEvent = (eventId: string, commentText: string) => {
-        setMuralEvents(prev => prev.map(e => {
-            if (e.id === eventId) {
-                const newComment = {
-                    id: Math.random().toString(36).substr(2, 9),
-                    author: "Usuário",
-                    text: commentText,
-                    date: new Date().toISOString()
-                };
-                return { ...e, comments: [...e.comments, newComment] };
-            }
-            return e;
-        }));
-    };
 
     const updateSchedule = (items: ScheduleItem[]) => setSchedule(items);
 
@@ -597,9 +544,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <AppContext.Provider value={{
-            schedule, dailyLogs, tasks, muralEvents, projects, messages,
+            schedule, dailyLogs, tasks, projects, messages,
             toggleTask, addTask, removeTask,
-            addMuralEvent, updateMuralEvent, removeMuralEvent, addCommentToEvent,
             updateSchedule, addProject, updateProject, removeProject, sendMessage, resetData,
             mosaicData, updateMosaicNode, replaceMosaicData,
             bnccProgress, updateBNCCStatus,

@@ -1,7 +1,8 @@
 import { Student } from "@/types/student";
 
-export const studentsDataSeed: Omit<Student, 'id'>[] = [
+export const studentsDataSeed: Student[] = [
     {
+        id: "1",
         name: "Alice Souza",
         age: 4,
         dateOfBirth: "2020-05-15",
@@ -16,6 +17,7 @@ export const studentsDataSeed: Omit<Student, 'id'>[] = [
         ]
     },
     {
+        id: "2",
         name: "Bernardo Silva",
         age: 5,
         dateOfBirth: "2019-08-20",
@@ -27,6 +29,7 @@ export const studentsDataSeed: Omit<Student, 'id'>[] = [
         ]
     },
     {
+        id: "3",
         name: "Clara Oliveira",
         age: 3,
         dateOfBirth: "2021-02-10",
@@ -38,6 +41,7 @@ export const studentsDataSeed: Omit<Student, 'id'>[] = [
         ]
     },
     {
+        id: "4",
         name: "Davi Santos",
         age: 4,
         dateOfBirth: "2020-11-05",
@@ -49,6 +53,7 @@ export const studentsDataSeed: Omit<Student, 'id'>[] = [
         ]
     },
     {
+        id: "5",
         name: "Enzo Pereira",
         age: 5,
         dateOfBirth: "2019-06-30",
@@ -60,6 +65,7 @@ export const studentsDataSeed: Omit<Student, 'id'>[] = [
         ]
     },
     {
+        id: "6",
         name: "Valentina Costa",
         age: 3,
         dateOfBirth: "2021-04-12",

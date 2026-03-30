@@ -3734,19 +3734,6 @@ export interface Task {
     priority: "low" | "medium" | "high";
 }
 
-export interface MuralEvent {
-    id: string;
-    title: string;
-    description: string;
-    date: string;
-    author: string;
-    type: "event" | "notice" | "activity";
-    location?: string;
-    image?: string;
-    classId?: string; // Optional: if null/undefined, it's for all classes
-    comments: { id: string; author: string; text: string; date: string }[];
-    likes: number;
-}
 
 export interface Project {
     id: string;

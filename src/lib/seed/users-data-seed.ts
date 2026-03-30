@@ -1,7 +1,8 @@
 import { User } from "@/types/user";
 
-export const usersDataSeed: Omit<User, 'id'>[] = [
+export const usersDataSeed: User[] = [
     {
+        id: "u1",
         name: "Ana Pereira",
         role: "director",
         email: "ana.diretora@escolaibira.com.br",
@@ -13,6 +14,7 @@ export const usersDataSeed: Omit<User, 'id'>[] = [
         hiringDate: "2010-01-15"
     },
     {
+        id: "u2",
         name: "Cláudia Santos",
         role: "teacher",
         email: "claudia.prof@escolaibira.com.br",
@@ -27,6 +29,7 @@ export const usersDataSeed: Omit<User, 'id'>[] = [
         specialization: ["Infantil", "BNCC", "Lúdico"]
     },
     {
+        id: "u3",
         name: "Mariana Silva",
         role: "guardian",
         email: "mariana.mae@email.com",
@@ -36,6 +39,7 @@ export const usersDataSeed: Omit<User, 'id'>[] = [
         status: "active"
     },
     {
+        id: "u4",
         name: "Carlos Admin",
         role: "admin",
         email: "admin@escolaibira.com.br",
@@ -44,6 +48,7 @@ export const usersDataSeed: Omit<User, 'id'>[] = [
         status: "active",
     },
     {
+        id: "u5",
         name: "Juliana Nutri",
         role: "nutritionist",
         email: "juliana.nutri@escolaibira.com.br",
