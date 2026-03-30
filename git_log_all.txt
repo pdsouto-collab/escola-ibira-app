@@ -1,0 +1,26 @@
+﻿7e8debf9 feat(portfolio): restore Avaliar button in StudentView header
+5738d6f6 CRUD estudantes
+d6607599 Refatorando arrows functions para m├⌐todos normais
+a944b176 Criando crud de turmas, refatorando todas as telas de confirma├º├úo e refatortando todas as mensagens
+1a4b49c4 refactor: rename Projeto / Plano labels to Projeto
+8b19bb55 fix: renomear Habilidades e Conteudos para Habilidades e Competencias no portfolio
+88abad44 Ajustando erro dos menus portif├│lio e projetos
+073b22c3 style: rename 'Galeria de Evid├¬ncias' to 'Galeria de Viv├¬ncias' in portfolio
+bd6eec87 feat: rename Pend├¬ncias to Atividades Pendentes and redirect Avalia├º├╡es to filtered Portfolio
+f88e7df0 style: Revert Portfolio Student View to previous layout
+84d1e843 feat: Replace boxes with ProgressChart in Portfolio and Report Card
+8c56ce89 refactor: Change Report Card to student-level scope
+c7348707 feat: Add printable Report Card feature to portfolio
+173c5d2d fix: match tree nodes by both library id and code to pull level 4 evidence
+0e2e5393 feat: portfolio updates
+d1a538ce Revert "feat: implement integrated nature/children theme and save as draft functionality"
+57bc9168 feat: implement integrated nature/children theme and save as draft functionality
+04e4d7f6 feat: implement descriptive skills and synced portfolio visibility
+ece2c2a1 style: refactor student portfolio project view to match list layout
+67c0096a fix(portfolio): ensure skills and evidence are visible via libraryItemId and recursion
+6c5a96de fix: portfolio visibility, robust student matching and assessment drawer pre-fill
+5243adbb Fix Portfolio: group projects and show sessions/skills in StudentView
+2b93b146 Refactor Portfolio and Assessment Drawer for better interactivity and labeling
+339cf132 feat: integrate assessment into Matriz Circular and Portfolio project views
+01aafb86 feat(assessment): enforce context (project/session/routine) and improve report card access
+d474ffdb feat: Assessment Phase 3+4 - Portfolio page (project/student views) + Report Card with print/PDF export

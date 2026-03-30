@@ -15,9 +15,10 @@ import { BulkSessionDialog } from "@/components/projetos/bulk-session-dialog";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAppStore } from "@/lib/store";
-import { Project, ScheduleItem, KnowledgeNode } from "@/lib/data";
+import { Project, ScheduleItem, KnowledgeNode, SEMESTERS, YEARS } from "@/lib/data";
 import { SchoolClass } from "@/types/school-class";
 import { getClasses } from "@/services/school-class.service";
+import { getStudents } from "@/services/student.service";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { LibraryItem } from "@/types/library-item";
@@ -36,22 +37,26 @@ function NewProjectWizardContent() {
         schedule,
         updateSchedule,
         finalProductTypes,
-        students,
         skillsTree,
         contentsTree
     } = useAppStore();
 
     const [classes, setClasses] = useState<SchoolClass[]>([]);
+    const [students, setStudents] = useState<any[]>([]);
     const [isLoadingClasses, setIsLoadingClasses] = useState(true);
 
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
 
-    async function fetchClasses() {
+    async function fetchClassesAndStudents() {
         try {
-            const data = await getClasses();
-            setClasses(data);
+            const [classesData, studentsData] = await Promise.all([
+                getClasses(),
+                getStudents()
+            ]);
+            setClasses(classesData);
+            setStudents(studentsData);
         } catch (error) {
-            console.error("Erro ao buscar turmas:", error);
+            console.error("Erro ao buscar dados:", error);
         } finally {
             setIsLoadingClasses(false);
         }
@@ -59,7 +64,7 @@ function NewProjectWizardContent() {
 
     useEffect(() => {
         getListaBNCC();
-        fetchClasses();
+        fetchClassesAndStudents();
     }, [])
 
     async function getListaBNCC() {
@@ -77,6 +82,7 @@ function NewProjectWizardContent() {
         summary: "",
         objectives: "",
         finalProduct: "None",
+        period: "",
         description: "",
         classes: [] as string[],
         students: [] as string[],
@@ -181,6 +187,7 @@ function NewProjectWizardContent() {
                     summary: projectToEdit.summary || "",
                     objectives: projectToEdit.objectives || "",
                     finalProduct: projectToEdit.finalProduct || "None",
+                    period: projectToEdit.period || "",
                     description: projectToEdit.description,
                     classes: projectToEdit.classes || [],
                     students: projectToEdit.students || [],
@@ -209,6 +216,7 @@ function NewProjectWizardContent() {
             summary: formData.summary,
             objectives: formData.objectives,
             finalProduct: formData.finalProduct,
+            period: formData.period || undefined,
             tags: [],
             bnccSkillIds: formData.bnccSkills,
             contentIds: formData.customContent,
@@ -243,6 +251,7 @@ function NewProjectWizardContent() {
             summary: formData.summary,
             objectives: formData.objectives,
             finalProduct: formData.finalProduct,
+            period: formData.period || undefined,
             tags: [],
             bnccSkillIds: formData.bnccSkills,
             contentIds: formData.customContent,
@@ -385,6 +394,40 @@ function NewProjectWizardContent() {
                                             <SelectTrigger className="mt-2 text-slate-700"><SelectValue /></SelectTrigger>
                                             <SelectContent><SelectItem value="Project">Projeto</SelectItem><SelectItem value="Workshop">Oficina</SelectItem></SelectContent>
                                         </Select>
+                                    </div>
+                                    <div>
+                                        <Label className="font-semibold text-slate-700">Semestre/Ano</Label>
+                                        <div className="flex gap-2 mt-2">
+                                            <Select value={(!formData.period || formData.period === "all") ? "all" : formData.period.split(" / ")[0]} onValueChange={v => {
+                                                if (v === "all") setFormData({ ...formData, period: "" });
+                                                else setFormData({ ...formData, period: `${v} / ${(!formData.period || formData.period === "all") ? new Date().getFullYear() : formData.period.split(" / ")[1] || new Date().getFullYear()}` });
+                                            }}>
+                                                <SelectTrigger className="text-slate-700">
+                                                    <SelectValue placeholder="Semestre" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">Nenhum</SelectItem>
+                                                    {SEMESTERS.map(sem => (
+                                                        <SelectItem key={sem} value={sem}>{sem}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+
+                                            <Select value={(!formData.period || formData.period === "all") ? "all" : formData.period.split(" / ")[1]} onValueChange={v => {
+                                                if (v === "all") setFormData({ ...formData, period: "" });
+                                                else setFormData({ ...formData, period: `${(!formData.period || formData.period === "all") ? "1º Semestre" : formData.period.split(" / ")[0] || "1º Semestre"} / ${v}` });
+                                            }}>
+                                                <SelectTrigger className="text-slate-700">
+                                                    <SelectValue placeholder="Ano" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">Nenhum</SelectItem>
+                                                    {YEARS.map(y => (
+                                                        <SelectItem key={y} value={y}>{y}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
                                     </div>
                                 </div>
 

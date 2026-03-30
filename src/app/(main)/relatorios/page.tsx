@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useAppStore } from "@/lib/store";
 import { getStudents } from "@/services/student.service";
 import { Student } from "@/types/student";
+import { SEMESTERS, YEARS } from "@/lib/data";
 import { MilestoneReport } from "@/components/reports/milestone-report";
 import { DailyLogReport } from "@/components/reports/daily-log-report";
 import { PortfolioReport } from "@/components/reports/portfolio-report";
@@ -35,6 +36,7 @@ export default function ReportsPage() {
 
     // Class Filter State
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
+    const [selectedPeriod, setSelectedPeriod] = useState<string>("all");
     const [manualSelection, setManualSelection] = useState<string>("");
 
     // Edit Modal State
@@ -133,6 +135,39 @@ export default function ReportsPage() {
                         </Select>
                     )}
 
+                    {/* Period Filter */}
+                    <div className="flex items-center gap-2">
+                        <Select value={selectedPeriod === "all" ? "all" : selectedPeriod.split(" / ")[0]} onValueChange={(val) => {
+                            if (val === "all") setSelectedPeriod("all");
+                            else setSelectedPeriod(`${val} / ${selectedPeriod === "all" ? new Date().getFullYear() : selectedPeriod.split(" / ")[1] || new Date().getFullYear()}`);
+                        }}>
+                            <SelectTrigger className="w-[150px] bg-white">
+                                <SelectValue placeholder="Semestre" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Qualquer Sem.</SelectItem>
+                                {SEMESTERS.map(sem => (
+                                    <SelectItem key={sem} value={sem}>{sem}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+
+                        <Select value={selectedPeriod === "all" ? "all" : selectedPeriod.split(" / ")[1]} onValueChange={(val) => {
+                            if (val === "all") setSelectedPeriod("all");
+                            else setSelectedPeriod(`${selectedPeriod === "all" ? "1º Semestre" : selectedPeriod.split(" / ")[0] || "1º Semestre"} / ${val}`);
+                        }}>
+                            <SelectTrigger className="w-[110px] bg-white">
+                                <SelectValue placeholder="Ano" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Qualquer Ano</SelectItem>
+                                {YEARS.map(ano => (
+                                    <SelectItem key={ano} value={ano}>{ano}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
                     {/* Student Selector - Hide if only one student visible */}
                     {visibleStudents.length > 1 && (
                         <div className="flex items-center gap-4 bg-white p-2 rounded-xl border shadow-sm">
@@ -199,7 +234,7 @@ export default function ReportsPage() {
                             </h2>
                             <p className="text-slate-500 mb-6">Comparativo entre o currículo proposto e o nível de consolidação da criança.</p>
                             {selectedStudent ? (
-                                <SkillsChart student={selectedStudent} filter="bncc" />
+                                <SkillsChart student={selectedStudent} filter="bncc" period={selectedPeriod} />
                             ) : (
                                 <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
                             )}
@@ -212,7 +247,7 @@ export default function ReportsPage() {
                                 Trilha de Habilidades e Competências (BNCC)
                             </h2>
                             {selectedStudent ? (
-                                <MilestoneReport student={selectedStudent} filter="bncc" />
+                                <MilestoneReport student={selectedStudent} filter="bncc" period={selectedPeriod} />
                             ) : (
                                 <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
                             )}
@@ -231,7 +266,7 @@ export default function ReportsPage() {
                             </h2>
                             <p className="text-slate-500 mb-6">Comparativo entre as habilidades e competências Ibirá propostas e o nível de consolidação da criança.</p>
                             {selectedStudent ? (
-                                <SkillsChart student={selectedStudent} filter="ibira" />
+                                <SkillsChart student={selectedStudent} filter="ibira" period={selectedPeriod} />
                             ) : (
                                 <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
                             )}
@@ -244,7 +279,7 @@ export default function ReportsPage() {
                                 Trilha de Habilidades e Competências (IBIRÁ)
                             </h2>
                             {selectedStudent ? (
-                                <MilestoneReport student={selectedStudent} filter="ibira" />
+                                <MilestoneReport student={selectedStudent} filter="ibira" period={selectedPeriod} />
                             ) : (
                                 <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
                             )}

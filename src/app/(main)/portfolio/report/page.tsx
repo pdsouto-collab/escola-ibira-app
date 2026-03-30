@@ -148,11 +148,13 @@ function ReportCard({
     projectId,
     singleProject,
     dateRange,
+    period,
 }: {
     studentId: string;
     projectId?: string | null;
     singleProject?: any;
     dateRange?: { start: string; end: string };
+    period?: string | null;
 }) {
     const { projects, assessments, schedule, skillsTree, contentsTree, dailyLogs, portfolioEntries } = useAppStore();
     const [classes, setClasses] = useState<SchoolClass[]>([]);
@@ -216,10 +218,15 @@ function ReportCard({
     if (projectId && projectId !== "all") {
         studentProjects = studentProjects.filter(p => p.id === projectId);
     }
+    if (period && period !== "all") {
+        studentProjects = studentProjects.filter(p => p.period === period);
+    }
 
     // Get relevant assessments
     const relevantAssessments = assessments.filter(a => {
-        return a.studentId === studentId || (a.scope === "class" && a.classId === student.classId);
+        const isStudent = a.studentId === studentId || (a.scope === "class" && a.classId === student.classId);
+        const isPeriod = !period || period === "all" || a.period === period;
+        return isStudent && isPeriod;
     });
 
     // Get sessions across all projects
@@ -490,7 +497,7 @@ function ReportCard({
                         <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Desenvolvimento de Habilidades e Competências (por Áreas BNCC)</h2>
                     </div>
                     <div className="print:shadow-none print:border-none w-full min-w-0 overflow-hidden">
-                        <SkillsChart student={student} filter="bncc" />
+                        <SkillsChart student={student} filter="bncc" period={period || "all"} />
                     </div>
                 </section>
 
@@ -501,7 +508,7 @@ function ReportCard({
                         <h2 className="text-xl font-bold text-slate-800">Trilha de Habilidades e Competências (BNCC)</h2>
                     </div>
                     <div className="print:shadow-none print:border-none w-full min-w-0 overflow-hidden">
-                        <MilestoneReport student={student} filter="bncc" />
+                        <MilestoneReport student={student} filter="bncc" period={period || "all"} />
                     </div>
                 </section>
 
@@ -512,7 +519,7 @@ function ReportCard({
                         <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Desenvolvimento de Habilidades e Competências (por Áreas IBIRÁ)</h2>
                     </div>
                     <div className="print:shadow-none print:border-none w-full min-w-0 overflow-hidden">
-                        <SkillsChart student={student} filter="ibira" />
+                        <SkillsChart student={student} filter="ibira" period={period || "all"} />
                     </div>
                 </section>
 
@@ -523,7 +530,7 @@ function ReportCard({
                         <h2 className="text-xl font-bold text-slate-800">Trilha de Habilidades e Competências (IBIRÁ)</h2>
                     </div>
                     <div className="print:shadow-none print:border-none w-full min-w-0 overflow-hidden">
-                        <MilestoneReport student={student} filter="ibira" />
+                        <MilestoneReport student={student} filter="ibira" period={period || "all"} />
                     </div>
                 </section>
 
@@ -594,6 +601,7 @@ function ReportCardContent() {
     const searchParams = useSearchParams();
     const studentId = searchParams.get("student");
     const projectId = searchParams.get("project");
+    const periodId = searchParams.get("period");
 
     const handlePrint = () => window.print();
 
@@ -637,7 +645,7 @@ function ReportCardContent() {
 
             {/* Report content */}
             <div className="min-h-screen bg-slate-100 py-12 px-6 print:p-0 print:bg-white no-print-padding">
-                <ReportCard studentId={studentId} projectId={projectId} />
+                <ReportCard studentId={studentId} projectId={projectId} period={periodId} />
             </div>
         </>
     );

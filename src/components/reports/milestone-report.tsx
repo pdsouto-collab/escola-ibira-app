@@ -11,6 +11,7 @@ import { LibraryItem } from "@/types/library-item";
 interface MilestoneReportProps {
     student: Student | undefined;
     filter?: "bncc" | "ibira" | "all";
+    period?: string;
 }
 
 const labels = ["Muda", "Broto", "Jovem", "Adulta", "Com frutos"];
@@ -83,7 +84,7 @@ const getAllEvaluatableNodes = (nodes: any[], parentName?: string, level: string
     return results;
 };
 
-export function MilestoneReport({ student, filter = "all" }: MilestoneReportProps) {
+export function MilestoneReport({ student, filter = "all", period = "all" }: MilestoneReportProps) {
 
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
 
@@ -100,7 +101,10 @@ export function MilestoneReport({ student, filter = "all" }: MilestoneReportProp
     if (!student) return null;
     const studentId = student.id;
 
-    const studentAssessments = assessments.filter(a => a.studentId === studentId || (a.scope === "class" && a.classId === student.classId));
+    const studentAssessments = assessments.filter(a => 
+        (a.studentId === studentId || (a.scope === "class" && a.classId === student.classId)) &&
+        (period === "all" || a.period === period)
+    );
 
     // 1. Identify which Library Items belong to the "Trilha Base" for the student's class
     const studentClassBaseTreeIds = new Set<string>();
@@ -112,7 +116,10 @@ export function MilestoneReport({ student, filter = "all" }: MilestoneReportProp
     };
 
     const allTrees = [...skillsTree, ...contentsTree];
-    const classRoots = allTrees.filter(node => node.classId === student.classId);
+    const classRoots = allTrees.filter(node => 
+        node.classId === student.classId && 
+        (period === "all" || node.period === period)
+    );
     collectBaseIds(classRoots);
 
     // 2. Fetch evaluating nodes, but only keep Micro (Level 3 - Items from Library) inside the Base Tree
