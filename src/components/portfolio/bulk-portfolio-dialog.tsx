@@ -8,14 +8,15 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useAppStore } from "@/lib/store";
 import { Student } from "@/types/student";
-import { PortfolioEntry } from "@/lib/data";
+import type { PortfolioEntry } from "@/types/portfolio-entry";
+import { createPortfolioEntry } from "@/services/portfolio.service";
 import { SchoolClass } from "@/types/school-class";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { createPegada } from "@/services/pegada.service";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ImagePlus, Images, Sparkles, Trash2, Users, Target, Check, ChevronRight, ChevronLeft, Search } from "lucide-react";
+import { ImagePlus, Images, Sparkles, Trash2, Users, Target, Check, ChevronRight, ChevronLeft, Search, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -40,7 +41,6 @@ interface StudentPortfolioForm {
 }
 
 export function BulkPortfolioDialog({ open, onOpenChange, date, classes, students }: BulkPortfolioDialogProps) {
-    const { portfolioEntries, addPortfolioEntry, updatePortfolioEntry, removePortfolioEntry } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -218,28 +218,30 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
 
         const tagsArray = tagsInput.split(",").map(t => t.trim()).filter(t => t.length > 0);
 
-        selectedStudentIds.forEach((studentId: string) => {
-            const form = forms[studentId];
-            if (!form || !form.selected) return;
-
-            const entryContent = form.individualNote.trim() || baseNarrative.trim();
-            if (!entryContent) return;
-
-            const entryData: PortfolioEntry = {
-                id: `port-${Date.now()}-${studentId}`,
-                studentId: studentId,
-                date: dateStr,
-                title: title.trim(),
-                description: entryContent,
-                imageUrl: images[0] || "",
-                images: images,
-                tags: tagsArray
-            };
-            addPortfolioEntry(entryData);
-        });
-
         setIsSaving(true);
         try {
+            const promises = selectedStudentIds.map(async (studentId: string) => {
+                const form = forms[studentId];
+                if (!form || !form.selected) return;
+
+                const entryContent = form.individualNote.trim() || baseNarrative.trim();
+                if (!entryContent) return;
+
+                const entryData: Omit<PortfolioEntry, "id" | "createdAt" | "updatedAt"> = {
+                    studentId: studentId,
+                    date: dateStr,
+                    title: title.trim(),
+                    description: entryContent,
+                    imageUrl: images[0] || "",
+                    images: images,
+                    tags: tagsArray
+                };
+                
+                await createPortfolioEntry(entryData);
+            });
+
+            await Promise.all(promises);
+
             // Add a single PegadaPost to the feed as well
             await createPegada({
                 authorId: currentUser?.id,
@@ -255,7 +257,7 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
             toast.success("Vivência registrada no portfólio de todos os selecionados!");
         } catch (error) {
             console.error(error);
-            toast.error("Ocorreu um erro ao salvar o registro no Feed.");
+            toast.error("Ocorreu um erro ao salvar o registro. Tente novamente.");
         } finally {
             setIsSaving(false);
         }
@@ -559,10 +561,11 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
                         ) : (
                             <Button
                                 onClick={handleSave}
-                                className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-10 shadow-lg shadow-emerald-100 gap-2"
-                                disabled={!title.trim() || Object.values(forms).filter(f => f.selected).length === 0}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-10 shadow-lg shadow-emerald-100 gap-2 disabled:bg-emerald-600/70"
+                                disabled={isSaving || !title.trim() || Object.values(forms).filter(f => f.selected).length === 0}
                             >
-                                <Check className="h-4 w-4" /> Salvar no Portfólio
+                                {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />} 
+                                {isSaving ? "Salvando..." : "Salvar no Portfólio"}
                             </Button>
                         )}
                     </div>

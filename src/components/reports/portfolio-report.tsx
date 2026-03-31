@@ -1,14 +1,14 @@
 "use client";
 
-import { useAppStore } from "@/lib/store";
+import { useEffect, useState } from "react";
+import { getPortfolioEntries } from "@/services/portfolio.service";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Edit2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-import { useState } from "react";
 import { PortfolioEntryViewer } from "@/components/portfolio/portfolio-entry-viewer";
-import { PortfolioEntry } from "@/lib/data";
+import type { PortfolioEntry } from "@/types/portfolio-entry";
 
 interface Props {
     studentId: string;
@@ -16,9 +16,25 @@ interface Props {
 }
 
 export function PortfolioReport({ studentId, onEdit }: Props) {
-    const { portfolioEntries } = useAppStore();
+    const [entries, setEntries] = useState<PortfolioEntry[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [selectedEntry, setSelectedEntry] = useState<PortfolioEntry | null>(null);
-    const entries = portfolioEntries.filter(p => p.studentId === studentId);
+
+    useEffect(() => {
+        setIsLoading(true);
+        getPortfolioEntries(studentId)
+            .then(data => setEntries(data))
+            .catch(err => console.error("Error fetching portfolio:", err))
+            .finally(() => setIsLoading(false));
+    }, [studentId]);
+
+    if (isLoading) {
+        return (
+            <div className="text-center py-10 text-slate-500">
+                <p>Carregando registros de portfólio...</p>
+            </div>
+        );
+    }
 
     if (entries.length === 0) {
         return (
@@ -59,7 +75,7 @@ export function PortfolioReport({ studentId, onEdit }: Props) {
                                         variant="ghost"
                                         size="icon"
                                         className="h-8 w-8 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
-                                        onClick={(e) => {
+                                        onClick={(e: React.MouseEvent) => {
                                             e.stopPropagation();
                                             onEdit(entry.date);
                                         }}

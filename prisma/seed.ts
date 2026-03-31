@@ -10,6 +10,7 @@ import { Student } from "@/types/student"
 import { studentsDataSeed } from "@/lib/seed/students-seed"
 import { muralEventsDataSeed, muralCommentsDataSeed } from "@/lib/seed/mural-seed"
 import { pegadasDataSeed, pegadasInteractionsDataSeed } from "@/lib/seed/pegadas-seed"
+import { portfolioDataSeed } from "@/lib/seed/portfolio-seed"
 
 const prisma = new PrismaClient()
 
@@ -20,6 +21,7 @@ async function main() {
   // Ordem correta de exclusão: Filhos antes dos Pais
   await prisma.muralComment.deleteMany()
   await prisma.muralEvent.deleteMany()
+  await prisma.portfolioEntry.deleteMany()
   await prisma.student.deleteMany()
   await prisma.schoolClass.deleteMany()
   await prisma.session.deleteMany()
@@ -102,6 +104,13 @@ async function main() {
   console.log("Importando Interações das Pegadas...")
   await prisma.pegadaInteraction.createMany({
     data: pegadasInteractionsDataSeed as any,
+    skipDuplicates: true
+  })
+
+  // Portfolio
+  console.log("Importando Portfolio Entries...")
+  await prisma.portfolioEntry.createMany({
+    data: portfolioDataSeed,
     skipDuplicates: true
   })
 

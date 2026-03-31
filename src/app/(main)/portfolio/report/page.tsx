@@ -18,9 +18,10 @@ import { Badge } from "@/components/ui/badge";
 import { SkillsChart } from "@/components/reports/skills-chart";
 import { CalendarIcon } from "lucide-react";
 import { PortfolioEntryViewer } from "@/components/portfolio/portfolio-entry-viewer";
-import { PortfolioEntry } from "@/lib/data";
+import type { PortfolioEntry } from "@/types/portfolio-entry";
 import { LibraryItem } from "@/types/library-item";
 import { getListBncc } from "@/services/bncc.service";
+import { getPortfolioEntries } from "@/services/portfolio.service";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Node Resolvers
@@ -156,11 +157,13 @@ function ReportCard({
     dateRange?: { start: string; end: string };
     period?: string | null;
 }) {
-    const { projects, assessments, schedule, skillsTree, contentsTree, dailyLogs, portfolioEntries } = useAppStore();
+    const { projects, assessments, schedule, skillsTree, contentsTree, dailyLogs } = useAppStore();
     const [classes, setClasses] = useState<SchoolClass[]>([]);
     const [students, setStudents] = useState<Student[]>([]);
+    const [portfolioEntries, setPortfolioEntries] = useState<PortfolioEntry[]>([]);
     const [isLoadingClasses, setIsLoadingClasses] = useState(true);
     const [isLoadingStudents, setIsLoadingStudents] = useState(true);
+    const [isLoadingPortfolio, setIsLoadingPortfolio] = useState(true);
     const [selectedEntry, setSelectedEntry] = useState<PortfolioEntry | null>(null);
 
     const formatShortGrade = (g: string) => g.replace("Educação Infantil -", "EI").trim();
@@ -193,7 +196,9 @@ function ReportCard({
         getListaBNCC();
         fetchClasses();
         fetchStudents();
-    }, [])
+        setIsLoadingPortfolio(true);
+        getPortfolioEntries(studentId).then(setPortfolioEntries).catch(console.error).finally(() => setIsLoadingPortfolio(false));
+    }, [studentId])
 
     async function getListaBNCC(){
         await getListBncc().then(setLibraryItems);
@@ -204,7 +209,7 @@ function ReportCard({
         return <div className="text-center py-20 text-slate-400">Aluno não encontrado.</div>;
     }
 
-    if (isLoadingClasses || isLoadingStudents) {
+    if (isLoadingClasses || isLoadingStudents || isLoadingPortfolio) {
         return <div className="text-center py-20 text-slate-400 italic">Carregando dados...</div>;
     }
     const cls = classes.find(c => c.id === student.classId);

@@ -8,9 +8,7 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-//--------------------------------------------
 /// Tabela de habilidades educacionais BNCC
-//--------------------------------------------
 model Bncc {
   id          String   @id
   type        String
@@ -28,16 +26,13 @@ model Bncc {
   @@index([subGroup])
 }
 
-//--------------------------------------------
 /// Tabela de Usuários do Sistema
-//--------------------------------------------
 model User {
-  id               String   @id @default(cuid())
+  id               String    @id @default(cuid())
   name             String
   role             String
   avatar           String?
-  email            String   @unique
-  password         String
+  email            String    @unique
   cpf              String?
   phone            String?
   birthDate        String?
@@ -46,11 +41,12 @@ model User {
   education        String?
   specialization   String[]
   bio              String?
-  status           String   @default("active")
+  status           String    @default("active")
   assignedClassIds String[]
   linkedStudentIds String[]
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  password         String
   accounts         Account[]
   sessions         Session[]
 
@@ -64,15 +60,14 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -93,17 +88,15 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-//--------------------------------------------
 /// Tabela de Turmas Escolares
-//--------------------------------------------
 model SchoolClass {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   name        String
   description String?
   teacherId   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   assistantId String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
   students    Student[]
 
   @@index([teacherId])
@@ -111,83 +104,93 @@ model SchoolClass {
 }
 
 model Student {
-  id                   String        @id @default(cuid())
+  id                   String      @id @default(cuid())
   name                 String
-  dateOfBirth          String        // YYYY-MM-DD
+  dateOfBirth          String
   document             String?
   schoolStage          String?
-  period               String?       // "integral" | "matutino"
+  period               String?
   photo                String?
   classId              String
-  schoolClass          SchoolClass   @relation(fields: [classId], references: [id])
-  status               String        @default("presente") // "presente" | "ausente"
-  
+  status               String      @default("presente")
   age                  Int?
   parentName           String?
-  
-  guardians            Json?         // StudentGuardian[]
-  financialResponsible Json?         // StudentFinancialResponsible
-  health               Json?         // StudentHealth
-  emergencyContacts    Json?         // StudentEmergencyContact[]
-  documents            Json?         // StudentDocuments
-  
+  guardians            Json?
+  financialResponsible Json?
+  health               Json?
+  emergencyContacts    Json?
+  documents            Json?
   hospitalPreference   String?
   hospitalAddress      String?
-
-  createdAt            DateTime      @default(now())
-  updatedAt            DateTime      @updatedAt
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+  schoolClass          SchoolClass @relation(fields: [classId], references: [id])
+  portfolioEntries     PortfolioEntry[]
 
   @@index([classId])
   @@index([status])
 }
 
-//--------------------------------------------
-/// Mural de Eventos e Comunicados
-//--------------------------------------------
-model MuralEvent {
+/// Portfólio dos Alunos
+model PortfolioEntry {
   id          String   @id @default(cuid())
+  studentId   String
+  student     Student  @relation(fields: [studentId], references: [id])
+  date        String
   title       String
   description String   @db.Text
-  date        DateTime
-  author      String
-  type        String   // "event" | "notice" | "activity"
-  location    String?
-  image       String?  @db.Text
-  classId     String?
-  likes       Int      @default(0)
+  imageUrl    String?
+  images      String[]
+  tags        String[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([studentId])
+}
+
+/// Mural de Eventos e Comunicados
+model MuralEvent {
+  id          String         @id @default(cuid())
+  title       String
+  description String
+  date        DateTime
+  author      String
+  type        String
+  location    String?
+  image       String?
+  classId     String?
+  likes       Int            @default(0)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
   comments    MuralComment[]
 
   @@index([classId])
 }
 
 model MuralComment {
-  id           String   @id @default(cuid())
+  id           String     @id @default(cuid())
   author       String
-  text         String   @db.Text
-  date         DateTime @default(now())
+  text         String
+  date         DateTime   @default(now())
   muralEventId String
   muralEvent   MuralEvent @relation(fields: [muralEventId], references: [id], onDelete: Cascade)
 
   @@index([muralEventId])
 }
 
-//--------------------------------------------
 /// Pegadas dos Ibiritos (Postagens e Feed)
-//--------------------------------------------
 model PegadaPost {
-  id          String   @id @default(cuid())
-  authorId    String
-  authorName  String
-  type        String   // 'photo' | 'video' | 'note'
-  title       String
-  content     String   @db.Text
-  mediaUrl    String?
-  mediaUrls   String[] // Array for multiple images
-  tags        String[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String              @id @default(cuid())
+  authorId     String
+  authorName   String
+  type         String
+  title        String
+  content      String
+  mediaUrl     String?
+  mediaUrls    String[]
+  tags         String[]
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
   interactions PegadaInteraction[]
 }
 
@@ -195,11 +198,10 @@ model PegadaInteraction {
   id           String     @id @default(cuid())
   userId       String
   userName     String
-  type         String     // 'like' | 'comment' | 'audio'
-  content      String?    @db.Text
+  type         String
+  content      String?
   audioUrl     String?
   createdAt    DateTime   @default(now())
-  
   pegadaPostId String
   pegadaPost   PegadaPost @relation(fields: [pegadaPostId], references: [id], onDelete: Cascade)
 

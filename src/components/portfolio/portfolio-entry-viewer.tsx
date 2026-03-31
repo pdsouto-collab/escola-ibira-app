@@ -1,7 +1,7 @@
 "use client";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { PortfolioEntry } from "@/lib/data";
+import type { PortfolioEntry } from "@/types/portfolio-entry";
 import { Calendar, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";

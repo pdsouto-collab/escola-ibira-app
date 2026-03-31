@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
+
 import {
     mockSchedule, ScheduleItem,
     mockDailyLogs, DailyLog,
@@ -10,12 +11,10 @@ import {
     KnowledgeNode, mockSkillsTree, mockContentsTree,
     FinalProductType, mockFinalProductTypes,
     Assessment, mockAssessments, Menu, mockMenus,
-    PortfolioEntry, mockPortfolio,
     Invoice, mockInvoices,
     AppNotification, mockNotifications,
     ClassBoardPost, mockClassBoardPosts, PostInteraction, mockPostInteractions
 } from "@/lib/data";
-
 
 interface AppState {
     schedule: ScheduleItem[];
@@ -30,7 +29,6 @@ interface AppState {
     finalProductTypes: FinalProductType[];
     assessments: Assessment[];
     menus: Menu[];
-    portfolioEntries: PortfolioEntry[];
     invoices: Invoice[];
     notifications: AppNotification[];
     classBoardPosts: ClassBoardPost[];
@@ -79,11 +77,6 @@ interface AppContextType extends AppState {
     addMenu: (menu: Menu) => void;
     updateMenu: (id: string, updates: Partial<Menu>) => void;
     removeMenu: (id: string) => void;
-
-    // Portfolio
-    addPortfolioEntry: (entry: PortfolioEntry) => void;
-    updatePortfolioEntry: (id: string, updates: Partial<PortfolioEntry>) => void;
-    removePortfolioEntry: (id: string) => void;
 
     // Assessments
     addAssessment: (assessment: Assessment) => void;
@@ -184,7 +177,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [finalProductTypes, setFinalProductTypes] = useState<FinalProductType[]>(mockFinalProductTypes);
     const [assessments, setAssessments] = useState<Assessment[]>(mockAssessments);
     const [menus, setMenus] = useState<Menu[]>(mockMenus);
-    const [portfolioEntries, setPortfolioEntries] = useState<PortfolioEntry[]>(mockPortfolio);
     const [invoices, setInvoices] = useState<Invoice[]>(mockInvoices);
     const [notifications, setNotifications] = useState<AppNotification[]>(mockNotifications);
     const [classBoardPosts, setClassBoardPosts] = useState<ClassBoardPost[]>(mockClassBoardPosts);
@@ -219,7 +211,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             setSkillsTree(mockSkillsTree);
             setContentsTree(mockContentsTree);
             setAssessments(mockAssessments);
-            setPortfolioEntries(mockPortfolio);
             setDailyLogs(mockDailyLogs);
             setClassBoardPosts(mockClassBoardPosts);
             setPostInteractions(mockPostInteractions);
@@ -240,7 +231,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             load("skillsTree", setSkillsTree, mockSkillsTree);
             load("contentsTree", setContentsTree, mockContentsTree);
             load("menus", setMenus, mockMenus);
-            load("portfolioEntries", setPortfolioEntries, mockPortfolio);
             load("assessments", setAssessments, mockAssessments);
             load("invoices", setInvoices, mockInvoices);
             load("notifications", setNotifications, mockNotifications);
@@ -267,7 +257,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem("app_skillsTree", JSON.stringify(skillsTree));
             localStorage.setItem("app_contentsTree", JSON.stringify(contentsTree));
             localStorage.setItem("app_menus", JSON.stringify(menus));
-            localStorage.setItem("app_portfolioEntries", JSON.stringify(portfolioEntries));
             localStorage.setItem("app_assessments", JSON.stringify(assessments));
             localStorage.setItem("app_invoices", JSON.stringify(invoices));
             localStorage.setItem("app_notifications", JSON.stringify(notifications));
@@ -276,7 +265,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
             console.error("Erro ao salvar no cache local. O limite de armazenamento pode ter sido atingido.", error);
         }
-    }, [schedule, dailyLogs, tasks, projects, messages, mosaicData, bnccProgress, skillsTree, contentsTree, menus, portfolioEntries, assessments, invoices, notifications, classBoardPosts, postInteractions, isLoaded]);
+    }, [schedule, dailyLogs, tasks, projects, messages, mosaicData, bnccProgress, skillsTree, contentsTree, menus, assessments, invoices, notifications, classBoardPosts, postInteractions, isLoaded]);
 
     const toggleTask = (id: string) => {
         setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
@@ -539,11 +528,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             addMenu: (menu) => setMenus(prev => [...prev, menu]),
             updateMenu: (id, updates) => setMenus(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m)),
             removeMenu: (id) => setMenus(prev => prev.filter(m => m.id !== id)),
-
-            portfolioEntries,
-            addPortfolioEntry: (entry) => setPortfolioEntries(prev => [...prev, entry]),
-            updatePortfolioEntry: (id, updates) => setPortfolioEntries(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p)),
-            removePortfolioEntry: (id) => setPortfolioEntries(prev => prev.filter(p => p.id !== id)),
 
             assessments,
             addAssessment: (a) => setAssessments(prev => [...prev, a]),
