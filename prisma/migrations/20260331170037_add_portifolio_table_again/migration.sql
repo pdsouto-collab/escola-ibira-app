@@ -9,7 +9,7 @@
 ALTER TABLE "PortfolioEntry" DROP CONSTRAINT "PortfolioEntry_studentId_fkey";
 
 -- AlterTable
-ALTER TABLE "PegadaInteraction" ADD COLUMN     "teste" TEXT NOT NULL;
+ALTER TABLE "PegadaInteraction" ADD COLUMN     "teste" TEXT NOT NULL DEFAULT '';
 
 -- DropTable
 DROP TABLE "PortfolioEntry";
