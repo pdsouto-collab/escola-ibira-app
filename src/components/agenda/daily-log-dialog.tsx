@@ -8,20 +8,23 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useAppStore } from "@/lib/store";
 import { Student } from "@/types/student";
-import { DailyLog, ScheduleItem } from "@/lib/data";
+import { getStudents } from "@/services/student.service";
+import { DailyLog } from "@/lib/data";
+import { ScheduleItem } from "@/types/schedule";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Flame } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getSchedules } from "@/services/schedule.service";
 
 interface DailyLogDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     date: Date;
     classId: string;
-    students: Student[];
+    students?: Student[]; // Make students optional, we fetch them if not provided
 }
 
 // Helper types
@@ -42,11 +45,24 @@ interface StudentLogForm {
     missingItems: string;
 }
 
-export function DailyLogDialog({ open, onOpenChange, date, classId, students }: DailyLogDialogProps) {
-    const { schedule, addDailyLog, dailyLogs, updateDailyLog, removeDailyLog, menus } = useAppStore();
+export function DailyLogDialog({ open, onOpenChange, date, classId, students: propStudents }: DailyLogDialogProps) {
+    const { addDailyLog, dailyLogs, updateDailyLog, removeDailyLog, menus } = useAppStore();
 
     const [forms, setForms] = useState<Record<string, StudentLogForm>>({});
     const [selectedActivities, setSelectedActivities] = useState<Record<string, boolean>>({});
+    const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
+    const [localStudents, setLocalStudents] = useState<Student[]>([]);
+
+    useEffect(() => {
+        if (open) {
+            getSchedules().then(setSchedule).catch(console.error);
+            if (!propStudents) {
+                getStudents().then(setLocalStudents).catch(console.error);
+            }
+        }
+    }, [open, propStudents]);
+
+    const students = propStudents || localStudents;
 
     // 1. Get students for this class
     const classStudents = students.filter(s => s.classId === classId);

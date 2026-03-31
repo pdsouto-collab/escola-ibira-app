@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 import {
-    mockSchedule, ScheduleItem,
     mockDailyLogs, DailyLog,
     mockRecursiveDataSkills, MosaicNode,
     Task, ChatMessage,
@@ -17,7 +16,6 @@ import {
 } from "@/lib/data";
 
 interface AppState {
-    schedule: ScheduleItem[];
     dailyLogs: DailyLog[];
     tasks: Task[];
     messages: ChatMessage[];
@@ -39,8 +37,6 @@ interface AppContextType extends AppState {
     addTask: (task: Task) => void;
     removeTask: (id: string) => void;
 
-
-    updateSchedule: (items: ScheduleItem[]) => void;
 
     sendMessage: (msg: ChatMessage) => void;
 
@@ -119,7 +115,6 @@ const initialMessages: ChatMessage[] = mockMessages.map(m => ({
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
     // Initialize state from LocalStorage or Default
-    const [schedule, setSchedule] = useState<ScheduleItem[]>(mockSchedule);
     const [dailyLogs, setDailyLogs] = useState<DailyLog[]>(mockDailyLogs);
     const [tasks, setTasks] = useState<Task[]>(initialTasks);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -173,7 +168,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem("app_version", CURRENT_VERSION);
         } else {
             // Normal Load
-            load("schedule", setSchedule, mockSchedule);
             load("dailyLogs", setDailyLogs, mockDailyLogs);
             load("tasks", setTasks, initialTasks);
             load("messages", setMessages, initialMessages);
@@ -198,7 +192,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (!isLoaded) return;
         try {
-            localStorage.setItem("app_schedule", JSON.stringify(schedule));
             localStorage.setItem("app_dailyLogs", JSON.stringify(dailyLogs));
             localStorage.setItem("app_tasks", JSON.stringify(tasks));
             localStorage.setItem("app_messages", JSON.stringify(messages));
@@ -215,17 +208,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
             console.error("Erro ao salvar no cache local. O limite de armazenamento pode ter sido atingido.", error);
         }
-    }, [schedule, dailyLogs, tasks, messages, mosaicData, bnccProgress, skillsTree, contentsTree, menus, assessments, invoices, notifications, classBoardPosts, postInteractions, isLoaded]);
+    }, [dailyLogs, tasks, messages, mosaicData, bnccProgress, skillsTree, contentsTree, menus, assessments, invoices, notifications, classBoardPosts, postInteractions, isLoaded]);
 
     const toggleTask = (id: string) => {
         setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
     };
     const addTask = (task: Task) => setTasks(prev => [...prev, task]);
     const removeTask = (id: string) => setTasks(prev => prev.filter(t => t.id !== id));
-
-
-    const updateSchedule = (items: ScheduleItem[]) => setSchedule(items);
-
 
 
     const sendMessage = (msg: ChatMessage) => setMessages(prev => [...prev, msg]);
@@ -402,9 +391,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <AppContext.Provider value={{
-            schedule, dailyLogs, tasks, messages,
+            dailyLogs, tasks, messages,
             toggleTask, addTask, removeTask,
-            updateSchedule, sendMessage, resetData,
+            sendMessage, resetData,
             mosaicData, updateMosaicNode, replaceMosaicData,
             bnccProgress, updateBNCCStatus,
             skillsTree, contentsTree, addKnowledgeNode, updateKnowledgeNode, removeKnowledgeNode, duplicateKnowledgeNode,

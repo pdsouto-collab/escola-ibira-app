@@ -1,6 +1,6 @@
 "use client";
 
-import { ScheduleItem } from "@/lib/data";
+import { ScheduleItem } from "@/types/schedule";
 import { cn } from "@/lib/utils";
 import { Utensils, Moon, BookOpen, Clock, Pencil, Trash2, FolderKanban, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -79,7 +79,7 @@ export function DailySchedule({ items, onEdit, onDelete }: DailyScheduleProps) {
                                             <h3 className="font-semibold text-slate-800">{item.title}</h3>
                                             {item.type === "meal" ? (
                                                 <p className="mt-1 text-sm text-green-600 font-medium italic">
-                                                    {getMenuDescription(item.title, item.date) || item.description || "Cardápio não definido"}
+                                                    {getMenuDescription(item.title, item.date || undefined) || item.description || "Cardápio não definido"}
                                                 </p>
                                             ) : (
                                                 item.description && (

@@ -19,6 +19,8 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { getProjects } from "@/services/project.service";
 import { Project } from "@/types/project";
 import { Student } from "@/types/student";
+import { getSchedules } from "@/services/schedule.service";
+import { ScheduleItem } from "@/types/schedule";
 
 interface AssessmentDrawerProps {
     open: boolean;
@@ -59,13 +61,14 @@ export function AssessmentDrawer({
     initialObservations,
     initialAttachments,
 }: AssessmentDrawerProps) {
-    const { schedule, addAssessment, updateAssessment, removeAssessment, assessments } = useAppStore();
+    const { addAssessment, updateAssessment, removeAssessment, assessments } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
 
     const [classes, setClasses] = useState<SchoolClass[]>([]);
     const [isLoadingClasses, setIsLoadingClasses] = useState(true);
     const [projects, setProjects] = useState<Project[]>([]);
+    const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
 
     const [activeAssessmentId, setActiveAssessmentId] = useState<string | undefined>(assessmentId);
 
@@ -177,13 +180,17 @@ export function AssessmentDrawer({
 
     async function fetchClassesAndProjects() {
         try {
-            const [classesData, projectsData] = await Promise.all([
+            const [classesData, projectsData, schedulesData] = await Promise.all([
                 getClasses(),
-                getProjects()
+                getProjects(),
+                getSchedules()
             ]);
             setClasses(classesData);
             if (projectsData) {
                 setProjects(projectsData);
+            }
+            if (schedulesData) {
+                setSchedule(schedulesData);
             }
             if (!classId && !defaultClassId && classesData.length > 0) {
                 setClassId(classesData[0].id);

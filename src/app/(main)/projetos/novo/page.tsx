@@ -16,9 +16,11 @@ import { BulkSessionDialog } from "@/components/projetos/bulk-session-dialog";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAppStore } from "@/lib/store";
-import { ScheduleItem, KnowledgeNode, SEMESTERS, YEARS } from "@/lib/data";
+import { KnowledgeNode, SEMESTERS, YEARS } from "@/lib/data";
+import { ScheduleItem } from "@/types/schedule";
 import { Project } from "@/types/project";
 import { createProject, updateProject, getProjectById } from "@/services/project.service";
+import { createSchedule as createScheduleService, deleteSchedule as deleteScheduleService, getSchedules } from "@/services/schedule.service";
 import { toast } from "sonner";
 import { SchoolClass } from "@/types/school-class";
 import { getClasses } from "@/services/school-class.service";
@@ -35,15 +37,14 @@ function NewProjectWizardContent() {
     const { data: session } = useSession();
     const currentUser = session?.user as any;
 
-    // Store
     const {
-        schedule,
-        updateSchedule,
         finalProductTypes,
         skillsTree,
         contentsTree,
         addNotification
     } = useAppStore();
+    
+    const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
 
     const [classes, setClasses] = useState<SchoolClass[]>([]);
     const [students, setStudents] = useState<any[]>([]);
@@ -54,12 +55,14 @@ function NewProjectWizardContent() {
 
     async function fetchClassesAndStudents() {
         try {
-            const [classesData, studentsData] = await Promise.all([
+            const [classesData, studentsData, schedulesData] = await Promise.all([
                 getClasses(),
-                getStudents()
+                getStudents(),
+                getSchedules()
             ]);
             setClasses(classesData);
             setStudents(studentsData);
+            setSchedule(schedulesData);
         } catch (error) {
             console.error("Erro ao buscar dados:", error);
         } finally {
@@ -122,26 +125,37 @@ function NewProjectWizardContent() {
     const [filterTrilhaBaseCompetencias, setFilterTrilhaBaseCompetencias] = useState(false);
 
     // Immediately write sessions to store (expanded per selected classes)
-    const persistSessionsToStore = (updatedSessions: Partial<ScheduleItem>[]) => {
+    const persistSessionsToStore = async (updatedSessions: Partial<ScheduleItem>[]) => {
         const selectedClasses = formData.classes.length > 0 ? formData.classes : [undefined];
-        const remaining = schedule.filter(s => s.projectId !== projectId);
-        const expanded: ScheduleItem[] = [];
-        for (const session of updatedSessions) {
-            for (const classId of selectedClasses) {
-                expanded.push({
-                    id: crypto.randomUUID(),
-                    title: session.title ?? "",
-                    type: (session.type ?? "project") as ScheduleItem["type"],
-                    date: session.date,
-                    time: session.time ?? "",
-                    endTime: session.endTime,
-                    description: session.description,
-                    projectId,
-                    classId,
-                } as ScheduleItem);
+        
+        try {
+            // First delete existing sessions for this project
+            const existingProjectSessions = schedule.filter(s => s.projectId === projectId);
+            await Promise.all(existingProjectSessions.map(s => deleteScheduleService(s.id)));
+
+            const remaining = schedule.filter(s => s.projectId !== projectId);
+            const expanded: Partial<ScheduleItem>[] = [];
+            for (const session of updatedSessions) {
+                for (const classId of selectedClasses) {
+                    expanded.push({
+                        title: session.title ?? "",
+                        type: (session.type ?? "project") as ScheduleItem["type"],
+                        date: session.date,
+                        time: session.time ?? "",
+                        endTime: session.endTime,
+                        description: session.description,
+                        projectId,
+                        classId,
+                    } as Partial<ScheduleItem>);
+                }
             }
+            
+            const newlyCreated = await Promise.all(expanded.map(item => createScheduleService(item as Omit<ScheduleItem, "id"|"createdAt"|"updatedAt">)));
+            setSchedule([...remaining, ...newlyCreated]);
+        } catch (error) {
+            toast.error("Erro ao persistir sessões.");
+            console.error(error);
         }
-        updateSchedule([...remaining, ...expanded]);
     };
 
     // Memoize the IDs of skills and contents that belong to the "Base Tree" of selected classes
@@ -270,7 +284,7 @@ function NewProjectWizardContent() {
 
             if (formData.projectSchedule.length > 0) {
                 // Re-sync store in case classes changed after sessions were added
-                persistSessionsToStore(formData.projectSchedule);
+                await persistSessionsToStore(formData.projectSchedule);
             }
 
             setCurrentStep(5);
@@ -311,7 +325,7 @@ function NewProjectWizardContent() {
             }
 
             if (formData.projectSchedule.length > 0) {
-                persistSessionsToStore(formData.projectSchedule);
+                await persistSessionsToStore(formData.projectSchedule);
             }
             toast.success("Rascunho salvo com sucesso!");
             router.push("/projetos");
@@ -1065,7 +1079,7 @@ function NewProjectWizardContent() {
                                                     ) : (
                                                         <div className="p-4">
                                                             <div className="absolute top-3 right-3 flex items-center gap-1">
-                                                                <button type="button" onClick={() => { setEditingSessionIdx(idx); setEditingSessionData({ title: item.title, date: item.date as string, time: item.time, endTime: item.endTime }); }} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
+                                                                <button type="button" onClick={() => { setEditingSessionIdx(idx); setEditingSessionData({ title: item.title, date: item.date as string, time: item.time, endTime: item.endTime || "" }); }} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
                                                                     <Pencil className="w-3.5 h-3.5" />
                                                                 </button>
                                                                 <button type="button" onClick={() => { const updated = formData.projectSchedule.filter((_, i) => i !== idx); setFormData({ ...formData, projectSchedule: updated }); persistSessionsToStore(updated); }} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">

@@ -24,6 +24,8 @@ import { getListBncc } from "@/services/bncc.service";
 import { getPortfolioEntries } from "@/services/portfolio.service";
 import { Project } from "@/types/project";
 import { getProjects } from "@/services/project.service";
+import { ScheduleItem } from "@/types/schedule";
+import { getSchedules } from "@/services/schedule.service";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Node Resolvers
@@ -159,7 +161,8 @@ function ReportCard({
     dateRange?: { start: string; end: string };
     period?: string | null;
 }) {
-    const { assessments, schedule, skillsTree, contentsTree, dailyLogs } = useAppStore();
+    const { assessments, skillsTree, contentsTree, dailyLogs } = useAppStore();
+    const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
     const [classes, setClasses] = useState<SchoolClass[]>([]);
     const [students, setStudents] = useState<Student[]>([]);
     const [projects, setProjects] = useState<Project[]>([]);
@@ -167,6 +170,7 @@ function ReportCard({
     const [isLoadingClasses, setIsLoadingClasses] = useState(true);
     const [isLoadingStudents, setIsLoadingStudents] = useState(true);
     const [isLoadingProjects, setIsLoadingProjects] = useState(true);
+    const [isLoadingSchedules, setIsLoadingSchedules] = useState(true);
     const [isLoadingPortfolio, setIsLoadingPortfolio] = useState(true);
     const [selectedEntry, setSelectedEntry] = useState<PortfolioEntry | null>(null);
 
@@ -207,11 +211,23 @@ function ReportCard({
         }
     }
 
+    async function fetchSchedules() {
+        try {
+            const data = await getSchedules();
+            setSchedule(data);
+        } catch (error) {
+            console.error("Erro ao buscar sessões:", error);
+        } finally {
+            setIsLoadingSchedules(false);
+        }
+    }
+
     useEffect(() => {
         getListaBNCC();
         fetchClasses();
         fetchStudents();
         fetchProjects();
+        fetchSchedules();
         setIsLoadingPortfolio(true);
         getPortfolioEntries(studentId).then(setPortfolioEntries).catch(console.error).finally(() => setIsLoadingPortfolio(false));
     }, [studentId])
@@ -225,7 +241,7 @@ function ReportCard({
         return <div className="text-center py-20 text-slate-400">Aluno não encontrado.</div>;
     }
 
-    if (isLoadingClasses || isLoadingStudents || isLoadingProjects || isLoadingPortfolio) {
+    if (isLoadingClasses || isLoadingStudents || isLoadingProjects || isLoadingPortfolio || isLoadingSchedules) {
         return <div className="text-center py-20 text-slate-400 italic">Carregando dados...</div>;
     }
     const cls = classes.find(c => c.id === student.classId);

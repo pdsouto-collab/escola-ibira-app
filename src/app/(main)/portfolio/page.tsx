@@ -23,6 +23,8 @@ import { SchoolClass } from "@/types/school-class";
 import { Student } from "@/types/student";
 import { Project } from "@/types/project";
 import { getProjects } from "@/services/project.service";
+import { ScheduleItem } from "@/types/schedule";
+import { getSchedules } from "@/services/schedule.service";
 
 // ────────────────────────────────────────────
 // Helper: find node name recursively
@@ -242,7 +244,7 @@ function ProjectView({
     projectFilter: string;
     allProjects: Project[];
     assessments: Assessment[];
-    schedule: ReturnType<typeof useAppStore>["schedule"];
+    schedule: ScheduleItem[];
     students: Student[];
     classes: SchoolClass[];
     skillsTree: ReturnType<typeof useAppStore>["skillsTree"];
@@ -466,7 +468,7 @@ function StudentView({
     students: Student[];
     classes: SchoolClass[];
     projects: Project[];
-    schedule: ReturnType<typeof useAppStore>["schedule"];
+    schedule: ScheduleItem[];
     skillsTree: ReturnType<typeof useAppStore>["skillsTree"];
     contentsTree: ReturnType<typeof useAppStore>["contentsTree"];
     libraryItems: LibraryItem[]
@@ -808,12 +810,14 @@ function StudentView({
 // Main Portfolio Page
 // ────────────────────────────────────────────
 function PortfolioContent() {
-    const { assessments, schedule, skillsTree, contentsTree } = useAppStore();
+    const { assessments, skillsTree, contentsTree } = useAppStore();
     const [allProjects, setAllProjects] = useState<Project[]>([]);
+    const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
     const [classes, setClasses] = useState<SchoolClass[]>([]);
     const [students, setStudents] = useState<Student[]>([]);
     const [isLoadingClasses, setIsLoadingClasses] = useState(true);
     const [isLoadingStudents, setIsLoadingStudents] = useState(true);
+    const [isLoadingSchedules, setIsLoadingSchedules] = useState(true);
     const searchParams = useSearchParams();
     const initialClassId = searchParams.get("classId");
 
@@ -858,10 +862,22 @@ function PortfolioContent() {
         }
     }
 
+    async function fetchSchedules() {
+        try {
+            const data = await getSchedules();
+            setSchedule(data);
+        } catch (error) {
+            console.error("Erro ao buscar agenda:", error);
+        } finally {
+            setIsLoadingSchedules(false);
+        }
+    }
+
     useEffect(() => {
         fetchClasses();
         fetchStudents();
         fetchProjects();
+        fetchSchedules();
         getListaBNCC();
     }, []);
 
@@ -891,7 +907,7 @@ function PortfolioContent() {
         return allProjects.filter(p => p.period === periodFilter);
     }, [allProjects, periodFilter]);
 
-    if (isLoadingClasses || isLoadingStudents) {
+    if (isLoadingClasses || isLoadingStudents || isLoadingSchedules) {
         return (
             <div className="flex items-center justify-center p-12 min-h-screen">
                 <Loader2 className="w-8 h-8 text-slate-400 animate-spin mr-3" />

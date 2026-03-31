@@ -6,29 +6,35 @@ import { startOfWeek, addDays, format, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { getClasses } from "@/services/school-class.service";
 import { SchoolClass } from "@/types/school-class";
+import { getSchedules } from "@/services/schedule.service";
+import { ScheduleItem } from "@/types/schedule";
 
 export function WeeklyView() {
-    const { schedule } = useAppStore();
+    const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
     const [classes, setClasses] = useState<SchoolClass[]>([]);
     const [selectedClassId, setSelectedClassId] = useState<string>("");
     const [isLoading, setIsLoading] = useState(true);
 
-    async function fetchClasses() {
+    async function fetchClassesAndSchedules() {
         try {
-            const data = await getClasses();
-            setClasses(data);
-            if (data.length > 0 && !selectedClassId) {
-                setSelectedClassId(data[0].id);
+            const [classesData, schedulesData] = await Promise.all([
+                getClasses(),
+                getSchedules()
+            ]);
+            setClasses(classesData);
+            setSchedule(schedulesData);
+            if (classesData.length > 0 && !selectedClassId) {
+                setSelectedClassId(classesData[0].id);
             }
         } catch (error) {
-            console.error("Erro ao buscar turmas:", error);
+            console.error("Erro ao buscar dados:", error);
         } finally {
             setIsLoading(false);
         }
     }
 
     useEffect(() => {
-        fetchClasses();
+        fetchClassesAndSchedules();
     }, [selectedClassId]);
 
     // Generate days for the current week (Mon-Fri)

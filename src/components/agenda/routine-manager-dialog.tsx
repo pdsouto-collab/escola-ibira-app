@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { ScheduleItem } from "@/lib/data";
+import { ScheduleItem } from "@/types/schedule";
 import { SchoolClass } from "@/types/school-class";
 import { Student } from "@/types/student";
 import { Button } from "@/components/ui/button";
@@ -98,9 +98,9 @@ export function RoutineManagerDialog({ open, onOpenChange, schedule, classes, st
                         id: item.routineId,
                         title: item.title,
                         time: item.time,
-                        endTime: item.endTime,
-                        description: item.description,
-                        classId: item.classId,
+                        endTime: item.endTime || undefined,
+                        description: item.description || undefined,
+                        classId: item.classId || undefined,
                         itemCount: 0,
                         exampleItem: item,
                         kind: "routine",
@@ -113,9 +113,9 @@ export function RoutineManagerDialog({ open, onOpenChange, schedule, classes, st
                         id: item.projectId,
                         title: item.title,
                         time: item.time,
-                        endTime: item.endTime,
-                        description: item.description,
-                        classId: item.classId,
+                        endTime: item.endTime || undefined,
+                        description: item.description || undefined,
+                        classId: item.classId || undefined,
                         itemCount: 0,
                         exampleItem: item,
                         kind: "project",
@@ -152,7 +152,7 @@ export function RoutineManagerDialog({ open, onOpenChange, schedule, classes, st
             endDate: dates[dates.length - 1] || "",
             daysOfWeek: Array.from(daySet).sort(),
             projectId: group.id,
-            classId: itemClasses.size === 1 ? Array.from(itemClasses)[0] : "all"
+            classId: itemClasses.size === 1 ? Array.from(itemClasses)[0] || "all" : "all"
         });
         setEditingProjectId(group.id);
     };

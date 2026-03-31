@@ -231,3 +231,23 @@ model Project {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
+/// Rotina Escolar e Agenda
+model ScheduleItem {
+  id          String   @id @default(cuid())
+  time        String
+  endTime     String?
+  title       String
+  type        String
+  description String?  @db.Text
+  date        String?
+  classId     String?
+  projectId   String?
+  routineId   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([classId])
+  @@index([projectId])
+  @@index([routineId])
+}

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ScheduleItem } from "@/lib/data";
+import { ScheduleItem } from "@/types/schedule";
 import { Project } from "@/types/project";
 import { SchoolClass } from "@/types/school-class";
 import { Student } from "@/types/student";

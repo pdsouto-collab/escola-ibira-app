@@ -11,7 +11,8 @@ import { BulkRoutineDialog, BulkRoutineConfig } from "@/components/agenda/bulk-r
 import { RoutineManagerDialog } from "@/components/agenda/routine-manager-dialog";
 import { DailyLogDialog } from "@/components/agenda/daily-log-dialog";
 import { BulkPortfolioDialog } from "@/components/portfolio/bulk-portfolio-dialog";
-import { ScheduleItem } from "@/lib/data";
+import { ScheduleItem } from "@/types/schedule";
+import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -23,6 +24,7 @@ import { getProjects } from "@/services/project.service";
 import { Student } from "@/types/student";
 import { SchoolClass } from "@/types/school-class";
 import { Project } from "@/types/project";
+import { getSchedules, createSchedule as createScheduleService, updateSchedule as updateScheduleService, deleteSchedule as deleteScheduleService } from "@/services/schedule.service";
 
 import {
     DropdownMenu,
@@ -33,10 +35,10 @@ import {
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export default function AgendaPage() {
-    const { schedule, updateSchedule } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
 
+    const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
     const [classes, setClasses] = useState<SchoolClass[]>([]);
     const [students, setStudents] = useState<Student[]>([]);
     const [projects, setProjects] = useState<Project[]>([]);
@@ -55,20 +57,23 @@ export default function AgendaPage() {
     const [confirmDeleteItem, setConfirmDeleteItem] = useState<ScheduleItem | null>(null);
     const [confirmDeleteRoutineId, setConfirmDeleteRoutineId] = useState<string | null>(null);
     const [confirmDeleteProjectId, setConfirmDeleteProjectId] = useState<string | null>(null);
-    
+
     async function fetchData() {
         setIsLoadingData(true);
         try {
-            const [classesData, studentsData, projectsData] = await Promise.all([
+            const [classesData, studentsData, projectsData, scheduleData] = await Promise.all([
                 getClasses(),
                 getStudents(),
-                getProjects()
+                getProjects(),
+                getSchedules()
             ]);
             setClasses(classesData);
             setStudents(studentsData);
             setProjects(projectsData);
+            setSchedule(scheduleData);
         } catch (error) {
             console.error("Erro ao carregar dados:", error);
+            toast.error("Erro ao carregar dados iniciais");
         } finally {
             setIsLoadingData(false);
         }
@@ -110,14 +115,20 @@ export default function AgendaPage() {
         setConfirmDeleteItem(item);
     };
 
-    const confirmDeleteAction = () => {
+    const confirmDeleteAction = async () => {
         if (confirmDeleteItem) {
-            updateSchedule(schedule.filter(i => i.id !== confirmDeleteItem.id));
+            try {
+                await deleteScheduleService(confirmDeleteItem.id);
+                setSchedule(schedule.filter(i => i.id !== confirmDeleteItem.id));
+                toast.success("Item removido");
+            } catch (err) {
+                toast.error("Erro ao remover item");
+            }
             setConfirmDeleteItem(null);
         }
     };
 
-    const handleSave = (item: ScheduleItem) => {
+    const handleSave = async (item: ScheduleItem) => {
         const newItem = {
             ...item,
             classId: item.classId || (selectedClassId === "all" ? availableClasses[0]?.id : selectedClassId),
@@ -125,10 +136,18 @@ export default function AgendaPage() {
             projectId: item.projectId
         };
 
-        if (editingItem) {
-            updateSchedule(schedule.map(i => i.id === item.id ? newItem : i));
-        } else {
-            updateSchedule([...schedule, newItem]);
+        try {
+            if (editingItem) {
+                const updated = await updateScheduleService(item.id, newItem);
+                setSchedule(schedule.map(i => i.id === item.id ? updated : i));
+                toast.success("Atualizado com sucesso");
+            } else {
+                const created = await createScheduleService(newItem as any);
+                setSchedule([...schedule, created]);
+                toast.success("Adicionado com sucesso");
+            }
+        } catch (error) {
+            toast.error("Erro ao salvar item da agenda");
         }
     };
 
@@ -140,38 +159,34 @@ export default function AgendaPage() {
         setIsBulkDialogOpen(true);
     }
 
-    const handleBulkSave = (config: BulkRoutineConfig) => {
-        // If editing a routine, first remove old items
+    const handleBulkSave = async (config: BulkRoutineConfig) => {
         let currentSchedule = schedule;
-        if (editingRoutineId) {
-            currentSchedule = schedule.filter(i => i.routineId !== editingRoutineId);
-        }
+
+        toast.info("Criando rotina, aguarde...");
 
         const routineId = editingRoutineId || crypto.randomUUID();
-        const newItems: ScheduleItem[] = [];
-        const start = new Date(config.startDate + "T00:00:00"); // Ensure local time
+        const start = new Date(config.startDate + "T00:00:00");
         const end = new Date(config.endDate + "T00:00:00");
 
-        // Helper to add item
+        const newItems: Omit<ScheduleItem, "id" | "createdAt" | "updatedAt">[] = [];
+
         const addItem = (date: Date, cId?: string) => {
             newItems.push({
-                id: crypto.randomUUID(),
                 time: config.time,
-                endTime: config.endTime,
+                endTime: config.endTime || null,
                 title: config.title,
-                description: config.description,
+                description: config.description || null,
                 type: config.type,
                 date: format(date, 'yyyy-MM-dd'),
-                classId: cId,
+                classId: cId || null,
                 routineId: routineId,
-                projectId: config.projectId // Pass the selected project
+                projectId: config.projectId || null
             });
         };
 
         for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
             if (config.daysOfWeek.includes(d.getDay())) {
                 if (config.classId === "all") {
-                    // Create for all available classes
                     availableClasses.forEach(c => addItem(new Date(d), c.id));
                 } else {
                     addItem(new Date(d), config.classId);
@@ -179,17 +194,39 @@ export default function AgendaPage() {
             }
         }
 
-        updateSchedule([...currentSchedule, ...newItems]);
-        setEditingRoutineId(null);
+        try {
+            if (editingRoutineId) {
+                // Bulk delete old routine items using API is complex if we map one by one. 
+                // We'll delete them one by one via service, then push new ones.
+                const itemsToDelete = schedule.filter(i => i.routineId === editingRoutineId);
+                await Promise.all(itemsToDelete.map(i => deleteScheduleService(i.id)));
+                currentSchedule = schedule.filter(i => i.routineId !== editingRoutineId);
+            }
+
+            const createdItems = await Promise.all(newItems.map(item => createScheduleService(item)));
+            setSchedule([...currentSchedule, ...createdItems]);
+            toast.success("Rotina salva em lote");
+            setEditingRoutineId(null);
+        } catch (error) {
+            toast.error("Erro ao salvar rotina em lote");
+        }
     };
 
     const handleDeleteRoutine = (routineId: string) => {
         setConfirmDeleteRoutineId(routineId);
     };
 
-    const confirmDeleteRoutineAction = () => {
+    const confirmDeleteRoutineAction = async () => {
         if (confirmDeleteRoutineId) {
-            updateSchedule(schedule.filter(i => i.routineId !== confirmDeleteRoutineId));
+            try {
+                toast.info("Removendo rotina...");
+                const itemsToDelete = schedule.filter(i => i.routineId === confirmDeleteRoutineId);
+                await Promise.all(itemsToDelete.map(i => deleteScheduleService(i.id)));
+                setSchedule(schedule.filter(i => i.routineId !== confirmDeleteRoutineId));
+                toast.success("Rotina removida");
+            } catch (e) {
+                toast.error("Erro ao remover rotina");
+            }
             setConfirmDeleteRoutineId(null);
         }
     };
@@ -203,12 +240,12 @@ export default function AgendaPage() {
             description: exampleItem.description || "",
             time: exampleItem.time,
             endTime: exampleItem.endTime || "",
-            type: exampleItem.type,
+            type: exampleItem.type as any,
             startDate: exampleItem.date || "", // This might be lossy if not stored on routine level, but good enough for now
             endDate: exampleItem.date || "", // User will have to re-select range
             daysOfWeek: [1, 2, 3, 4, 5], // Default, hard to infer perfectly without better data structure
             classId: exampleItem.classId || "all",
-            projectId: exampleItem.projectId
+            projectId: exampleItem.projectId || undefined
         });
         setIsBulkDialogOpen(true);
     };
@@ -364,38 +401,45 @@ export default function AgendaPage() {
                 onDeleteProjectSessions={(projectId) => {
                     setConfirmDeleteProjectId(projectId);
                 }}
-                onEditProjectSessionsBulk={(projectId, config) => {
-                    // Remove all existing sessions for this project
-                    const remaining = schedule.filter(s => s.projectId !== projectId);
-                    
-                    const effectiveClasses = config.classId && config.classId !== "all"
-                        ? [config.classId]
-                        : classes.map(c => c.id); // For all classes
+                onEditProjectSessionsBulk={async (projectId, config) => {
+                    try {
+                        toast.info("Reescrevendo sessões do projeto...");
+                        // Remove all existing sessions for this project
+                        const existingProjectSessions = schedule.filter(s => s.projectId === projectId);
+                        await Promise.all(existingProjectSessions.map(s => deleteScheduleService(s.id)));
+                        const remaining = schedule.filter(s => s.projectId !== projectId);
 
-                    // Regenerate sessions for the new date range
-                    const start = new Date(config.startDate + "T12:00:00");
-                    const end = new Date(config.endDate + "T12:00:00");
-                    const newSessions: import("@/lib/data").ScheduleItem[] = [];
-                    const cur = new Date(start);
-                    while (cur <= end) {
-                        if (config.daysOfWeek.includes(cur.getDay())) {
-                            for (const classId of effectiveClasses) {
-                                newSessions.push({
-                                    id: crypto.randomUUID(),
-                                    title: config.title,
-                                    description: config.description,
-                                    type: "project",
-                                    date: format(cur, "yyyy-MM-dd"),
-                                    time: config.time,
-                                    endTime: config.endTime,
-                                    projectId,
-                                    classId,
-                                } as import("@/lib/data").ScheduleItem);
+                        const effectiveClasses = config.classId && config.classId !== "all"
+                            ? [config.classId]
+                            : classes.map(c => c.id);
+
+                        const start = new Date(config.startDate + "T12:00:00");
+                        const end = new Date(config.endDate + "T12:00:00");
+                        const newSessions: Omit<ScheduleItem, "id" | "createdAt" | "updatedAt">[] = [];
+                        const cur = new Date(start);
+                        while (cur <= end) {
+                            if (config.daysOfWeek.includes(cur.getDay())) {
+                                for (const classId of effectiveClasses) {
+                                    newSessions.push({
+                                        title: config.title,
+                                        description: config.description || null,
+                                        type: "project",
+                                        date: format(cur, "yyyy-MM-dd"),
+                                        time: config.time,
+                                        endTime: config.endTime || null,
+                                        projectId,
+                                        classId,
+                                    });
+                                }
                             }
+                            cur.setDate(cur.getDate() + 1);
                         }
-                        cur.setDate(cur.getDate() + 1);
+                        const createdOptions = await Promise.all(newSessions.map(ns => createScheduleService(ns)));
+                        setSchedule([...remaining, ...createdOptions]);
+                        toast.success("Sessões replanejadas");
+                    } catch (e) {
+                        toast.error("Erro ao replanejar sessões");
                     }
-                    updateSchedule([...remaining, ...newSessions]);
                 }}
             />
 
@@ -405,6 +449,7 @@ export default function AgendaPage() {
                 date={currentDate}
                 classId={selectedClassId}
                 students={students}
+                schedule={schedule}
             />
 
             <BulkPortfolioDialog
@@ -438,9 +483,17 @@ export default function AgendaPage() {
                 onOpenChange={(open) => !open && setConfirmDeleteProjectId(null)}
                 title="Excluir Sessões de Projeto"
                 description="Tem certeza que deseja excluir todas as sessões deste projeto?"
-                onConfirm={() => {
+                onConfirm={async () => {
                     if (confirmDeleteProjectId) {
-                        updateSchedule(schedule.filter(s => s.projectId !== confirmDeleteProjectId));
+                        try {
+                            toast.info("Excluindo sessões...");
+                            const sessionsToDelete = schedule.filter(s => s.projectId === confirmDeleteProjectId);
+                            await Promise.all(sessionsToDelete.map(s => deleteScheduleService(s.id)));
+                            setSchedule(schedule.filter(s => s.projectId !== confirmDeleteProjectId));
+                            toast.success("Sessões excluídas");
+                        } catch (e) {
+                            toast.error("Erro ao excluir sessões");
+                        }
                         setConfirmDeleteProjectId(null);
                     }
                 }}
