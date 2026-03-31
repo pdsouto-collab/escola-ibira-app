@@ -18,10 +18,12 @@ import { LibraryItem } from "@/types/library-item";
 import { getListBncc } from "@/services/bncc.service";
 import { Student } from "@/types/student";
 import { getStudents } from "@/services/student.service";
+import { getProjects } from "@/services/project.service";
+import { Project } from "@/types/project";
 
 
 export function MosaicContainer() {
-    const { skillsTree, contentsTree, projects, assessments } = useAppStore();
+    const { skillsTree, contentsTree, assessments } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
 
@@ -29,6 +31,7 @@ export function MosaicContainer() {
     const [isLoadingClasses, setIsLoadingClasses] = useState(true);
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
     const [loading, setLoading] = useState(false)
+    const [projects, setProjects] = useState<Project[]>([]);
 
     // Core State
     const [activeTab, setActiveTab] = useState<"skill" | "content">("skill");
@@ -105,7 +108,15 @@ export function MosaicContainer() {
 
     useEffect(() => {
         const loadData = async () => {
-            await Promise.all([fetchClasses(), fetchStudents(), getListaBNCC()]);
+            const [, , , projectsData] = await Promise.all([
+                fetchClasses(), 
+                fetchStudents(), 
+                getListaBNCC(),
+                getProjects()
+            ]);
+            if (projectsData) {
+                setProjects(projectsData);
+            }
         };
         loadData();
     }, []);

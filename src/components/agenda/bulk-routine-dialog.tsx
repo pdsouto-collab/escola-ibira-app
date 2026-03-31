@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Project } from "@/lib/data";
+import { Project } from "@/types/project";
 import { SchoolClass } from "@/types/school-class";
 import { useAppStore } from "@/lib/store";
 
@@ -46,6 +46,7 @@ interface BulkRoutineDialogProps {
     onOpenChange: (open: boolean) => void;
     classes: SchoolClass[];
     students: Student[];
+    projects: Project[];
     initialConfig?: BulkRoutineConfig;
     onSave: (config: BulkRoutineConfig) => void;
 }
@@ -60,8 +61,7 @@ const DAYS = [
     { label: "Sáb", value: 6 },
 ];
 
-export function BulkRoutineDialog({ open, onOpenChange, classes, students, initialConfig, onSave }: BulkRoutineDialogProps) {
-    const { projects } = useAppStore();
+export function BulkRoutineDialog({ open, onOpenChange, classes, students, projects, initialConfig, onSave }: BulkRoutineDialogProps) {
     const [config, setConfig] = useState<BulkRoutineConfig>({
         title: "",
         description: "",

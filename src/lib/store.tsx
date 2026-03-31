@@ -6,7 +6,7 @@ import {
     mockSchedule, ScheduleItem,
     mockDailyLogs, DailyLog,
     mockRecursiveDataSkills, MosaicNode,
-    Task, Project, ChatMessage,
+    Task, ChatMessage,
     mockMessages,
     KnowledgeNode, mockSkillsTree, mockContentsTree,
     FinalProductType, mockFinalProductTypes,
@@ -20,7 +20,6 @@ interface AppState {
     schedule: ScheduleItem[];
     dailyLogs: DailyLog[];
     tasks: Task[];
-    projects: Project[];
     messages: ChatMessage[];
     mosaicData: MosaicNode[];
     bnccProgress: Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>;
@@ -42,10 +41,6 @@ interface AppContextType extends AppState {
 
 
     updateSchedule: (items: ScheduleItem[]) => void;
-
-    addProject: (project: Project) => void;
-    updateProject: (id: string, updates: Partial<Project>) => void;
-    removeProject: (id: string) => void;
 
     sendMessage: (msg: ChatMessage) => void;
 
@@ -110,48 +105,7 @@ const initialTasks: Task[] = [
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 
-const initialProjects: Project[] = [
-    {
-        id: "p1",
-        title: "Horta Comunitária",
-        description: "Projeto de cultivo de hortaliças com as crianças do Jardim II.",
-        guidingQuestion: "Como as plantas nascem e crescem do feijão à nossa mesa?",
-        status: "active",
-        startDate: "2024-02-01",
-        students: ["1", "3", "5"],
-        tags: ["Natureza", "Alimentação Saudável"],
-        bnccSkillIds: ["mic-sk-EF03CI04", "mic-sk-EF03CI06"],
-        contentIds: [],
-        imageUrl: "https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&q=80&w=600&h=300"
-    },
-    {
-        id: "p2",
-        title: "Música do Nosso Corpo",
-        description: "Exploração de sons e ritmos utilizando o próprio corpo como instrumento.",
-        guidingQuestion: "Quantos sons diferentes o nosso corpo consegue fazer?",
-        status: "draft",
-        startDate: "2024-04-10",
-        students: ["2", "4"],
-        tags: ["Artes", "Música", "Corpo e Movimento"],
-        bnccSkillIds: ["EF03CI01"],
-        contentIds: [],
-        imageUrl: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=600&h=300"
-    },
-    {
-        id: "p3",
-        title: "Pequenos Construtores",
-        description: "Construção de maquetes e circuitos para desenvolver noções espaciais e motoras.",
-        guidingQuestion: "Como construir uma cidade onde todos os brinquedos possam morar juntos?",
-        status: "completed",
-        startDate: "2023-10-01",
-        endDate: "2023-12-15",
-        students: ["1", "2", "3", "4", "5", "6"],
-        tags: ["Geometria", "Socialização", "Matemática"],
-        bnccSkillIds: ["mic-sk-EF03MA19", "mic-sk-EF03MA18", "mic-sk-EF03EF06"],
-        contentIds: [],
-        imageUrl: "https://images.unsplash.com/photo-1512314889357-e157c22f938d?auto=format&fit=crop&q=80&w=600&h=300"
-    }
-];
+
 
 const initialMessages: ChatMessage[] = mockMessages.map(m => ({
     id: m.id,
@@ -168,7 +122,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [schedule, setSchedule] = useState<ScheduleItem[]>(mockSchedule);
     const [dailyLogs, setDailyLogs] = useState<DailyLog[]>(mockDailyLogs);
     const [tasks, setTasks] = useState<Task[]>(initialTasks);
-    const [projects, setProjects] = useState<Project[]>(initialProjects);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [mosaicData, setMosaicData] = useState<MosaicNode[]>(mockRecursiveDataSkills);
     const [bnccProgress, setBnccProgress] = useState<Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>>({});
@@ -207,7 +160,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (storedVersion !== CURRENT_VERSION) {
             console.log("Migrating data to version", CURRENT_VERSION);
             // Migration Logic: Force Reset of critical data to sync with new tree structure
-            setProjects(initialProjects);
             setSkillsTree(mockSkillsTree);
             setContentsTree(mockContentsTree);
             setAssessments(mockAssessments);
@@ -224,7 +176,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             load("schedule", setSchedule, mockSchedule);
             load("dailyLogs", setDailyLogs, mockDailyLogs);
             load("tasks", setTasks, initialTasks);
-            load("projects", setProjects, initialProjects);
             load("messages", setMessages, initialMessages);
             load("mosaicData", setMosaicData, mockRecursiveDataSkills);
             load("bnccProgress", setBnccProgress, {});
@@ -250,7 +201,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem("app_schedule", JSON.stringify(schedule));
             localStorage.setItem("app_dailyLogs", JSON.stringify(dailyLogs));
             localStorage.setItem("app_tasks", JSON.stringify(tasks));
-            localStorage.setItem("app_projects", JSON.stringify(projects));
             localStorage.setItem("app_messages", JSON.stringify(messages));
             localStorage.setItem("app_mosaicData", JSON.stringify(mosaicData));
             localStorage.setItem("app_bnccProgress", JSON.stringify(bnccProgress));
@@ -265,7 +215,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
             console.error("Erro ao salvar no cache local. O limite de armazenamento pode ter sido atingido.", error);
         }
-    }, [schedule, dailyLogs, tasks, projects, messages, mosaicData, bnccProgress, skillsTree, contentsTree, menus, assessments, invoices, notifications, classBoardPosts, postInteractions, isLoaded]);
+    }, [schedule, dailyLogs, tasks, messages, mosaicData, bnccProgress, skillsTree, contentsTree, menus, assessments, invoices, notifications, classBoardPosts, postInteractions, isLoaded]);
 
     const toggleTask = (id: string) => {
         setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
@@ -276,65 +226,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     const updateSchedule = (items: ScheduleItem[]) => setSchedule(items);
 
-    const addProject = (project: Project) => setProjects(prev => [...prev, project]);
-    const updateProject = (id: string, updates: Partial<Project>) => {
-        setProjects(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
-        if (updates.status === "completed") {
-            const project = projects.find(p => p.id === id);
-            addNotification({
-                id: Math.random().toString(36).substr(2, 9),
-                userId: "admin",
-                title: "Projeto Finalizado",
-                message: `O projeto "${project?.title}" foi concluído com sucesso.`,
-                type: "success",
-                isRead: false,
-                createdAt: new Date().toISOString()
-            });
-        }
-    };
-    const removeProject = (id: string) => {
-        // 1. Identify skills in this project
-        const projectToRemove = projects.find(p => p.id === id);
-        if (!projectToRemove) return;
 
-        const skillsInProject = projectToRemove.bnccSkillIds || [];
-
-        // 2. Filter out project from list
-        const updatedProjects = projects.filter(p => p.id !== id);
-        setProjects(updatedProjects);
-
-        // 3. Check for orphaned skills and reset "in-progress" status
-        // We need to check if these skills exist in any of the REMAINING projects
-        // If not, and if their status is "in-progress", we reset to "not-started".
-        // We do NOT reset "achieved" status.
-
-        setBnccProgress(prev => {
-            const newProgress = { ...prev };
-            let hasChanges = false;
-
-            skillsInProject.forEach(skillCode => {
-                // If current status is not in-progress, skip (preserve achieved or not-started)
-                if (newProgress[skillCode]?.status !== "in-progress") return;
-
-                // Check if this skill is used in any OTHER active project
-                const isUsedElsewhere = updatedProjects.some(p =>
-                    p.status === "active" && p.bnccSkillIds?.includes(skillCode)
-                );
-
-                if (!isUsedElsewhere) {
-                    // Reset to not-started (effectively removing the key or setting status)
-                    // We'll keep the object but status "not-started"
-                    newProgress[skillCode] = {
-                        ...newProgress[skillCode],
-                        status: "not-started"
-                    };
-                    hasChanges = true;
-                }
-            });
-
-            return hasChanges ? newProgress : prev;
-        });
-    };
 
     const sendMessage = (msg: ChatMessage) => setMessages(prev => [...prev, msg]);
 
@@ -510,9 +402,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <AppContext.Provider value={{
-            schedule, dailyLogs, tasks, projects, messages,
+            schedule, dailyLogs, tasks, messages,
             toggleTask, addTask, removeTask,
-            updateSchedule, addProject, updateProject, removeProject, sendMessage, resetData,
+            updateSchedule, sendMessage, resetData,
             mosaicData, updateMosaicNode, replaceMosaicData,
             bnccProgress, updateBNCCStatus,
             skillsTree, contentsTree, addKnowledgeNode, updateKnowledgeNode, removeKnowledgeNode, duplicateKnowledgeNode,

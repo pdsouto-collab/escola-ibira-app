@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAppStore } from "@/lib/store";
-import { ClassBoardPost, ClassBoardCategoryType, Project } from "@/lib/data";
+import { ClassBoardPost, ClassBoardCategoryType } from "@/lib/data";
+import { Project } from "@/types/project";
+import { getProjects } from "@/services/project.service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,7 +14,7 @@ import { useSession } from "next-auth/react";
 
 
 export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) {
-    const { projects, addClassBoardPost } = useAppStore();
+    const { addClassBoardPost } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
     const [isExpanded, setIsExpanded] = useState(false);
@@ -25,6 +27,15 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
     const [extraMaterials, setExtraMaterials] = useState("");
     const [customPhoto, setCustomPhoto] = useState("");
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [projects, setProjects] = useState<Project[]>([]);
+
+    useEffect(() => {
+        async function fetchProj() {
+            const data = await getProjects();
+            setProjects(data || []);
+        }
+        fetchProj();
+    }, []);
 
     const isTeacherOrAdmin = currentUser?.role === "teacher" || currentUser?.role === "director" || currentUser?.role === "admin";
 

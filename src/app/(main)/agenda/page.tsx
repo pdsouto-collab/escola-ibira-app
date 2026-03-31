@@ -19,8 +19,10 @@ import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { getClasses } from "@/services/school-class.service";
 import { getStudents } from "@/services/student.service";
+import { getProjects } from "@/services/project.service";
 import { Student } from "@/types/student";
 import { SchoolClass } from "@/types/school-class";
+import { Project } from "@/types/project";
 
 import {
     DropdownMenu,
@@ -37,6 +39,7 @@ export default function AgendaPage() {
 
     const [classes, setClasses] = useState<SchoolClass[]>([]);
     const [students, setStudents] = useState<Student[]>([]);
+    const [projects, setProjects] = useState<Project[]>([]);
     const [isLoadingData, setIsLoadingData] = useState(true);
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
@@ -56,12 +59,14 @@ export default function AgendaPage() {
     async function fetchData() {
         setIsLoadingData(true);
         try {
-            const [classesData, studentsData] = await Promise.all([
+            const [classesData, studentsData, projectsData] = await Promise.all([
                 getClasses(),
-                getStudents()
+                getStudents(),
+                getProjects()
             ]);
             setClasses(classesData);
             setStudents(studentsData);
+            setProjects(projectsData);
         } catch (error) {
             console.error("Erro ao carregar dados:", error);
         } finally {
@@ -334,6 +339,7 @@ export default function AgendaPage() {
                 item={editingItem}
                 classes={classes}
                 students={students}
+                projects={projects}
                 onSave={handleSave}
             />
 
@@ -342,9 +348,9 @@ export default function AgendaPage() {
                 onOpenChange={setIsBulkDialogOpen}
                 classes={classes}
                 students={students}
+                projects={projects}
                 onSave={handleBulkSave}
             />
-
 
             <RoutineManagerDialog
                 open={isManagerDialogOpen}
@@ -352,6 +358,7 @@ export default function AgendaPage() {
                 schedule={schedule}
                 classes={classes}
                 students={students}
+                projects={projects}
                 onDeleteRoutine={handleDeleteRoutine}
                 onEditRoutine={handleEditRoutine}
                 onDeleteProjectSessions={(projectId) => {

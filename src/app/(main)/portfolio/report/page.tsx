@@ -22,6 +22,8 @@ import type { PortfolioEntry } from "@/types/portfolio-entry";
 import { LibraryItem } from "@/types/library-item";
 import { getListBncc } from "@/services/bncc.service";
 import { getPortfolioEntries } from "@/services/portfolio.service";
+import { Project } from "@/types/project";
+import { getProjects } from "@/services/project.service";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Node Resolvers
@@ -157,12 +159,14 @@ function ReportCard({
     dateRange?: { start: string; end: string };
     period?: string | null;
 }) {
-    const { projects, assessments, schedule, skillsTree, contentsTree, dailyLogs } = useAppStore();
+    const { assessments, schedule, skillsTree, contentsTree, dailyLogs } = useAppStore();
     const [classes, setClasses] = useState<SchoolClass[]>([]);
     const [students, setStudents] = useState<Student[]>([]);
+    const [projects, setProjects] = useState<Project[]>([]);
     const [portfolioEntries, setPortfolioEntries] = useState<PortfolioEntry[]>([]);
     const [isLoadingClasses, setIsLoadingClasses] = useState(true);
     const [isLoadingStudents, setIsLoadingStudents] = useState(true);
+    const [isLoadingProjects, setIsLoadingProjects] = useState(true);
     const [isLoadingPortfolio, setIsLoadingPortfolio] = useState(true);
     const [selectedEntry, setSelectedEntry] = useState<PortfolioEntry | null>(null);
 
@@ -192,10 +196,22 @@ function ReportCard({
         }
     }
 
+    async function fetchProjects() {
+        try {
+            const data = await getProjects();
+            setProjects(data || []);
+        } catch (error) {
+            console.error("Erro ao buscar projetos:", error);
+        } finally {
+            setIsLoadingProjects(false);
+        }
+    }
+
     useEffect(() => {
         getListaBNCC();
         fetchClasses();
         fetchStudents();
+        fetchProjects();
         setIsLoadingPortfolio(true);
         getPortfolioEntries(studentId).then(setPortfolioEntries).catch(console.error).finally(() => setIsLoadingPortfolio(false));
     }, [studentId])
@@ -209,7 +225,7 @@ function ReportCard({
         return <div className="text-center py-20 text-slate-400">Aluno não encontrado.</div>;
     }
 
-    if (isLoadingClasses || isLoadingStudents || isLoadingPortfolio) {
+    if (isLoadingClasses || isLoadingStudents || isLoadingProjects || isLoadingPortfolio) {
         return <div className="text-center py-20 text-slate-400 italic">Carregando dados...</div>;
     }
     const cls = classes.find(c => c.id === student.classId);

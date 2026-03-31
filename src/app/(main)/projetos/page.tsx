@@ -16,10 +16,13 @@ import { Edit, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { getClasses } from "@/services/school-class.service";
 import { SchoolClass } from "@/types/school-class";
+import { Project } from "@/types/project";
+import { getProjects, deleteProject } from "@/services/project.service";
+import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export default function ProjectsPage() {
-    const { projects, removeProject } = useAppStore();
+    const [projects, setProjects] = useState<Project[]>([]);
     const [classes, setClasses] = useState<SchoolClass[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
@@ -27,29 +30,48 @@ export default function ProjectsPage() {
     const [activeTab, setActiveTab] = useState("active");
     const [confirmDeleteProject, setConfirmDeleteProject] = useState<{ id: string; title: string } | null>(null);
 
-    async function fetchClasses() {
+    async function fetchData() {
         try {
-            const data = await getClasses();
-            setClasses(data);
+            const [classesData, projectsData] = await Promise.all([
+                getClasses(),
+                getProjects()
+            ]);
+            setClasses(classesData);
+            setProjects(projectsData);
         } catch (error) {
-            console.error("Erro ao buscar turmas:", error);
+            console.error("Erro ao buscar dados:", error);
+            toast.error("Não foi possível carregar os projetos.");
         } finally {
             setIsLoading(false);
         }
     }
 
     useEffect(() => {
-        fetchClasses();
+        fetchData();
     }, []);
 
     const handleDelete = (id: string, title: string) => {
         setConfirmDeleteProject({ id, title });
     };
 
-    const confirmDeleteAction = () => {
+    const confirmDeleteAction = async () => {
         if (confirmDeleteProject) {
-            removeProject(confirmDeleteProject.id);
-            setConfirmDeleteProject(null);
+            try {
+                // Optimistic update
+                setProjects(prev => prev.filter(p => p.id !== confirmDeleteProject.id));
+                const deletePromise = deleteProject(confirmDeleteProject.id);
+                toast.promise(deletePromise, {
+                    loading: 'Excluindo projeto...',
+                    success: 'Projeto excluído com sucesso!',
+                    error: 'Falha ao excluir o projeto.',
+                });
+                await deletePromise;
+            } catch (err) {
+                // Revert optimistic update ideally, but a full refresh handles it
+                fetchData();
+            } finally {
+                setConfirmDeleteProject(null);
+            }
         }
     };
 

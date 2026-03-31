@@ -11,7 +11,7 @@ import { studentsDataSeed } from "@/lib/seed/students-seed"
 import { muralEventsDataSeed, muralCommentsDataSeed } from "@/lib/seed/mural-seed"
 import { pegadasDataSeed, pegadasInteractionsDataSeed } from "@/lib/seed/pegadas-seed"
 import { portfolioDataSeed } from "@/lib/seed/portfolio-seed"
-
+import { projectsDataSeed } from "@/lib/seed/projects-seed"
 const prisma = new PrismaClient()
 
 async function main() {
@@ -30,6 +30,7 @@ async function main() {
   await prisma.bncc.deleteMany()
   await prisma.pegadaInteraction.deleteMany()
   await prisma.pegadaPost.deleteMany()
+  await prisma.project.deleteMany()
 
   // BNCC
   console.log("Importando BNCC...")
@@ -111,6 +112,13 @@ async function main() {
   console.log("Importando Portfolio Entries...")
   await prisma.portfolioEntry.createMany({
     data: portfolioDataSeed,
+    skipDuplicates: true
+  })
+
+  // Projects
+  console.log("Importando Projetos...")
+  await prisma.project.createMany({
+    data: projectsDataSeed as any,
     skipDuplicates: true
   })
 

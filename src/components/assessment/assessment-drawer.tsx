@@ -16,8 +16,8 @@ import { Camera, FileUp, X, Users, User, Trash2, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-
-
+import { getProjects } from "@/services/project.service";
+import { Project } from "@/types/project";
 import { Student } from "@/types/student";
 
 interface AssessmentDrawerProps {
@@ -59,12 +59,13 @@ export function AssessmentDrawer({
     initialObservations,
     initialAttachments,
 }: AssessmentDrawerProps) {
-    const { projects, schedule, addAssessment, updateAssessment, removeAssessment, assessments } = useAppStore();
+    const { schedule, addAssessment, updateAssessment, removeAssessment, assessments } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
 
     const [classes, setClasses] = useState<SchoolClass[]>([]);
     const [isLoadingClasses, setIsLoadingClasses] = useState(true);
+    const [projects, setProjects] = useState<Project[]>([]);
 
     const [activeAssessmentId, setActiveAssessmentId] = useState<string | undefined>(assessmentId);
 
@@ -174,15 +175,21 @@ export function AssessmentDrawer({
     const canSave = (observations.trim().length > 0 || rating !== undefined) && (hasContext || (!!propKnowledgeNodeId && !!selectedProjectId));
     const isFixedContext = !!propSessionId || !!propRoutineId || !!propKnowledgeNodeId;
 
-    async function fetchClasses() {
+    async function fetchClassesAndProjects() {
         try {
-            const data = await getClasses();
-            setClasses(data);
-            if (!classId && !defaultClassId && data.length > 0) {
-                setClassId(data[0].id);
+            const [classesData, projectsData] = await Promise.all([
+                getClasses(),
+                getProjects()
+            ]);
+            setClasses(classesData);
+            if (projectsData) {
+                setProjects(projectsData);
+            }
+            if (!classId && !defaultClassId && classesData.length > 0) {
+                setClassId(classesData[0].id);
             }
         } catch (error) {
-            console.error("Erro ao carregar turmas", error);
+            console.error("Erro ao carregar dados complementares", error);
         } finally {
             setIsLoadingClasses(false);
         }
@@ -190,7 +197,7 @@ export function AssessmentDrawer({
 
     useEffect(() => {
         if (open) {
-            fetchClasses();
+            fetchClassesAndProjects();
         }
     }, [open, defaultClassId, classId]);
 

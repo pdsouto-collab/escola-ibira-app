@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAppStore } from "@/lib/store";
-import { KnowledgeNode, Project } from "@/lib/data";
+import { KnowledgeNode } from "@/lib/data";
+import { Project } from "@/types/project";
+import { getProjects } from "@/services/project.service";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -34,7 +36,12 @@ function getMicroNodes(node: KnowledgeNode): KnowledgeNode[] {
 }
 
 export function MosaicGrid({ classId, projectId, students, treeType = "skill" }: MosaicGridProps) {
-    const { projects, bnccProgress, updateBNCCStatus, skillsTree, contentsTree } = useAppStore();
+    const { bnccProgress, updateBNCCStatus, skillsTree, contentsTree } = useAppStore();
+    const [projects, setProjects] = useState<Project[]>([]);
+
+    useEffect(() => {
+        getProjects().then((data: Project[]) => setProjects(data || []));
+    }, []);
     const [selectedNode, setSelectedNode] = useState<KnowledgeNode | null>(null);
     const [comment, setComment] = useState("");
     const [automationConfig, setAutomationConfig] = useState<{ status: "not-started" | "in-progress" | "achieved", node: KnowledgeNode } | null>(null);

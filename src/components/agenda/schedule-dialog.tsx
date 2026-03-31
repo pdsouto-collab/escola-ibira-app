@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ScheduleItem, Project } from "@/lib/data";
+import { ScheduleItem } from "@/lib/data";
+import { Project } from "@/types/project";
 import { SchoolClass } from "@/types/school-class";
 import { Student } from "@/types/student";
 import { useAppStore } from "@/lib/store";
@@ -33,6 +34,7 @@ interface ScheduleDialogProps {
     item?: ScheduleItem | null;
     classes: SchoolClass[];
     students: Student[];
+    projects: Project[];
     onSave: (item: ScheduleItem) => void;
 }
 
@@ -44,8 +46,7 @@ const emptyItem: Omit<ScheduleItem, "id"> = {
     projectId: undefined
 };
 
-export function ScheduleDialog({ open, onOpenChange, item, classes, students, onSave }: ScheduleDialogProps) {
-    const { projects } = useAppStore();
+export function ScheduleDialog({ open, onOpenChange, item, classes, students, projects, onSave }: ScheduleDialogProps) {
     const { data: session } = useSession();
     const currentUser = session?.user as any;
     const [formData, setFormData] = useState<Partial<ScheduleItem>>(item ? { ...item } : emptyItem);
@@ -82,7 +83,7 @@ export function ScheduleDialog({ open, onOpenChange, item, classes, students, on
         const classId = formData.classId;
         if (classId) {
             const hasWholeClass = project.classes?.includes(classId);
-            const hasAnyStudentInClass = project.students.some(sId => {
+            const hasAnyStudentInClass = project.students.some((sId: string) => {
                 const s = students.find(st => st.id === sId);
                 return s?.classId === classId;
             });

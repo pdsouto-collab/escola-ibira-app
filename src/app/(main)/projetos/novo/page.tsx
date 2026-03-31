@@ -9,13 +9,17 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Check, ChevronLeft, Plus, Search, Calendar, Clock, Users, Target, BookOpen, Layers, Trash2, PartyPopper, CalendarRange, Pencil, X, Upload, ImagePlus } from "lucide-react";
+import { Check, ChevronLeft, Plus, Search, Calendar, Clock, Users, Target, BookOpen, Layers, Trash2, PartyPopper, CalendarRange, Pencil, X, Upload, ImagePlus, Loader2 } from "lucide-react";
 import { format } from "date-fns";
+import { useSession } from "next-auth/react";
 import { BulkSessionDialog } from "@/components/projetos/bulk-session-dialog";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAppStore } from "@/lib/store";
-import { Project, ScheduleItem, KnowledgeNode, SEMESTERS, YEARS } from "@/lib/data";
+import { ScheduleItem, KnowledgeNode, SEMESTERS, YEARS } from "@/lib/data";
+import { Project } from "@/types/project";
+import { createProject, updateProject, getProjectById } from "@/services/project.service";
+import { toast } from "sonner";
 import { SchoolClass } from "@/types/school-class";
 import { getClasses } from "@/services/school-class.service";
 import { getStudents } from "@/services/student.service";
@@ -28,17 +32,17 @@ function NewProjectWizardContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const editId = searchParams.get("edit");
+    const { data: session } = useSession();
+    const currentUser = session?.user as any;
 
     // Store
     const {
-        addProject,
-        updateProject,
-        projects,
         schedule,
         updateSchedule,
         finalProductTypes,
         skillsTree,
-        contentsTree
+        contentsTree,
+        addNotification
     } = useAppStore();
 
     const [classes, setClasses] = useState<SchoolClass[]>([]);
@@ -46,6 +50,7 @@ function NewProjectWizardContent() {
     const [isLoadingClasses, setIsLoadingClasses] = useState(true);
 
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
+    const [isLoadingProject, setIsLoadingProject] = useState(!!editId);
 
     async function fetchClassesAndStudents() {
         try {
@@ -108,6 +113,7 @@ function NewProjectWizardContent() {
     const [bulkSessionOpen, setBulkSessionOpen] = useState(false);
     const [editingSessionIdx, setEditingSessionIdx] = useState<number | null>(null);
     const [editingSessionData, setEditingSessionData] = useState<Partial<typeof newSession>>({})
+    const [isSaving, setIsSaving] = useState(false);
     const [gradeFilterBNCC, setGradeFilterBNCC] = useState<string>("all");
     const [gradeFilterCompetencias, setGradeFilterCompetencias] = useState<string>("all");
     const [searchTermBNCC, setSearchTermBNCC] = useState("");
@@ -167,42 +173,50 @@ function NewProjectWizardContent() {
     scheduleRef.current = schedule;
 
     useEffect(() => {
-        if (editId && projects.length > 0) {
-            const projectToEdit = projects.find(p => p.id === editId);
-            if (projectToEdit) {
-                setIsEditMode(true);
-                const projectItems = scheduleRef.current.filter(s => s.projectId === editId);
-                const seen = new Set<string>();
-                const uniqueItems = projectItems.filter(item => {
-                    const key = `${item.date}|${item.time}|${item.title}`;
-                    if (seen.has(key)) return false;
-                    seen.add(key);
-                    return true;
-                });
-                setFormData({
-                    isTemplate: projectToEdit.status === "planning" ? "create_template" : "start_immediately",
-                    title: projectToEdit.title,
-                    type: projectToEdit.type || "Project",
-                    guidingQuestion: projectToEdit.guidingQuestion || "",
-                    summary: projectToEdit.summary || "",
-                    objectives: projectToEdit.objectives || "",
-                    finalProduct: projectToEdit.finalProduct || "None",
-                    period: projectToEdit.period || "",
-                    description: projectToEdit.description,
-                    classes: projectToEdit.classes || [],
-                    students: projectToEdit.students || [],
-                    teachers: [],
-                    bnccSkills: projectToEdit.bnccSkillIds || [],
-                    customContent: projectToEdit.contentIds || [],
-                    projectSchedule: uniqueItems.map(item => ({ ...item })),
-                    imageUrl: projectToEdit.imageUrl || ""
-                });
-            }
+        if (editId) {
+            setIsLoadingProject(true);
+            getProjectById(editId).then(projectToEdit => {
+                if (projectToEdit) {
+                    setIsEditMode(true);
+                    const projectItems = scheduleRef.current.filter(s => s.projectId === editId);
+                    const seen = new Set<string>();
+                    const uniqueItems = projectItems.filter(item => {
+                        const key = `${item.date}|${item.time}|${item.title}`;
+                        if (seen.has(key)) return false;
+                        seen.add(key);
+                        return true;
+                    });
+                    setFormData({
+                        isTemplate: projectToEdit.status === "planning" ? "create_template" : "start_immediately",
+                        title: projectToEdit.title,
+                        type: projectToEdit.type || "Project",
+                        guidingQuestion: projectToEdit.guidingQuestion || "",
+                        summary: projectToEdit.summary || "",
+                        objectives: projectToEdit.objectives || "",
+                        finalProduct: projectToEdit.finalProduct || "None",
+                        period: projectToEdit.period || "",
+                        description: projectToEdit.description || "",
+                        classes: projectToEdit.classes || [],
+                        students: projectToEdit.students || [],
+                        teachers: [],
+                        bnccSkills: projectToEdit.bnccSkillIds || [],
+                        customContent: projectToEdit.contentIds || [],
+                        projectSchedule: uniqueItems.map(item => ({ ...item })),
+                        imageUrl: projectToEdit.imageUrl || ""
+                    });
+                }
+            }).catch(err => {
+                toast.error("Erro ao carregar dados do projeto.");
+                console.error(err);
+            }).finally(() => {
+                setIsLoadingProject(false);
+            });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [editId, projects]);
+    }, [editId]);
 
-    const handleSaveAndComplete = () => {
+    const handleSaveAndComplete = async () => {
+        setIsSaving(true);
         const newStatus = formData.isTemplate === "create_template" ? "planning" : "active";
 
         const projectData: Project = {
@@ -225,21 +239,50 @@ function NewProjectWizardContent() {
             imageUrl: formData.imageUrl
         };
 
-        if (isEditMode) {
-            updateProject(projectId, projectData);
-        } else {
-            addProject(projectData);
-        }
+        try {
+            if (isEditMode) {
+                await updateProject(projectId, projectData);
+                toast.success("Projeto atualizado com sucesso!");
+                if (projectData.status !== "planning" && formData.isTemplate !== "create_template") {
+                    addNotification({
+                        id: Math.random().toString(36).substr(2, 9),
+                        userId: currentUser?.id,
+                        title: "Projeto Atualizado",
+                        message: `O projeto "${formData.title}" foi modificado.`,
+                        type: "info",
+                        isRead: false,
+                        createdAt: new Date().toISOString()
+                    });
+                }
+            } else {
+                await createProject(projectData);
+                toast.success("Projeto criado com sucesso!");
+                addNotification({
+                    id: Math.random().toString(36).substr(2, 9),
+                    userId: currentUser?.id,
+                    title: "Novo Projeto",
+                    message: `O projeto "${formData.title}" foi criado e está pronto.`,
+                    type: "success",
+                    isRead: false,
+                    createdAt: new Date().toISOString()
+                });
+            }
 
-        if (formData.projectSchedule.length > 0) {
-            // Re-sync store in case classes changed after sessions were added
-            persistSessionsToStore(formData.projectSchedule);
-        }
+            if (formData.projectSchedule.length > 0) {
+                // Re-sync store in case classes changed after sessions were added
+                persistSessionsToStore(formData.projectSchedule);
+            }
 
-        setCurrentStep(5);
+            setCurrentStep(5);
+        } catch (err) {
+            toast.error("Erro ao salvar o projeto.");
+        } finally {
+            setIsSaving(false);
+        }
     };
 
-    const handleSaveDraft = () => {
+    const handleSaveDraft = async () => {
+        setIsSaving(true);
         const projectData: Project = {
             id: projectId,
             title: formData.title || "(Projeto sem título)",
@@ -260,17 +303,23 @@ function NewProjectWizardContent() {
             imageUrl: formData.imageUrl
         };
 
-        if (isEditMode) {
-            updateProject(projectId, projectData);
-        } else {
-            addProject(projectData);
-        }
+        try {
+            if (isEditMode) {
+                await updateProject(projectId, projectData);
+            } else {
+                await createProject(projectData);
+            }
 
-        if (formData.projectSchedule.length > 0) {
-            persistSessionsToStore(formData.projectSchedule);
+            if (formData.projectSchedule.length > 0) {
+                persistSessionsToStore(formData.projectSchedule);
+            }
+            toast.success("Rascunho salvo com sucesso!");
+            router.push("/projetos");
+        } catch (err) {
+            toast.error("Erro ao salvar rascunho.");
+        } finally {
+            setIsSaving(false);
         }
-
-        router.push("/projetos");
     };
 
     const handleLocalImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -305,6 +354,16 @@ function NewProjectWizardContent() {
         }
     };
 
+    if (isLoadingProject) {
+        return (
+            <div className="flex flex-col items-center justify-center p-20 min-h-[500px]">
+                <Loader2 className="w-10 h-10 text-indigo-600 animate-spin mb-4" />
+                <h3 className="text-xl font-medium text-slate-700">Carregando projeto...</h3>
+                <p className="text-slate-500 mt-2 text-sm">Buscando os detalhes do projeto selecionado.</p>
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-col h-full bg-slate-50/50">
             {/* Header */}
@@ -330,8 +389,9 @@ function NewProjectWizardContent() {
                             variant="outline"
                             className="text-slate-600 border-slate-200 hover:bg-slate-50"
                             onClick={handleSaveDraft}
+                            disabled={isSaving}
                         >
-                            Salvar Rascunho
+                            {isSaving ? "Salvando..." : "Salvar Rascunho"}
                         </Button>
                         <Link href="/projetos">
                             <Button variant="ghost" className="text-slate-400 hover:text-slate-600">Cancelar</Button>
@@ -526,7 +586,7 @@ function NewProjectWizardContent() {
                             </div>
 
                             <div className="flex justify-end pt-8 mt-8 border-t">
-                                <Button onClick={() => setCurrentStep(2)} disabled={!formData.title}>Continuar</Button>
+                                <Button onClick={() => setCurrentStep(2)} disabled={!formData.title || isSaving}>{isSaving ? "Salvando..." : "Continuar"}</Button>
                             </div>
                         </div>
                     )}

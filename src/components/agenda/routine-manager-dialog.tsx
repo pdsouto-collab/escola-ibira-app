@@ -26,9 +26,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useAppStore } from "@/lib/store";
 import { format } from "date-fns";
 import { Trash2, Edit, CalendarDays, Clock, Users, FolderKanban } from "lucide-react";
+import { Project } from "@/types/project";
 
 const DAYS = [
     { label: "Dom", value: 0 },
@@ -58,6 +58,7 @@ interface RoutineManagerDialogProps {
     schedule: ScheduleItem[];
     classes: SchoolClass[];
     students: Student[];
+    projects: Project[];
     onDeleteRoutine: (routineId: string) => void;
     onEditRoutine: (routineId: string, exampleItem: ScheduleItem) => void;
     onDeleteProjectSessions?: (projectId: string) => void;
@@ -76,19 +77,8 @@ interface RoutineGroup {
     kind: "routine" | "project";
 }
 
-export function RoutineManagerDialog({
-    open,
-    onOpenChange,
-    schedule,
-    classes,
-    onDeleteRoutine,
-    onEditRoutine,
-    onDeleteProjectSessions,
-    onEditProjectSessionsBulk,
-    students,
-}: RoutineManagerDialogProps) {
+export function RoutineManagerDialog({ open, onOpenChange, schedule, classes, students, projects, onDeleteRoutine, onEditRoutine, onDeleteProjectSessions, onEditProjectSessionsBulk }: RoutineManagerDialogProps) {
 
-    const { projects } = useAppStore();
     const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
     const [editConfig, setEditConfig] = useState<ProjectSessionBulkEdit>({
         title: "", description: "", time: "08:00", endTime: "09:00",
@@ -197,8 +187,8 @@ export function RoutineManagerDialog({
         if (editConfig.projectId && value !== "all") {
              const project = projects.find(p => p.id === editConfig.projectId);
              if (project) {
-                 const hasWholeClass = project.classes?.includes(value);
-                 const hasAnyStudentInClass = project.students.some(sId => {
+                 const hasWholeClass = project.classes?.includes(editConfig.classId || "");
+                 const hasAnyStudentInClass = project.students.some((sId: string) => {
                      const s = students.find(st => st.id === sId);
                      return s?.classId === value;
                  });
@@ -375,7 +365,7 @@ export function RoutineManagerDialog({
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="none">Nenhum (Atividade Avulsa)</SelectItem>
-                                    {projects.map((p: import("@/lib/data").Project) => (
+                                    {projects.map((p: Project) => (
                                         <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>
                                     ))}
                                 </SelectContent>

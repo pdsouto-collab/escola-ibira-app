@@ -21,6 +21,8 @@ import { getClasses } from "@/services/school-class.service";
 import { getStudents } from "@/services/student.service";
 import { SchoolClass } from "@/types/school-class";
 import { Student } from "@/types/student";
+import { Project } from "@/types/project";
+import { getProjects } from "@/services/project.service";
 
 // ────────────────────────────────────────────
 // Helper: find node name recursively
@@ -238,7 +240,7 @@ function ProjectView({
     projectFilter, allProjects, assessments, schedule, students, classes, skillsTree, contentsTree, libraryItems, onAvaliacao, onEdit
 }: {
     projectFilter: string;
-    allProjects: ReturnType<typeof useAppStore>["projects"];
+    allProjects: Project[];
     assessments: Assessment[];
     schedule: ReturnType<typeof useAppStore>["schedule"];
     students: Student[];
@@ -463,7 +465,7 @@ function StudentView({
     assessments: Assessment[];
     students: Student[];
     classes: SchoolClass[];
-    projects: ReturnType<typeof useAppStore>["projects"];
+    projects: Project[];
     schedule: ReturnType<typeof useAppStore>["schedule"];
     skillsTree: ReturnType<typeof useAppStore>["skillsTree"];
     contentsTree: ReturnType<typeof useAppStore>["contentsTree"];
@@ -806,7 +808,8 @@ function StudentView({
 // Main Portfolio Page
 // ────────────────────────────────────────────
 function PortfolioContent() {
-    const { assessments, projects: allProjects, schedule, skillsTree, contentsTree } = useAppStore();
+    const { assessments, schedule, skillsTree, contentsTree } = useAppStore();
+    const [allProjects, setAllProjects] = useState<Project[]>([]);
     const [classes, setClasses] = useState<SchoolClass[]>([]);
     const [students, setStudents] = useState<Student[]>([]);
     const [isLoadingClasses, setIsLoadingClasses] = useState(true);
@@ -835,6 +838,15 @@ function PortfolioContent() {
         }
     }
 
+    async function fetchProjects() {
+        try {
+            const data = await getProjects();
+            setAllProjects(data || []);
+        } catch (error) {
+            console.error("Erro ao buscar projetos:", error);
+        }
+    }
+
     async function fetchStudents() {
         try {
             const data = await getStudents();
@@ -849,6 +861,7 @@ function PortfolioContent() {
     useEffect(() => {
         fetchClasses();
         fetchStudents();
+        fetchProjects();
         getListaBNCC();
     }, []);
 
