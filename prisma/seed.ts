@@ -15,6 +15,7 @@ import { projectsDataSeed } from "@/lib/seed/projects-seed"
 import { scheduleDataSeed } from "../src/lib/seed/schedule-seed"
 import { notificationsDataSeed } from "@/lib/seed/notifications"
 import { tasksDataSeed } from "@/lib/seed/tasks.seed"
+import { invoicesDataSeed } from "@/lib/seed/invoices-seed"
 const prisma = new PrismaClient()
 
 async function main() {
@@ -28,6 +29,7 @@ async function main() {
   await prisma.notification.deleteMany()
   await prisma.task.deleteMany()
   await prisma.scheduleItem.deleteMany()
+  await prisma.invoice.deleteMany()
   await prisma.student.deleteMany()
   await prisma.schoolClass.deleteMany()
   await prisma.session.deleteMany()
@@ -150,6 +152,13 @@ async function main() {
   console.log("Importando Tarefas Globais...")
   await prisma.task.createMany({
     data: tasksDataSeed as any,
+    skipDuplicates: true
+  })
+
+  // Faturas/Invoices
+  console.log("Importando Faturas...")
+  await prisma.invoice.createMany({
+    data: invoicesDataSeed as any,
     skipDuplicates: true
   })
 

@@ -278,3 +278,22 @@ model Task {
   updatedAt DateTime @updatedAt
 }
 
+/// Finanças e Faturas
+model Invoice {
+  id            String   @id @default(cuid())
+  studentId     String
+  description   String
+  amount        Float
+  dueDate       String
+  status        String   @default("pendente")
+  paymentDate   String?
+  paymentMethod String?
+  bankId        String?
+  barcode       String?
+  pixCode       String?
+  pdfUrl        String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([studentId])
+}

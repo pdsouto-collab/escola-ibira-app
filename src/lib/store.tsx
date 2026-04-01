@@ -10,7 +10,6 @@ import {
     KnowledgeNode, mockSkillsTree, mockContentsTree,
     FinalProductType, mockFinalProductTypes,
     Assessment, mockAssessments, Menu, mockMenus,
-    Invoice, mockInvoices,
     ClassBoardPost, mockClassBoardPosts, PostInteraction, mockPostInteractions
 } from "@/lib/data";
 
@@ -24,7 +23,6 @@ interface AppState {
     finalProductTypes: FinalProductType[];
     assessments: Assessment[];
     menus: Menu[];
-    invoices: Invoice[];
     classBoardPosts: ClassBoardPost[];
     postInteractions: PostInteraction[];
 }
@@ -67,11 +65,6 @@ interface AppContextType extends AppState {
     updateAssessment: (id: string, updates: Partial<Assessment>) => void;
     removeAssessment: (id: string) => void;
 
-    // Finance / Invoices
-    addInvoice: (invoice: Invoice) => void;
-    updateInvoice: (id: string, updates: Partial<Invoice>) => void;
-    removeInvoice: (id: string) => void;
-
     // Class Board
     addClassBoardPost: (post: ClassBoardPost) => void;
     addPostInteraction: (interaction: PostInteraction) => void;
@@ -106,7 +99,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [finalProductTypes, setFinalProductTypes] = useState<FinalProductType[]>(mockFinalProductTypes);
     const [assessments, setAssessments] = useState<Assessment[]>(mockAssessments);
     const [menus, setMenus] = useState<Menu[]>(mockMenus);
-    const [invoices, setInvoices] = useState<Invoice[]>(mockInvoices);
     const [classBoardPosts, setClassBoardPosts] = useState<ClassBoardPost[]>(mockClassBoardPosts);
     const [postInteractions, setPostInteractions] = useState<PostInteraction[]>(mockPostInteractions);
 
@@ -156,7 +148,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             load("contentsTree", setContentsTree, mockContentsTree);
             load("menus", setMenus, mockMenus);
             load("assessments", setAssessments, mockAssessments);
-            load("invoices", setInvoices, mockInvoices);
             load("classBoardPosts", setClassBoardPosts, mockClassBoardPosts);
             load("postInteractions", setPostInteractions, mockPostInteractions);
         }
@@ -178,13 +169,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem("app_contentsTree", JSON.stringify(contentsTree));
             localStorage.setItem("app_menus", JSON.stringify(menus));
             localStorage.setItem("app_assessments", JSON.stringify(assessments));
-            localStorage.setItem("app_invoices", JSON.stringify(invoices));
             localStorage.setItem("app_classBoardPosts", JSON.stringify(classBoardPosts));
             localStorage.setItem("app_postInteractions", JSON.stringify(postInteractions));
         } catch (error) {
             console.error("Erro ao salvar no cache local. O limite de armazenamento pode ter sido atingido.", error);
         }
-    }, [dailyLogs, messages, mosaicData, bnccProgress, skillsTree, contentsTree, menus, assessments, invoices, classBoardPosts, postInteractions, isLoaded]);
+    }, [dailyLogs, messages, mosaicData, bnccProgress, skillsTree, contentsTree, menus, assessments, classBoardPosts, postInteractions, isLoaded]);
 
 
 
@@ -379,11 +369,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             addAssessment: (a) => setAssessments(prev => [...prev, a]),
             updateAssessment: (id, updates) => setAssessments(prev => prev.map(a => a.id === id ? { ...a, ...updates } : a)),
             removeAssessment: (id) => setAssessments(prev => prev.filter(a => a.id !== id)),
-
-            invoices,
-            addInvoice: (inv) => setInvoices(prev => [...prev, inv]),
-            updateInvoice: (id, updates) => setInvoices(prev => prev.map(inv => inv.id === id ? { ...inv, ...updates } : inv)),
-            removeInvoice: (id) => setInvoices(prev => prev.filter(inv => inv.id !== id)),
 
             classBoardPosts,
             postInteractions,

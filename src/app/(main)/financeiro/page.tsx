@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { getStudents } from "@/services/student.service";
+import { getInvoices, updateInvoice, deleteInvoice } from "@/services/invoice.service";
 import { Student } from "@/types/student";
+import { Invoice } from "@/types/invoice";
 import { toast } from "sonner";
-import { useAppStore } from "@/lib/store";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,25 +43,30 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export default function FinanceiroPage() {
-    const { invoices } = useAppStore();
+    const [invoices, setInvoices] = useState<Invoice[]>([]);
     const [students, setStudents] = useState<Student[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
 
-    async function fetchStudents() {
+    async function loadData() {
         setIsLoading(true);
         try {
-            const data = await getStudents();
-            setStudents(data);
+            const [studentsData, invoicesData] = await Promise.all([
+                getStudents(),
+                getInvoices()
+            ]);
+            setStudents(studentsData);
+            setInvoices(invoicesData);
         } catch (error) {
-            console.error("Erro ao buscar alunos:", error);
+            console.error("Erro ao carregar dados:", error);
+            toast.error("Erro ao carregar dados financeiros.");
         } finally {
             setIsLoading(false);
         }
     }
 
     useEffect(() => {
-        fetchStudents();
+        loadData();
     }, []);
 
     const totalPaid = invoices.filter(i => i.status === "pago").reduce((acc, curr) => acc + curr.amount, 0);
@@ -162,84 +168,105 @@ export default function FinanceiroPage() {
                     <CardTitle className="text-lg">Faturas / Boletos (Itaú API)</CardTitle>
                     <CardDescription>Acompanhe o status dos registros e pagamentos em tempo real</CardDescription>
                 </CardHeader>
-                <CardContent className="p-0 bg-white">
-                    <Table>
-                        <TableHeader className="bg-slate-50/50">
-                            <TableRow>
-                                <TableHead className="font-bold">Aluno</TableHead>
-                                <TableHead className="font-bold">Vencimento</TableHead>
-                                <TableHead className="font-bold">Descrição</TableHead>
-                                <TableHead className="font-bold text-right">Valor</TableHead>
-                                <TableHead className="font-bold text-center">Status</TableHead>
-                                <TableHead className="text-right">Ações</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {filteredInvoices.map((inv) => {
-                                const student = students.find(s => s.id === inv.studentId);
-                                return (
-                                    <TableRow key={inv.id} className="hover:bg-slate-50/50 transition-colors">
-                                        <TableCell className="font-medium text-slate-900">
-                                            {student?.name || "Aluno não encontrado"}
-                                        </TableCell>
-                                        <TableCell className="text-slate-600">
-                                            {new Date(inv.dueDate + "T12:00:00").toLocaleDateString('pt-BR')}
-                                        </TableCell>
-                                        <TableCell className="text-slate-600 max-w-[200px] truncate">
-                                            {inv.description}
-                                        </TableCell>
-                                        <TableCell className="text-right font-bold text-slate-900">
-                                            R$ {inv.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                            <Badge
-                                                className={
-                                                    inv.status === "pago" ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-none px-2.5 py-0.5" :
-                                                        inv.status === "pendente" ? "bg-amber-100 text-amber-700 hover:bg-amber-100 border-none px-2.5 py-0.5" :
-                                                            "bg-red-100 text-red-700 hover:bg-red-100 border-none px-2.5 py-0.5"
-                                                }
-                                            >
-                                                {inv.status.charAt(0).toUpperCase() + inv.status.slice(1)}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                        <MoreHorizontal className="h-4 w-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-56">
-                                                    <DropdownMenuLabel>Ações de Fatura</DropdownMenuLabel>
-                                                    <DropdownMenuItem className="cursor-pointer">
-                                                        <FileText className="mr-2 h-4 w-4" /> Ver PDF do Boleto
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem className="cursor-pointer">
-                                                        <QrCode className="mr-2 h-4 w-4" /> Copiar PIX / Linha
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem
-                                                        className="text-indigo-600 focus:text-indigo-600 focus:bg-indigo-50 cursor-pointer"
-                                                        onClick={() => toast.info(`Sincronizando fatura ${inv.id} com Itaú API...`)}
-                                                    >
-                                                        <TrendingUp className="mr-2 h-4 w-4" /> Sincronizar com Itaú
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem className="text-red-500 focus:text-red-500 focus:bg-red-50 cursor-pointer">
-                                                        Cancelar Fatura
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })}
-                        </TableBody>
-                    </Table>
-                    {filteredInvoices.length === 0 && (
-                        <div className="py-20 text-center text-slate-500">
-                            Nenhuma fatura encontrada com os filtros atuais.
+                <CardContent className="p-0 bg-white min-h-[400px]">
+                    {isLoading ? (
+                        <div className="flex flex-col items-center justify-center py-20 text-slate-500">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mb-4"></div>
+                            <p>Carregando dados financeiros...</p>
                         </div>
+                    ) : (
+                        <>
+                            <Table>
+                                <TableHeader className="bg-slate-50/50">
+                                    <TableRow>
+                                        <TableHead className="font-bold">Aluno</TableHead>
+                                        <TableHead className="font-bold">Vencimento</TableHead>
+                                        <TableHead className="font-bold">Descrição</TableHead>
+                                        <TableHead className="font-bold text-right">Valor</TableHead>
+                                        <TableHead className="font-bold text-center">Status</TableHead>
+                                        <TableHead className="text-right">Ações</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {filteredInvoices.map((inv) => {
+                                        const student = students.find(s => s.id === inv.studentId);
+                                        return (
+                                            <TableRow key={inv.id} className="hover:bg-slate-50/50 transition-colors">
+                                                <TableCell className="font-medium text-slate-900">
+                                                    {student?.name || "Aluno não encontrado"}
+                                                </TableCell>
+                                                <TableCell className="text-slate-600">
+                                                    {new Date(inv.dueDate + "T12:00:00").toLocaleDateString('pt-BR')}
+                                                </TableCell>
+                                                <TableCell className="text-slate-600 max-w-[200px] truncate">
+                                                    {inv.description}
+                                                </TableCell>
+                                                <TableCell className="text-right font-bold text-slate-900">
+                                                    R$ {inv.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <Badge
+                                                        className={
+                                                            inv.status === "pago" ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-none px-2.5 py-0.5" :
+                                                                inv.status === "pendente" ? "bg-amber-100 text-amber-700 hover:bg-amber-100 border-none px-2.5 py-0.5" :
+                                                                    "bg-red-100 text-red-700 hover:bg-red-100 border-none px-2.5 py-0.5"
+                                                        }
+                                                    >
+                                                        {inv.status.charAt(0).toUpperCase() + inv.status.slice(1)}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                                <MoreHorizontal className="h-4 w-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end" className="w-56">
+                                                            <DropdownMenuLabel>Ações de Fatura</DropdownMenuLabel>
+                                                            <DropdownMenuItem className="cursor-pointer">
+                                                                <FileText className="mr-2 h-4 w-4" /> Ver PDF do Boleto
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem className="cursor-pointer">
+                                                                <QrCode className="mr-2 h-4 w-4" /> Copiar PIX / Linha
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem
+                                                                className="text-indigo-600 focus:text-indigo-600 focus:bg-indigo-50 cursor-pointer"
+                                                                onClick={() => toast.info(`Sincronizando fatura ${inv.id} com Itaú API...`)}
+                                                            >
+                                                                <TrendingUp className="mr-2 h-4 w-4" /> Sincronizar com Itaú
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem 
+                                                                className="text-red-500 focus:text-red-500 focus:bg-red-50 cursor-pointer"
+                                                                onClick={async () => {
+                                                                    try {
+                                                                        toast.info("Cancelando fatura...");
+                                                                        await updateInvoice(inv.id, { status: "cancelado" });
+                                                                        toast.success("Fatura cancelada com sucesso!");
+                                                                        loadData();
+                                                                    } catch (e) {
+                                                                        toast.error("Erro ao cancelar fatura.");
+                                                                    }
+                                                                }}
+                                                            >
+                                                                Cancelar Fatura
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                </TableBody>
+                            </Table>
+                            {filteredInvoices.length === 0 && (
+                                <div className="py-20 text-center text-slate-500">
+                                    Nenhuma fatura encontrada com os filtros atuais.
+                                </div>
+                            )}
+                        </>
                     )}
                 </CardContent>
             </Card>
