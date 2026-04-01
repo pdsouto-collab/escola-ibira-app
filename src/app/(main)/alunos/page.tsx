@@ -11,6 +11,7 @@ import { Student } from "@/types/student";
 import { SchoolClass } from "@/types/school-class";
 import { getClasses, createClass, updateClass, deleteClass } from "@/services/school-class.service";
 import { getStudents, createStudent, updateStudent, deleteStudent } from "@/services/student.service";
+import { NotificationService } from "@/services/notification.service";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
@@ -30,7 +31,6 @@ export default function StudentsPage() {
     const [isLoadingStudents, setIsLoadingStudents] = useState(true);
     const { data: session } = useSession();
     const currentUser = session?.user as any;
-    const { addNotification } = useAppStore();
 
     const [classes, setClasses] = useState<SchoolClass[]>([]);
     const [isLoadingClasses, setIsLoadingClasses] = useState(true);
@@ -137,26 +137,20 @@ export default function StudentsPage() {
             if (exists) {
                 await updateStudent(student.id, student);
                 toast.success("Aluno atualizado com sucesso");
-                addNotification({
-                    id: Math.random().toString(36).substr(2, 9),
+                await NotificationService.addNotification({
                     userId: currentUser?.id,
                     title: "Aluno Atualizado",
                     message: `O cadastro de "${student.name}" foi atualizado.`,
-                    type: "info",
-                    isRead: false,
-                    createdAt: new Date().toISOString()
+                    type: "info"
                 });
             } else {
                 await createStudent(student);
                 toast.success("Aluno criado com sucesso");
-                addNotification({
-                    id: Math.random().toString(36).substr(2, 9),
+                await NotificationService.addNotification({
                     userId: currentUser?.id,
                     title: "Novo Aluno",
                     message: `O aluno "${student.name}" foi matriculado com sucesso.`,
-                    type: "success",
-                    isRead: false,
-                    createdAt: new Date().toISOString()
+                    type: "success"
                 });
             }
             setIsStudentDialogOpen(false);

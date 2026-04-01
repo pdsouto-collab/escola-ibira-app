@@ -107,6 +107,17 @@ export function StudentDialog({ open, onOpenChange, student, classes, onSave }: 
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!formData.name?.trim()) {
+            toast.error("O Nome do aluno é obrigatório.");
+            return;
+        }
+
+        if (!formData.classId) {
+            toast.error("A seleção de Turma é obrigatória.");
+            return;
+        }
+
         // Calculate age from DOB if present
         let age = formData.age || 0;
         if (formData.dateOfBirth) {

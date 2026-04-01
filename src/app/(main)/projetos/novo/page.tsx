@@ -21,6 +21,7 @@ import { ScheduleItem } from "@/types/schedule";
 import { Project } from "@/types/project";
 import { createProject, updateProject, getProjectById } from "@/services/project.service";
 import { createSchedule as createScheduleService, deleteSchedule as deleteScheduleService, getSchedules } from "@/services/schedule.service";
+import { NotificationService } from "@/services/notification.service";
 import { toast } from "sonner";
 import { SchoolClass } from "@/types/school-class";
 import { getClasses } from "@/services/school-class.service";
@@ -40,8 +41,7 @@ function NewProjectWizardContent() {
     const {
         finalProductTypes,
         skillsTree,
-        contentsTree,
-        addNotification
+        contentsTree
     } = useAppStore();
     
     const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
@@ -258,27 +258,21 @@ function NewProjectWizardContent() {
                 await updateProject(projectId, projectData);
                 toast.success("Projeto atualizado com sucesso!");
                 if (projectData.status !== "planning" && formData.isTemplate !== "create_template") {
-                    addNotification({
-                        id: Math.random().toString(36).substr(2, 9),
+                    await NotificationService.addNotification({
                         userId: currentUser?.id,
                         title: "Projeto Atualizado",
                         message: `O projeto "${formData.title}" foi modificado.`,
-                        type: "info",
-                        isRead: false,
-                        createdAt: new Date().toISOString()
+                        type: "info"
                     });
                 }
             } else {
                 await createProject(projectData);
                 toast.success("Projeto criado com sucesso!");
-                addNotification({
-                    id: Math.random().toString(36).substr(2, 9),
+                await NotificationService.addNotification({
                     userId: currentUser?.id,
                     title: "Novo Projeto",
                     message: `O projeto "${formData.title}" foi criado e está pronto.`,
-                    type: "success",
-                    isRead: false,
-                    createdAt: new Date().toISOString()
+                    type: "success"
                 });
             }
 

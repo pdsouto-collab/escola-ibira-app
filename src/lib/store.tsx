@@ -11,7 +11,6 @@ import {
     FinalProductType, mockFinalProductTypes,
     Assessment, mockAssessments, Menu, mockMenus,
     Invoice, mockInvoices,
-    AppNotification, mockNotifications,
     ClassBoardPost, mockClassBoardPosts, PostInteraction, mockPostInteractions
 } from "@/lib/data";
 
@@ -27,7 +26,6 @@ interface AppState {
     assessments: Assessment[];
     menus: Menu[];
     invoices: Invoice[];
-    notifications: AppNotification[];
     classBoardPosts: ClassBoardPost[];
     postInteractions: PostInteraction[];
 }
@@ -79,11 +77,6 @@ interface AppContextType extends AppState {
     updateInvoice: (id: string, updates: Partial<Invoice>) => void;
     removeInvoice: (id: string) => void;
 
-    // Notifications
-    addNotification: (notification: AppNotification) => void;
-    markNotificationAsRead: (id: string) => void;
-    markAllNotificationsAsRead: () => void;
-
     // Class Board
     addClassBoardPost: (post: ClassBoardPost) => void;
     addPostInteraction: (interaction: PostInteraction) => void;
@@ -126,7 +119,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [assessments, setAssessments] = useState<Assessment[]>(mockAssessments);
     const [menus, setMenus] = useState<Menu[]>(mockMenus);
     const [invoices, setInvoices] = useState<Invoice[]>(mockInvoices);
-    const [notifications, setNotifications] = useState<AppNotification[]>(mockNotifications);
     const [classBoardPosts, setClassBoardPosts] = useState<ClassBoardPost[]>(mockClassBoardPosts);
     const [postInteractions, setPostInteractions] = useState<PostInteraction[]>(mockPostInteractions);
 
@@ -178,7 +170,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             load("menus", setMenus, mockMenus);
             load("assessments", setAssessments, mockAssessments);
             load("invoices", setInvoices, mockInvoices);
-            load("notifications", setNotifications, mockNotifications);
             load("classBoardPosts", setClassBoardPosts, mockClassBoardPosts);
             load("postInteractions", setPostInteractions, mockPostInteractions);
         }
@@ -202,13 +193,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem("app_menus", JSON.stringify(menus));
             localStorage.setItem("app_assessments", JSON.stringify(assessments));
             localStorage.setItem("app_invoices", JSON.stringify(invoices));
-            localStorage.setItem("app_notifications", JSON.stringify(notifications));
             localStorage.setItem("app_classBoardPosts", JSON.stringify(classBoardPosts));
             localStorage.setItem("app_postInteractions", JSON.stringify(postInteractions));
         } catch (error) {
             console.error("Erro ao salvar no cache local. O limite de armazenamento pode ter sido atingido.", error);
         }
-    }, [dailyLogs, tasks, messages, mosaicData, bnccProgress, skillsTree, contentsTree, menus, assessments, invoices, notifications, classBoardPosts, postInteractions, isLoaded]);
+    }, [dailyLogs, tasks, messages, mosaicData, bnccProgress, skillsTree, contentsTree, menus, assessments, invoices, classBoardPosts, postInteractions, isLoaded]);
 
     const toggleTask = (id: string) => {
         setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
@@ -350,7 +340,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 if (prev.some(n => n.id === id)) {
                     return [...newNodes, cloned];
                 }
-                // If it was nested, findAndClone already updated the tree, but we need to insert the clone next to original?
                 // The current findAndClone doesn't insert next to original for nested nodes well.
                 // Let's refine: duplication usually happens at the same level.
 
@@ -381,10 +370,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (treeType === "skill") setSkillsTree(updater);
         else setContentsTree(updater);
     };
-
-    const addNotification = (n: AppNotification) => setNotifications(prev => [n, ...prev]);
-    const markNotificationAsRead = (id: string) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
-    const markAllNotificationsAsRead = () => setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
 
     const addClassBoardPost = (post: ClassBoardPost) => setClassBoardPosts(prev => [post, ...prev]);
     const addPostInteraction = (interaction: PostInteraction) => setPostInteractions(prev => [...prev, interaction]);
@@ -419,11 +404,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             addInvoice: (inv) => setInvoices(prev => [...prev, inv]),
             updateInvoice: (id, updates) => setInvoices(prev => prev.map(inv => inv.id === id ? { ...inv, ...updates } : inv)),
             removeInvoice: (id) => setInvoices(prev => prev.filter(inv => inv.id !== id)),
-
-            notifications,
-            addNotification: (n) => setNotifications(prev => [n, ...prev]),
-            markNotificationAsRead: (id) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n)),
-            markAllNotificationsAsRead: () => setNotifications(prev => prev.map(n => ({ ...n, isRead: true }))),
 
             classBoardPosts,
             postInteractions,
