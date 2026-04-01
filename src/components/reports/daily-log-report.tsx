@@ -1,6 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useAppStore } from "@/lib/store";
+import { getDailyLogs } from "@/services/daily-log.service";
+import { DailyLog } from "@/types/daily-log";
+import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarDays, Utensils, Moon, Smile, Meh, Frown, Sparkles, Edit2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,11 +15,27 @@ interface DailyLogReportProps {
 }
 
 export function DailyLogReport({ studentId, onEdit }: DailyLogReportProps) {
-    const { dailyLogs, menus } = useAppStore();
+    const { menus } = useAppStore();
+    const [logs, setLogs] = useState<DailyLog[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const logs = dailyLogs
-        .filter(l => l.studentId === studentId)
-        .sort((a, b) => b.date.localeCompare(a.date));
+    useEffect(() => {
+        setIsLoading(true);
+        getDailyLogs({ studentId })
+            .then(data => {
+                setLogs(data.sort((a, b) => b.date.localeCompare(a.date)));
+            })
+            .catch(console.error)
+            .finally(() => setIsLoading(false));
+    }, [studentId]);
+
+    if (isLoading) {
+        return (
+            <div className="flex justify-center py-10">
+                <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+            </div>
+        );
+    }
 
     if (logs.length === 0) {
         return (

@@ -16,6 +16,7 @@ import { scheduleDataSeed } from "../src/lib/seed/schedule-seed"
 import { notificationsDataSeed } from "@/lib/seed/notifications"
 import { tasksDataSeed } from "@/lib/seed/tasks.seed"
 import { invoicesDataSeed } from "@/lib/seed/invoices-seed"
+import { dailyLogsDataSeed } from "@/lib/seed/daily-logs-seed"
 const prisma = new PrismaClient()
 
 async function main() {
@@ -26,6 +27,7 @@ async function main() {
   await prisma.muralComment.deleteMany()
   await prisma.muralEvent.deleteMany()
   await prisma.portfolioEntry.deleteMany()
+  await prisma.dailyLog.deleteMany()
   await prisma.notification.deleteMany()
   await prisma.task.deleteMany()
   await prisma.scheduleItem.deleteMany()
@@ -159,6 +161,13 @@ async function main() {
   console.log("Importando Faturas...")
   await prisma.invoice.createMany({
     data: invoicesDataSeed as any,
+    skipDuplicates: true
+  })
+
+  // Daily Logs
+  console.log("Importando Diários de Bordo...")
+  await prisma.dailyLog.createMany({
+    data: dailyLogsDataSeed as any,
     skipDuplicates: true
   })
 

@@ -449,7 +449,6 @@ export default function AgendaPage() {
                 date={currentDate}
                 classId={selectedClassId}
                 students={students}
-                schedule={schedule}
             />
 
             <BulkPortfolioDialog

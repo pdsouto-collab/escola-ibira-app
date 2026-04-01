@@ -126,6 +126,7 @@ model Student {
   updatedAt            DateTime    @updatedAt
   schoolClass          SchoolClass @relation(fields: [classId], references: [id])
   portfolioEntries     PortfolioEntry[]
+  dailyLogs            DailyLog[]
 
   @@index([classId])
   @@index([status])
@@ -296,4 +297,24 @@ model Invoice {
   updatedAt     DateTime @updatedAt
 
   @@index([studentId])
+}
+
+/// Diário de Bordo (Daily Log)
+model DailyLog {
+  id           String   @id @default(cuid())
+  studentId    String
+  date         String   // YYYY-MM-DD
+  mood         String
+  meals        Json     // { breakfast, lunch, snack }
+  nap          Json     // { start, end, didNotNap }
+  activities   String[] 
+  notes        String   @db.Text
+  missingItems String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([date])
 }

@@ -9,15 +9,17 @@ import { Badge } from "@/components/ui/badge";
 import { useAppStore } from "@/lib/store";
 import { Student } from "@/types/student";
 import { getStudents } from "@/services/student.service";
-import { DailyLog } from "@/lib/data";
+import { DailyLog } from "@/types/daily-log";
 import { ScheduleItem } from "@/types/schedule";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Flame } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getSchedules } from "@/services/schedule.service";
+import { getDailyLogs, createDailyLog, updateDailyLog, deleteDailyLog } from "@/services/daily-log.service";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 interface DailyLogDialogProps {
     open: boolean;
@@ -46,7 +48,10 @@ interface StudentLogForm {
 }
 
 export function DailyLogDialog({ open, onOpenChange, date, classId, students: propStudents }: DailyLogDialogProps) {
-    const { addDailyLog, dailyLogs, updateDailyLog, removeDailyLog, menus } = useAppStore();
+    const { menus } = useAppStore();
+    const [dailyLogs, setDailyLogs] = useState<DailyLog[]>([]);
+    const [isLoadingLogs, setIsLoadingLogs] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     const [forms, setForms] = useState<Record<string, StudentLogForm>>({});
     const [selectedActivities, setSelectedActivities] = useState<Record<string, boolean>>({});
@@ -59,8 +64,17 @@ export function DailyLogDialog({ open, onOpenChange, date, classId, students: pr
             if (!propStudents) {
                 getStudents().then(setLocalStudents).catch(console.error);
             }
+            setIsLoadingLogs(true);
+            const dateStr = format(date, "yyyy-MM-dd");
+            getDailyLogs({ date: dateStr, classId })
+                .then(setDailyLogs)
+                .catch(err => {
+                    console.error("Erro ao buscar logs", err);
+                    toast.error("Erro ao carregar os registros existentes.");
+                })
+                .finally(() => setIsLoadingLogs(false));
         }
-    }, [open, propStudents]);
+    }, [open, propStudents, date, classId]);
 
     const students = propStudents || localStudents;
 
@@ -139,53 +153,64 @@ export function DailyLogDialog({ open, onOpenChange, date, classId, students: pr
         setSelectedActivities(newSelectedActivities);
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [open, dateStr, classId]);
+    }, [open, dateStr, classId, dailyLogs]);
 
-    const handleSave = () => {
-        // Collect checked activity titles
-        const checkedActivities = todaysActivities
-            .filter(act => selectedActivities[act.id])
-            .map(act => act.title);
+    const handleSave = async () => {
+        setIsSaving(true);
+        try {
+            const checkedActivities = todaysActivities
+                .filter(act => selectedActivities[act.id])
+                .map(act => act.title);
 
-        const existingLogs = dailyLogs.filter(log => log.date === dateStr);
+            const existingLogs = dailyLogs.filter(log => log.date === dateStr);
+            const toCreate = [];
 
-        classStudents.forEach(student => {
-            const form = forms[student.id];
-            const existingLog = existingLogs.find(l => l.studentId === student.id);
+            for (const student of classStudents) {
+                const form = forms[student.id];
+                const existingLog = existingLogs.find(l => l.studentId === student.id);
 
-            if (!form || !form.present) {
-                if (existingLog) removeDailyLog(existingLog.id);
-                return; // Skip absent students
+                if (!form || !form.present) {
+                    if (existingLog) await deleteDailyLog(existingLog.id);
+                    continue;
+                }
+
+                const logData = {
+                    studentId: student.id,
+                    date: dateStr,
+                    mood: form.mood,
+                    meals: {
+                        breakfast: form.breakfast,
+                        lunch: form.lunch,
+                        snack: form.snack,
+                    },
+                    nap: {
+                        start: form.didNotNap ? "" : form.napStart,
+                        end: form.didNotNap ? "" : form.napEnd,
+                        didNotNap: form.didNotNap,
+                    },
+                    activities: checkedActivities,
+                    notes: form.notes,
+                    missingItems: form.missingItems,
+                };
+
+                if (existingLog) {
+                    await updateDailyLog(existingLog.id, logData);
+                } else {
+                    toCreate.push(logData);
+                }
             }
 
-            const logData: DailyLog = {
-                id: `log-${Date.now()}-${student.id}`,
-                studentId: student.id,
-                date: dateStr,
-                mood: form.mood,
-                meals: {
-                    breakfast: form.breakfast,
-                    lunch: form.lunch,
-                    snack: form.snack,
-                },
-                nap: {
-                    start: form.didNotNap ? "" : form.napStart,
-                    end: form.didNotNap ? "" : form.napEnd,
-                    didNotNap: form.didNotNap,
-                },
-                activities: checkedActivities,
-                notes: form.notes,
-                missingItems: form.missingItems,
-            };
-
-            if (existingLog) {
-                updateDailyLog(existingLog.id, logData);
-            } else {
-                addDailyLog(logData);
+            if (toCreate.length > 0) {
+                await createDailyLog(toCreate);
             }
-        });
-
-        onOpenChange(false);
+            toast.success("Diário salvo com sucesso!");
+            onOpenChange(false);
+        } catch (error) {
+            console.error("Erro ao salvar logs", error);
+            toast.error("Não foi possível salvar os registros.");
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const fillAllDefaults = () => {
@@ -261,7 +286,12 @@ export function DailyLogDialog({ open, onOpenChange, date, classId, students: pr
                     </div>
                 </DialogHeader>
 
-                <ScrollArea className="flex-1 p-6">
+                <div className="flex-1 overflow-y-auto p-6 relative">
+                    {isLoadingLogs && (
+                        <div className="absolute inset-0 z-10 bg-white/60 flex items-center justify-center">
+                            <Loader2 className="w-8 h-8 text-slate-400 animate-spin" />
+                        </div>
+                    )}
                     {/* ACTIVITIES BLOCK */}
                     <div className="mb-6 bg-slate-50 border p-4 rounded-lg">
                         <Label className="text-sm font-bold text-slate-700 flex items-center gap-2 mb-3">
@@ -417,11 +447,14 @@ export function DailyLogDialog({ open, onOpenChange, date, classId, students: pr
                         })}
                     </div>
 
-                </ScrollArea>
+                </div>
 
                 <DialogFooter className="p-4 border-t bg-slate-50">
-                    <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-                    <Button onClick={handleSave}>Salvar Diário de Bordo da Turma</Button>
+                    <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSaving}>Cancelar</Button>
+                    <Button onClick={handleSave} disabled={isSaving || isLoadingLogs}>
+                        {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                        Salvar Diário de Bordo da Turma
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

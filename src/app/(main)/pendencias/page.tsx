@@ -25,7 +25,6 @@ import { useSession } from "next-auth/react";
 
 
 export default function PendenciasPage() {
-    const { dailyLogs } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
     const [classes, setClasses] = useState<SchoolClass[]>([]);
@@ -83,13 +82,6 @@ export default function PendenciasPage() {
         : [];
 
     const classesNeedingLog = teacherClasses.filter(c => {
-        // Simple check: does any log exist for this class on this date?
-        // Note: logs are per-student in the real data structure, 
-        // but often we want to see if the CLASS log flow was started.
-        const classLogs = dailyLogs.filter(l => l.date === today && l.studentId);
-        // For simplicity in this demo, if there are NO logs for any student in this class today, it's missing.
-        // We'll need a better heuristic, but let's assume if 0 students have logs, then it's a priority.
-        // To be safe, let's just show it as a daily "Routine" task.
         return true;
     });
 

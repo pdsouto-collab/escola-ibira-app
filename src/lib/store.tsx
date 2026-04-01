@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 import {
-    mockDailyLogs, DailyLog,
     mockRecursiveDataSkills, MosaicNode,
     ChatMessage,
     mockMessages,
@@ -14,7 +13,6 @@ import {
 } from "@/lib/data";
 
 interface AppState {
-    dailyLogs: DailyLog[];
     messages: ChatMessage[];
     mosaicData: MosaicNode[];
     bnccProgress: Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>;
@@ -51,10 +49,6 @@ interface AppContextType extends AppState {
     updateFinalProductType: (id: string, updates: Partial<FinalProductType>) => void;
     removeFinalProductType: (id: string) => void;
 
-    // Daily Logs
-    addDailyLog: (log: DailyLog) => void;
-    updateDailyLog: (id: string, updates: Partial<DailyLog>) => void;
-    removeDailyLog: (id: string) => void;
     // Menus
     addMenu: (menu: Menu) => void;
     updateMenu: (id: string, updates: Partial<Menu>) => void;
@@ -90,7 +84,6 @@ const initialMessages: ChatMessage[] = mockMessages.map(m => ({
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
     // Initialize state from LocalStorage or Default
-    const [dailyLogs, setDailyLogs] = useState<DailyLog[]>(mockDailyLogs);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [mosaicData, setMosaicData] = useState<MosaicNode[]>(mockRecursiveDataSkills);
     const [bnccProgress, setBnccProgress] = useState<Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>>({});
@@ -130,7 +123,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             setSkillsTree(mockSkillsTree);
             setContentsTree(mockContentsTree);
             setAssessments(mockAssessments);
-            setDailyLogs(mockDailyLogs);
             setClassBoardPosts(mockClassBoardPosts);
             setPostInteractions(mockPostInteractions);
 
@@ -140,7 +132,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem("app_version", CURRENT_VERSION);
         } else {
             // Normal Load
-            load("dailyLogs", setDailyLogs, mockDailyLogs);
             load("messages", setMessages, initialMessages);
             load("mosaicData", setMosaicData, mockRecursiveDataSkills);
             load("bnccProgress", setBnccProgress, {});
@@ -161,7 +152,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (!isLoaded) return;
         try {
-            localStorage.setItem("app_dailyLogs", JSON.stringify(dailyLogs));
             localStorage.setItem("app_messages", JSON.stringify(messages));
             localStorage.setItem("app_mosaicData", JSON.stringify(mosaicData));
             localStorage.setItem("app_bnccProgress", JSON.stringify(bnccProgress));
@@ -174,7 +164,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
             console.error("Erro ao salvar no cache local. O limite de armazenamento pode ter sido atingido.", error);
         }
-    }, [dailyLogs, messages, mosaicData, bnccProgress, skillsTree, contentsTree, menus, assessments, classBoardPosts, postInteractions, isLoaded]);
+    }, [messages, mosaicData, bnccProgress, skillsTree, contentsTree, menus, assessments, classBoardPosts, postInteractions, isLoaded]);
 
 
 
@@ -347,7 +337,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <AppContext.Provider value={{
-            dailyLogs, messages,
+            messages,
             sendMessage, resetData,
             mosaicData, updateMosaicNode, replaceMosaicData,
             bnccProgress, updateBNCCStatus,
@@ -356,9 +346,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             addFinalProductType: (type) => setFinalProductTypes(prev => [...prev, type]),
             updateFinalProductType: (id, updates) => setFinalProductTypes(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t)),
             removeFinalProductType: (id) => setFinalProductTypes(prev => prev.filter(t => t.id !== id)),
-            addDailyLog: (log) => setDailyLogs(prev => [...prev, log]),
-            updateDailyLog: (id, updates) => setDailyLogs(prev => prev.map(l => l.id === id ? { ...l, ...updates } : l)),
-            removeDailyLog: (id) => setDailyLogs(prev => prev.filter(l => l.id !== id)),
 
             menus,
             addMenu: (menu) => setMenus(prev => [...prev, menu]),
