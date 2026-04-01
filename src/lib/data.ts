@@ -3559,15 +3559,6 @@ export const mockMessages: Message[] = [
     { id: "m8", contactId: "c2", sender: "them", content: "Obrigado pelas fotos! Ele adorou.", timestamp: "14:15" }
 ];
 
-export interface Task {
-    id: string;
-    title: string;
-    completed: boolean;
-    dueDate?: string;
-    assignee?: string;
-    priority: "low" | "medium" | "high";
-}
-
 
 export interface FinalProductType {
     id: string;
@@ -3595,11 +3586,6 @@ export interface ChatMessage {
     senderName?: string;
 }
 
-export const mockTasks: Task[] = [
-    { id: "1", title: "Enviar documentação de matrícula", completed: false, priority: "high" },
-    { id: "2", title: "Assinar autorização de passeio", completed: true, priority: "medium" },
-    { id: "3", title: "Atualizar ficha médica", completed: false, priority: "low" },
-];
 
 // ─────────────────────────────────────────────
 // ASSESSMENT SYSTEM

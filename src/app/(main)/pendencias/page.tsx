@@ -8,7 +8,9 @@ import {
     Calendar, ChevronRight, NotebookPen, Info, Star, Loader2
 } from "lucide-react";
 import { useAppStore } from "@/lib/store";
-import { Task } from "@/lib/data";
+import { toast } from "sonner";
+import { Task } from "@/types/task";
+import { getTasks, createTask, toggleTask, deleteTask } from "@/services/task.service";
 import { SchoolClass } from "@/types/school-class";
 import { getClasses } from "@/services/school-class.service";
 import { Button } from "@/components/ui/button";
@@ -23,7 +25,7 @@ import { useSession } from "next-auth/react";
 
 
 export default function PendenciasPage() {
-    const { tasks, addTask, toggleTask, removeTask, dailyLogs } = useAppStore();
+    const { dailyLogs } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
     const [classes, setClasses] = useState<SchoolClass[]>([]);
@@ -31,6 +33,9 @@ export default function PendenciasPage() {
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+    const [tasks, setTasks] = useState<Task[]>([]);
+    const [isLoadingTasks, setIsLoadingTasks] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     async function fetchClasses() {
         try {
@@ -43,8 +48,20 @@ export default function PendenciasPage() {
         }
     }
 
+    async function loadTasks() {
+        try {
+            const data = await getTasks();
+            setTasks(data);
+        } catch (error) {
+            toast.error("Erro ao carregar lembretes");
+        } finally {
+            setIsLoadingTasks(false);
+        }
+    }
+
     useEffect(() => {
         fetchClasses();
+        loadTasks();
     }, []);
 
     // Diário de Bordo Integration
@@ -76,20 +93,51 @@ export default function PendenciasPage() {
         return true;
     });
 
-    const handleCreateTask = () => {
+    const handleCreateTask = async () => {
         if (!newTask.title.trim()) return;
+        setIsSubmitting(true);
+        try {
+            const task = await createTask({
+                title: newTask.title,
+                priority: newTask.priority,
+                dueDate: newTask.dueDate || undefined,
+                completed: false,
+            });
+            setTasks(prev => [task, ...prev]);
+            setIsAddDialogOpen(false);
+            setNewTask({ title: "", priority: "medium", dueDate: "" });
+            toast.success("Tarefa criada com sucesso!");
+        } catch (error) {
+            toast.error("Erro ao criar tarefa");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
-        const task: Task = {
-            id: Math.random().toString(36).substr(2, 9),
-            title: newTask.title,
-            priority: newTask.priority,
-            dueDate: newTask.dueDate || undefined,
-            completed: false
-        };
+    const handleToggleTask = async (task: Task) => {
+        try {
+            const updated = await toggleTask(task.id, !task.completed);
+            setTasks(prev => prev.map(t => t.id === task.id ? updated : t));
+            toast.success(updated.completed ? "Tarefa concluída" : "Tarefa pendente");
+            if (isDetailsDialogOpen && selectedTask?.id === task.id) {
+                setSelectedTask(updated);
+            }
+        } catch (error) {
+            toast.error("Erro ao alterar o status da tarefa");
+        }
+    };
 
-        addTask(task);
-        setIsAddDialogOpen(false);
-        setNewTask({ title: "", priority: "medium", dueDate: "" });
+    const handleRemoveTask = async (id: string) => {
+        try {
+            await deleteTask(id);
+            setTasks(prev => prev.filter(t => t.id !== id));
+            toast.success("Tarefa removida com sucesso");
+            if (isDetailsDialogOpen && selectedTask?.id === id) {
+                setIsDetailsDialogOpen(false);
+            }
+        } catch (error) {
+            toast.error("Erro ao remover tarefa");
+        }
     };
 
     const openDetails = (task: Task) => {
@@ -218,9 +266,15 @@ export default function PendenciasPage() {
                     </Button>
                 </div>
 
-                <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
-                    <div className="divide-y">
-                        {tasks.length === 0 ? (
+                <div className="rounded-xl border bg-white shadow-sm overflow-hidden min-h-[100px]">
+                    <div className="divide-y relative">
+                        {isLoadingTasks ? (
+                            <div className="flex items-center justify-center p-8 absolute inset-0 z-10 bg-white/50">
+                                <Loader2 className="w-6 h-6 text-slate-400 animate-spin" />
+                            </div>
+                        ) : null}
+                        
+                        {tasks.length === 0 && !isLoadingTasks ? (
                             <div className="p-8 text-center text-slate-500">
                                 Nenhuma pendência encontrada.
                             </div>
@@ -234,7 +288,7 @@ export default function PendenciasPage() {
                                     >
                                         <div className="flex items-center gap-3 flex-1">
                                             <button
-                                                onClick={() => toggleTask(item.id)}
+                                                onClick={() => handleToggleTask(item)}
                                                 className="text-slate-400 hover:text-primary transition-colors focus:outline-none"
                                             >
                                                 {item.completed ? (
@@ -270,7 +324,7 @@ export default function PendenciasPage() {
                                                 Detalhes
                                             </Button>
                                             <button
-                                                onClick={() => removeTask(item.id)}
+                                                onClick={() => handleRemoveTask(item.id)}
                                                 className="rounded-md p-2 text-slate-400 hover:bg-red-50 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
                                                 aria-label="Excluir"
                                             >
@@ -332,8 +386,11 @@ export default function PendenciasPage() {
                             </div>
                         </div>
                         <DialogFooter>
-                            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancelar</Button>
-                            <Button onClick={handleCreateTask}>Adicionar Tarefa</Button>
+                            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} disabled={isSubmitting}>Cancelar</Button>
+                            <Button onClick={handleCreateTask} disabled={isSubmitting}>
+                                {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                                Adicionar Tarefa
+                            </Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
@@ -379,8 +436,7 @@ export default function PendenciasPage() {
                                         className="w-full sm:w-auto"
                                         variant="outline"
                                         onClick={() => {
-                                            toggleTask(selectedTask.id);
-                                            setIsDetailsDialogOpen(false);
+                                            handleToggleTask(selectedTask);
                                         }}
                                     >
                                         {selectedTask.completed ? <Circle className="w-4 h-4 mr-2" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
@@ -390,8 +446,7 @@ export default function PendenciasPage() {
                                         className="w-full sm:w-auto"
                                         variant="destructive"
                                         onClick={() => {
-                                            removeTask(selectedTask.id);
-                                            setIsDetailsDialogOpen(false);
+                                            handleRemoveTask(selectedTask.id);
                                         }}
                                     >
                                         <Trash2 className="w-4 h-4 mr-2" />

@@ -5,7 +5,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import {
     mockDailyLogs, DailyLog,
     mockRecursiveDataSkills, MosaicNode,
-    Task, ChatMessage,
+    ChatMessage,
     mockMessages,
     KnowledgeNode, mockSkillsTree, mockContentsTree,
     FinalProductType, mockFinalProductTypes,
@@ -16,7 +16,6 @@ import {
 
 interface AppState {
     dailyLogs: DailyLog[];
-    tasks: Task[];
     messages: ChatMessage[];
     mosaicData: MosaicNode[];
     bnccProgress: Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>;
@@ -31,10 +30,6 @@ interface AppState {
 }
 
 interface AppContextType extends AppState {
-    toggleTask: (id: string) => void;
-    addTask: (task: Task) => void;
-    removeTask: (id: string) => void;
-
 
     sendMessage: (msg: ChatMessage) => void;
 
@@ -84,12 +79,6 @@ interface AppContextType extends AppState {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-// Initial Mock Data
-const initialTasks: Task[] = [
-    { id: "t1", title: "Finalizar relatórios bimestrais", completed: false, dueDate: "2024-03-01", priority: "high" },
-    { id: "t2", title: "Preparar reunião de pais", completed: true, dueDate: "2024-02-20", priority: "medium" },
-    { id: "t3", title: "Comprar materiais de arte", completed: false, dueDate: "2024-02-25", priority: "low" },
-];
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
@@ -109,7 +98,6 @@ const initialMessages: ChatMessage[] = mockMessages.map(m => ({
 export function AppProvider({ children }: { children: React.ReactNode }) {
     // Initialize state from LocalStorage or Default
     const [dailyLogs, setDailyLogs] = useState<DailyLog[]>(mockDailyLogs);
-    const [tasks, setTasks] = useState<Task[]>(initialTasks);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [mosaicData, setMosaicData] = useState<MosaicNode[]>(mockRecursiveDataSkills);
     const [bnccProgress, setBnccProgress] = useState<Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>>({});
@@ -161,7 +149,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         } else {
             // Normal Load
             load("dailyLogs", setDailyLogs, mockDailyLogs);
-            load("tasks", setTasks, initialTasks);
             load("messages", setMessages, initialMessages);
             load("mosaicData", setMosaicData, mockRecursiveDataSkills);
             load("bnccProgress", setBnccProgress, {});
@@ -184,7 +171,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (!isLoaded) return;
         try {
             localStorage.setItem("app_dailyLogs", JSON.stringify(dailyLogs));
-            localStorage.setItem("app_tasks", JSON.stringify(tasks));
             localStorage.setItem("app_messages", JSON.stringify(messages));
             localStorage.setItem("app_mosaicData", JSON.stringify(mosaicData));
             localStorage.setItem("app_bnccProgress", JSON.stringify(bnccProgress));
@@ -198,13 +184,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
             console.error("Erro ao salvar no cache local. O limite de armazenamento pode ter sido atingido.", error);
         }
-    }, [dailyLogs, tasks, messages, mosaicData, bnccProgress, skillsTree, contentsTree, menus, assessments, invoices, classBoardPosts, postInteractions, isLoaded]);
+    }, [dailyLogs, messages, mosaicData, bnccProgress, skillsTree, contentsTree, menus, assessments, invoices, classBoardPosts, postInteractions, isLoaded]);
 
-    const toggleTask = (id: string) => {
-        setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
-    };
-    const addTask = (task: Task) => setTasks(prev => [...prev, task]);
-    const removeTask = (id: string) => setTasks(prev => prev.filter(t => t.id !== id));
 
 
     const sendMessage = (msg: ChatMessage) => setMessages(prev => [...prev, msg]);
@@ -376,8 +357,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <AppContext.Provider value={{
-            dailyLogs, tasks, messages,
-            toggleTask, addTask, removeTask,
+            dailyLogs, messages,
             sendMessage, resetData,
             mosaicData, updateMosaicNode, replaceMosaicData,
             bnccProgress, updateBNCCStatus,

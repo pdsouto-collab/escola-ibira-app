@@ -14,6 +14,7 @@ import { portfolioDataSeed } from "@/lib/seed/portfolio-seed"
 import { projectsDataSeed } from "@/lib/seed/projects-seed"
 import { scheduleDataSeed } from "../src/lib/seed/schedule-seed"
 import { notificationsDataSeed } from "@/lib/seed/notifications"
+import { tasksDataSeed } from "@/lib/seed/tasks.seed"
 const prisma = new PrismaClient()
 
 async function main() {
@@ -25,6 +26,7 @@ async function main() {
   await prisma.muralEvent.deleteMany()
   await prisma.portfolioEntry.deleteMany()
   await prisma.notification.deleteMany()
+  await prisma.task.deleteMany()
   await prisma.scheduleItem.deleteMany()
   await prisma.student.deleteMany()
   await prisma.schoolClass.deleteMany()
@@ -35,6 +37,7 @@ async function main() {
   await prisma.pegadaInteraction.deleteMany()
   await prisma.pegadaPost.deleteMany()
   await prisma.project.deleteMany()
+
 
   // BNCC
   console.log("Importando BNCC...")
@@ -140,6 +143,13 @@ async function main() {
       ...n,
       createdAt: new Date(n.createdAt)
     })),
+    skipDuplicates: true
+  })
+
+  // Tasks
+  console.log("Importando Tarefas Globais...")
+  await prisma.task.createMany({
+    data: tasksDataSeed as any,
     skipDuplicates: true
   })
 

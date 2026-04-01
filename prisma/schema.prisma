@@ -267,3 +267,14 @@ model Notification {
   @@index([userId])
 }
 
+/// Sistema de Tarefas/Lembretes Globais
+model Task {
+  id        String   @id @default(cuid())
+  title     String
+  completed Boolean  @default(false)
+  dueDate   String?
+  priority  String   @default("medium")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+

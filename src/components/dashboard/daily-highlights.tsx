@@ -2,6 +2,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAppStore } from "@/lib/store";
+import { toast } from "sonner";
+import { Task } from "@/types/task";
+import { getTasks, createTask, toggleTask } from "@/services/task.service";
 import {
     ArrowRight, BookOpen, Calendar, Calculator, FlaskConical,
     CheckCircle2, Circle, Clock, User, AlertCircle,
@@ -12,7 +15,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { Task } from "@/lib/data";
 import { Badge } from "../ui/badge";
 import { DailyLogDialog } from "../agenda/daily-log-dialog";
 import { useSession } from "next-auth/react";
@@ -21,12 +23,13 @@ import { SchoolClass } from "@/types/school-class";
 
 
 export function DailyHighlights() {
-    const { tasks, toggleTask, addTask } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
     const [classes, setClasses] = useState<SchoolClass[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-
+    const [tasks, setTasks] = useState<Task[]>([]);
+    const [isLoadingTasks, setIsLoadingTasks] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -46,8 +49,20 @@ export function DailyHighlights() {
         }
     }
 
+    async function loadTasks() {
+        try {
+            const data = await getTasks();
+            setTasks(data);
+        } catch (error) {
+            toast.error("Erro ao carregar lembretes");
+        } finally {
+            setIsLoadingTasks(false);
+        }
+    }
+
     useEffect(() => {
         fetchClasses();
+        loadTasks();
     }, []);
 
     const isTeacher = currentUser?.role === "teacher";
@@ -61,20 +76,38 @@ export function DailyHighlights() {
         dueDate: ""
     });
 
-    const handleCreateTask = () => {
+    const handleCreateTask = async () => {
         if (!newTask.title.trim()) return;
+        setIsSubmitting(true);
+        try {
+            const task = await createTask({
+                title: newTask.title,
+                priority: newTask.priority,
+                dueDate: newTask.dueDate || undefined,
+                completed: false,
+            });
+            setTasks(prev => [task, ...prev]);
+            setIsAddDialogOpen(false);
+            setNewTask({ title: "", priority: "medium", dueDate: "" });
+            toast.success("Tarefa criada com sucesso!");
+        } catch (error) {
+            toast.error("Erro ao criar tarefa");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
-        const task: Task = {
-            id: Math.random().toString(36).substr(2, 9),
-            title: newTask.title,
-            priority: newTask.priority,
-            dueDate: newTask.dueDate || undefined,
-            completed: false
-        };
-
-        addTask(task);
-        setIsAddDialogOpen(false);
-        setNewTask({ title: "", priority: "medium", dueDate: "" });
+    const handleToggleTask = async (task: Task) => {
+        try {
+            const updated = await toggleTask(task.id, !task.completed);
+            setTasks(prev => prev.map(t => t.id === task.id ? updated : t));
+            toast.success(updated.completed ? "Tarefa concluída" : "Tarefa pendente");
+            if (isDetailsDialogOpen && selectedTask?.id === task.id) {
+                setSelectedTask(updated);
+            }
+        } catch (error) {
+            toast.error("Erro ao alterar o status da tarefa");
+        }
     };
 
     const openDetails = (task: Task) => {
@@ -187,7 +220,11 @@ export function DailyHighlights() {
                     </div>
                 </div>
 
-                {pendingTasks.length === 0 ? (
+                {isLoadingTasks ? (
+                    <div className="flex justify-center p-8">
+                        <Loader2 className="w-6 h-6 text-slate-400 animate-spin" />
+                    </div>
+                ) : pendingTasks.length === 0 ? (
                     <div className="p-8 text-center border-2 border-dashed rounded-xl text-slate-400">
                         Nenhuma pendência para hoje! 🎉
                     </div>
@@ -220,7 +257,7 @@ export function DailyHighlights() {
 
                                     <div className="flex items-center justify-between mt-auto pt-2 border-t border-slate-200/50 w-full">
                                         <button
-                                            onClick={() => toggleTask(task.id)}
+                                            onClick={() => handleToggleTask(task)}
                                             className="flex items-center gap-2 text-xs font-medium text-slate-600 hover:text-green-600 transition-colors"
                                         >
                                             <Circle className="w-4 h-4" />
@@ -290,8 +327,11 @@ export function DailyHighlights() {
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancelar</Button>
-                        <Button onClick={handleCreateTask}>Adicionar Tarefa</Button>
+                        <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} disabled={isSubmitting}>Cancelar</Button>
+                        <Button onClick={handleCreateTask} disabled={isSubmitting}>
+                            {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                            Adicionar Tarefa
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -337,8 +377,7 @@ export function DailyHighlights() {
                                     className="w-full sm:w-auto"
                                     variant="outline"
                                     onClick={() => {
-                                        toggleTask(selectedTask.id);
-                                        setIsDetailsDialogOpen(false);
+                                        handleToggleTask(selectedTask);
                                     }}
                                 >
                                     <CheckCircle2 className="w-4 h-4 mr-2" />
