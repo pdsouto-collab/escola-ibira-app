@@ -4,6 +4,9 @@ import { useAppStore } from "@/lib/store";
 import { User, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Student } from "@/types/student";
+import { useEffect, useState } from "react";
+import { AssessmentService } from "@/services/assessment.service";
+import { Assessment } from "@/types/assessment";
 
 const labels = ["Muda", "Broto", "Jovem", "Adulta", "Com frutos"];
 
@@ -81,13 +84,39 @@ const resolveNodeInfo = (id: string, skillsTree: any[], contentsTree: any[]) => 
 };
 
 export function ObservationList({ student }: { student: Student }) {
-    const { assessments, skillsTree, contentsTree } = useAppStore();
+    const { skillsTree, contentsTree } = useAppStore();
+    const [assessments, setAssessments] = useState<Assessment[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        async function loadAssessments() {
+            setIsLoading(true);
+            try {
+                const data = await AssessmentService.getAll();
+                setAssessments(data);
+            } catch (error) {
+                console.error("Erro ao carregar avaliações", error);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        loadAssessments();
+    }, []);
+
     if (!student) return null;
     const studentId = student.id;
 
     const relevantAssessments = assessments
         .filter((a: any) => (a.studentId === studentId || (a.scope === "class" && a.classId === student.classId)) && a.observations)
-        .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        .sort((a: any, b: any) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
+
+    if (isLoading) {
+        return (
+            <div className="text-center py-8 bg-slate-50 rounded-2xl border border-dashed text-slate-400 text-sm">
+                Carregando observações...
+            </div>
+        );
+    }
 
     if (relevantAssessments.length === 0) {
         return (

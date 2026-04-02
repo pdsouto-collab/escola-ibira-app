@@ -3,7 +3,9 @@
 import React, { useState, useMemo, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAppStore } from "@/lib/store";
-import { Assessment, SEMESTERS, YEARS } from "@/lib/data";
+import { SEMESTERS, YEARS } from "@/lib/data";
+import { Assessment } from "@/types/assessment";
+import { AssessmentService } from "@/services/assessment.service";
 import { AssessmentDrawer } from "@/components/assessment/assessment-drawer";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -810,7 +812,9 @@ function StudentView({
 // Main Portfolio Page
 // ────────────────────────────────────────────
 function PortfolioContent() {
-    const { assessments, skillsTree, contentsTree } = useAppStore();
+    const { skillsTree, contentsTree } = useAppStore();
+    const [assessments, setAssessments] = useState<Assessment[]>([]);
+    const [isLoadingAssessments, setIsLoadingAssessments] = useState(true);
     const [allProjects, setAllProjects] = useState<Project[]>([]);
     const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
     const [classes, setClasses] = useState<SchoolClass[]>([]);
@@ -878,8 +882,20 @@ function PortfolioContent() {
         fetchStudents();
         fetchProjects();
         fetchSchedules();
+        fetchAssessments();
         getListaBNCC();
     }, []);
+
+    async function fetchAssessments() {
+        try {
+            const data = await AssessmentService.getAll();
+            setAssessments(data);
+        } catch (error) {
+            console.error("Erro ao buscar avaliações:", error);
+        } finally {
+            setIsLoadingAssessments(false);
+        }
+    }
 
     async function getListaBNCC() {
         await getListBncc().then(setLibraryItems);
@@ -907,7 +923,7 @@ function PortfolioContent() {
         return allProjects.filter(p => p.period === periodFilter);
     }, [allProjects, periodFilter]);
 
-    if (isLoadingClasses || isLoadingStudents || isLoadingSchedules) {
+    if (isLoadingClasses || isLoadingStudents || isLoadingSchedules || isLoadingAssessments) {
         return (
             <div className="flex items-center justify-center p-12 min-h-screen">
                 <Loader2 className="w-8 h-8 text-slate-400 animate-spin mr-3" />
@@ -1063,6 +1079,7 @@ function PortfolioContent() {
                     defaultClassId={drawerCtx.classId}
                     defaultStudentId={drawerCtx.studentId}
                     contextLabel={drawerCtx.contextLabel}
+                    onSaved={fetchAssessments}
                 />
             )}
 
@@ -1080,6 +1097,7 @@ function PortfolioContent() {
                     projectId={editingAssessment.projectId}
                     defaultClassId={editingAssessment.classId}
                     defaultStudentId={editingAssessment.studentId}
+                    onSaved={fetchAssessments}
                 />
             )}
         </div>

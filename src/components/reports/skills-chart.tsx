@@ -6,6 +6,8 @@ import { ProgressChart, ProgressChartData } from "@/components/assessment/progre
 import { useEffect, useState } from "react";
 import { LibraryItem } from "@/types/library-item";
 import { getListBncc } from "@/services/bncc.service";
+import { AssessmentService } from "@/services/assessment.service";
+import { Assessment } from "@/types/assessment";
 
 // ────────────────────────────────────────────
 // Helper: find node name recursively
@@ -81,14 +83,27 @@ const getAllEvaluatableNodes = (nodes: any[], parentName?: string): any[] => {
 export function SkillsChart({ student, filter = "all", period = "all" }: { student: Student | undefined; filter?: "bncc" | "ibira" | "all"; period?: string }) {
 
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
+    const [assessments, setAssessments] = useState<Assessment[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        getListaBNCC();
-    }, [])
-
-    async function getListaBNCC() {
-        await getListBncc().then(setLibraryItems);
-    }
+        async function loadData() {
+            setIsLoading(true);
+            try {
+                const [bnccData, assessmentsData] = await Promise.all([
+                    getListBncc(),
+                    AssessmentService.getAll()
+                ]);
+                setLibraryItems(bnccData);
+                setAssessments(assessmentsData);
+            } catch (error) {
+                console.error("Erro ao carregar dados", error);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        loadData();
+    }, []);
 
     if (!student) {
         return (
@@ -100,7 +115,15 @@ export function SkillsChart({ student, filter = "all", period = "all" }: { stude
 
     const studentId = student.id;
 
-    const { assessments, skillsTree, contentsTree } = useAppStore();
+    const { skillsTree, contentsTree } = useAppStore();
+
+    if (isLoading) {
+        return (
+            <div className="bg-white p-6 rounded-xl border shadow-sm text-center text-slate-400">
+                Carregando gráfico...
+            </div>
+        );
+    }
 
     const studentAssessments = assessments.filter(a => 
         (a.studentId === studentId || (a.scope === "class" && a.classId === student.classId)) &&

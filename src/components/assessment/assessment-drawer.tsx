@@ -9,9 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TreeRatingPicker } from "@/components/assessment/tree-rating-picker";
 import { useAppStore } from "@/lib/store";
-import { Assessment, AssessmentAttachment } from "@/lib/data";
 import { getClasses } from "@/services/school-class.service";
 import { SchoolClass } from "@/types/school-class";
+import { Assessment } from "@/types/assessment";
+import { AssessmentAttachment } from "@/types/assessment-attachment";
+import { AssessmentService } from "@/services/assessment.service";
 import { Camera, FileUp, X, Users, User, Trash2, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
@@ -42,6 +44,7 @@ interface AssessmentDrawerProps {
     initialRating?: 1 | 2 | 3 | 4 | 5;
     initialObservations?: string;
     initialAttachments?: AssessmentAttachment[];
+    onSaved?: () => void;
 }
 
 export function AssessmentDrawer({
@@ -60,13 +63,16 @@ export function AssessmentDrawer({
     initialRating,
     initialObservations,
     initialAttachments,
+    onSaved,
 }: AssessmentDrawerProps) {
-    const { addAssessment, updateAssessment, removeAssessment, assessments } = useAppStore();
+    const [isSaving, setIsSaving] = useState(false);
+    const [assessments, setAssessments] = useState<Assessment[]>([]);
     const { data: session } = useSession();
     const currentUser = session?.user as any;
 
     const [classes, setClasses] = useState<SchoolClass[]>([]);
     const [isLoadingClasses, setIsLoadingClasses] = useState(true);
+    const [isLoadingAssessments, setIsLoadingAssessments] = useState(true);
     const [projects, setProjects] = useState<Project[]>([]);
     const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
 
@@ -128,32 +134,39 @@ export function AssessmentDrawer({
         onOpenChange(false);
     };
 
-    const handleSave = () => {
-        if (activeAssessmentId) {
-            updateAssessment(activeAssessmentId, {
-                rating,
-                observations,
-                attachments,
-            });
-        } else {
-            const assessment: Assessment = {
-                id: crypto.randomUUID(),
-                createdAt: new Date().toISOString(),
-                sessionId: contextType === "project" ? (selectedSessionId || undefined) : undefined,
-                routineId: contextType === "routine" ? (selectedRoutineId || undefined) : undefined,
-                knowledgeNodeId: propKnowledgeNodeId,
-                projectId: contextType === "project" ? (selectedProjectId || undefined) : undefined,
-                scope,
-                classId: scope === "class" ? classId : undefined,
-                studentId: scope === "student" ? studentId : undefined,
-                rating,
-                observations,
-                attachments,
-                ...(currentUser ? { teacherId: currentUser.id } : {}),
-            };
-            addAssessment(assessment);
+    const handleSave = async () => {
+        setIsSaving(true);
+        try {
+            if (activeAssessmentId) {
+                await AssessmentService.update(activeAssessmentId, {
+                    rating,
+                    observations,
+                    attachments,
+                });
+            } else {
+                const assessment: Partial<Assessment> = {
+                    sessionId: contextType === "project" ? (selectedSessionId || undefined) : undefined,
+                    routineId: contextType === "routine" ? (selectedRoutineId || undefined) : undefined,
+                    knowledgeNodeId: propKnowledgeNodeId,
+                    projectId: contextType === "project" ? (selectedProjectId || undefined) : undefined,
+                    scope,
+                    classId: scope === "class" ? classId : undefined,
+                    studentId: scope === "student" ? studentId : undefined,
+                    rating,
+                    observations,
+                    attachments,
+                };
+                await AssessmentService.create(assessment);
+            }
+            await fetchAssessments();
+            onSaved?.();
+            toast.success(activeAssessmentId ? "Avaliação atualizada com sucesso" : "Avaliação salva com sucesso");
+            handleClose();
+        } catch (error) {
+            toast.error("Erro ao salvar avaliação");
+        } finally {
+            setIsSaving(false);
         }
-        handleClose();
     };
 
     const handleDelete = () => {
@@ -162,13 +175,31 @@ export function AssessmentDrawer({
         }
     };
 
-    const confirmDeleteAction = () => {
+    const confirmDeleteAction = async () => {
         if (activeAssessmentId) {
-            removeAssessment(activeAssessmentId);
-            toast.success("Avaliação removida com sucesso");
-            handleClose();
+            try {
+                await AssessmentService.delete(activeAssessmentId);
+                await fetchAssessments();
+                onSaved?.();
+                toast.success("Avaliação removida com sucesso");
+                handleClose();
+            } catch (error) {
+                toast.error("Erro ao remover avaliação");
+            }
         }
     };
+
+    async function fetchAssessments() {
+        setIsLoadingAssessments(true);
+        try {
+            const data = await AssessmentService.getAll();
+            setAssessments(data);
+        } catch(error) {
+            console.error("Erro ao carregar avaliações", error);
+        } finally {
+            setIsLoadingAssessments(false);
+        }
+    }
 
     const hasContext = !!propKnowledgeNodeId || (contextType === "project"
         ? (!!selectedProjectId && !!selectedSessionId)
@@ -205,6 +236,7 @@ export function AssessmentDrawer({
     useEffect(() => {
         if (open) {
             fetchClassesAndProjects();
+            fetchAssessments();
         }
     }, [open, defaultClassId, classId]);
 
@@ -285,7 +317,14 @@ export function AssessmentDrawer({
                 </DialogHeader>
 
                 <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
-                    {!isFixedContext && (
+                    {isLoadingClasses || isLoadingAssessments ? (
+                        <div className="flex flex-col items-center justify-center py-12 gap-3 h-full min-h-[200px]">
+                            <Loader2 className="w-8 h-8 text-green-600 animate-spin" />
+                            <p className="text-sm font-medium text-slate-500">Carregando dados da avaliação...</p>
+                        </div>
+                    ) : (
+                        <>
+                            {!isFixedContext && (
                         <div className="space-y-3 p-4 bg-slate-50 rounded-xl border border-slate-100">
                             <Label className="text-sm font-bold text-slate-700">Contexto da Avaliação</Label>
                             <div className="flex bg-white rounded-lg p-1 border shadow-sm">
@@ -462,6 +501,8 @@ export function AssessmentDrawer({
                             </button>
                         )}
                     </div>
+                        </>
+                    )}
                 </div>
 
                 <div className="px-6 py-4 border-t bg-white flex gap-3">
@@ -475,14 +516,15 @@ export function AssessmentDrawer({
                             <Trash2 className="w-5 h-5" />
                         </Button>
                     )}
-                    <Button variant="outline" className="flex-1" onClick={handleClose}>
+                    <Button variant="outline" className="flex-1" onClick={handleClose} disabled={isSaving}>
                         Cancelar
                     </Button>
                     <Button
                         className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                        disabled={!canSave}
+                        disabled={!canSave || isSaving}
                         onClick={handleSave}
                     >
+                        {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Salvar {activeAssessmentId ? "Alterações" : "Avaliação"}
                     </Button>
                 </div>

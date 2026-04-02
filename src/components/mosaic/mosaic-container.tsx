@@ -12,7 +12,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 import { AssessmentDrawer } from "../assessment/assessment-drawer";
-import { Assessment } from "@/lib/data";
+import { Assessment } from "@/types/assessment";
+import { AssessmentService } from "@/services/assessment.service";
 import { useSession } from "next-auth/react";
 import { LibraryItem } from "@/types/library-item";
 import { getListBncc } from "@/services/bncc.service";
@@ -23,7 +24,8 @@ import { Project } from "@/types/project";
 
 
 export function MosaicContainer() {
-    const { skillsTree, contentsTree, assessments } = useAppStore();
+    const { skillsTree, contentsTree } = useAppStore();
+    const [assessments, setAssessments] = useState<Assessment[]>([]);
     const { data: session } = useSession();
     const currentUser = session?.user as any;
 
@@ -108,14 +110,18 @@ export function MosaicContainer() {
 
     useEffect(() => {
         const loadData = async () => {
-            const [, , , projectsData] = await Promise.all([
+            const [, , , projectsData, assessmentsData] = await Promise.all([
                 fetchClasses(), 
                 fetchStudents(), 
                 getListaBNCC(),
-                getProjects()
+                getProjects(),
+                AssessmentService.getAll()
             ]);
             if (projectsData) {
                 setProjects(projectsData);
+            }
+            if (assessmentsData) {
+                setAssessments(assessmentsData);
             }
         };
         loadData();

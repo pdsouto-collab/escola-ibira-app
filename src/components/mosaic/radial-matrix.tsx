@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { KnowledgeNode, KnowledgeLevel, Assessment, Project } from "@/lib/data";
+import { KnowledgeNode, KnowledgeLevel } from "@/lib/data";
+import { Assessment } from "@/types/assessment";
+import { Project } from "@/types/project";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Student } from "@/types/student";
 import { LibraryItem } from "@/types/library-item";

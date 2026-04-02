@@ -3,10 +3,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAppStore } from "@/lib/store";
-import { Assessment } from "@/lib/data";
+import { Assessment } from "@/types/assessment";
+import { AssessmentService } from "@/services/assessment.service";
 import { TreeRatingPicker } from "@/components/assessment/tree-rating-picker";
 import { Button } from "@/components/ui/button";
-import { Printer, Download, ChevronLeft, Star, Target, CheckCircle2 } from "lucide-react";
+import { Printer, Download, ChevronLeft, Star, Target, CheckCircle2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { getClasses } from "@/services/school-class.service";
 import { getStudents } from "@/services/student.service";
@@ -161,7 +162,9 @@ function ReportCard({
     dateRange?: { start: string; end: string };
     period?: string | null;
 }) {
-    const { assessments, skillsTree, contentsTree, dailyLogs } = useAppStore();
+    const { skillsTree, contentsTree } = useAppStore();
+    const [assessments, setAssessments] = useState<Assessment[]>([]);
+    const [isLoadingAssessments, setIsLoadingAssessments] = useState(true);
     const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
     const [classes, setClasses] = useState<SchoolClass[]>([]);
     const [students, setStudents] = useState<Student[]>([]);
@@ -228,9 +231,21 @@ function ReportCard({
         fetchStudents();
         fetchProjects();
         fetchSchedules();
+        fetchAssessments();
         setIsLoadingPortfolio(true);
         getPortfolioEntries(studentId).then(setPortfolioEntries).catch(console.error).finally(() => setIsLoadingPortfolio(false));
     }, [studentId])
+
+    async function fetchAssessments() {
+        try {
+            const data = await AssessmentService.getAll();
+            setAssessments(data);
+        } catch (error) {
+            console.error("Erro ao buscar avaliações:", error);
+        } finally {
+            setIsLoadingAssessments(false);
+        }
+    }
 
     async function getListaBNCC(){
         await getListBncc().then(setLibraryItems);
@@ -241,8 +256,13 @@ function ReportCard({
         return <div className="text-center py-20 text-slate-400">Aluno não encontrado.</div>;
     }
 
-    if (isLoadingClasses || isLoadingStudents || isLoadingProjects || isLoadingPortfolio || isLoadingSchedules) {
-        return <div className="text-center py-20 text-slate-400 italic">Carregando dados...</div>;
+    if (isLoadingClasses || isLoadingStudents || isLoadingProjects || isLoadingPortfolio || isLoadingSchedules || isLoadingAssessments) {
+        return (
+            <div className="flex items-center justify-center p-12 min-h-screen">
+                <Loader2 className="w-8 h-8 text-slate-400 animate-spin mr-3" />
+                <span className="text-slate-500 font-medium">Carregando dados...</span>
+            </div>
+        );
     }
     const cls = classes.find(c => c.id === student.classId);
 
@@ -693,7 +713,12 @@ function ReportCardContent() {
 // ─────────────────────────────────────────────────────────────────────────
 export default function ReportCardPage() {
     return (
-        <React.Suspense fallback={<div className="p-20 text-center text-slate-400">Carregando relat&#xF3;rio...</div>}>
+        <React.Suspense fallback={
+            <div className="flex items-center justify-center p-12 min-h-screen">
+                <Loader2 className="w-8 h-8 text-slate-400 animate-spin mr-3" />
+                <span className="text-slate-500 font-medium">Carregando relatório...</span>
+            </div>
+        }>
             <ReportCardContent />
         </React.Suspense>
     );

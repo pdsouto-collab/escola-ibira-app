@@ -18,6 +18,7 @@ import { tasksDataSeed } from "@/lib/seed/tasks.seed"
 import { invoicesDataSeed } from "@/lib/seed/invoices-seed"
 import { dailyLogsDataSeed } from "@/lib/seed/daily-logs-seed"
 import { finalProductTypesDataSeed } from "@/lib/seed/final-product-types-seed"
+import { assessmentsDataSeed, assessmentsAttachmentsDataSeed } from "../src/lib/seed/assessments-seed"
 const prisma = new PrismaClient()
 
 async function main() {
@@ -25,6 +26,8 @@ async function main() {
   console.log("Limpando banco de dados...")
 
   // Ordem correta de exclusão: Filhos antes dos Pais
+  await prisma.assessmentAttachment.deleteMany()
+  await prisma.assessment.deleteMany()
   await prisma.muralComment.deleteMany()
   await prisma.muralEvent.deleteMany()
   await prisma.portfolioEntry.deleteMany()
@@ -176,6 +179,22 @@ async function main() {
   console.log("Importando Tipos de Produto Final...")
   await prisma.finalProductType.createMany({
     data: finalProductTypesDataSeed as any,
+    skipDuplicates: true
+  })
+
+  // Assessments
+  console.log("Importando Avaliações (Assessments)...")
+  await prisma.assessment.createMany({
+    data: assessmentsDataSeed.map(a => ({
+      ...a,
+      createdAt: new Date(a.createdAt)
+    })) as any,
+    skipDuplicates: true
+  })
+
+  console.log("Importando Anexos das Avaliações...")
+  await prisma.assessmentAttachment.createMany({
+    data: assessmentsAttachmentsDataSeed as any,
     skipDuplicates: true
   })
 

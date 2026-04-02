@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { getListBncc } from "@/services/bncc.service";
 import { LibraryItem } from "@/types/library-item";
+import { AssessmentService } from "@/services/assessment.service";
+import { Assessment } from "@/types/assessment";
 
 interface MilestoneReportProps {
     student: Student | undefined;
@@ -87,18 +89,31 @@ const getAllEvaluatableNodes = (nodes: any[], parentName?: string, level: string
 export function MilestoneReport({ student, filter = "all", period = "all" }: MilestoneReportProps) {
 
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
+    const [assessments, setAssessments] = useState<Assessment[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    const { skillsTree, contentsTree } = useAppStore();
 
     useEffect(() => {
-        getListaBNCC();
-    }, [])
+        async function loadData() {
+            setIsLoading(true);
+            try {
+                const [bnccData, assessmentsData] = await Promise.all([
+                    getListBncc(),
+                    AssessmentService.getAll()
+                ]);
+                setLibraryItems(bnccData);
+                setAssessments(assessmentsData);
+            } catch (error) {
+                console.error("Erro ao carregar dados", error);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        loadData();
+    }, []);
 
-    async function getListaBNCC() {
-        await getListBncc().then(setLibraryItems);
-    }
-
-    const { assessments, skillsTree, contentsTree } = useAppStore();
-
-    if (!student) return null;
+    if (!student || isLoading) return null;
     const studentId = student.id;
 
     const studentAssessments = assessments.filter(a => 

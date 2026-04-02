@@ -326,3 +326,42 @@ model FinalProductType {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+/// Avaliações (Assessments)
+model Assessment {
+  id              String   @id @default(cuid())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  projectId       String?
+  sessionId       String?
+  routineId       String?
+  knowledgeNodeId String?
+  period          String?
+  
+  scope           String
+  classId         String?
+  studentId       String?
+  
+  rating          Int?
+  observations    String   @db.Text
+
+  attachments     AssessmentAttachment[]
+
+  @@index([studentId])
+  @@index([projectId])
+  @@index([knowledgeNodeId])
+}
+
+model AssessmentAttachment {
+  id           String     @id @default(cuid())
+  assessmentId String
+  type         String
+  url          String     @db.Text
+  name         String?
+  capturedAt   String
+  
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  @@index([assessmentId])
+}

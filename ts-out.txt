@@ -1,0 +1,237 @@
+bd6e_portfolio.tsx(6,10): error TS2305: Module '"@/lib/data"' has no exported member 'Assessment'.
+bd6e_portfolio.tsx(170,46): error TS2339: Property 'students' does not exist on type 'AppContextType'.
+bd6e_portfolio.tsx(171,45): error TS2339: Property 'classes' does not exist on type 'AppContextType'.
+bd6e_portfolio.tsx(173,58): error TS7006: Parameter 's' implicitly has an 'any' type.
+bd6e_portfolio.tsx(175,24): error TS7006: Parameter 'c' implicitly has an 'any' type.
+bd6e_portfolio.tsx(176,35): error TS7006: Parameter 'c' implicitly has an 'any' type.
+bd6e_portfolio.tsx(213,49): error TS7006: Parameter 'att' implicitly has an 'any' type.
+bd6e_portfolio.tsx(229,49): error TS2339: Property 'projects' does not exist on type 'AppContextType'.
+bd6e_portfolio.tsx(231,46): error TS2339: Property 'schedule' does not exist on type 'AppContextType'.
+bd6e_portfolio.tsx(232,46): error TS2339: Property 'students' does not exist on type 'AppContextType'.
+bd6e_portfolio.tsx(233,45): error TS2339: Property 'classes' does not exist on type 'AppContextType'.
+bd6e_portfolio.tsx(236,50): error TS2339: Property 'libraryItems' does not exist on type 'AppContextType'.
+bd6e_portfolio.tsx(240,81): error TS7006: Parameter 'p' implicitly has an 'any' type.
+bd6e_portfolio.tsx(244,27): error TS7006: Parameter 'project' implicitly has an 'any' type.
+bd6e_portfolio.tsx(245,50): error TS7006: Parameter 's' implicitly has an 'any' type.
+bd6e_portfolio.tsx(274,55): error TS7006: Parameter 'session' implicitly has an 'any' type.
+bd6e_portfolio.tsx(442,46): error TS2339: Property 'students' does not exist on type 'AppContextType'.
+bd6e_portfolio.tsx(443,45): error TS2339: Property 'classes' does not exist on type 'AppContextType'.
+bd6e_portfolio.tsx(444,46): error TS2339: Property 'projects' does not exist on type 'AppContextType'.
+bd6e_portfolio.tsx(445,46): error TS2339: Property 'schedule' does not exist on type 'AppContextType'.
+bd6e_portfolio.tsx(448,50): error TS2339: Property 'libraryItems' does not exist on type 'AppContextType'.
+bd6e_portfolio.tsx(456,46): error TS7006: Parameter 's' implicitly has an 'any' type.
+bd6e_portfolio.tsx(464,35): error TS7006: Parameter 'student' implicitly has an 'any' type.
+bd6e_portfolio.tsx(470,85): error TS7006: Parameter 'att' implicitly has an 'any' type.
+bd6e_portfolio.tsx(472,42): error TS7006: Parameter 'c' implicitly has an 'any' type.
+bd6e_portfolio.tsx(504,73): error TS7006: Parameter 'p' implicitly has an 'any' type.
+bd6e_portfolio.tsx(505,82): error TS7006: Parameter 'id' implicitly has an 'any' type.
+bd6e_portfolio.tsx(506,79): error TS7006: Parameter 'id' implicitly has an 'any' type.
+bd6e_portfolio.tsx(518,66): error TS7006: Parameter 'project' implicitly has an 'any' type.
+bd6e_portfolio.tsx(519,89): error TS7006: Parameter 's' implicitly has an 'any' type.
+bd6e_portfolio.tsx(540,94): error TS7006: Parameter 'session' implicitly has an 'any' type.
+bd6e_portfolio.tsx(713,13): error TS2339: Property 'assessments' does not exist on type 'AppContextType'.
+bd6e_portfolio.tsx(713,26): error TS2339: Property 'projects' does not exist on type 'AppContextType'.
+bd6e_portfolio.tsx(713,49): error TS2339: Property 'students' does not exist on type 'AppContextType'.
+bd6e_portfolio.tsx(713,59): error TS2339: Property 'classes' does not exist on type 'AppContextType'.
+bd6e_portfolio.tsx(713,68): error TS2339: Property 'schedule' does not exist on type 'AppContextType'.
+bd6e_portfolio.tsx(713,104): error TS2339: Property 'libraryItems' does not exist on type 'AppContextType'.
+bd6e_portfolio.tsx(733,66): error TS7006: Parameter 's' implicitly has an 'any' type.
+bd6e_portfolio.tsx(775,46): error TS7006: Parameter 'p' implicitly has an 'any' type.
+bd6e_portfolio.tsx(785,46): error TS7006: Parameter 'c' implicitly has an 'any' type.
+bd6e_portfolio.tsx(792,54): error TS7006: Parameter 's' implicitly has an 'any' type.
+bd6e_portfolio.tsx(852,18): error TS2741: Property 'students' is missing in type '{ open: boolean; onOpenChange: (open: boolean) => void; knowledgeNodeId: any; sessionId: any; projectId: any; defaultClassId: any; defaultStudentId: any; contextLabel: any; }' but required in type 'AssessmentDrawerProps'.
+bd6e_portfolio.tsx(865,18): error TS2741: Property 'students' is missing in type '{ open: boolean; onOpenChange: (open: boolean) => void; assessmentId: any; initialRating: any; initialObservations: any; initialAttachments: any; knowledgeNodeId: any; sessionId: any; projectId: any; defaultClassId: any; defaultStudentId: any; }' but required in type 'AssessmentDrawerProps'.
+old_portfolio.tsx(6,10): error TS2305: Module '"@/lib/data"' has no exported member 'Assessment'.
+old_portfolio.tsx(172,46): error TS2339: Property 'students' does not exist on type 'AppContextType'.
+old_portfolio.tsx(173,45): error TS2339: Property 'classes' does not exist on type 'AppContextType'.
+old_portfolio.tsx(175,58): error TS7006: Parameter 's' implicitly has an 'any' type.
+old_portfolio.tsx(177,24): error TS7006: Parameter 'c' implicitly has an 'any' type.
+old_portfolio.tsx(178,35): error TS7006: Parameter 'c' implicitly has an 'any' type.
+old_portfolio.tsx(215,49): error TS7006: Parameter 'att' implicitly has an 'any' type.
+old_portfolio.tsx(231,49): error TS2339: Property 'projects' does not exist on type 'AppContextType'.
+old_portfolio.tsx(233,46): error TS2339: Property 'schedule' does not exist on type 'AppContextType'.
+old_portfolio.tsx(234,46): error TS2339: Property 'students' does not exist on type 'AppContextType'.
+old_portfolio.tsx(235,45): error TS2339: Property 'classes' does not exist on type 'AppContextType'.
+old_portfolio.tsx(242,81): error TS7006: Parameter 'p' implicitly has an 'any' type.
+old_portfolio.tsx(256,27): error TS7006: Parameter 'project' implicitly has an 'any' type.
+old_portfolio.tsx(257,50): error TS7006: Parameter 's' implicitly has an 'any' type.
+old_portfolio.tsx(286,55): error TS7006: Parameter 'session' implicitly has an 'any' type.
+old_portfolio.tsx(454,46): error TS2339: Property 'students' does not exist on type 'AppContextType'.
+old_portfolio.tsx(455,45): error TS2339: Property 'classes' does not exist on type 'AppContextType'.
+old_portfolio.tsx(456,46): error TS2339: Property 'projects' does not exist on type 'AppContextType'.
+old_portfolio.tsx(457,46): error TS2339: Property 'schedule' does not exist on type 'AppContextType'.
+old_portfolio.tsx(479,46): error TS7006: Parameter 's' implicitly has an 'any' type.
+old_portfolio.tsx(487,35): error TS7006: Parameter 'student' implicitly has an 'any' type.
+old_portfolio.tsx(493,85): error TS7006: Parameter 'att' implicitly has an 'any' type.
+old_portfolio.tsx(495,42): error TS7006: Parameter 'c' implicitly has an 'any' type.
+old_portfolio.tsx(527,73): error TS7006: Parameter 'p' implicitly has an 'any' type.
+old_portfolio.tsx(528,82): error TS7006: Parameter 'id' implicitly has an 'any' type.
+old_portfolio.tsx(529,79): error TS7006: Parameter 'id' implicitly has an 'any' type.
+old_portfolio.tsx(541,66): error TS7006: Parameter 'project' implicitly has an 'any' type.
+old_portfolio.tsx(542,89): error TS7006: Parameter 's' implicitly has an 'any' type.
+old_portfolio.tsx(563,94): error TS7006: Parameter 'session' implicitly has an 'any' type.
+old_portfolio.tsx(736,13): error TS2339: Property 'assessments' does not exist on type 'AppContextType'.
+old_portfolio.tsx(736,26): error TS2339: Property 'projects' does not exist on type 'AppContextType'.
+old_portfolio.tsx(736,49): error TS2339: Property 'students' does not exist on type 'AppContextType'.
+old_portfolio.tsx(736,59): error TS2339: Property 'classes' does not exist on type 'AppContextType'.
+old_portfolio.tsx(736,68): error TS2339: Property 'schedule' does not exist on type 'AppContextType'.
+old_portfolio.tsx(766,66): error TS7006: Parameter 's' implicitly has an 'any' type.
+old_portfolio.tsx(808,46): error TS7006: Parameter 'p' implicitly has an 'any' type.
+old_portfolio.tsx(818,46): error TS7006: Parameter 'c' implicitly has an 'any' type.
+old_portfolio.tsx(825,54): error TS7006: Parameter 's' implicitly has an 'any' type.
+old_portfolio.tsx(885,18): error TS2741: Property 'students' is missing in type '{ open: boolean; onOpenChange: (open: boolean) => void; knowledgeNodeId: any; sessionId: any; projectId: any; defaultClassId: any; defaultStudentId: any; contextLabel: any; }' but required in type 'AssessmentDrawerProps'.
+old_portfolio.tsx(898,18): error TS2741: Property 'students' is missing in type '{ open: boolean; onOpenChange: (open: boolean) => void; assessmentId: any; initialRating: any; initialObservations: any; initialAttachments: any; knowledgeNodeId: any; sessionId: any; projectId: any; defaultClassId: any; defaultStudentId: any; }' but required in type 'AssessmentDrawerProps'.
+prisma/seed.ts(29,16): error TS2339: Property 'assessmentAttachment' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+prisma/seed.ts(30,16): error TS2339: Property 'assessment' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+prisma/seed.ts(187,16): error TS2339: Property 'assessment' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+prisma/seed.ts(196,16): error TS2339: Property 'assessmentAttachment' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+progress_portfolio.tsx(5,10): error TS2305: Module '"@/lib/data"' has no exported member 'Assessment'.
+progress_portfolio.tsx(173,46): error TS2339: Property 'students' does not exist on type 'AppContextType'.
+progress_portfolio.tsx(174,45): error TS2339: Property 'classes' does not exist on type 'AppContextType'.
+progress_portfolio.tsx(176,58): error TS7006: Parameter 's' implicitly has an 'any' type.
+progress_portfolio.tsx(178,24): error TS7006: Parameter 'c' implicitly has an 'any' type.
+progress_portfolio.tsx(179,35): error TS7006: Parameter 'c' implicitly has an 'any' type.
+progress_portfolio.tsx(216,49): error TS7006: Parameter 'att' implicitly has an 'any' type.
+progress_portfolio.tsx(232,49): error TS2339: Property 'projects' does not exist on type 'AppContextType'.
+progress_portfolio.tsx(234,46): error TS2339: Property 'schedule' does not exist on type 'AppContextType'.
+progress_portfolio.tsx(235,46): error TS2339: Property 'students' does not exist on type 'AppContextType'.
+progress_portfolio.tsx(236,45): error TS2339: Property 'classes' does not exist on type 'AppContextType'.
+progress_portfolio.tsx(239,50): error TS2339: Property 'libraryItems' does not exist on type 'AppContextType'.
+progress_portfolio.tsx(243,81): error TS7006: Parameter 'p' implicitly has an 'any' type.
+progress_portfolio.tsx(247,27): error TS7006: Parameter 'project' implicitly has an 'any' type.
+progress_portfolio.tsx(248,50): error TS7006: Parameter 's' implicitly has an 'any' type.
+progress_portfolio.tsx(277,55): error TS7006: Parameter 'session' implicitly has an 'any' type.
+progress_portfolio.tsx(445,46): error TS2339: Property 'students' does not exist on type 'AppContextType'.
+progress_portfolio.tsx(446,45): error TS2339: Property 'classes' does not exist on type 'AppContextType'.
+progress_portfolio.tsx(447,46): error TS2339: Property 'projects' does not exist on type 'AppContextType'.
+progress_portfolio.tsx(448,46): error TS2339: Property 'schedule' does not exist on type 'AppContextType'.
+progress_portfolio.tsx(451,50): error TS2339: Property 'libraryItems' does not exist on type 'AppContextType'.
+progress_portfolio.tsx(459,46): error TS7006: Parameter 's' implicitly has an 'any' type.
+progress_portfolio.tsx(467,35): error TS7006: Parameter 'student' implicitly has an 'any' type.
+progress_portfolio.tsx(473,85): error TS7006: Parameter 'att' implicitly has an 'any' type.
+progress_portfolio.tsx(475,42): error TS7006: Parameter 'c' implicitly has an 'any' type.
+progress_portfolio.tsx(507,73): error TS7006: Parameter 'p' implicitly has an 'any' type.
+progress_portfolio.tsx(508,82): error TS7006: Parameter 'id' implicitly has an 'any' type.
+progress_portfolio.tsx(509,79): error TS7006: Parameter 'id' implicitly has an 'any' type.
+progress_portfolio.tsx(521,69): error TS7006: Parameter 'p' implicitly has an 'any' type.
+progress_portfolio.tsx(537,90): error TS2353: Object literal may only specify known properties, and 'trabalhado' does not exist in type 'ProgressChartData'.
+progress_portfolio.tsx(540,54): error TS2339: Property 'trabalhado' does not exist on type 'ProgressChartData'.
+progress_portfolio.tsx(562,70): error TS7006: Parameter 'project' implicitly has an 'any' type.
+progress_portfolio.tsx(563,93): error TS7006: Parameter 's' implicitly has an 'any' type.
+progress_portfolio.tsx(584,98): error TS7006: Parameter 'session' implicitly has an 'any' type.
+progress_portfolio.tsx(653,13): error TS2339: Property 'assessments' does not exist on type 'AppContextType'.
+progress_portfolio.tsx(653,26): error TS2339: Property 'projects' does not exist on type 'AppContextType'.
+progress_portfolio.tsx(653,49): error TS2339: Property 'students' does not exist on type 'AppContextType'.
+progress_portfolio.tsx(653,59): error TS2339: Property 'classes' does not exist on type 'AppContextType'.
+progress_portfolio.tsx(653,68): error TS2339: Property 'schedule' does not exist on type 'AppContextType'.
+progress_portfolio.tsx(653,104): error TS2339: Property 'libraryItems' does not exist on type 'AppContextType'.
+progress_portfolio.tsx(662,66): error TS7006: Parameter 's' implicitly has an 'any' type.
+progress_portfolio.tsx(704,46): error TS7006: Parameter 'p' implicitly has an 'any' type.
+progress_portfolio.tsx(714,46): error TS7006: Parameter 'c' implicitly has an 'any' type.
+progress_portfolio.tsx(721,54): error TS7006: Parameter 's' implicitly has an 'any' type.
+progress_portfolio.tsx(781,18): error TS2741: Property 'students' is missing in type '{ open: boolean; onOpenChange: (open: boolean) => void; knowledgeNodeId: any; sessionId: any; projectId: any; defaultClassId: any; defaultStudentId: any; contextLabel: any; }' but required in type 'AssessmentDrawerProps'.
+progress_portfolio.tsx(794,18): error TS2741: Property 'students' is missing in type '{ open: boolean; onOpenChange: (open: boolean) => void; assessmentId: any; initialRating: any; initialObservations: any; initialAttachments: any; knowledgeNodeId: any; sessionId: any; projectId: any; defaultClassId: any; defaultStudentId: any; contextLabel: any; }' but required in type 'AssessmentDrawerProps'.
+src/app/(main)/portfolio/page.tsx(6,10): error TS2305: Module '"@/lib/data"' has no exported member 'Assessment'.
+src/app/(main)/portfolio/page.tsx(229,49): error TS7006: Parameter 'att' implicitly has an 'any' type.
+src/app/(main)/portfolio/page.tsx(507,85): error TS7006: Parameter 'att' implicitly has an 'any' type.
+src/app/(main)/portfolio/page.tsx(813,13): error TS2339: Property 'assessments' does not exist on type 'AppContextType'.
+src/app/(main)/portfolio/report/page.tsx(6,10): error TS2305: Module '"@/lib/data"' has no exported member 'Assessment'.
+src/app/(main)/portfolio/report/page.tsx(164,13): error TS2339: Property 'assessments' does not exist on type 'AppContextType'.
+src/app/(main)/portfolio/report/page.tsx(164,52): error TS2339: Property 'dailyLogs' does not exist on type 'AppContextType'.
+src/app/(main)/portfolio/report/page.tsx(263,52): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/app/(main)/portfolio/report/page.tsx(445,45): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/app/(main)/portfolio/report/page.tsx(452,57): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/app/(main)/portfolio/report/page.tsx(452,84): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/app/(main)/portfolio/report/page.tsx(452,87): error TS7006: Parameter 'b' implicitly has an 'any' type.
+src/app/(main)/portfolio/report/page.tsx(452,164): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/app/(main)/portfolio/report/page.tsx(491,87): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/components/mosaic/radial-matrix.tsx(4,41): error TS2305: Module '"@/lib/data"' has no exported member 'Assessment'.
+src/components/mosaic/radial-matrix.tsx(4,53): error TS2305: Module '"@/lib/data"' has no exported member 'Project'.
+src/components/mosaic/radial-matrix.tsx(137,66): error TS7006: Parameter 'sid' implicitly has an 'any' type.
+src/components/mosaic/radial-matrix.tsx(138,54): error TS7006: Parameter 'skill' implicitly has an 'any' type.
+very_old2_portfolio.tsx(6,10): error TS2305: Module '"@/lib/data"' has no exported member 'Assessment'.
+very_old2_portfolio.tsx(170,46): error TS2339: Property 'students' does not exist on type 'AppContextType'.
+very_old2_portfolio.tsx(171,45): error TS2339: Property 'classes' does not exist on type 'AppContextType'.
+very_old2_portfolio.tsx(173,58): error TS7006: Parameter 's' implicitly has an 'any' type.
+very_old2_portfolio.tsx(175,24): error TS7006: Parameter 'c' implicitly has an 'any' type.
+very_old2_portfolio.tsx(176,35): error TS7006: Parameter 'c' implicitly has an 'any' type.
+very_old2_portfolio.tsx(213,49): error TS7006: Parameter 'att' implicitly has an 'any' type.
+very_old2_portfolio.tsx(229,49): error TS2339: Property 'projects' does not exist on type 'AppContextType'.
+very_old2_portfolio.tsx(231,46): error TS2339: Property 'schedule' does not exist on type 'AppContextType'.
+very_old2_portfolio.tsx(232,46): error TS2339: Property 'students' does not exist on type 'AppContextType'.
+very_old2_portfolio.tsx(233,45): error TS2339: Property 'classes' does not exist on type 'AppContextType'.
+very_old2_portfolio.tsx(236,50): error TS2339: Property 'libraryItems' does not exist on type 'AppContextType'.
+very_old2_portfolio.tsx(240,81): error TS7006: Parameter 'p' implicitly has an 'any' type.
+very_old2_portfolio.tsx(244,27): error TS7006: Parameter 'project' implicitly has an 'any' type.
+very_old2_portfolio.tsx(245,50): error TS7006: Parameter 's' implicitly has an 'any' type.
+very_old2_portfolio.tsx(274,55): error TS7006: Parameter 'session' implicitly has an 'any' type.
+very_old2_portfolio.tsx(442,46): error TS2339: Property 'students' does not exist on type 'AppContextType'.
+very_old2_portfolio.tsx(443,45): error TS2339: Property 'classes' does not exist on type 'AppContextType'.
+very_old2_portfolio.tsx(444,46): error TS2339: Property 'projects' does not exist on type 'AppContextType'.
+very_old2_portfolio.tsx(445,46): error TS2339: Property 'schedule' does not exist on type 'AppContextType'.
+very_old2_portfolio.tsx(448,50): error TS2339: Property 'libraryItems' does not exist on type 'AppContextType'.
+very_old2_portfolio.tsx(456,46): error TS7006: Parameter 's' implicitly has an 'any' type.
+very_old2_portfolio.tsx(464,35): error TS7006: Parameter 'student' implicitly has an 'any' type.
+very_old2_portfolio.tsx(470,85): error TS7006: Parameter 'att' implicitly has an 'any' type.
+very_old2_portfolio.tsx(472,42): error TS7006: Parameter 'c' implicitly has an 'any' type.
+very_old2_portfolio.tsx(504,73): error TS7006: Parameter 'p' implicitly has an 'any' type.
+very_old2_portfolio.tsx(505,82): error TS7006: Parameter 'id' implicitly has an 'any' type.
+very_old2_portfolio.tsx(506,79): error TS7006: Parameter 'id' implicitly has an 'any' type.
+very_old2_portfolio.tsx(518,66): error TS7006: Parameter 'project' implicitly has an 'any' type.
+very_old2_portfolio.tsx(519,89): error TS7006: Parameter 's' implicitly has an 'any' type.
+very_old2_portfolio.tsx(540,94): error TS7006: Parameter 'session' implicitly has an 'any' type.
+very_old2_portfolio.tsx(713,13): error TS2339: Property 'assessments' does not exist on type 'AppContextType'.
+very_old2_portfolio.tsx(713,26): error TS2339: Property 'projects' does not exist on type 'AppContextType'.
+very_old2_portfolio.tsx(713,49): error TS2339: Property 'students' does not exist on type 'AppContextType'.
+very_old2_portfolio.tsx(713,59): error TS2339: Property 'classes' does not exist on type 'AppContextType'.
+very_old2_portfolio.tsx(713,68): error TS2339: Property 'schedule' does not exist on type 'AppContextType'.
+very_old2_portfolio.tsx(713,104): error TS2339: Property 'libraryItems' does not exist on type 'AppContextType'.
+very_old2_portfolio.tsx(733,66): error TS7006: Parameter 's' implicitly has an 'any' type.
+very_old2_portfolio.tsx(775,46): error TS7006: Parameter 'p' implicitly has an 'any' type.
+very_old2_portfolio.tsx(785,46): error TS7006: Parameter 'c' implicitly has an 'any' type.
+very_old2_portfolio.tsx(792,54): error TS7006: Parameter 's' implicitly has an 'any' type.
+very_old2_portfolio.tsx(852,18): error TS2741: Property 'students' is missing in type '{ open: boolean; onOpenChange: (open: boolean) => void; knowledgeNodeId: any; sessionId: any; projectId: any; defaultClassId: any; defaultStudentId: any; contextLabel: any; }' but required in type 'AssessmentDrawerProps'.
+very_old2_portfolio.tsx(865,18): error TS2741: Property 'students' is missing in type '{ open: boolean; onOpenChange: (open: boolean) => void; assessmentId: any; initialRating: any; initialObservations: any; initialAttachments: any; knowledgeNodeId: any; sessionId: any; projectId: any; defaultClassId: any; defaultStudentId: any; }' but required in type 'AssessmentDrawerProps'.
+very_old_portfolio.tsx(5,10): error TS2305: Module '"@/lib/data"' has no exported member 'Assessment'.
+very_old_portfolio.tsx(65,46): error TS2339: Property 'students' does not exist on type 'AppContextType'.
+very_old_portfolio.tsx(66,45): error TS2339: Property 'classes' does not exist on type 'AppContextType'.
+very_old_portfolio.tsx(68,58): error TS7006: Parameter 's' implicitly has an 'any' type.
+very_old_portfolio.tsx(70,24): error TS7006: Parameter 'c' implicitly has an 'any' type.
+very_old_portfolio.tsx(71,35): error TS7006: Parameter 'c' implicitly has an 'any' type.
+very_old_portfolio.tsx(108,49): error TS7006: Parameter 'att' implicitly has an 'any' type.
+very_old_portfolio.tsx(124,49): error TS2339: Property 'projects' does not exist on type 'AppContextType'.
+very_old_portfolio.tsx(126,46): error TS2339: Property 'schedule' does not exist on type 'AppContextType'.
+very_old_portfolio.tsx(127,46): error TS2339: Property 'students' does not exist on type 'AppContextType'.
+very_old_portfolio.tsx(128,45): error TS2339: Property 'classes' does not exist on type 'AppContextType'.
+very_old_portfolio.tsx(134,81): error TS7006: Parameter 'p' implicitly has an 'any' type.
+very_old_portfolio.tsx(138,27): error TS7006: Parameter 'project' implicitly has an 'any' type.
+very_old_portfolio.tsx(139,50): error TS7006: Parameter 's' implicitly has an 'any' type.
+very_old_portfolio.tsx(168,55): error TS7006: Parameter 'session' implicitly has an 'any' type.
+very_old_portfolio.tsx(215,68): error TS7006: Parameter 'skillId' implicitly has an 'any' type.
+very_old_portfolio.tsx(238,66): error TS7006: Parameter 'contentId' implicitly has an 'any' type.
+very_old_portfolio.tsx(300,46): error TS2339: Property 'students' does not exist on type 'AppContextType'.
+very_old_portfolio.tsx(301,45): error TS2339: Property 'classes' does not exist on type 'AppContextType'.
+very_old_portfolio.tsx(302,46): error TS2339: Property 'projects' does not exist on type 'AppContextType'.
+very_old_portfolio.tsx(303,46): error TS2339: Property 'schedule' does not exist on type 'AppContextType'.
+very_old_portfolio.tsx(313,46): error TS7006: Parameter 's' implicitly has an 'any' type.
+very_old_portfolio.tsx(321,35): error TS7006: Parameter 'student' implicitly has an 'any' type.
+very_old_portfolio.tsx(327,85): error TS7006: Parameter 'att' implicitly has an 'any' type.
+very_old_portfolio.tsx(329,42): error TS7006: Parameter 'c' implicitly has an 'any' type.
+very_old_portfolio.tsx(357,89): error TS7006: Parameter 's' implicitly has an 'any' type.
+very_old_portfolio.tsx(358,89): error TS7006: Parameter 'p' implicitly has an 'any' type.
+very_old_portfolio.tsx(385,84): error TS7006: Parameter 'att' implicitly has an 'any' type.
+very_old_portfolio.tsx(406,56): error TS7006: Parameter 'p' implicitly has an 'any' type.
+very_old_portfolio.tsx(406,104): error TS7006: Parameter 'skillId' implicitly has an 'any' type.
+very_old_portfolio.tsx(426,56): error TS7006: Parameter 'p' implicitly has an 'any' type.
+very_old_portfolio.tsx(426,102): error TS7006: Parameter 'contentId' implicitly has an 'any' type.
+very_old_portfolio.tsx(483,13): error TS2339: Property 'assessments' does not exist on type 'AppContextType'.
+very_old_portfolio.tsx(483,26): error TS2339: Property 'projects' does not exist on type 'AppContextType'.
+very_old_portfolio.tsx(483,49): error TS2339: Property 'students' does not exist on type 'AppContextType'.
+very_old_portfolio.tsx(483,59): error TS2339: Property 'classes' does not exist on type 'AppContextType'.
+very_old_portfolio.tsx(483,68): error TS2339: Property 'schedule' does not exist on type 'AppContextType'.
+very_old_portfolio.tsx(492,66): error TS7006: Parameter 's' implicitly has an 'any' type.
+very_old_portfolio.tsx(534,46): error TS7006: Parameter 'p' implicitly has an 'any' type.
+very_old_portfolio.tsx(544,46): error TS7006: Parameter 'c' implicitly has an 'any' type.
+very_old_portfolio.tsx(551,54): error TS7006: Parameter 's' implicitly has an 'any' type.
+very_old_portfolio.tsx(609,18): error TS2741: Property 'students' is missing in type '{ open: boolean; onOpenChange: (open: boolean) => void; knowledgeNodeId: any; sessionId: any; projectId: any; defaultClassId: any; defaultStudentId: any; contextLabel: any; }' but required in type 'AssessmentDrawerProps'.
+very_old_portfolio.tsx(622,18): error TS2741: Property 'students' is missing in type '{ open: boolean; onOpenChange: (open: boolean) => void; assessmentId: any; initialRating: any; initialObservations: any; initialAttachments: any; knowledgeNodeId: any; sessionId: any; projectId: any; defaultClassId: any; defaultStudentId: any; contextLabel: string; }' but required in type 'AssessmentDrawerProps'.
