@@ -33,6 +33,8 @@ async function main() {
   await prisma.classBoardPost.deleteMany()
   await prisma.assessmentAttachment.deleteMany()
   await prisma.assessment.deleteMany()
+  await prisma.chatMessage.deleteMany()
+  await prisma.chatGroup.deleteMany()
   await prisma.muralComment.deleteMany()
   await prisma.muralEvent.deleteMany()
   await prisma.portfolioEntry.deleteMany()

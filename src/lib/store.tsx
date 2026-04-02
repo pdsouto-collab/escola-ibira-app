@@ -4,13 +4,10 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 
 import {
     mockRecursiveDataSkills, MosaicNode,
-    ChatMessage,
-    mockMessages,
     KnowledgeNode, mockSkillsTree, mockContentsTree
 } from "@/lib/data";
 
 interface AppState {
-    messages: ChatMessage[];
     mosaicData: MosaicNode[];
     bnccProgress: Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>;
     skillsTree: KnowledgeNode[];
@@ -18,8 +15,6 @@ interface AppState {
 }
 
 interface AppContextType extends AppState {
-
-    sendMessage: (msg: ChatMessage) => void;
 
     updateMosaicNode: (nodeId: string, status: "not-started" | "in-progress" | "achieved") => void;
     replaceMosaicData: (newData: MosaicNode[]) => void;
@@ -40,19 +35,8 @@ interface AppContextType extends AppState {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
-const initialMessages: ChatMessage[] = mockMessages.map(m => ({
-    id: m.id,
-    senderId: m.sender === "me" ? "me" : m.contactId,
-    receiverId: m.sender === "me" ? m.contactId : "me",
-    content: m.content,
-    timestamp: m.timestamp,
-    read: true,
-    senderName: m.senderName
-}));
-
 export function AppProvider({ children }: { children: React.ReactNode }) {
     // Initialize state from LocalStorage or Default
-    const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [mosaicData, setMosaicData] = useState<MosaicNode[]>(mockRecursiveDataSkills);
     const [bnccProgress, setBnccProgress] = useState<Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>>({});
     const [skillsTree, setSkillsTree] = useState<KnowledgeNode[]>(mockSkillsTree);
@@ -92,7 +76,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem("app_version", CURRENT_VERSION);
         } else {
             // Normal Load
-            load("messages", setMessages, initialMessages);
             load("mosaicData", setMosaicData, mockRecursiveDataSkills);
             load("bnccProgress", setBnccProgress, {});
             load("skillsTree", setSkillsTree, mockSkillsTree);
@@ -108,7 +91,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (!isLoaded) return;
         try {
-            localStorage.setItem("app_messages", JSON.stringify(messages));
             localStorage.setItem("app_mosaicData", JSON.stringify(mosaicData));
             localStorage.setItem("app_bnccProgress", JSON.stringify(bnccProgress));
             localStorage.setItem("app_skillsTree", JSON.stringify(skillsTree));
@@ -116,11 +98,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         } catch (error) {
             console.error("Erro ao salvar no cache local. O limite de armazenamento pode ter sido atingido.", error);
         }
-    }, [messages, mosaicData, bnccProgress, skillsTree, contentsTree, isLoaded]);
-
-
-
-    const sendMessage = (msg: ChatMessage) => setMessages(prev => [...prev, msg]);
+    }, [mosaicData, bnccProgress, skillsTree, contentsTree, isLoaded]);
 
     const updateMosaicNode = (nodeId: string, status: "not-started" | "in-progress" | "achieved") => {
         const updateRecursive = (nodes: MosaicNode[]): MosaicNode[] => {
@@ -286,8 +264,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <AppContext.Provider value={{
-            messages,
-            sendMessage, resetData,
+            resetData,
             mosaicData, updateMosaicNode, replaceMosaicData,
             bnccProgress, updateBNCCStatus,
             skillsTree, contentsTree, addKnowledgeNode, updateKnowledgeNode, removeKnowledgeNode, duplicateKnowledgeNode
