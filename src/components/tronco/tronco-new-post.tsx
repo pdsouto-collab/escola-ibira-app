@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useAppStore } from "@/lib/store";
-import { ClassBoardPost, ClassBoardCategoryType } from "@/lib/data";
+import { ClassBoardCategoryType } from "@/types/class-board-post";
+import { createClassBoardPost } from "@/services/class-board.service";
 import { Project } from "@/types/project";
 import { getProjects } from "@/services/project.service";
 import { Button } from "@/components/ui/button";
@@ -11,13 +11,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { TreeDeciduous, Image as ImageIcon, Send, Shapes, Megaphone } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 
 
 export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) {
-    const { addClassBoardPost } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
     const [isExpanded, setIsExpanded] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Form State
     const [categoryType, setCategoryType] = useState<ClassBoardCategoryType>("Novidades da Turma");
@@ -57,9 +58,11 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
         }
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!title.trim() && !isAcontece) return; // Validation
         if (isAcontece && linkedProjectId === "none") return;
+
+        setIsSubmitting(true);
 
         let photos: string[] = [];
         if (customPhoto) {
@@ -80,8 +83,7 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
             }
         }
 
-        const newPost: ClassBoardPost = {
-            id: `cbp-${Math.random().toString(36).substr(2, 9)}`,
+        const newPost = await createClassBoardPost({
             classId: selectedClassId,
             authorId: currentUser?.id || "u2",
             authorName: currentUser?.name || "Professor",
@@ -92,19 +94,25 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
             content,
             extraMaterials: isAcontece ? extraMaterials : undefined,
             photos,
-            createdAt: new Date().toISOString()
-        };
+        });
 
-        addClassBoardPost(newPost);
+        setIsSubmitting(false);
 
-        // Reset form
-        setIsExpanded(false);
-        setTitle("");
-        setContent("");
-        setExtraMaterials("");
-        setLinkedProjectId("none");
-        setCustomPhoto("");
-        if (fileInputRef.current) fileInputRef.current.value = "";
+        if (newPost) {
+            toast.success("Recado postado com sucesso!");
+            window.dispatchEvent(new Event("classBoardPostAdded"));
+
+            // Reset form
+            setIsExpanded(false);
+            setTitle("");
+            setContent("");
+            setExtraMaterials("");
+            setLinkedProjectId("none");
+            setCustomPhoto("");
+            if (fileInputRef.current) fileInputRef.current.value = "";
+        } else {
+            toast.error("Erro ao postar recado. Tente novamente.");
+        }
     };
 
     if (!isExpanded) {
@@ -123,6 +131,7 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
 
     // Image attach logic
     const handleAttachImage = () => {
+        if (isSubmitting) return;
         fileInputRef.current?.click();
     };
 
@@ -148,7 +157,7 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
 
             <div className="p-4 space-y-4">
                 {/* Category Selection */}
-                <div className="flex gap-2 p-1 bg-slate-100 rounded-lg">
+                <div className={`flex gap-2 p-1 bg-slate-100 rounded-lg ${isSubmitting ? 'opacity-70 pointer-events-none' : ''}`}>
                     <button
                         onClick={() => setCategoryType("Novidades da Turma")}
                         className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-md transition-all ${!isAcontece ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
@@ -170,7 +179,7 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
                         <label className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">
                             Vincular a um Projeto
                         </label>
-                        <Select value={linkedProjectId} onValueChange={handleProjectSelect}>
+                        <Select value={linkedProjectId} onValueChange={handleProjectSelect} disabled={isSubmitting}>
                             <SelectTrigger className="bg-white">
                                 <SelectValue placeholder="Selecione um Projeto" />
                             </SelectTrigger>
@@ -186,6 +195,7 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
                             placeholder="Materiais e Detalhes Adicionais (Ex: Livro específico usado)"
                             value={extraMaterials}
                             onChange={(e) => setExtraMaterials(e.target.value)}
+                            disabled={isSubmitting}
                             className="bg-white min-h-[80px]"
                         />
                     </div>
@@ -198,6 +208,7 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
                             placeholder="Título do Recado"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
+                            disabled={isSubmitting}
                             className="font-medium bg-slate-50 border-transparent hover:border-slate-200 focus:border-emerald-300 focus:bg-white"
                         />
                     )}
@@ -206,6 +217,7 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
                         placeholder={isAcontece ? "Relato sobre a vivência do projeto..." : "O que você quer contar para a turma?"}
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
+                        disabled={isSubmitting}
                         className="min-h-[120px] bg-slate-50 border-transparent hover:border-slate-200 focus:border-emerald-300 focus:bg-white"
                     />
 
@@ -214,7 +226,8 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
                         <div className="relative mt-2 rounded-lg overflow-hidden border border-slate-200 aspect-[4/3] max-w-sm">
                             <button
                                 onClick={() => setCustomPhoto("")}
-                                className="absolute top-2 right-2 bg-white/90 text-slate-700 rounded-full p-1.5 shadow-sm hover:bg-red-50 hover:text-red-600 transition-colors z-10"
+                                disabled={isSubmitting}
+                                className="absolute top-2 right-2 bg-white/90 text-slate-700 rounded-full p-1.5 shadow-sm hover:bg-red-50 hover:text-red-600 transition-colors z-10 disabled:opacity-50"
                             >
                                 <span className="sr-only">Remover foto</span>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
@@ -239,6 +252,7 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
                         variant="outline"
                         size="icon"
                         onClick={handleAttachImage}
+                        disabled={isSubmitting}
                         className="h-9 w-9 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-full transition-colors"
                         title="Anexar imagem (arquivo)"
                     >
@@ -246,16 +260,28 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
                     </Button>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="ghost" onClick={() => setIsExpanded(false)} className="text-slate-500 hover:text-slate-900">
+                    <Button variant="ghost" onClick={() => setIsExpanded(false)} disabled={isSubmitting} className="text-slate-500 hover:text-slate-900">
                         Cancelar
                     </Button>
                     <Button
                         onClick={handleSubmit}
                         className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-6 shadow-sm"
-                        disabled={!title.trim() && !isAcontece}
+                        disabled={(!title.trim() && !isAcontece) || isSubmitting}
                     >
-                        <Send className="mr-2 h-4 w-4" />
-                        Postar Recado
+                        {isSubmitting ? (
+                            <span className="flex items-center">
+                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Postando...
+                            </span>
+                        ) : (
+                            <span className="flex items-center">
+                                <Send className="mr-2 h-4 w-4" />
+                                Postar Recado
+                            </span>
+                        )}
                     </Button>
                 </div>
             </div>

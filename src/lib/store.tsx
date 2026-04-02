@@ -7,8 +7,7 @@ import {
     ChatMessage,
     mockMessages,
     KnowledgeNode, mockSkillsTree, mockContentsTree,
-    Menu, mockMenus,
-    ClassBoardPost, mockClassBoardPosts, PostInteraction, mockPostInteractions
+    Menu, mockMenus
 } from "@/lib/data";
 
 interface AppState {
@@ -18,8 +17,6 @@ interface AppState {
     skillsTree: KnowledgeNode[];
     contentsTree: KnowledgeNode[];
     menus: Menu[];
-    classBoardPosts: ClassBoardPost[];
-    postInteractions: PostInteraction[];
 }
 
 interface AppContextType extends AppState {
@@ -45,19 +42,10 @@ interface AppContextType extends AppState {
     addMenu: (menu: Menu) => void;
     updateMenu: (id: string, updates: Partial<Menu>) => void;
     removeMenu: (id: string) => void;
-
-    // Class Board
-    addClassBoardPost: (post: ClassBoardPost) => void;
-    addPostInteraction: (interaction: PostInteraction) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
-
-
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
-
-
-
 
 const initialMessages: ChatMessage[] = mockMessages.map(m => ({
     id: m.id,
@@ -77,8 +65,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [skillsTree, setSkillsTree] = useState<KnowledgeNode[]>(mockSkillsTree);
     const [contentsTree, setContentsTree] = useState<KnowledgeNode[]>(mockContentsTree);
     const [menus, setMenus] = useState<Menu[]>(mockMenus);
-    const [classBoardPosts, setClassBoardPosts] = useState<ClassBoardPost[]>(mockClassBoardPosts);
-    const [postInteractions, setPostInteractions] = useState<PostInteraction[]>(mockPostInteractions);
 
     const [isLoaded, setIsLoaded] = useState(false);
 
@@ -107,8 +93,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             // Migration Logic: Force Reset of critical data to sync with new tree structure
             setSkillsTree(mockSkillsTree);
             setContentsTree(mockContentsTree);
-            setClassBoardPosts(mockClassBoardPosts);
-            setPostInteractions(mockPostInteractions);
 
             load("bnccProgress", setBnccProgress, {});
 
@@ -122,8 +106,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             load("skillsTree", setSkillsTree, mockSkillsTree);
             load("contentsTree", setContentsTree, mockContentsTree);
             load("menus", setMenus, mockMenus);
-            load("classBoardPosts", setClassBoardPosts, mockClassBoardPosts);
-            load("postInteractions", setPostInteractions, mockPostInteractions);
         }
 
 
@@ -141,12 +123,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem("app_skillsTree", JSON.stringify(skillsTree));
             localStorage.setItem("app_contentsTree", JSON.stringify(contentsTree));
             localStorage.setItem("app_menus", JSON.stringify(menus));
-            localStorage.setItem("app_classBoardPosts", JSON.stringify(classBoardPosts));
-            localStorage.setItem("app_postInteractions", JSON.stringify(postInteractions));
         } catch (error) {
             console.error("Erro ao salvar no cache local. O limite de armazenamento pode ter sido atingido.", error);
         }
-    }, [messages, mosaicData, bnccProgress, skillsTree, contentsTree, menus, classBoardPosts, postInteractions, isLoaded]);
+    }, [messages, mosaicData, bnccProgress, skillsTree, contentsTree, menus, isLoaded]);
 
 
 
@@ -314,9 +294,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         else setContentsTree(updater);
     };
 
-    const addClassBoardPost = (post: ClassBoardPost) => setClassBoardPosts(prev => [post, ...prev]);
-    const addPostInteraction = (interaction: PostInteraction) => setPostInteractions(prev => [...prev, interaction]);
-
     return (
         <AppContext.Provider value={{
             messages,
@@ -328,12 +305,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             menus,
             addMenu: (menu) => setMenus(prev => [...prev, menu]),
             updateMenu: (id, updates) => setMenus(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m)),
-            removeMenu: (id) => setMenus(prev => prev.filter(m => m.id !== id)),
-
-            classBoardPosts,
-            postInteractions,
-            addClassBoardPost,
-            addPostInteraction
+            removeMenu: (id) => setMenus(prev => prev.filter(m => m.id !== id))
         }}>
             {children}
         </AppContext.Provider>

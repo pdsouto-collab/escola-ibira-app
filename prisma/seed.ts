@@ -19,6 +19,8 @@ import { invoicesDataSeed } from "@/lib/seed/invoices-seed"
 import { dailyLogsDataSeed } from "@/lib/seed/daily-logs-seed"
 import { finalProductTypesDataSeed } from "@/lib/seed/final-product-types-seed"
 import { assessmentsDataSeed, assessmentsAttachmentsDataSeed } from "../src/lib/seed/assessments-seed"
+import { classBoardPostsDataSeed } from "../src/lib/seed/class-board-posts-seed"
+import { classBoardPostInteractionsDataSeed } from "../src/lib/seed/class-board-post-interactions-seed"
 const prisma = new PrismaClient()
 
 async function main() {
@@ -26,6 +28,8 @@ async function main() {
   console.log("Limpando banco de dados...")
 
   // Ordem correta de exclusão: Filhos antes dos Pais
+  await prisma.classBoardPostInteraction.deleteMany()
+  await prisma.classBoardPost.deleteMany()
   await prisma.assessmentAttachment.deleteMany()
   await prisma.assessment.deleteMany()
   await prisma.muralComment.deleteMany()
@@ -195,6 +199,26 @@ async function main() {
   console.log("Importando Anexos das Avaliações...")
   await prisma.assessmentAttachment.createMany({
     data: assessmentsAttachmentsDataSeed as any,
+    skipDuplicates: true
+  })
+
+  // Class Board Posts
+  console.log("Importando Class Board Posts...")
+  await prisma.classBoardPost.createMany({
+    data: classBoardPostsDataSeed.map(post => ({
+        ...post,
+        createdAt: new Date(post.createdAt)
+    })) as any,
+    skipDuplicates: true
+  })
+
+  // Class Board Post Interactions
+  console.log("Importando Interações de Class Board Posts...")
+  await prisma.classBoardPostInteraction.createMany({
+    data: classBoardPostInteractionsDataSeed.map(interaction => ({
+        ...interaction,
+        createdAt: new Date(interaction.createdAt)
+    })) as any,
     skipDuplicates: true
   })
 

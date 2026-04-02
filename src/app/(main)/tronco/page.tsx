@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAppStore } from "@/lib/store";
 import { TreeDeciduous, Info, Filter, Loader2 } from "lucide-react";
 import { TroncoNewPost } from "@/components/tronco/tronco-new-post";
 import { TroncoFeed } from "@/components/tronco/tronco-feed";
@@ -12,7 +11,6 @@ import { SchoolClass } from "@/types/school-class";
 
 
 export default function TroncoPage() {
-    const { classBoardPosts } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
 
@@ -41,8 +39,8 @@ export default function TroncoPage() {
 
     const isTeacherOrAdmin = currentUser?.role === "teacher" || currentUser?.role === "director" || currentUser?.role === "admin";
     
-    // Extract unique categories dynamically from existing posts
-    const availableCategories = Array.from(new Set(classBoardPosts.map(p => p.categoryType)));
+    // Use predefined categories
+    const availableCategories = ["Novidades da Turma", "Projetos da Classe"];
 
     return (
         <div className="flex flex-col h-full bg-slate-50/50">

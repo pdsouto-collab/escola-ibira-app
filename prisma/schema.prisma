@@ -365,3 +365,39 @@ model AssessmentAttachment {
 
   @@index([assessmentId])
 }
+
+/// Tronco da Turma (Class Board)
+model ClassBoardPost {
+  id              String   @id @default(cuid())
+  classId         String
+  authorId        String
+  authorName      String
+  authorRole      String?
+  categoryType    String
+  linkedProjectId String?
+  title           String
+  content         String   @db.Text
+  extraMaterials  String?  @db.Text
+  photos          String[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  interactions ClassBoardPostInteraction[]
+
+  @@index([classId])
+}
+
+model ClassBoardPostInteraction {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  userName  String
+  userRole  String?
+  type      String
+  content   String?  @db.Text
+  createdAt DateTime @default(now())
+
+  post ClassBoardPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+}

@@ -1,60 +1,90 @@
 "use client";
 
-import { useState } from "react";
-import { useAppStore } from "@/lib/store";
-import { ClassBoardPost, PostInteraction } from "@/lib/data";
+import { useState, useEffect } from "react";
+import { ClassBoardPost } from "@/types/class-board-post";
+import { PostInteraction } from "@/types/post-interaction";
+import { getClassBoardPosts, createPostInteraction, deletePostInteraction } from "@/services/class-board.service";
 import { TreeDeciduous, MessageCircle, MoreHorizontal, Shapes, Megaphone, Clock } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 
 
-function PostInteractionsView({ post }: { post: ClassBoardPost }) {
-    const { postInteractions, addPostInteraction } = useAppStore();
+type LoadedPost = ClassBoardPost & { interactions: PostInteraction[] };
+
+function PostInteractionsView({ post, onInteractionAdded, onInteractionRemoved }: { post: LoadedPost, onInteractionAdded: (interaction: PostInteraction) => void, onInteractionRemoved: (interactionId: string) => void }) {
     const { data: session } = useSession();
     const currentUser = session?.user as any;
     const [showComments, setShowComments] = useState(false);
     const [commentText, setCommentText] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const interactions = postInteractions.filter(i => i.postId === post.id);
+    const interactions = post.interactions || [];
     const likes = interactions.filter(i => i.type === "like");
     const comments = interactions.filter(i => i.type === "comment");
 
     const hasLiked = likes.some(l => l.userId === currentUser?.id);
 
-    const handleLike = () => {
-        // Note: Removing likes is complex without a remove action, assuming we just add like for now
-        // A complete implementation would have a toggle
-        if (hasLiked) return;
+    const handleLike = async () => {
+        if (isSubmitting) return;
 
-        addPostInteraction({
-            id: `pi-${Math.random().toString(36).substr(2, 9)}`,
-            postId: post.id,
-            userId: currentUser?.id || "u2",
-            userName: currentUser?.name || "Usuário",
-            userRole: currentUser?.role === "guardian" ? "Pai/Responsável" : "Escola",
-            type: "like",
-            createdAt: new Date().toISOString()
-        });
+        setIsSubmitting(true);
+
+        if (hasLiked) {
+            // Find the user's like interaction
+            const likeInteraction = likes.find(l => l.userId === currentUser?.id);
+            if (likeInteraction) {
+                const success = await deletePostInteraction(likeInteraction.id);
+                if (success) {
+                    onInteractionRemoved(likeInteraction.id);
+                } else {
+                    toast.error("Erro ao remover curtida");
+                }
+            }
+        } else {
+            const newInteraction = await createPostInteraction(post.id, {
+                postId: post.id,
+                userId: currentUser?.id,
+                userName: currentUser?.name || "Usuário",
+                userRole: currentUser?.role === "guardian" ? "Pai/Responsável" : "Escola",
+                type: "like",
+            });
+
+            if (newInteraction) {
+                onInteractionAdded(newInteraction);
+            } else {
+                toast.error("Erro ao curtir postagem");
+            }
+        }
+
+        setIsSubmitting(false);
     };
 
-    const handleComment = (e: React.FormEvent) => {
+    const handleComment = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!commentText.trim()) return;
+        if (!commentText.trim() || isSubmitting) return;
 
-        addPostInteraction({
-            id: `pi-${Math.random().toString(36).substr(2, 9)}`,
+        setIsSubmitting(true);
+        const newInteraction = await createPostInteraction(post.id, {
             postId: post.id,
-            userId: currentUser?.id || "u2",
+            userId: currentUser?.id,
             userName: currentUser?.name || "Usuário",
             userRole: currentUser?.role === "guardian" ? "Pai/Responsável" : "Escola",
             type: "comment",
-            content: commentText,
-            createdAt: new Date().toISOString()
+            content: commentText
         });
 
-        setCommentText("");
+        setIsSubmitting(false);
+
+        if (newInteraction) {
+            onInteractionAdded(newInteraction);
+            setCommentText("");
+            toast.success("Comentário adicionado!");
+        } else {
+            toast.error("Erro ao adicionar comentário");
+        }
     };
 
     return (
@@ -63,7 +93,8 @@ function PostInteractionsView({ post }: { post: ClassBoardPost }) {
             <div className="flex items-center gap-4">
                 <button
                     onClick={handleLike}
-                    className={`flex items-center gap-2 text-sm font-medium transition-colors ${hasLiked ? 'text-emerald-600' : 'text-slate-500 hover:text-emerald-600'}`}
+                    disabled={isSubmitting}
+                    className={`flex items-center gap-2 text-sm font-medium transition-colors ${hasLiked ? 'text-emerald-600' : 'text-slate-500 hover:text-emerald-600'} ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                     <div className={`p-1.5 rounded-full ${hasLiked ? 'bg-emerald-100' : 'hover:bg-emerald-50'}`}>
                         <TreeDeciduous className={`h-5 w-5 ${hasLiked ? 'fill-emerald-500 text-emerald-500' : ''}`} />
@@ -134,14 +165,15 @@ function PostInteractionsView({ post }: { post: ClassBoardPost }) {
                                 value={commentText}
                                 onChange={(e) => setCommentText(e.target.value)}
                                 placeholder="Adicione um comentário..."
-                                className="w-full bg-white border border-slate-200 rounded-full px-4 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 pr-10"
+                                disabled={isSubmitting}
+                                className="w-full bg-white border border-slate-200 rounded-full px-4 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 pr-10 disabled:opacity-70"
                             />
                             <button
                                 type="submit"
-                                disabled={!commentText.trim()}
+                                disabled={!commentText.trim() || isSubmitting}
                                 className="absolute right-1 top-1 bottom-1 px-3 bg-indigo-500 text-white rounded-full text-xs font-semibold hover:bg-indigo-600 disabled:opacity-50 transition-colors"
                             >
-                                Enviar
+                                {isSubmitting ? "Enviando..." : "Enviar"}
                             </button>
                         </div>
                     </form>
@@ -152,16 +184,58 @@ function PostInteractionsView({ post }: { post: ClassBoardPost }) {
 }
 
 export function TroncoFeed({ classId, categoryFilter }: { classId: string, categoryFilter?: string }) {
-    const { classBoardPosts } = useAppStore();
+    const [posts, setPosts] = useState<LoadedPost[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Filter posts by classId and optionally by category, then sort from newest to oldest
-    let filteredPosts = classBoardPosts.filter(p => p.classId === classId);
+    useEffect(() => {
+        async function fetchPosts() {
+            setIsLoading(true);
+            const data = await getClassBoardPosts(classId);
+            setPosts(data || []);
+            setIsLoading(false);
+        }
+        fetchPosts();
+
+        // Check for newly added posts periodically or set up an event listener
+        const handleNewPost = () => fetchPosts();
+        window.addEventListener('classBoardPostAdded', handleNewPost);
+        return () => window.removeEventListener('classBoardPostAdded', handleNewPost);
+    }, [classId]);
+
+    const handleInteractionAdded = (postId: string, interaction: PostInteraction) => {
+        setPosts(prev => prev.map(p => {
+            if (p.id === postId) {
+                return { ...p, interactions: [...(p.interactions || []), interaction] };
+            }
+            return p;
+        }));
+    };
+
+    const handleInteractionRemoved = (postId: string, interactionId: string) => {
+        setPosts(prev => prev.map(p => {
+            if (p.id === postId) {
+                return { ...p, interactions: (p.interactions || []).filter(i => i.id !== interactionId) };
+            }
+            return p;
+        }));
+    };
+
+    let filteredPosts = posts;
     if (categoryFilter) {
         filteredPosts = filteredPosts.filter(p => p.categoryType === categoryFilter);
     }
-    const sortedPosts = [...filteredPosts].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-    if (sortedPosts.length === 0) {
+    if (isLoading) {
+        return (
+            <div className="text-center py-16 px-4 bg-white border border-slate-200 rounded-2xl animate-pulse">
+                <div className="mx-auto w-12 h-12 bg-slate-200 rounded-full mb-4"></div>
+                <div className="h-4 bg-slate-200 rounded w-1/3 mx-auto mb-2"></div>
+                <div className="h-3 bg-slate-200 rounded w-1/4 mx-auto"></div>
+            </div>
+        );
+    }
+
+    if (filteredPosts.length === 0) {
         return (
             <div className="text-center py-16 px-4 bg-white border border-dashed border-slate-300 rounded-2xl">
                 <div className="mx-auto w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
@@ -175,7 +249,7 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
 
     return (
         <div className="space-y-6">
-            {sortedPosts.map(post => {
+            {filteredPosts.map(post => {
                 const isAcontece = post.categoryType === "Projetos da Classe";
 
                 return (
@@ -261,7 +335,7 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
 
                         {/* Interactions Footer */}
                         <div className="px-5 pb-4">
-                            <PostInteractionsView post={post} />
+                            <PostInteractionsView post={post} onInteractionAdded={(int) => handleInteractionAdded(post.id, int)} onInteractionRemoved={(intId) => handleInteractionRemoved(post.id, intId)} />
                         </div>
                     </div>
                 );
