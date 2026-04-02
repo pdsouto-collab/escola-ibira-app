@@ -100,27 +100,85 @@ export function AssessmentDrawer({
     // Filter routines
     const routines = schedule.filter(s => !s.projectId && (s.type === "activity" || s.type === "meal" || s.type === "care"));
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
         if (attachments.length + files.length > 3) {
             toast.error("Máximo de 3 arquivos por avaliação.");
             return;
         }
-        files.forEach(file => {
-            const reader = new FileReader();
-            reader.onload = ev => {
-                const url = ev.target?.result as string;
-                const att: AssessmentAttachment = {
-                    id: crypto.randomUUID(),
-                    type: file.type.startsWith("image/") ? "photo" : "document",
-                    url,
-                    name: file.name,
-                    capturedAt: new Date().toISOString(),
-                };
-                setAttachments(prev => [...prev, att]);
-            };
-            reader.readAsDataURL(file);
-        });
+
+        const toastId = toast.loading("Processando arquivos...");
+
+        try {
+            for (const file of files) {
+                if (file.type.startsWith("image/")) {
+                    await new Promise((resolve) => {
+                        const img = new Image();
+                        const objUrl = URL.createObjectURL(file);
+                        
+                        img.onload = () => {
+                            URL.revokeObjectURL(objUrl);
+                            const canvas = document.createElement("canvas");
+                            const MAX_WIDTH = 1200;
+                            const MAX_HEIGHT = 1200;
+                            let width = img.width;
+                            let height = img.height;
+
+                            if (width > height) {
+                                if (width > MAX_WIDTH) {
+                                    height *= MAX_WIDTH / width;
+                                    width = MAX_WIDTH;
+                                }
+                            } else {
+                                if (height > MAX_HEIGHT) {
+                                    width *= MAX_HEIGHT / height;
+                                    height = MAX_HEIGHT;
+                                }
+                            }
+                            canvas.width = width;
+                            canvas.height = height;
+                            
+                            const ctx = canvas.getContext("2d");
+                            ctx?.drawImage(img, 0, 0, width, height);
+                            
+                            const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.6);
+                            
+                            const att: AssessmentAttachment = {
+                                id: crypto.randomUUID(),
+                                type: "photo",
+                                url: compressedDataUrl,
+                                name: file.name,
+                                capturedAt: new Date().toISOString(),
+                            };
+                            setAttachments(prev => [...prev, att]);
+                            resolve(true);
+                        };
+                        img.src = objUrl;
+                    });
+                } else {
+                    await new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = ev => {
+                            const url = ev.target?.result as string;
+                            const att: AssessmentAttachment = {
+                                id: crypto.randomUUID(),
+                                type: "document",
+                                url,
+                                name: file.name,
+                                capturedAt: new Date().toISOString(),
+                            };
+                            setAttachments(prev => [...prev, att]);
+                            resolve(true);
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                }
+            }
+            toast.success("Arquivos anexados", { id: toastId });
+        } catch (error) {
+            toast.error("Erro ao ler arquivos", { id: toastId });
+        }
+        
         e.target.value = "";
     };
 
