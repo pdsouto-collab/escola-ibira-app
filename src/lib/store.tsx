@@ -7,7 +7,6 @@ import {
     ChatMessage,
     mockMessages,
     KnowledgeNode, mockSkillsTree, mockContentsTree,
-    FinalProductType, mockFinalProductTypes,
     Assessment, mockAssessments, Menu, mockMenus,
     ClassBoardPost, mockClassBoardPosts, PostInteraction, mockPostInteractions
 } from "@/lib/data";
@@ -18,7 +17,6 @@ interface AppState {
     bnccProgress: Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>;
     skillsTree: KnowledgeNode[];
     contentsTree: KnowledgeNode[];
-    finalProductTypes: FinalProductType[];
     assessments: Assessment[];
     menus: Menu[];
     classBoardPosts: ClassBoardPost[];
@@ -43,11 +41,6 @@ interface AppContextType extends AppState {
     updateKnowledgeNode: (treeType: "skill" | "content", id: string, updates: Partial<KnowledgeNode>) => void;
     removeKnowledgeNode: (treeType: "skill" | "content", id: string) => void;
     duplicateKnowledgeNode: (treeType: "skill" | "content", id: string) => void;
-
-    // Final Product Types
-    addFinalProductType: (type: FinalProductType) => void;
-    updateFinalProductType: (id: string, updates: Partial<FinalProductType>) => void;
-    removeFinalProductType: (id: string) => void;
 
     // Menus
     addMenu: (menu: Menu) => void;
@@ -89,7 +82,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [bnccProgress, setBnccProgress] = useState<Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>>({});
     const [skillsTree, setSkillsTree] = useState<KnowledgeNode[]>(mockSkillsTree);
     const [contentsTree, setContentsTree] = useState<KnowledgeNode[]>(mockContentsTree);
-    const [finalProductTypes, setFinalProductTypes] = useState<FinalProductType[]>(mockFinalProductTypes);
     const [assessments, setAssessments] = useState<Assessment[]>(mockAssessments);
     const [menus, setMenus] = useState<Menu[]>(mockMenus);
     const [classBoardPosts, setClassBoardPosts] = useState<ClassBoardPost[]>(mockClassBoardPosts);
@@ -342,10 +334,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             mosaicData, updateMosaicNode, replaceMosaicData,
             bnccProgress, updateBNCCStatus,
             skillsTree, contentsTree, addKnowledgeNode, updateKnowledgeNode, removeKnowledgeNode, duplicateKnowledgeNode,
-            finalProductTypes,
-            addFinalProductType: (type) => setFinalProductTypes(prev => [...prev, type]),
-            updateFinalProductType: (id, updates) => setFinalProductTypes(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t)),
-            removeFinalProductType: (id) => setFinalProductTypes(prev => prev.filter(t => t.id !== id)),
 
             menus,
             addMenu: (menu) => setMenus(prev => [...prev, menu]),

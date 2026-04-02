@@ -3462,22 +3462,6 @@ export const mockMessages: Message[] = [
 ];
 
 
-export interface FinalProductType {
-    id: string;
-    name: string;
-}
-
-export const mockFinalProductTypes: FinalProductType[] = [
-    { id: "none", name: "Nenhum" },
-    { id: "arts_crafts", name: "Artes e Ofícios" },
-    { id: "audio_visual", name: "Audiovisual" },
-    { id: "culinary", name: "Produto Culinário" },
-    { id: "document", name: "Documento" },
-    { id: "event", name: "Evento" },
-    { id: "presentation", name: "Apresentação" },
-    { id: "prototype", name: "Protótipo" },
-];
-
 export interface ChatMessage {
     id: string;
     senderId: string;

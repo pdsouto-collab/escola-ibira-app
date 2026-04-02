@@ -30,6 +30,8 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { LibraryItem } from "@/types/library-item";
 import { getListBncc } from "@/services/bncc.service";
+import { FinalProductType } from "@/types/final-product-type";
+import { getFinalProductTypes } from "@/services/final-product-type.service";
 
 function NewProjectWizardContent() {
     const router = useRouter();
@@ -39,11 +41,12 @@ function NewProjectWizardContent() {
     const currentUser = session?.user as any;
 
     const {
-        finalProductTypes,
         skillsTree,
         contentsTree
     } = useAppStore();
-    
+
+    const [finalProductTypes, setFinalProductTypes] = useState<FinalProductType[]>([]);
+
     const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
 
     const [classes, setClasses] = useState<SchoolClass[]>([]);
@@ -55,14 +58,16 @@ function NewProjectWizardContent() {
 
     async function fetchClassesAndStudents() {
         try {
-            const [classesData, studentsData, schedulesData] = await Promise.all([
+            const [classesData, studentsData, schedulesData, finalProductsData] = await Promise.all([
                 getClasses(),
                 getStudents(),
-                getSchedules()
+                getSchedules(),
+                getFinalProductTypes()
             ]);
             setClasses(classesData);
             setStudents(studentsData);
             setSchedule(schedulesData);
+            setFinalProductTypes(finalProductsData);
         } catch (error) {
             console.error("Erro ao buscar dados:", error);
         } finally {
@@ -127,7 +132,7 @@ function NewProjectWizardContent() {
     // Immediately write sessions to store (expanded per selected classes)
     const persistSessionsToStore = async (updatedSessions: Partial<ScheduleItem>[]) => {
         const selectedClasses = formData.classes.length > 0 ? formData.classes : [undefined];
-        
+
         try {
             // First delete existing sessions for this project
             const existingProjectSessions = schedule.filter(s => s.projectId === projectId);
@@ -149,8 +154,8 @@ function NewProjectWizardContent() {
                     } as Partial<ScheduleItem>);
                 }
             }
-            
-            const newlyCreated = await Promise.all(expanded.map(item => createScheduleService(item as Omit<ScheduleItem, "id"|"createdAt"|"updatedAt">)));
+
+            const newlyCreated = await Promise.all(expanded.map(item => createScheduleService(item as Omit<ScheduleItem, "id" | "createdAt" | "updatedAt">)));
             setSchedule([...remaining, ...newlyCreated]);
         } catch (error) {
             toast.error("Erro ao persistir sessões.");

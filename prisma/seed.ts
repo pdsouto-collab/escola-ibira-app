@@ -17,6 +17,7 @@ import { notificationsDataSeed } from "@/lib/seed/notifications"
 import { tasksDataSeed } from "@/lib/seed/tasks.seed"
 import { invoicesDataSeed } from "@/lib/seed/invoices-seed"
 import { dailyLogsDataSeed } from "@/lib/seed/daily-logs-seed"
+import { finalProductTypesDataSeed } from "@/lib/seed/final-product-types-seed"
 const prisma = new PrismaClient()
 
 async function main() {
@@ -41,7 +42,7 @@ async function main() {
   await prisma.pegadaInteraction.deleteMany()
   await prisma.pegadaPost.deleteMany()
   await prisma.project.deleteMany()
-
+  await prisma.finalProductType.deleteMany()
 
   // BNCC
   console.log("Importando BNCC...")
@@ -168,6 +169,13 @@ async function main() {
   console.log("Importando Diários de Bordo...")
   await prisma.dailyLog.createMany({
     data: dailyLogsDataSeed as any,
+    skipDuplicates: true
+  })
+
+  // Final Product Types
+  console.log("Importando Tipos de Produto Final...")
+  await prisma.finalProductType.createMany({
+    data: finalProductTypesDataSeed as any,
     skipDuplicates: true
   })
 

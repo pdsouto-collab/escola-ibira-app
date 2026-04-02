@@ -104,7 +104,7 @@ model SchoolClass {
 }
 
 model Student {
-  id                   String      @id @default(cuid())
+  id                   String           @id @default(cuid())
   name                 String
   dateOfBirth          String
   document             String?
@@ -112,7 +112,7 @@ model Student {
   period               String?
   photo                String?
   classId              String
-  status               String      @default("presente")
+  status               String           @default("presente")
   age                  Int?
   parentName           String?
   guardians            Json?
@@ -122,9 +122,9 @@ model Student {
   documents            Json?
   hospitalPreference   String?
   hospitalAddress      String?
-  createdAt            DateTime    @default(now())
-  updatedAt            DateTime    @updatedAt
-  schoolClass          SchoolClass @relation(fields: [classId], references: [id])
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  schoolClass          SchoolClass      @relation(fields: [classId], references: [id])
   portfolioEntries     PortfolioEntry[]
   dailyLogs            DailyLog[]
 
@@ -211,26 +211,26 @@ model PegadaInteraction {
 
 /// Projetos Educacionais
 model Project {
-  id              String   @id @default(cuid())
+  id              String    @id @default(cuid())
   title           String
-  description     String   @db.Text
-  status          String   @default("draft")
+  description     String    @db.Text
+  status          String    @default("draft")
   startDate       DateTime
   endDate         DateTime?
   period          String?
   type            String?
-  summary         String?  @db.Text
-  objectives      String?  @db.Text
+  summary         String?   @db.Text
+  objectives      String?   @db.Text
   finalProduct    String?
-  guidingQuestion String?  @db.Text
+  guidingQuestion String?   @db.Text
   imageUrl        String?
   tags            String[]
   bnccSkillIds    String[]
   contentIds      String[]
   students        String[]
   classes         String[]
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }
 
 /// Rotina Escolar e Agenda
@@ -303,18 +303,26 @@ model Invoice {
 model DailyLog {
   id           String   @id @default(cuid())
   studentId    String
-  date         String   // YYYY-MM-DD
+  date         String // YYYY-MM-DD
   mood         String
-  meals        Json     // { breakfast, lunch, snack }
-  nap          Json     // { start, end, didNotNap }
-  activities   String[] 
+  meals        Json // { breakfast, lunch, snack }
+  nap          Json // { start, end, didNotNap }
+  activities   String[]
   notes        String   @db.Text
   missingItems String?  @db.Text
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  
-  student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([studentId])
   @@index([date])
+}
+
+/// Tipos de Produto Final
+model FinalProductType {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

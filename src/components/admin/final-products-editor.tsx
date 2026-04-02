@@ -1,22 +1,63 @@
 "use client";
 
-import React, { useState } from "react";
-import { useAppStore } from "@/lib/store";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, Edit2, Check, X } from "lucide-react";
+import { Plus, Trash2, Edit2, Check, X, Loader2 } from "lucide-react";
+import { FinalProductType } from "@/types/final-product-type";
+import { getFinalProductTypes, createFinalProductType, updateFinalProductType, deleteFinalProductType } from "@/services/final-product-type.service";
+import { toast } from "sonner";
 
 export function FinalProductsEditor() {
-    const { finalProductTypes, addFinalProductType, updateFinalProductType, removeFinalProductType } = useAppStore();
+    const [finalProductTypes, setFinalProductTypes] = useState<FinalProductType[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [newItemName, setNewItemName] = useState("");
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editName, setEditName] = useState("");
+    const [isSaving, setIsSaving] = useState(false);
 
-    const handleAdd = () => {
-        if (!newItemName.trim()) return;
-        const newId = `product-${Date.now()}`;
-        addFinalProductType({ id: newId, name: newItemName.trim() });
-        setNewItemName("");
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            const types = await getFinalProductTypes();
+            setFinalProductTypes(types);
+        } catch (error) {
+            toast.error("Erro ao carregar tipos de produtos finais");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleAdd = async () => {
+        if (isSaving) return;
+
+        if (!newItemName.trim()) {
+            toast.warning("Por favor, digite o nome do produto final antes de adicionar.");
+            return;
+        }
+
+        setIsSaving(true);
+
+        const newId = newItemName.trim()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, "")
+            .replace(/[\s-]+/g, "_");
+
+        try {
+            const newType = await createFinalProductType({ id: newId, name: newItemName.trim() });
+            setFinalProductTypes(prev => [...prev, newType]);
+            setNewItemName("");
+            toast.success("Adicionado com sucesso");
+        } catch (error) {
+            toast.error("Erro ao adicionar");
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const startEditing = (id: string, currentName: string) => {
@@ -24,17 +65,47 @@ export function FinalProductsEditor() {
         setEditName(currentName);
     };
 
-    const saveEdit = () => {
-        if (editingId && editName.trim()) {
-            updateFinalProductType(editingId, { name: editName.trim() });
+    const saveEdit = async () => {
+        if (!editingId || !editName.trim() || isSaving) return;
+        setIsSaving(true);
+        try {
+            const updated = await updateFinalProductType(editingId, { name: editName.trim() });
+            setFinalProductTypes(prev => prev.map(t => t.id === editingId ? updated : t));
+            cancelEdit();
+            toast.success("Atualizado com sucesso");
+        } catch (error) {
+            toast.error("Erro ao atualizar");
+        } finally {
+            setIsSaving(false);
         }
-        cancelEdit();
     };
 
     const cancelEdit = () => {
         setEditingId(null);
         setEditName("");
     };
+
+    const handleDelete = async (id: string) => {
+        if (isSaving) return;
+        setIsSaving(true);
+        try {
+            await deleteFinalProductType(id);
+            setFinalProductTypes(prev => prev.filter(t => t.id !== id));
+            toast.success("Removido com sucesso");
+        } catch (error) {
+            toast.error("Erro ao remover");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    if (isLoading) {
+        return (
+            <div className="flex justify-center p-8">
+                <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
@@ -52,8 +123,9 @@ export function FinalProductsEditor() {
                     placeholder="Ex: Exposição de Arte"
                     className="max-w-md"
                     onKeyDown={(e) => { if (e.key === 'Enter') handleAdd() }}
+                    disabled={isSaving}
                 />
-                <Button onClick={handleAdd} className="gap-2">
+                <Button onClick={handleAdd} className="gap-2" disabled={isSaving}>
                     <Plus className="w-4 h-4" />
                     Adicionar
                 </Button>
@@ -73,11 +145,12 @@ export function FinalProductsEditor() {
                                         onChange={(e) => setEditName(e.target.value)}
                                         onKeyDown={(e) => { if (e.key === 'Enter') saveEdit(); if (e.key === 'Escape') cancelEdit(); }}
                                         className="h-8 max-w-sm"
+                                        disabled={isSaving}
                                     />
-                                    <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50" onClick={saveEdit}>
+                                    <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50" onClick={saveEdit} disabled={isSaving}>
                                         <Check className="w-4 h-4" />
                                     </Button>
-                                    <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-slate-600" onClick={cancelEdit}>
+                                    <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-slate-600" onClick={cancelEdit} disabled={isSaving}>
                                         <X className="w-4 h-4" />
                                     </Button>
                                 </div>
@@ -85,10 +158,10 @@ export function FinalProductsEditor() {
                                 <>
                                     <span className="font-medium text-slate-800">{item.name}</span>
                                     <div className="flex gap-1">
-                                        <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-indigo-600" onClick={() => startEditing(item.id, item.name)}>
+                                        <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-indigo-600" onClick={() => startEditing(item.id, item.name)} disabled={isSaving}>
                                             <Edit2 className="w-4 h-4" />
                                         </Button>
-                                        <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-rose-600" onClick={() => removeFinalProductType(item.id)}>
+                                        <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-400 hover:text-rose-600" onClick={() => handleDelete(item.id)} disabled={isSaving}>
                                             <Trash2 className="w-4 h-4" />
                                         </Button>
                                     </div>
