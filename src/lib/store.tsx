@@ -6,8 +6,7 @@ import {
     mockRecursiveDataSkills, MosaicNode,
     ChatMessage,
     mockMessages,
-    KnowledgeNode, mockSkillsTree, mockContentsTree,
-    Menu, mockMenus
+    KnowledgeNode, mockSkillsTree, mockContentsTree
 } from "@/lib/data";
 
 interface AppState {
@@ -16,7 +15,6 @@ interface AppState {
     bnccProgress: Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>;
     skillsTree: KnowledgeNode[];
     contentsTree: KnowledgeNode[];
-    menus: Menu[];
 }
 
 interface AppContextType extends AppState {
@@ -37,11 +35,6 @@ interface AppContextType extends AppState {
     updateKnowledgeNode: (treeType: "skill" | "content", id: string, updates: Partial<KnowledgeNode>) => void;
     removeKnowledgeNode: (treeType: "skill" | "content", id: string) => void;
     duplicateKnowledgeNode: (treeType: "skill" | "content", id: string) => void;
-
-    // Menus
-    addMenu: (menu: Menu) => void;
-    updateMenu: (id: string, updates: Partial<Menu>) => void;
-    removeMenu: (id: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -64,7 +57,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [bnccProgress, setBnccProgress] = useState<Record<string, { status: "not-started" | "in-progress" | "achieved"; evidenceCount: number }>>({});
     const [skillsTree, setSkillsTree] = useState<KnowledgeNode[]>(mockSkillsTree);
     const [contentsTree, setContentsTree] = useState<KnowledgeNode[]>(mockContentsTree);
-    const [menus, setMenus] = useState<Menu[]>(mockMenus);
 
     const [isLoaded, setIsLoaded] = useState(false);
 
@@ -105,7 +97,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             load("bnccProgress", setBnccProgress, {});
             load("skillsTree", setSkillsTree, mockSkillsTree);
             load("contentsTree", setContentsTree, mockContentsTree);
-            load("menus", setMenus, mockMenus);
         }
 
 
@@ -122,11 +113,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem("app_bnccProgress", JSON.stringify(bnccProgress));
             localStorage.setItem("app_skillsTree", JSON.stringify(skillsTree));
             localStorage.setItem("app_contentsTree", JSON.stringify(contentsTree));
-            localStorage.setItem("app_menus", JSON.stringify(menus));
         } catch (error) {
             console.error("Erro ao salvar no cache local. O limite de armazenamento pode ter sido atingido.", error);
         }
-    }, [messages, mosaicData, bnccProgress, skillsTree, contentsTree, menus, isLoaded]);
+    }, [messages, mosaicData, bnccProgress, skillsTree, contentsTree, isLoaded]);
 
 
 
@@ -300,12 +290,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             sendMessage, resetData,
             mosaicData, updateMosaicNode, replaceMosaicData,
             bnccProgress, updateBNCCStatus,
-            skillsTree, contentsTree, addKnowledgeNode, updateKnowledgeNode, removeKnowledgeNode, duplicateKnowledgeNode,
-
-            menus,
-            addMenu: (menu) => setMenus(prev => [...prev, menu]),
-            updateMenu: (id, updates) => setMenus(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m)),
-            removeMenu: (id) => setMenus(prev => prev.filter(m => m.id !== id))
+            skillsTree, contentsTree, addKnowledgeNode, updateKnowledgeNode, removeKnowledgeNode, duplicateKnowledgeNode
         }}>
             {children}
         </AppContext.Provider>

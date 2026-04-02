@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAppStore } from "@/lib/store";
+import { Menu } from "@/types/menu";
+import { menuService } from "@/services/menu.service";
 import { getDailyLogs } from "@/services/daily-log.service";
 import { DailyLog } from "@/types/daily-log";
 import { Loader2 } from "lucide-react";
@@ -15,15 +16,16 @@ interface DailyLogReportProps {
 }
 
 export function DailyLogReport({ studentId, onEdit }: DailyLogReportProps) {
-    const { menus } = useAppStore();
+    const [menus, setMenus] = useState<Menu[]>([]);
     const [logs, setLogs] = useState<DailyLog[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         setIsLoading(true);
-        getDailyLogs({ studentId })
-            .then(data => {
+        Promise.all([getDailyLogs({ studentId }), menuService.getMenus()])
+            .then(([data, menusData]) => {
                 setLogs(data.sort((a, b) => b.date.localeCompare(a.date)));
+                setMenus(menusData);
             })
             .catch(console.error)
             .finally(() => setIsLoading(false));

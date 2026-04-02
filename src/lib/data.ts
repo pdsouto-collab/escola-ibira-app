@@ -3356,29 +3356,7 @@ export const mockBNCCData: BNCCSubject[] = [
     }
 ];
 
-export interface MenuItem {
-    time: string; // e.g., "09:30"
-    title: string; // e.g., "Lanche da Manhã"
-    description: string; // e.g., "Frutas da estação (banana e maçã) e suco natural de couve com limão."
-}
 
-export interface Menu {
-    id: string;
-    date: string; // YYYY-MM-DD
-    items: MenuItem[];
-}
-
-export const mockMenus: Menu[] = [
-    {
-        id: "menu-1",
-        date: "2024-02-12",
-        items: [
-            { time: "09:30", title: "Lanche da Manhã", description: "Frutas da estação e suco natural." },
-            { time: "11:30", title: "Almoço", description: "Arroz, feijão, legumes e proteína." },
-            { time: "15:00", title: "Lanche da Tarde", description: "Pão de queijo e chá." }
-        ]
-    }
-];
 
 export interface Contact {
     id: string;

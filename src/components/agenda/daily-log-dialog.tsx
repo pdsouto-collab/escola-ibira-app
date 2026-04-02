@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useAppStore } from "@/lib/store";
+import { Menu } from "@/types/menu";
 import { Student } from "@/types/student";
 import { getStudents } from "@/services/student.service";
 import { DailyLog } from "@/types/daily-log";
@@ -18,6 +18,7 @@ import { Flame } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getSchedules } from "@/services/schedule.service";
 import { getDailyLogs, createDailyLog, updateDailyLog, deleteDailyLog } from "@/services/daily-log.service";
+import { menuService } from "@/services/menu.service";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
@@ -48,7 +49,7 @@ interface StudentLogForm {
 }
 
 export function DailyLogDialog({ open, onOpenChange, date, classId, students: propStudents }: DailyLogDialogProps) {
-    const { menus } = useAppStore();
+    const [menus, setMenus] = useState<Menu[]>([]);
     const [dailyLogs, setDailyLogs] = useState<DailyLog[]>([]);
     const [isLoadingLogs, setIsLoadingLogs] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -73,6 +74,8 @@ export function DailyLogDialog({ open, onOpenChange, date, classId, students: pr
                     toast.error("Erro ao carregar os registros existentes.");
                 })
                 .finally(() => setIsLoadingLogs(false));
+
+            menuService.getMenus().then(setMenus).catch(console.error);
         }
     }, [open, propStudents, date, classId]);
 

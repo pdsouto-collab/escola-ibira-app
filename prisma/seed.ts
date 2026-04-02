@@ -21,6 +21,7 @@ import { finalProductTypesDataSeed } from "@/lib/seed/final-product-types-seed"
 import { assessmentsDataSeed, assessmentsAttachmentsDataSeed } from "../src/lib/seed/assessments-seed"
 import { classBoardPostsDataSeed } from "../src/lib/seed/class-board-posts-seed"
 import { classBoardPostInteractionsDataSeed } from "../src/lib/seed/class-board-post-interactions-seed"
+import { menusDataSeed, menuItemsDataSeed } from "@/lib/seed/menus-seed"
 const prisma = new PrismaClient()
 
 async function main() {
@@ -50,6 +51,8 @@ async function main() {
   await prisma.pegadaPost.deleteMany()
   await prisma.project.deleteMany()
   await prisma.finalProductType.deleteMany()
+  await prisma.menuItem.deleteMany()
+  await prisma.menu.deleteMany()
 
   // BNCC
   console.log("Importando BNCC...")
@@ -218,6 +221,27 @@ async function main() {
     data: classBoardPostInteractionsDataSeed.map(interaction => ({
         ...interaction,
         createdAt: new Date(interaction.createdAt)
+    })) as any,
+    skipDuplicates: true
+  })
+
+  // Menus
+  console.log("Importando Menus...")
+  await prisma.menu.createMany({
+    data: menusDataSeed.map(m => ({
+        ...m,
+        createdAt: new Date(),
+        updatedAt: new Date()
+    })) as any,
+    skipDuplicates: true
+  })
+
+  console.log("Importando Itens do Menu...")
+  await prisma.menuItem.createMany({
+    data: menuItemsDataSeed.map(m => ({
+        ...m,
+        createdAt: new Date(),
+        updatedAt: new Date()
     })) as any,
     skipDuplicates: true
   })

@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { format, addDays, startOfWeek, isSameDay, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { useAppStore } from "@/lib/store";
-import { Menu, MenuItem } from "@/lib/data";
+import { Menu } from "@/types/menu";
+import { menuService } from "@/services/menu.service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Utensils, Edit, Copy, ChevronLeft, ChevronRight, Apple, MoreVertical, Calendar } from "lucide-react";
@@ -21,10 +21,28 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 
 export function MenuWeekView() {
-    const { menus, addMenu, updateMenu, removeMenu } = useAppStore();
     const { data: session } = useSession();
     const currentUser = session?.user as any;
     const isNutritionist = currentUser?.role === "nutritionist" || currentUser?.role === "admin" || currentUser?.role === "director";
+
+    const [menus, setMenus] = useState<Menu[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    const loadMenus = async () => {
+        try {
+            setIsLoading(true);
+            const data = await menuService.getMenus();
+            setMenus(data);
+        } catch (error) {
+            toast.error("Erro ao carregar cardápios");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadMenus();
+    }, []);
 
     const [currentDate, setCurrentDate] = useState(new Date());
     const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 }); // Monday
@@ -62,44 +80,57 @@ export function MenuWeekView() {
         setIsEditing(true);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!editingMenu) return;
 
         const dateStr = editingMenu.date;
         const existing = menus.find(m => m.date === dateStr);
+        const toastId = toast.loading("Salvando cardápio...");
 
-        if (existing) {
-            updateMenu(existing.id, editingMenu);
-        } else {
-            addMenu(editingMenu);
+        try {
+            if (existing) {
+                await menuService.updateMenu(existing.id, editingMenu);
+            } else {
+                await menuService.createMenu(editingMenu);
+            }
+            toast.success("Cardápio salvo com sucesso", { id: toastId });
+            await loadMenus();
+            setIsEditing(false);
+        } catch (error) {
+            toast.error("Erro ao salvar cardápio", { id: toastId });
         }
-        setIsEditing(false);
     };
 
-    const handleCopyPreviousWeek = () => {
+    const handleCopyPreviousWeek = async () => {
         if (!isNutritionist) return;
         const previousWeekStart = addDays(weekStart, -7);
+        const toastId = toast.loading("Copiando cardápios...");
 
-        for (let i = 0; i < 5; i++) { // Monday to Friday
-            const sourceDate = addDays(previousWeekStart, i);
-            const targetDate = addDays(weekStart, i);
+        try {
+            for (let i = 0; i < 5; i++) { // Monday to Friday
+                const sourceDate = addDays(previousWeekStart, i);
+                const targetDate = addDays(weekStart, i);
 
-            const sourceMenu = getMenuForDate(sourceDate);
-            if (sourceMenu) {
-                const targetDateStr = format(targetDate, "yyyy-MM-dd");
-                const existingTarget = getMenuForDate(targetDate);
-                const newMenu: Menu = {
-                    ...sourceMenu,
-                    id: existingTarget ? existingTarget.id : `menu-${Date.now()}-${i}`,
-                    date: targetDateStr
-                };
+                const sourceMenu = getMenuForDate(sourceDate);
+                if (sourceMenu) {
+                    const targetDateStr = format(targetDate, "yyyy-MM-dd");
+                    const existingTarget = getMenuForDate(targetDate);
+                    const newMenu: Partial<Menu> = {
+                        date: targetDateStr,
+                        items: sourceMenu.items
+                    };
 
-                if (existingTarget) {
-                    updateMenu(existingTarget.id, newMenu);
-                } else {
-                    addMenu(newMenu);
+                    if (existingTarget) {
+                        await menuService.updateMenu(existingTarget.id, newMenu);
+                    } else {
+                        await menuService.createMenu(newMenu);
+                    }
                 }
             }
+            toast.success("Cardápios copiados com sucesso", { id: toastId });
+            await loadMenus();
+        } catch (error) {
+            toast.error("Erro ao copiar cardápios", { id: toastId });
         }
     };
 
@@ -108,16 +139,22 @@ export function MenuWeekView() {
         setIsConfirmClearOpen(true);
     };
 
-    const confirmClearAction = () => {
+    const confirmClearAction = async () => {
         if (editingMenu && editingMenu.id) {
-            removeMenu(editingMenu.id);
-            toast.success("Cardápio removido com sucesso");
-            setIsEditing(false);
-            setIsConfirmClearOpen(false);
+            const toastId = toast.loading("Removendo cardápio...");
+            try {
+                await menuService.deleteMenu(editingMenu.id);
+                toast.success("Cardápio removido com sucesso", { id: toastId });
+                await loadMenus();
+                setIsEditing(false);
+                setIsConfirmClearOpen(false);
+            } catch (error) {
+                toast.error("Erro ao remover cardápio", { id: toastId });
+            }
         }
     };
 
-    const handleCopyFromDate = (targetDate: Date, offsetDays: number) => {
+    const handleCopyFromDate = async (targetDate: Date, offsetDays: number) => {
         const sourceDate = addDays(targetDate, offsetDays);
         const sourceMenu = getMenuForDate(sourceDate);
         if (!sourceMenu) {
@@ -127,17 +164,23 @@ export function MenuWeekView() {
 
         const targetDateStr = format(targetDate, "yyyy-MM-dd");
         const existingTarget = getMenuForDate(targetDate);
+        const toastId = toast.loading("Copiando cardápio...");
 
-        const newMenu: Menu = {
-            ...sourceMenu,
-            id: existingTarget ? existingTarget.id : `menu-${Date.now()}`,
-            date: targetDateStr
+        const newMenu: Partial<Menu> = {
+            date: targetDateStr,
+            items: sourceMenu.items
         };
 
-        if (existingTarget) {
-            updateMenu(existingTarget.id, newMenu);
-        } else {
-            addMenu(newMenu);
+        try {
+            if (existingTarget) {
+                await menuService.updateMenu(existingTarget.id, newMenu);
+            } else {
+                await menuService.createMenu(newMenu);
+            }
+            toast.success("Cardápio copiado com sucesso", { id: toastId });
+            await loadMenus();
+        } catch (error) {
+            toast.error("Erro ao copiar cardápio", { id: toastId });
         }
     };
 
@@ -168,7 +211,7 @@ export function MenuWeekView() {
                 )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 opacity-100 transition-opacity" style={{ opacity: isLoading ? 0.6 : 1 }}>
                 {weekDays.map(day => {
                     const menu = getMenuForDate(day);
                     const isToday = isSameDay(day, new Date());
@@ -235,8 +278,8 @@ export function MenuWeekView() {
             </div>
 
             <Dialog open={isEditing} onOpenChange={setIsEditing}>
-                <DialogContent className="max-w-md">
-                    <DialogHeader>
+                <DialogContent className="max-w-md max-h-[90vh] flex flex-col p-0 overflow-hidden">
+                    <DialogHeader className="p-6 pb-2 border-b">
                         <DialogTitle className="flex items-center gap-2">
                             <Utensils className="h-5 w-5 text-green-500" />
                             Editar Cardápio do Dia
@@ -245,7 +288,7 @@ export function MenuWeekView() {
                     </DialogHeader>
 
                     {editingMenu && (
-                        <div className="space-y-6 py-4">
+                        <div className="flex-1 overflow-y-auto p-6 pt-2 space-y-6">
                             {editingMenu.items.map((item, index) => (
                                 <div key={index} className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
                                     <div className="flex gap-2">
@@ -261,7 +304,7 @@ export function MenuWeekView() {
                                                 className="bg-white font-medium"
                                             />
                                         </div>
-                                        <div className="w-24">
+                                        <div className="w-32">
                                             <Label className="text-xs font-bold text-slate-500 uppercase">Horário</Label>
                                             <Input
                                                 type="time"
@@ -293,7 +336,7 @@ export function MenuWeekView() {
                         </div>
                     )}
 
-                    <DialogFooter className="flex items-center sm:justify-between">
+                    <DialogFooter className="p-4 border-t bg-slate-50 flex items-center sm:justify-between">
                         <Button variant="ghost" className="text-red-500 hover:text-red-600 hover:bg-red-50" onClick={handleClearDay}>Apagar Dia</Button>
                         <div className="flex gap-2">
                             <Button variant="outline" onClick={() => setIsEditing(false)}>Cancelar</Button>

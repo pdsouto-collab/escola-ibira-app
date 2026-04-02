@@ -4,8 +4,9 @@ import { ScheduleItem } from "@/types/schedule";
 import { cn } from "@/lib/utils";
 import { Utensils, Moon, BookOpen, Clock, Pencil, Trash2, FolderKanban, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { useAppStore } from "@/lib/store";
+import { useState, useEffect } from "react";
+import { menuService } from "@/services/menu.service";
+import { Menu } from "@/types/menu";
 
 interface DailyScheduleProps {
     items: ScheduleItem[];
@@ -32,7 +33,11 @@ function getColors(type: ScheduleItem["type"]) {
 }
 
 export function DailySchedule({ items, onEdit, onDelete }: DailyScheduleProps) {
-    const { menus } = useAppStore();
+    const [menus, setMenus] = useState<Menu[]>([]);
+
+    useEffect(() => {
+        menuService.getMenus().then(setMenus).catch(console.error);
+    }, []);
 
     const getMenuDescription = (itemTitle: string, itemDate?: string) => {
         if (!itemDate) return "";
