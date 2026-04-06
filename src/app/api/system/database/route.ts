@@ -17,13 +17,14 @@ export async function POST(req: Request) {
                 const body = await req.json();
         const { commandType, migrationName } = body;
 
-        const isDev = process.env.NEXT_PUBLIC_APP_ENV === 'development';
+        const host = req.headers.get("host") || req.url || '';
+        const isLocalhost = host.includes('localhost');
 
-        if (commandType === 'migrate-dev' && !isDev) {
-            return NextResponse.json({ success: false, error: "Operação inválida: Migrate Dev só pode ser executado em ambiente de desenvolvimento." }, { status: 403 });
+        if (commandType === 'migrate-dev' && !isLocalhost) {
+            return NextResponse.json({ success: false, error: "Operação inválida: Migrate Dev só pode ser executado localmente (localhost)." }, { status: 403 });
         }
-        if (commandType === 'migrate-deploy' && isDev) {
-            return NextResponse.json({ success: false, error: "Operação inválida: Deploy só pode ser executado em Homologação ou Produção." }, { status: 403 });
+        if (commandType === 'migrate-deploy' && (isLocalhost || process.env.NEXT_PUBLIC_APP_ENV === 'development')) {
+            return NextResponse.json({ success: false, error: "Operação inválida: Deploy não pode ser executado no ambiente de desenvolvimento." }, { status: 403 });
         }
 
         let cmd = '';

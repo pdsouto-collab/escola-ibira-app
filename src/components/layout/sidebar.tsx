@@ -115,21 +115,23 @@ export function Sidebar() {
             </div>
             <div className="border-t p-4 space-y-1">
 
-                <button
-                    onClick={() => setIsConfirmResetOpen(true)}
-                    disabled={isResetting}
-                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors mb-2 disabled:opacity-50"
-                >
-                    <RefreshCw className={cn("h-4 w-4", isResetting && "animate-spin")} />
-                    {isResetting ? "Resetando..." : "Resetar Dados"}
-                </button>
+                {currentUser?.role === 'admin' && (
+                    <button
+                        onClick={() => setIsConfirmResetOpen(true)}
+                        disabled={isResetting}
+                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors mb-2 disabled:opacity-50"
+                    >
+                        <RefreshCw className={cn("h-4 w-4", isResetting && "animate-spin")} />
+                        {isResetting ? "Resetando..." : "Resetar Dados"}
+                    </button>
+                )}
                 {currentUser?.role === 'admin' && (
                     <Link
                         href="/banco-de-dados"
                         className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition-colors mb-2"
                     >
                         <Database className="h-5 w-5" />
-                        Banco de Dados
+                        Migrações Do Banco
                     </Link>
                 )}
 

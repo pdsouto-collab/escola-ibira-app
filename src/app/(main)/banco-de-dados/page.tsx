@@ -12,6 +12,14 @@ export default function DatabasePage() {
     const [isExecuting, setIsExecuting] = useState(false);
     const [terminalOutput, setTerminalOutput] = useState<string>("Bem-vindo ao terminal Prisma da Escola Ibirá.\n\nNenhum comando executado recentemente.");
 
+    const [isMounted, setIsMounted] = useState(false);
+    const [isLocalhost, setIsLocalhost] = useState(false);
+
+    React.useEffect(() => {
+        setIsLocalhost(typeof window !== 'undefined' && window.location.href.includes('localhost'));
+        setIsMounted(true);
+    }, []);
+
     const runCommand = async (type: 'migrate-dev' | 'migrate-deploy') => {
         if (type === 'migrate-dev' && !migrationName.trim()) {
             toast.error("Por favor, informe o nome da migração.");
@@ -53,7 +61,7 @@ export default function DatabasePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
 
-                    {process.env.NEXT_PUBLIC_APP_ENV === 'development' && (
+                    {isMounted && isLocalhost && (
                         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
                             <div className="flex items-center gap-2 text-indigo-600 font-semibold text-lg">
                                 <Code2 className="h-5 w-5" />
@@ -76,7 +84,7 @@ export default function DatabasePage() {
                         </div>
                     )}
 
-                    {process.env.NEXT_PUBLIC_APP_ENV !== 'development' && (
+                    {isMounted && !isLocalhost && process.env.NEXT_PUBLIC_APP_ENV !== 'development' && (
                         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
                             <div className="flex items-center gap-2 text-rose-600 font-semibold text-lg">
                                 <Rocket className="h-5 w-5" />
