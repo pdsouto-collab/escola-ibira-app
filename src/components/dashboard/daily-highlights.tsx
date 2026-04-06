@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useAppStore } from "@/lib/store";
 import { toast } from "sonner";
 import { Task } from "@/types/task";
 import { getTasks, createTask, toggleTask } from "@/services/task.service";

@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useAppStore } from "@/lib/store";
 import { CalendarDays, Users, FolderKanban } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { startOfWeek, addDays, format, isSameDay } from "date-fns";

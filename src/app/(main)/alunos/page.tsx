@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { StudentList } from "@/components/students/student-list";
-import { useAppStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Plus, Users, MoreVertical, Edit2, Trash2, FolderPlus } from "lucide-react";
 import { StudentDialog } from "@/components/students/student-dialog";

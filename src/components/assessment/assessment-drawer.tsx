@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TreeRatingPicker } from "@/components/assessment/tree-rating-picker";
-import { useAppStore } from "@/lib/store";
 import { getClasses } from "@/services/school-class.service";
 import { SchoolClass } from "@/types/school-class";
 import { Assessment } from "@/types/assessment";

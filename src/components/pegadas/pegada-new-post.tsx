@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { useAppStore } from "@/lib/store";
 import { PegadaPost } from "@/types/pegada-post";
 import { createPegada } from "@/services/pegada.service";
 import { Card, CardContent } from "@/components/ui/card";

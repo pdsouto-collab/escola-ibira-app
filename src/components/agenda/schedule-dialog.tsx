@@ -6,7 +6,6 @@ import { ScheduleItem } from "@/types/schedule";
 import { Project } from "@/types/project";
 import { SchoolClass } from "@/types/school-class";
 import { Student } from "@/types/student";
-import { useAppStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,

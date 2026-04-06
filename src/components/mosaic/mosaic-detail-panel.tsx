@@ -1,11 +1,14 @@
 "use client";
 
-import { KnowledgeNode, KnowledgeLevel } from "@/lib/data";
+import { KnowledgeNode } from "@/types/knowledge-node";
+import { KnowledgeLevel } from "@/types/knowledge-level";
 import { ChevronRight, ExternalLink, ClipboardList, ListTree, Link as LinkIcon, Footprints } from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-import { useAppStore } from "@/lib/store";
 import { ScrollArea } from "../ui/scroll-area";
+import { useEffect, useState } from "react";
+import { BnccProgressData } from "@/types/bncc-progress";
+import { getBnccProgress } from "@/services/bncc-progress.service";
 
 interface MosaicDetailPanelProps {
     node: KnowledgeNode | null;
@@ -54,7 +57,13 @@ function getLeavesUnderNode(node: KnowledgeNode, targetLevel: KnowledgeLevel): K
 }
 
 export function MosaicDetailPanel({ node, treeType, onAvaliacao }: MosaicDetailPanelProps) {
-    const { bnccProgress } = useAppStore();
+    const [bnccProgress, setBnccProgress] = useState<BnccProgressData>({});
+
+    useEffect(() => {
+        if (node) {
+            getBnccProgress().then(data => setBnccProgress(data || {}));
+        }
+    }, [node]);
 
     if (!node) {
         return (

@@ -6,7 +6,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { useAppStore } from "@/lib/store";
 import { Student } from "@/types/student";
 import type { PortfolioEntry } from "@/types/portfolio-entry";
 import { createPortfolioEntry } from "@/services/portfolio.service";

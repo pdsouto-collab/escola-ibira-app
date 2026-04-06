@@ -22,13 +22,60 @@ import { assessmentsDataSeed, assessmentsAttachmentsDataSeed } from "../src/lib/
 import { classBoardPostsDataSeed } from "../src/lib/seed/class-board-posts-seed"
 import { classBoardPostInteractionsDataSeed } from "../src/lib/seed/class-board-post-interactions-seed"
 import { menusDataSeed, menuItemsDataSeed } from "@/lib/seed/menus-seed"
+import { skillsTreeDataSeed } from "../src/lib/seed/skills-tree-data-seed"
+import { contentsTreeDataSeed } from "../src/lib/seed/contents-tree-data-seed"
+import { mosaicSkillsDataSeed } from "../src/lib/seed/mosaic-skills-data-seed"
+import { mosaicContentsDataSeed } from "../src/lib/seed/mosaic-contents-data-seed"
+
 const prisma = new PrismaClient()
+
+async function seedKnowledgeTree(nodes: any[], parentId: string | null = null) {
+  for (const node of nodes) {
+    const created = await prisma.knowledgeNode.create({
+      data: {
+        id: node.id,
+        level: node.level,
+        type: node.type,
+        name: node.name,
+        description: node.description,
+        libraryItemId: node.libraryItemId,
+        classId: node.classId,
+        period: node.period,
+        parentId: parentId,
+      }
+    });
+    if (node.children && node.children.length > 0) {
+      await seedKnowledgeTree(node.children, created.id);
+    }
+  }
+}
+
+async function seedMosaicTree(nodes: any[], parentId: string | null = null) {
+  for (const node of nodes) {
+    const created = await prisma.mosaicNode.create({
+      data: {
+        id: node.id,
+        label: node.label,
+        type: node.type,
+        color: node.color,
+        weight: node.weight,
+        parentId: parentId,
+      }
+    });
+    if (node.children && node.children.length > 0) {
+      await seedMosaicTree(node.children, created.id);
+    }
+  }
+}
 
 async function main() {
 
   console.log("Limpando banco de dados...")
 
   // Ordem correta de exclusão: Filhos antes dos Pais
+  await prisma.knowledgeNode.deleteMany()
+  await prisma.mosaicNode.deleteMany()
+  await prisma.bnccProgress.deleteMany()
   await prisma.classBoardPostInteraction.deleteMany()
   await prisma.classBoardPost.deleteMany()
   await prisma.assessmentAttachment.deleteMany()
@@ -211,8 +258,8 @@ async function main() {
   console.log("Importando Class Board Posts...")
   await prisma.classBoardPost.createMany({
     data: classBoardPostsDataSeed.map(post => ({
-        ...post,
-        createdAt: new Date(post.createdAt)
+      ...post,
+      createdAt: new Date(post.createdAt)
     })) as any,
     skipDuplicates: true
   })
@@ -221,8 +268,8 @@ async function main() {
   console.log("Importando Interações de Class Board Posts...")
   await prisma.classBoardPostInteraction.createMany({
     data: classBoardPostInteractionsDataSeed.map(interaction => ({
-        ...interaction,
-        createdAt: new Date(interaction.createdAt)
+      ...interaction,
+      createdAt: new Date(interaction.createdAt)
     })) as any,
     skipDuplicates: true
   })
@@ -231,9 +278,9 @@ async function main() {
   console.log("Importando Menus...")
   await prisma.menu.createMany({
     data: menusDataSeed.map(m => ({
-        ...m,
-        createdAt: new Date(),
-        updatedAt: new Date()
+      ...m,
+      createdAt: new Date(),
+      updatedAt: new Date()
     })) as any,
     skipDuplicates: true
   })
@@ -241,12 +288,21 @@ async function main() {
   console.log("Importando Itens do Menu...")
   await prisma.menuItem.createMany({
     data: menuItemsDataSeed.map(m => ({
-        ...m,
-        createdAt: new Date(),
-        updatedAt: new Date()
+      ...m,
+      createdAt: new Date(),
+      updatedAt: new Date()
     })) as any,
     skipDuplicates: true
   })
+
+  // Árvores de Conhecimento e Mosaicos
+  console.log("Importando Knowledge Trees...")
+  await seedKnowledgeTree(skillsTreeDataSeed)
+  await seedKnowledgeTree(contentsTreeDataSeed)
+
+  console.log("Importando Mosaic Trees...")
+  await seedMosaicTree(mosaicSkillsDataSeed)
+  await seedMosaicTree(mosaicContentsDataSeed)
 
   console.log("Seed finalizado com sucesso!")
 }

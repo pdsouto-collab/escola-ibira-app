@@ -1,6 +1,5 @@
 "use client";
 
-import { useAppStore } from "@/lib/store";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { KnowledgeTreeEditor } from "@/components/admin/knowledge-tree-editor";
 import { FinalProductsEditor } from "@/components/admin/final-products-editor";

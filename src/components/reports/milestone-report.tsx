@@ -1,4 +1,3 @@
-import { useAppStore } from "@/lib/store";
 import { Student } from "@/types/student";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +8,7 @@ import { getListBncc } from "@/services/bncc.service";
 import { LibraryItem } from "@/types/library-item";
 import { AssessmentService } from "@/services/assessment.service";
 import { Assessment } from "@/types/assessment";
+import { getKnowledgeTrees } from "@/services/knowledge.service";
 
 interface MilestoneReportProps {
     student: Student | undefined;
@@ -92,7 +92,12 @@ export function MilestoneReport({ student, filter = "all", period = "all" }: Mil
     const [assessments, setAssessments] = useState<Assessment[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const { skillsTree, contentsTree } = useAppStore();
+    const [skillsTree, setSkillsTree] = useState<any[]>([]);
+        const [contentsTree, setContentsTree] = useState<any[]>([]);
+        useEffect(() => {
+            getKnowledgeTrees('skill').then(setSkillsTree);
+            getKnowledgeTrees('content').then(setContentsTree);
+            }, []);
 
     useEffect(() => {
         async function loadData() {

@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAppStore } from "@/lib/store";
-import { KnowledgeNode, SEMESTERS, YEARS } from "@/lib/data";
+import { SEMESTERS } from "@/constants/semesters";
+import { YEARS } from "@/constants/years";
+import { KnowledgeNode } from "@/types/knowledge-node";
+import { getKnowledgeTrees } from "@/services/knowledge.service";
 import { RadialMatrix } from "./radial-matrix";
 import { MosaicDetailPanel } from "./mosaic-detail-panel";
 import { getClasses } from "@/services/school-class.service";
@@ -24,7 +26,9 @@ import { Project } from "@/types/project";
 
 
 export function MosaicContainer() {
-    const { skillsTree, contentsTree } = useAppStore();
+    const [skillsTree, setSkillsTree] = useState<KnowledgeNode[]>([]);
+    const [contentsTree, setContentsTree] = useState<KnowledgeNode[]>([]);
+    
     const [assessments, setAssessments] = useState<Assessment[]>([]);
     const { data: session } = useSession();
     const currentUser = session?.user as any;
@@ -110,12 +114,14 @@ export function MosaicContainer() {
 
     useEffect(() => {
         const loadData = async () => {
-            const [, , , projectsData, assessmentsData] = await Promise.all([
+            const [, , , projectsData, assessmentsData, sTree, cTree] = await Promise.all([
                 fetchClasses(), 
                 fetchStudents(), 
                 getListaBNCC(),
                 getProjects(),
-                AssessmentService.getAll()
+                AssessmentService.getAll(),
+                getKnowledgeTrees('skill'),
+                getKnowledgeTrees('content')
             ]);
             if (projectsData) {
                 setProjects(projectsData);
@@ -123,6 +129,8 @@ export function MosaicContainer() {
             if (assessmentsData) {
                 setAssessments(assessmentsData);
             }
+            if (sTree) setSkillsTree(sTree);
+            if (cTree) setContentsTree(cTree);
         };
         loadData();
     }, []);

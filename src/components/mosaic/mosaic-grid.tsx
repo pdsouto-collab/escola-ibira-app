@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAppStore } from "@/lib/store";
-import { KnowledgeNode } from "@/lib/data";
+import { KnowledgeNode } from "@/types/knowledge-node";
+import { BnccProgressData, BnccProgressItem } from "@/types/bncc-progress";
+import { getKnowledgeTrees } from "@/services/knowledge.service";
+import { getBnccProgress, updateBNCCStatus } from "@/services/bncc-progress.service";
+import { toast } from "sonner";
 import { Project } from "@/types/project";
 import { getProjects } from "@/services/project.service";
 import { cn } from "@/lib/utils";
@@ -36,17 +39,36 @@ function getMicroNodes(node: KnowledgeNode): KnowledgeNode[] {
 }
 
 export function MosaicGrid({ classId, projectId, students, treeType = "skill" }: MosaicGridProps) {
-    const { bnccProgress, updateBNCCStatus, skillsTree, contentsTree } = useAppStore();
     const [projects, setProjects] = useState<Project[]>([]);
+    
+    const [currentTree, setCurrentTree] = useState<KnowledgeNode[]>([]);
+    const [bnccProgress, setBnccProgress] = useState<BnccProgressData>({});
+    const [isLoading, setIsLoading] = useState(true);
+
+    const loadData = async () => {
+        setIsLoading(true);
+        try {
+            const [projData, treeData, progressData] = await Promise.all([
+                getProjects(),
+                getKnowledgeTrees(treeType),
+                getBnccProgress()
+            ]);
+            setProjects(projData || []);
+            setCurrentTree(treeData || []);
+            setBnccProgress(progressData || {});
+        } catch (error) {
+            toast.error("Erro ao carregar dados do mosaico");
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
-        getProjects().then((data: Project[]) => setProjects(data || []));
-    }, []);
+        loadData();
+    }, [treeType]);
     const [selectedNode, setSelectedNode] = useState<KnowledgeNode | null>(null);
     const [comment, setComment] = useState("");
     const [automationConfig, setAutomationConfig] = useState<{ status: "not-started" | "in-progress" | "achieved", node: KnowledgeNode } | null>(null);
-
-    const currentTree = treeType === "skill" ? skillsTree : contentsTree;
 
     // Helper to check if project belongs to class
     const isProjectInClass = (project: Project, targetClassId: string) => {
@@ -93,31 +115,47 @@ export function MosaicGrid({ classId, projectId, students, treeType = "skill" }:
         return "not-started";
     };
 
-    const handleStatusUpdate = (status: "not-started" | "in-progress" | "achieved") => {
+    const handleStatusUpdate = async (status: "not-started" | "in-progress" | "achieved") => {
         if (!selectedNode) return;
         const identifier = selectedNode.libraryItemId || selectedNode.id;
 
-        // Update main node
-        updateBNCCStatus(identifier, status);
-
-        // Teacher Automation: Automatically suggest updating parent/linked nodes
-        if (treeType === "content" && selectedNode.linkedNodeIds && selectedNode.linkedNodeIds.length > 0) {
-            setAutomationConfig({ status, node: selectedNode });
-        } else {
-            setComment("");
-            setSelectedNode(null);
+        const loadToast = toast.loading("Atualizando status...");
+        try {
+            // Update main node
+            await updateBNCCStatus(identifier, status as any);
+            
+            // Teacher Automation: Automatically suggest updating parent/linked nodes
+            if (treeType === "content" && selectedNode.linkedNodeIds && selectedNode.linkedNodeIds.length > 0) {
+                setAutomationConfig({ status, node: selectedNode });
+                toast.dismiss(loadToast);
+            } else {
+                setComment("");
+                setSelectedNode(null);
+                await loadData(); // Reload progress
+                toast.success("Status atualizado com sucesso", { id: loadToast });
+            }
+        } catch (error) {
+            toast.error("Erro ao atualizar status", { id: loadToast });
         }
     };
 
-    const confirmAutomationAction = () => {
+    const confirmAutomationAction = async () => {
         if (automationConfig) {
             const { status, node } = automationConfig;
-            node.linkedNodeIds?.forEach(linkedId => {
-                updateBNCCStatus(linkedId, status);
-            });
+            const loadToast = toast.loading("Sincronizando habilidades conectadas...");
+            try {
+                for (const linkedId of node.linkedNodeIds || []) {
+                    await updateBNCCStatus(linkedId, status as any);
+                }
+                toast.success("Habilidades atualizadas!", { id: loadToast });
+            } catch (error) {
+                toast.error("Erro ao atualizar algumas habilidades", { id: loadToast });
+            }
+            
             setAutomationConfig(null);
             setComment("");
             setSelectedNode(null);
+            loadData();
         }
     };
 
@@ -134,6 +172,17 @@ export function MosaicGrid({ classId, projectId, students, treeType = "skill" }:
     }).filter(section => section.nodes.length > 0);
 
     const hasAnyNodes = gridSections.length > 0;
+
+    if (isLoading) {
+        return (
+            <div className="w-full h-full flex flex-col items-center justify-center text-center p-8 text-slate-500 animate-in fade-in zoom-in duration-500">
+                <div className="bg-slate-100 p-6 rounded-full mb-4">
+                    <Clock className="w-12 h-12 text-slate-400 animate-spin" />
+                </div>
+                <h3 className="text-xl font-semibold text-slate-800 mb-2">Carregando Mosaico...</h3>
+            </div>
+        );
+    }
 
     if (!hasAnyNodes) {
         return (

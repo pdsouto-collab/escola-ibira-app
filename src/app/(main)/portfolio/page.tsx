@@ -2,8 +2,8 @@
 
 import React, { useState, useMemo, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { useAppStore } from "@/lib/store";
-import { SEMESTERS, YEARS } from "@/lib/data";
+import { SEMESTERS } from "@/constants/semesters";
+import { YEARS } from "@/constants/years";
 import { Assessment } from "@/types/assessment";
 import { AssessmentService } from "@/services/assessment.service";
 import { AssessmentDrawer } from "@/components/assessment/assessment-drawer";
@@ -27,6 +27,7 @@ import { Project } from "@/types/project";
 import { getProjects } from "@/services/project.service";
 import { ScheduleItem } from "@/types/schedule";
 import { getSchedules } from "@/services/schedule.service";
+import { getKnowledgeTrees } from "@/services/knowledge.service";
 
 // ────────────────────────────────────────────
 // Helper: find node name recursively
@@ -249,8 +250,8 @@ function ProjectView({
     schedule: ScheduleItem[];
     students: Student[];
     classes: SchoolClass[];
-    skillsTree: ReturnType<typeof useAppStore>["skillsTree"];
-    contentsTree: ReturnType<typeof useAppStore>["contentsTree"];
+    skillsTree: any[];
+    contentsTree: any[];
     libraryItems: LibraryItem[]
     onAvaliacao: (ctx: Partial<Assessment> & { contextLabel: string }) => void;
     onEdit: (assessment: Assessment) => void;
@@ -471,8 +472,8 @@ function StudentView({
     classes: SchoolClass[];
     projects: Project[];
     schedule: ScheduleItem[];
-    skillsTree: ReturnType<typeof useAppStore>["skillsTree"];
-    contentsTree: ReturnType<typeof useAppStore>["contentsTree"];
+    skillsTree: any[];
+    contentsTree: any[];
     libraryItems: LibraryItem[]
     studentFilter: string;
     classFilter: string;
@@ -812,7 +813,12 @@ function StudentView({
 // Main Portfolio Page
 // ────────────────────────────────────────────
 function PortfolioContent() {
-    const { skillsTree, contentsTree } = useAppStore();
+    const [skillsTree, setSkillsTree] = useState<any[]>([]);
+        const [contentsTree, setContentsTree] = useState<any[]>([]);
+        useEffect(() => {
+            getKnowledgeTrees('skill').then(setSkillsTree);
+            getKnowledgeTrees('content').then(setContentsTree);
+            }, []);
     const [assessments, setAssessments] = useState<Assessment[]>([]);
     const [isLoadingAssessments, setIsLoadingAssessments] = useState(true);
     const [allProjects, setAllProjects] = useState<Project[]>([]);

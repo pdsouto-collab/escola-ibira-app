@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { mockBNCCData, BNCCSkill } from "@/lib/data";
-import { Search, Filter, ChevronDown, ChevronRight, Check } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, Filter, ChevronDown, ChevronRight, Check, Loader2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { cn } from "@/lib/utils";
+import { getListBncc } from "@/services/bncc.service";
+import { toast } from "sonner";
 
 interface BNCCSelectorProps {
     selected?: string[];
@@ -14,11 +15,59 @@ interface BNCCSelectorProps {
 
 export function BNCCSelector({ selected = [], onSelect }: BNCCSelectorProps) {
     const [searchTerm, setSearchTerm] = useState("");
-    const [expandedSubjects, setExpandedSubjects] = useState<string[]>(["ciencias"]);
-    // Remove local state if controlled, or keep sync
+    const [expandedSubjects, setExpandedSubjects] = useState<string[]>([]);
     const [itemState, setItemState] = useState<string[]>([]);
+    
+    // Estado dos dados do servidor
+    const [bnccData, setBnccData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
     const selectedSkills = onSelect ? selected : itemState;
+
+    useEffect(() => {
+        const fetchBNCC = async () => {
+            try {
+                const items = await getListBncc();
+                
+                // Agrupar os itens do serviço Prisma pelo 'subGroup' (Matéria)
+                const groupedData = items.reduce((acc: Record<string, any>, item) => {
+                    const subjectName = item.subGroup || "Geral";
+                    const subjectId = subjectName.toLowerCase().replace(/\s+/g, '-');
+                    
+                    if (!acc[subjectId]) {
+                        acc[subjectId] = {
+                            id: subjectId,
+                            name: subjectName,
+                            skills: []
+                        };
+                    }
+                    
+                    acc[subjectId].skills.push({
+                        code: item.code || "Sem Código",
+                        description: item.description || "Sem Descrição",
+                        category: item.name || "Habilidade"
+                    });
+                    
+                    return acc;
+                }, {});
+
+                const subjectsList = Object.values(groupedData);
+                setBnccData(subjectsList);
+                
+                // Expandir o primeiro por padrão
+                if (subjectsList.length > 0) {
+                    setExpandedSubjects([(subjectsList[0] as any).id]);
+                }
+            } catch (error) {
+                console.error(error);
+                toast.error("Erro ao carregar a base da BNCC.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchBNCC();
+    }, []);
 
     const handleSelect = (newSelection: string[]) => {
         if (onSelect) {
@@ -28,9 +77,9 @@ export function BNCCSelector({ selected = [], onSelect }: BNCCSelectorProps) {
         }
     };
 
-    const filteredData = mockBNCCData.map(subject => ({
+    const filteredData = bnccData.map(subject => ({
         ...subject,
-        skills: subject.skills.filter(skill =>
+        skills: subject.skills.filter((skill: any) =>
             skill.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
             skill.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
             skill.category.toLowerCase().includes(searchTerm.toLowerCase())
@@ -52,13 +101,13 @@ export function BNCCSelector({ selected = [], onSelect }: BNCCSelectorProps) {
 
     return (
         <div className="w-full">
-            {/* Header Content */}
+            {/* Cabeçalho */}
             <div className="mb-6">
                 <h2 className="text-2xl font-bold text-slate-800 mb-2">Selecione Habilidades</h2>
                 <p className="text-slate-500">Busque na base da BNCC para adicionar ao seu projeto.</p>
             </div>
 
-            {/* Search & Filter */}
+            {/* Busca e Filtros */}
             <div className="flex gap-4 mb-8">
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-2.5 h-5 w-5 text-slate-400" />
@@ -76,70 +125,78 @@ export function BNCCSelector({ selected = [], onSelect }: BNCCSelectorProps) {
                 </Button>
             </div>
 
-            {/* Content List */}
-            <div className="space-y-4">
-                {filteredData.map(subject => (
-                    <div key={subject.id} className="border-b border-slate-100 last:border-0 pb-4">
-                        <button
-                            onClick={() => toggleSubject(subject.id)}
-                            className="flex items-center justify-between w-full py-2 hover:bg-slate-50 rounded-lg px-2 transition-colors"
-                        >
-                            <span className="font-bold text-lg text-slate-800">{subject.name}</span>
-                            {expandedSubjects.includes(subject.id) ? (
-                                <ChevronDown className="w-5 h-5 text-slate-400" />
-                            ) : (
-                                <ChevronRight className="w-5 h-5 text-slate-400" />
-                            )}
-                        </button>
+            {/* Estado de Carregamento */}
+            {loading ? (
+                <div className="flex flex-col items-center justify-center py-12 text-slate-500 gap-3">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                    <p>Carregando matriz curricular...</p>
+                </div>
+            ) : (
+                /* Lista de Conteúdo */
+                <div className="space-y-4">
+                    {filteredData.map(subject => (
+                        <div key={subject.id} className="border-b border-slate-100 last:border-0 pb-4">
+                            <button
+                                onClick={() => toggleSubject(subject.id)}
+                                className="flex items-center justify-between w-full py-2 hover:bg-slate-50 rounded-lg px-2 transition-colors"
+                            >
+                                <span className="font-bold text-lg text-slate-800">{subject.name}</span>
+                                {expandedSubjects.includes(subject.id) ? (
+                                    <ChevronDown className="w-5 h-5 text-slate-400" />
+                                ) : (
+                                    <ChevronRight className="w-5 h-5 text-slate-400" />
+                                )}
+                            </button>
 
-                        {expandedSubjects.includes(subject.id) && (
-                            <div className="mt-4 px-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                {subject.skills.map(skill => {
-                                    const isSelected = selectedSkills.includes(skill.code);
-                                    return (
-                                        <div
-                                            key={skill.code}
-                                            onClick={() => toggleSkill(skill.code)}
-                                            className={cn(
-                                                "cursor-pointer border rounded-lg p-3 text-left transition-all hover:shadow-sm relative overflow-hidden group",
-                                                isSelected
-                                                    ? "bg-green-50 border-green-200"
-                                                    : "bg-white border-slate-200 hover:border-slate-300"
-                                            )}
-                                        >
-                                            <div className="flex justify-between items-start mb-2">
-                                                <Badge variant="outline" className="bg-slate-100 text-slate-600 border-slate-200 text-[10px]">
-                                                    {skill.code}
-                                                </Badge>
-                                                {isSelected && <Check className="w-4 h-4 text-green-600" />}
+                            {expandedSubjects.includes(subject.id) && (
+                                <div className="mt-4 px-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                    {subject.skills.map((skill: any) => {
+                                        const isSelected = selectedSkills.includes(skill.code);
+                                        return (
+                                            <div
+                                                key={skill.code}
+                                                onClick={() => toggleSkill(skill.code)}
+                                                className={cn(
+                                                    "cursor-pointer border rounded-lg p-3 text-left transition-all hover:shadow-sm relative overflow-hidden group",
+                                                    isSelected
+                                                        ? "bg-green-50 border-green-200"
+                                                        : "bg-white border-slate-200 hover:border-slate-300"
+                                                )}
+                                            >
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <Badge variant="outline" className="bg-slate-100 text-slate-600 border-slate-200 text-[10px]">
+                                                        {skill.code}
+                                                    </Badge>
+                                                    {isSelected && <Check className="w-4 h-4 text-green-600" />}
+                                                </div>
+
+                                                <p className="text-xs text-slate-500 font-bold uppercase mb-1 tracking-wide">
+                                                    {skill.category}
+                                                </p>
+
+                                                <p className="text-sm text-slate-700 leading-snug line-clamp-3">
+                                                    {skill.description}
+                                                </p>
+
+                                                {/* Barra de destaque da seleção */}
+                                                {isSelected && (
+                                                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-green-500" />
+                                                )}
                                             </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    ))}
 
-                                            <p className="text-xs text-slate-500 font-bold uppercase mb-1 tracking-wide">
-                                                {skill.category}
-                                            </p>
-
-                                            <p className="text-sm text-slate-700 leading-snug line-clamp-3">
-                                                {skill.description}
-                                            </p>
-
-                                            {/* Selection Highlight Bar */}
-                                            {isSelected && (
-                                                <div className="absolute bottom-0 left-0 right-0 h-1 bg-green-500" />
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </div>
-                ))}
-
-                {filteredData.length === 0 && (
-                    <div className="text-center py-12 text-slate-500">
-                        Nenhuma habilidade encontrada para &quot;{searchTerm}&quot;.
-                    </div>
-                )}
-            </div>
+                    {filteredData.length === 0 && (
+                        <div className="text-center py-12 text-slate-500">
+                            Nenhuma habilidade encontrada para "{searchTerm}".
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }

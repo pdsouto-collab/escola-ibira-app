@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect, use } from "react";
 import { getStudentById } from "@/services/student.service";
-import { getStudentCurriculum } from "@/lib/data";
 import { getClassById } from "@/services/school-class.service";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";

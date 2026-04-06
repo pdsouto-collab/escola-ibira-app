@@ -1,9 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAppStore } from "@/lib/store";
-import { KnowledgeNode, KnowledgeLevel, SEMESTERS, YEARS } from "@/lib/data";
+import { KnowledgeLevel } from "@/types/knowledge-level";
+import { KnowledgeNode } from "@/types/knowledge-node";
+import { SEMESTERS } from "@/constants/semesters";
+import { YEARS } from "@/constants/years";
 import { ChevronRight, ChevronDown, Plus, Edit2, Trash2, Link as LinkIcon, BookOpen, Search, X, Copy, Filter, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import {
+    getKnowledgeTrees,
+    addKnowledgeNode,
+    updateKnowledgeNode,
+    removeKnowledgeNode,
+    duplicateKnowledgeNode
+} from "@/services/knowledge.service";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -57,9 +67,10 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
     const [classes, setClasses] = useState<SchoolClass[]>([]);
     const [isLoadingClasses, setIsLoadingClasses] = useState(true);
-    const { skillsTree, contentsTree, addKnowledgeNode, updateKnowledgeNode, removeKnowledgeNode, duplicateKnowledgeNode } = useAppStore();
 
-    const treeData = treeType === "skill" ? skillsTree : contentsTree;
+    const [treeData, setTreeData] = useState<KnowledgeNode[]>([]);
+    const [isLoadingTree, setIsLoadingTree] = useState(true);
+
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
     const [selectedPeriod, setSelectedPeriod] = useState<string>("all");
     const [selectedGrade, setSelectedGrade] = useState<string>("all");
@@ -91,10 +102,23 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
         }
     }
 
+    async function loadTree() {
+        setIsLoadingTree(true);
+        try {
+            const data = await getKnowledgeTrees(treeType);
+            setTreeData(data);
+        } catch (error) {
+            toast.error("Erro ao carregar árvore de conhecimento");
+        } finally {
+            setIsLoadingTree(false);
+        }
+    }
+
     useEffect(() => {
         getListaBNCC();
         fetchClasses();
-    }, [])
+        loadTree();
+    }, [treeType])
 
     async function getListaBNCC() {
         await getListBncc().then(setLibraryItems);
@@ -146,29 +170,49 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
         setConfirmDeleteId(id);
     };
 
-    const confirmDeleteAction = () => {
+    const confirmDeleteAction = async () => {
         if (confirmDeleteId) {
-            removeKnowledgeNode(treeType, confirmDeleteId);
+            const loadingToast = toast.loading("Excluindo nó...");
+            try {
+                await removeKnowledgeNode(confirmDeleteId);
+                toast.success("Nó excluído com sucesso!", { id: loadingToast });
+                loadTree();
+            } catch (error) {
+                toast.error("Erro ao excluir nó", { id: loadingToast });
+            }
             setConfirmDeleteId(null);
         }
     };
 
-    const confirmDuplicateAction = () => {
+    const confirmDuplicateAction = async () => {
         if (confirmDuplicateId) {
-            duplicateKnowledgeNode(treeType, confirmDuplicateId);
+            const loadingToast = toast.loading("Duplicando nó e filhos...");
+            try {
+                await duplicateKnowledgeNode(confirmDuplicateId);
+                toast.success("Nó duplicado com sucesso!", { id: loadingToast });
+                loadTree();
+            } catch (error) {
+                toast.error("Erro ao duplicar nó", { id: loadingToast });
+            }
             setConfirmDuplicateId(null);
         }
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!currentNode || !currentNode.name) return;
 
-        if (editMode === "add") {
-            // @ts-ignore
-            const parentId = currentNode._parentId || null;
-            addKnowledgeNode(treeType, parentId, currentNode as KnowledgeNode);
-        } else if (editMode === "edit") {
-            updateKnowledgeNode(treeType, currentNode.id!, currentNode);
+        const loadingToast = toast.loading("Salvando...");
+        try {
+            if (editMode === "add") {
+                const parentId = (currentNode as any)._parentId || null;
+                await addKnowledgeNode(parentId, currentNode as KnowledgeNode);
+            } else if (editMode === "edit") {
+                await updateKnowledgeNode(currentNode.id!, currentNode);
+            }
+            toast.success("Salvo com sucesso!", { id: loadingToast });
+            loadTree();
+        } catch (error) {
+            toast.error("Erro ao salvar nó", { id: loadingToast });
         }
 
         setIsDialogOpen(false);
@@ -215,7 +259,7 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
 
     // For content trees, L3 and L4 can be cross-linked to skill trees at the same level
     const canCrossLink = treeType === "content" && currentNode && (currentNode.level === "micro" || currentNode.level === "atomico");
-    const linkableSkills = canCrossLink ? getNodesByLevel(skillsTree, currentNode.level!) : [];
+    const linkableSkills: KnowledgeNode[] = [];
 
     // Recursive Node Component
     const TreeNode = ({ node, isExpandedDefault = true }: { node: KnowledgeNode, isExpandedDefault?: boolean }) => {
@@ -297,7 +341,7 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
 
                 {isExpanded && hasChildren && (
                     <div className="pl-4">
-                        {node.children.map(child => (
+                        {node.children?.map(child => (
                             <TreeNode key={child.id} node={child} isExpandedDefault={child.level !== "atomico"} />
                         ))}
                     </div>
@@ -367,14 +411,19 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
                         </Select>
                     </div>
                 </div>
-                <Button onClick={handleAddRoot} className="gap-2">
-                    <Plus className="w-4 h-4" />
+                <Button onClick={handleAddRoot} className="gap-2" disabled={isLoadingTree}>
+                    {isLoadingTree ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                     Criar Nível 1
                 </Button>
             </div>
 
             <div className="border border-slate-200 rounded-xl p-6 bg-white overflow-hidden relative min-h-[400px]">
-                {filteredTreeData.length === 0 ? (
+                {isLoadingTree ? (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
+                        <Loader2 className="w-8 h-8 animate-spin mb-3" />
+                        <p>Carregando árvore de conhecimento...</p>
+                    </div>
+                ) : filteredTreeData.length === 0 ? (
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
                         <div className="bg-slate-50 p-4 rounded-full mb-3">
                             <Plus className="w-8 h-8 opacity-50" />

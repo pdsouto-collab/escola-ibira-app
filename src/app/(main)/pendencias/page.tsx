@@ -7,7 +7,6 @@ import {
     BookOpen, Clock, AlertCircle, MessageSquare, GraduationCap,
     Calendar, ChevronRight, NotebookPen, Info, Star, Loader2
 } from "lucide-react";
-import { useAppStore } from "@/lib/store";
 import { toast } from "sonner";
 import { Task } from "@/types/task";
 import { getTasks, createTask, toggleTask, deleteTask } from "@/services/task.service";

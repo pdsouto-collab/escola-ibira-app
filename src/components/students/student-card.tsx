@@ -1,7 +1,6 @@
 "use client";
 
 import { Student } from "@/types/student";
-import { useAppStore } from "@/lib/store";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { User, Edit2, Trash2, Check } from "lucide-react";

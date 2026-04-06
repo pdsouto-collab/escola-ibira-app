@@ -1,12 +1,11 @@
 "use client";
-
-import { useAppStore } from "@/lib/store";
 import { User, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Student } from "@/types/student";
 import { useEffect, useState } from "react";
 import { AssessmentService } from "@/services/assessment.service";
 import { Assessment } from "@/types/assessment";
+import { getKnowledgeTrees } from "@/services/knowledge.service";
 
 const labels = ["Muda", "Broto", "Jovem", "Adulta", "Com frutos"];
 
@@ -84,7 +83,12 @@ const resolveNodeInfo = (id: string, skillsTree: any[], contentsTree: any[]) => 
 };
 
 export function ObservationList({ student }: { student: Student }) {
-    const { skillsTree, contentsTree } = useAppStore();
+    const [skillsTree, setSkillsTree] = useState<any[]>([]);
+        const [contentsTree, setContentsTree] = useState<any[]>([]);
+        useEffect(() => {
+            getKnowledgeTrees('skill').then(setSkillsTree);
+            getKnowledgeTrees('content').then(setContentsTree);
+            }, []);
     const [assessments, setAssessments] = useState<Assessment[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 

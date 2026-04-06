@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
-import { useAppStore } from "@/lib/store";
 import { Assessment } from "@/types/assessment";
 import { AssessmentService } from "@/services/assessment.service";
 import { TreeRatingPicker } from "@/components/assessment/tree-rating-picker";
@@ -27,6 +26,7 @@ import { Project } from "@/types/project";
 import { getProjects } from "@/services/project.service";
 import { ScheduleItem } from "@/types/schedule";
 import { getSchedules } from "@/services/schedule.service";
+import { getKnowledgeTrees } from "@/services/knowledge.service";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Node Resolvers
@@ -162,7 +162,12 @@ function ReportCard({
     dateRange?: { start: string; end: string };
     period?: string | null;
 }) {
-    const { skillsTree, contentsTree } = useAppStore();
+    const [skillsTree, setSkillsTree] = useState<any[]>([]);
+        const [contentsTree, setContentsTree] = useState<any[]>([]);
+        useEffect(() => {
+            getKnowledgeTrees('skill').then(setSkillsTree);
+            getKnowledgeTrees('content').then(setContentsTree);
+            }, []);
     const [assessments, setAssessments] = useState<Assessment[]>([]);
     const [isLoadingAssessments, setIsLoadingAssessments] = useState(true);
     const [schedule, setSchedule] = useState<ScheduleItem[]>([]);

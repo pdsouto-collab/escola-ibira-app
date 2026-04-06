@@ -1,6 +1,4 @@
 "use client";
-
-import { useAppStore } from "@/lib/store";
 import { Student } from "@/types/student";
 import { ProgressChart, ProgressChartData } from "@/components/assessment/progress-chart";
 import { useEffect, useState } from "react";
@@ -8,6 +6,7 @@ import { LibraryItem } from "@/types/library-item";
 import { getListBncc } from "@/services/bncc.service";
 import { AssessmentService } from "@/services/assessment.service";
 import { Assessment } from "@/types/assessment";
+import { getKnowledgeTrees } from "@/services/knowledge.service";
 
 // ────────────────────────────────────────────
 // Helper: find node name recursively
@@ -115,7 +114,12 @@ export function SkillsChart({ student, filter = "all", period = "all" }: { stude
 
     const studentId = student.id;
 
-    const { skillsTree, contentsTree } = useAppStore();
+    const [skillsTree, setSkillsTree] = useState<any[]>([]);
+        const [contentsTree, setContentsTree] = useState<any[]>([]);
+        useEffect(() => {
+            getKnowledgeTrees('skill').then(setSkillsTree);
+            getKnowledgeTrees('content').then(setContentsTree);
+            }, []);
 
     if (isLoading) {
         return (

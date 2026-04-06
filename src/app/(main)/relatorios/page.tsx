@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAppStore } from "@/lib/store";
 import { getStudents } from "@/services/student.service";
 import { Student } from "@/types/student";
-import { SEMESTERS, YEARS } from "@/lib/data";
+import { SEMESTERS } from "@/constants/semesters";
+import { YEARS } from "@/constants/years";
 import { MilestoneReport } from "@/components/reports/milestone-report";
 import { DailyLogReport } from "@/components/reports/daily-log-report";
 import { PortfolioReport } from "@/components/reports/portfolio-report";

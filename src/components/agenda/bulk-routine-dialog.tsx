@@ -24,7 +24,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Project } from "@/types/project";
 import { SchoolClass } from "@/types/school-class";
-import { useAppStore } from "@/lib/store";
 
 import { Student } from "@/types/student";
 

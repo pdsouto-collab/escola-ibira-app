@@ -1,6 +1,5 @@
 "use client";
 
-import { useAppStore } from "@/lib/store";
 import { PegadaNewPost } from "@/components/pegadas/pegada-new-post";
 import { PegadasFeed } from "@/components/pegadas/pegadas-feed";
 import { TreeDeciduous, Info } from "lucide-react";

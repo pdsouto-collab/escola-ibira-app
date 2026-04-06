@@ -460,3 +460,54 @@ model ChatMessage {
   @@index([groupId])
   @@index([createdAt])
 }
+
+/// Sistema de Árvores do Conhecimento (Base Habilidades/Conteúdos)
+model KnowledgeNode {
+  id            String   @id @default(cuid())
+  level         String   // "macro", "mesclado", "micro", "atomico"
+  type          String   // "skill", "content"
+  name          String
+  description   String?  @db.Text
+  libraryItemId String?
+  classId       String?
+  period        String?
+
+  parentId      String?
+  parent        KnowledgeNode?  @relation("NodeToNode", fields: [parentId], references: [id], onDelete: Cascade)
+  children      KnowledgeNode[] @relation("NodeToNode")
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([type])
+  @@index([classId])
+  @@index([parentId])
+}
+
+/// Sistema de Mosaico (Estrutura de exibição visual)
+model MosaicNode {
+  id            String   @id @default(cuid())
+  label         String
+  type          String   // "area", "component", "unit", "skill", "trunk", "root"
+  color         String?
+  weight        Int?
+
+  parentId      String?
+  parent        MosaicNode?  @relation("MosaicToMosaic", fields: [parentId], references: [id], onDelete: Cascade)
+  children      MosaicNode[] @relation("MosaicToMosaic")
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([parentId])
+}
+
+/// Registro do Progresso das Habilidades BNCC (Global ou por Aluno futuramente)
+model BnccProgress {
+  id            String   @id @default(cuid())
+  skillCode     String   @unique  // Identificador único (ex: "EF01MA01") usado na UI
+  status        String   @default("not-started") // "not-started" | "in-progress" | "achieved"
+  evidenceCount Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}

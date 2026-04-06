@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { format, addDays, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { DailySchedule } from "@/components/agenda/daily-schedule";
-import { useAppStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Plus, ChevronLeft, ChevronRight, Calendar as CalendarIcon, Copy, Settings2, Loader2 } from "lucide-react";
 import { ScheduleDialog } from "@/components/agenda/schedule-dialog";

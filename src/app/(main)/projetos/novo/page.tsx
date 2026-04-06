@@ -15,8 +15,9 @@ import { useSession } from "next-auth/react";
 import { BulkSessionDialog } from "@/components/projetos/bulk-session-dialog";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAppStore } from "@/lib/store";
-import { KnowledgeNode, SEMESTERS, YEARS } from "@/lib/data";
+import { SEMESTERS } from "@/constants/semesters";
+import { YEARS } from "@/constants/years";
+import { KnowledgeNode } from "@/lib/data";
 import { ScheduleItem } from "@/types/schedule";
 import { Project } from "@/types/project";
 import { createProject, updateProject, getProjectById } from "@/services/project.service";
@@ -32,6 +33,7 @@ import { LibraryItem } from "@/types/library-item";
 import { getListBncc } from "@/services/bncc.service";
 import { FinalProductType } from "@/types/final-product-type";
 import { getFinalProductTypes } from "@/services/final-product-type.service";
+import { getKnowledgeTrees } from "@/services/knowledge.service";
 
 function NewProjectWizardContent() {
     const router = useRouter();
@@ -40,10 +42,12 @@ function NewProjectWizardContent() {
     const { data: session } = useSession();
     const currentUser = session?.user as any;
 
-    const {
-        skillsTree,
-        contentsTree
-    } = useAppStore();
+    const [skillsTree, setSkillsTree] = useState<any[]>([]);
+        const [contentsTree, setContentsTree] = useState<any[]>([]);
+        useEffect(() => {
+            getKnowledgeTrees('skill').then(setSkillsTree);
+            getKnowledgeTrees('content').then(setContentsTree);
+            }, []);
 
     const [finalProductTypes, setFinalProductTypes] = useState<FinalProductType[]>([]);
 
