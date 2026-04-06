@@ -68,9 +68,14 @@ async function seedMosaicTree(nodes: any[], parentId: string | null = null) {
   }
 }
 
-async function main() {
+export async function runSeed(): Promise<string[]> {
+  const logs: string[] = [];
+  const log = (msg: string) => {
+    console.log(msg);
+    logs.push(msg);
+  };
 
-  console.log("Limpando banco de dados...")
+  log("Limpando banco de dados...")
 
   // Ordem correta de exclusão: Filhos antes dos Pais
   await prisma.knowledgeNode.deleteMany()
@@ -104,14 +109,14 @@ async function main() {
   await prisma.menu.deleteMany()
 
   // BNCC
-  console.log("Importando BNCC...")
+  log("Importando BNCC...")
   await prisma.bncc.createMany({
     data: bnccDataSeed as any,
     skipDuplicates: true
   })
 
   // Competências gerais
-  console.log("Importando Competências Gerais...")
+  log("Importando Competências Gerais...")
   await prisma.bncc.createMany({
     data: competenciasGeraisDataSeed.map((item) => ({
       ...item,
@@ -121,7 +126,7 @@ async function main() {
   })
 
   // Custom Category Examples
-  console.log("Importando Custom Category Examples...")
+  log("Importando Custom Category Examples...")
   await prisma.bncc.createMany({
     data: customCategoryExamplesDataSeed.map((item) => ({
       ...item,
@@ -131,77 +136,77 @@ async function main() {
   })
 
   // Users
-  console.log("Importando Users...")
+  log("Importando Users...")
   await prisma.user.createMany({
     data: usersDataSeed as any,
     skipDuplicates: false
   })
 
   // Turmas
-  console.log("Importando Turmas...")
+  log("Importando Turmas...")
   await prisma.schoolClass.createMany({
     data: schoolClassesDataSeed as SchoolClass[],
     skipDuplicates: false
   })
 
   // Estudantes
-  console.log("Importando Estudantes...")
+  log("Importando Estudantes...")
   await prisma.student.createMany({
     data: studentsDataSeed as any[],
     skipDuplicates: false
   })
 
   // Mural Events
-  console.log("Importando Eventos do Mural...")
+  log("Importando Eventos do Mural...")
   await prisma.muralEvent.createMany({
     data: muralEventsDataSeed,
     skipDuplicates: true
   })
 
   // Mural Comments
-  console.log("Importando Comentários do Mural...")
+  log("Importando Comentários do Mural...")
   await prisma.muralComment.createMany({
     data: muralCommentsDataSeed,
     skipDuplicates: true
   })
 
   // Pegadas
-  console.log("Importando Pegadas...")
+  log("Importando Pegadas...")
   await prisma.pegadaPost.createMany({
     data: pegadasDataSeed as any,
     skipDuplicates: true
   })
 
   // Pegadas Interactions
-  console.log("Importando Interações das Pegadas...")
+  log("Importando Interações das Pegadas...")
   await prisma.pegadaInteraction.createMany({
     data: pegadasInteractionsDataSeed as any,
     skipDuplicates: true
   })
 
   // Portfolio
-  console.log("Importando Portfolio Entries...")
+  log("Importando Portfolio Entries...")
   await prisma.portfolioEntry.createMany({
     data: portfolioDataSeed,
     skipDuplicates: true
   })
 
   // Projects
-  console.log("Importando Projetos...")
+  log("Importando Projetos...")
   await prisma.project.createMany({
     data: projectsDataSeed as any,
     skipDuplicates: true
   })
 
   // ScheduleItems
-  console.log("Importando Agendas...")
+  log("Importando Agendas...")
   await prisma.scheduleItem.createMany({
     data: scheduleDataSeed as any,
     skipDuplicates: true
   })
 
   // Notifications
-  console.log("Importando Notificações...")
+  log("Importando Notificações...")
   await prisma.notification.createMany({
     data: notificationsDataSeed.map(n => ({
       ...n,
@@ -211,35 +216,35 @@ async function main() {
   })
 
   // Tasks
-  console.log("Importando Tarefas Globais...")
+  log("Importando Tarefas Globais...")
   await prisma.task.createMany({
     data: tasksDataSeed as any,
     skipDuplicates: true
   })
 
   // Faturas/Invoices
-  console.log("Importando Faturas...")
+  log("Importando Faturas...")
   await prisma.invoice.createMany({
     data: invoicesDataSeed as any,
     skipDuplicates: true
   })
 
   // Daily Logs
-  console.log("Importando Diários de Bordo...")
+  log("Importando Diários de Bordo...")
   await prisma.dailyLog.createMany({
     data: dailyLogsDataSeed as any,
     skipDuplicates: true
   })
 
   // Final Product Types
-  console.log("Importando Tipos de Produto Final...")
+  log("Importando Tipos de Produto Final...")
   await prisma.finalProductType.createMany({
     data: finalProductTypesDataSeed as any,
     skipDuplicates: true
   })
 
   // Assessments
-  console.log("Importando Avaliações (Assessments)...")
+  log("Importando Avaliações (Assessments)...")
   await prisma.assessment.createMany({
     data: assessmentsDataSeed.map(a => ({
       ...a,
@@ -248,14 +253,14 @@ async function main() {
     skipDuplicates: true
   })
 
-  console.log("Importando Anexos das Avaliações...")
+  log("Importando Anexos das Avaliações...")
   await prisma.assessmentAttachment.createMany({
     data: assessmentsAttachmentsDataSeed as any,
     skipDuplicates: true
   })
 
   // Class Board Posts
-  console.log("Importando Class Board Posts...")
+  log("Importando Class Board Posts...")
   await prisma.classBoardPost.createMany({
     data: classBoardPostsDataSeed.map(post => ({
       ...post,
@@ -265,7 +270,7 @@ async function main() {
   })
 
   // Class Board Post Interactions
-  console.log("Importando Interações de Class Board Posts...")
+  log("Importando Interações de Class Board Posts...")
   await prisma.classBoardPostInteraction.createMany({
     data: classBoardPostInteractionsDataSeed.map(interaction => ({
       ...interaction,
@@ -275,7 +280,7 @@ async function main() {
   })
 
   // Menus
-  console.log("Importando Menus...")
+  log("Importando Menus...")
   await prisma.menu.createMany({
     data: menusDataSeed.map(m => ({
       ...m,
@@ -285,7 +290,7 @@ async function main() {
     skipDuplicates: true
   })
 
-  console.log("Importando Itens do Menu...")
+  log("Importando Itens do Menu...")
   await prisma.menuItem.createMany({
     data: menuItemsDataSeed.map(m => ({
       ...m,
@@ -296,25 +301,30 @@ async function main() {
   })
 
   // Árvores de Conhecimento e Mosaicos
-  console.log("Importando Knowledge Trees...")
+  log("Importando Knowledge Trees...")
   await seedKnowledgeTree(skillsTreeDataSeed)
   await seedKnowledgeTree(contentsTreeDataSeed)
 
-  console.log("Importando Mosaic Trees...")
+  log("Importando Mosaic Trees...")
   await seedMosaicTree(mosaicSkillsDataSeed)
   await seedMosaicTree(mosaicContentsDataSeed)
 
-  console.log("Seed finalizado com sucesso!")
+  log("Seed finalizado com sucesso!")
+  return logs;
 }
 
-main()
-  .catch((e) => {
-    console.error(e)
-    process.exit(1)
-  })
-  .finally(async () => {
-    await prisma.$disconnect()
-  })
+
+// Se executado diretamente via CLI (npx prisma db seed / npm run seed)
+if (require.main === module || process.argv[1].includes('seed.ts')) {
+  runSeed()
+    .catch((e) => {
+      console.error(e)
+      process.exit(1)
+    })
+    .finally(async () => {
+      await prisma.$disconnect()
+    })
+}
 
 // npm run seed
 // Ele vai inserir todos os registros do array no banco.

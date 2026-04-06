@@ -11,7 +11,7 @@ import { getClasses } from "@/services/school-class.service";
 import { SchoolClass } from "@/types/school-class";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { AssessmentDrawer } from "../assessment/assessment-drawer";
 import { Assessment } from "@/types/assessment";
@@ -36,7 +36,7 @@ export function MosaicContainer() {
     const [classes, setClasses] = useState<SchoolClass[]>([]);
     const [isLoadingClasses, setIsLoadingClasses] = useState(true);
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
-    const [loading, setLoading] = useState(false)
+    const [isPageLoading, setIsPageLoading] = useState(true);
     const [projects, setProjects] = useState<Project[]>([]);
 
     // Core State
@@ -114,31 +114,38 @@ export function MosaicContainer() {
 
     useEffect(() => {
         const loadData = async () => {
-            const [, , , projectsData, assessmentsData, sTree, cTree] = await Promise.all([
-                fetchClasses(), 
-                fetchStudents(), 
-                getListaBNCC(),
-                getProjects(),
-                AssessmentService.getAll(),
-                getKnowledgeTrees('skill'),
-                getKnowledgeTrees('content')
-            ]);
-            if (projectsData) {
-                setProjects(projectsData);
+            setIsPageLoading(true);
+            try {
+                const [, , , projectsData, assessmentsData, sTree, cTree] = await Promise.all([
+                    fetchClasses(), 
+                    fetchStudents(), 
+                    getListaBNCC(),
+                    getProjects(),
+                    AssessmentService.getAll(),
+                    getKnowledgeTrees('skill'),
+                    getKnowledgeTrees('content')
+                ]);
+                if (projectsData) {
+                    setProjects(projectsData);
+                }
+                if (assessmentsData) {
+                    setAssessments(assessmentsData);
+                }
+                if (sTree) setSkillsTree(sTree);
+                if (cTree) setContentsTree(cTree);
+            } catch (error) {
+                console.error("Erro ao carregar dados do mosaico", error);
+            } finally {
+                setIsPageLoading(false);
             }
-            if (assessmentsData) {
-                setAssessments(assessmentsData);
-            }
-            if (sTree) setSkillsTree(sTree);
-            if (cTree) setContentsTree(cTree);
         };
         loadData();
     }, []);
 
     async function getListaBNCC() {
-        setLoading(true);
-        await getListBncc().then(setLibraryItems);
-        setLoading(false);
+        const items = await getListBncc();
+        setLibraryItems(items);
+        return items;
     }
 
     const handleAvaliacao = (node: KnowledgeNode) => {
@@ -161,6 +168,17 @@ export function MosaicContainer() {
     };
 
     const selectTriggerClass = "h-9 text-xs bg-white border-slate-200 min-w-[160px]";
+
+    if (isPageLoading) {
+        return (
+            <div className="flex h-[calc(100vh-2rem)] bg-slate-50 rounded-2xl shadow-sm border items-center justify-center">
+                <div className="flex flex-col items-center gap-4 text-slate-500">
+                    <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                    <span className="text-sm font-medium tracking-wide uppercase text-slate-400">Carregando Mosaico...</span>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex h-[calc(100vh-2rem)] bg-white rounded-2xl shadow-sm border overflow-hidden">

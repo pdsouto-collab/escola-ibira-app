@@ -3,6 +3,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { runSeed } from "../../../../../prisma/seed";
 
 const execAsync = promisify(exec);
 
@@ -64,11 +65,8 @@ export async function POST(req: Request) {
                 finalOutput = "Deploy executado! Todas as migrações oficiais pendentes foram aplicadas com sucesso no banco principal.";
             }
         } else if (commandType === 'seed') {
-            const customEnv = { ...process.env };
-            delete customEnv.NODE_OPTIONS;
-            
-            const { stdout } = await execAsync('npm run seed', { env: customEnv });
-            finalOutput = "Banco de dados resetado com sucesso! Segue o log da execução:\n\n" + stdout;
+            const logs = await runSeed();
+            finalOutput = "Banco de dados resetado com sucesso! Segue o log da execução nativa:\n\n" + logs.join('\n');
         } else {
             return NextResponse.json({ success: false, error: 'Comando inválido' }, { status: 400 });
         }
