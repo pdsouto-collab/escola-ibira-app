@@ -56,7 +56,7 @@ export async function POST(req: Request) {
             }
 
         } else if (commandType === 'migrate-deploy') {
-            const cmd = `npx prisma migrate deploy`;
+            const cmd = `HOME=/tmp npm_config_cache=/tmp npx prisma migrate deploy`;
             const { stdout } = await execAsync(cmd);
 
             if (stdout.includes('No pending migrations to apply') || stdout.includes('Already in sync')) {
