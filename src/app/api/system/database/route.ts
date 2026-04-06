@@ -6,7 +6,6 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { runSeed } from "../../../../../prisma/seed";
 
 const execAsync = promisify(exec);
-
 export async function POST(req: Request) {
     try {
         // Security session validation
@@ -21,13 +20,8 @@ export async function POST(req: Request) {
         const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || req.url || '';
         const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1') || process.env.NODE_ENV === 'development';
 
-        console.log("Validador Localhost:", { host, isLocalhost, env: process.env.NODE_ENV });
-
         if (commandType === 'migrate-dev' && !isLocalhost) {
             return NextResponse.json({ success: false, error: "Operação inválida: Migrate Dev só pode ser executado localmente (localhost)." }, { status: 403 });
-        }
-        if (commandType === 'migrate-deploy' && (isLocalhost || process.env.NEXT_PUBLIC_APP_ENV === 'development')) {
-            return NextResponse.json({ success: false, error: "Operação inválida: Deploy não pode ser executado no ambiente de desenvolvimento." }, { status: 403 });
         }
 
         let finalOutput = '';
@@ -53,16 +47,6 @@ export async function POST(req: Request) {
             } else {
                 await execAsync('npx prisma generate');
                 finalOutput = "Migração executada com sucesso! Tabelas atualizadas localmente e Prisma Client regenerado para os tipos do código.";
-            }
-
-        } else if (commandType === 'migrate-deploy') {
-            const cmd = `HOME=/tmp npm_config_cache=/tmp npx prisma migrate deploy`;
-            const { stdout } = await execAsync(cmd);
-
-            if (stdout.includes('No pending migrations to apply') || stdout.includes('Already in sync')) {
-                finalOutput = "O banco de dados oficial já está na versão original. Nenhuma migração pendente precisou ser executada.";
-            } else {
-                finalOutput = "Deploy executado! Todas as migrações oficiais pendentes foram aplicadas com sucesso no banco principal.";
             }
         } else if (commandType === 'seed') {
             const logs = await runSeed();

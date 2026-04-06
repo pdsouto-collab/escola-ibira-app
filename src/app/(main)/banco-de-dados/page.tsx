@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Database, Play, Code2, Rocket, Terminal, Info } from "lucide-react";
+import { Database, Play, Terminal, Code2 } from "lucide-react";
 import { toast } from "sonner";
 import { executeDatabaseCommand } from "@/services/system.service";
 
@@ -15,19 +15,19 @@ export default function DatabasePage() {
     const [isMounted, setIsMounted] = useState(false);
     const [isLocalhost, setIsLocalhost] = useState(false);
 
-    React.useEffect(() => {
+    useEffect(() => {
         setIsLocalhost(typeof window !== 'undefined' && window.location.href.includes('localhost'));
         setIsMounted(true);
     }, []);
 
-    const runCommand = async (type: 'migrate-dev' | 'migrate-deploy' | 'seed') => {
+    const runCommand = async (type: 'migrate-dev' | 'seed') => {
         if (type === 'migrate-dev' && !migrationName.trim()) {
             toast.error("Por favor, informe o nome da migração.");
             return;
         }
 
         setIsExecuting(true);
-        const toastId = toast.loading(`Executando migração do banco de dados de desenvolvimento...`);
+        const toastId = toast.loading(`Executando comando ${type}...`);
 
         let cmdDisplay = `npx prisma ${type}`;
         if (type === 'migrate-dev') cmdDisplay += ` --name "${migrationName}"`;
@@ -60,7 +60,6 @@ export default function DatabasePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-
                     {isMounted && isLocalhost && (
                         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
                             <div className="flex items-center gap-2 text-indigo-600 font-semibold text-lg">
@@ -84,24 +83,7 @@ export default function DatabasePage() {
                         </div>
                     )}
 
-                    {isMounted && !isLocalhost && process.env.NEXT_PUBLIC_APP_ENV !== 'development' && (
-                        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
-                            <div className="flex items-center gap-2 text-rose-600 font-semibold text-lg">
-                                <Rocket className="h-5 w-5" />
-                                Deploy
-                            </div>
-                            <p className="text-sm text-slate-500">
-                                Aplica todas as migrações pendentes no banco. Focado para ambiente de {process.env.NEXT_PUBLIC_APP_ENV === 'homologation' ? 'homologação' : 'produção'}.
-                            </p>
-                            <div className="pt-2">
-                                <Button onClick={() => runCommand('migrate-deploy')} disabled={isExecuting} className="w-full bg-rose-600 hover:bg-rose-700">
-                                    <Play className="h-4 w-4 mr-2" /> Executar
-                                </Button>
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3 md:col-span-1">
+                    <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
                         <div className="flex items-center gap-2 text-orange-600 font-semibold text-lg">
                             <Database className="h-5 w-5" />
                             Resetar Dados (Seed)
@@ -115,23 +97,6 @@ export default function DatabasePage() {
                             </Button>
                         </div>
                     </div>
-
-
-                    {isMounted && !isLocalhost && process.env.NEXT_PUBLIC_APP_ENV === 'development' && (
-                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 md:col-span-2 flex items-start gap-4">
-                            <Info className="h-6 w-6 text-amber-600 shrink-0 mt-0.5" />
-                            <div className="space-y-1">
-                                <h3 className="font-semibold text-amber-800">Comandos Desabilitados Módulo Nuvem</h3>
-                                <p className="text-sm text-amber-700 leading-relaxed">
-                                    Nenhum comando de banco de dados pode ser executado neste ambiente.
-                                    Você está acessando a plataforma em nuvem (Vercel) configurada com o ciclo <strong>Desenvolvimento</strong>.
-                                    Como as migrações (<code className="bg-amber-100 px-1 rounded">migrate-dev</code>) geram arquivos físicos e precisam ser rastreadas pelo Git, elas só devem ser executadas localmente onde você programou usando <code className="bg-amber-100 px-1 rounded">localhost</code>.
-                                </p>
-                            </div>
-                        </div>
-                    )}
-
-
                 </div>
 
                 {/* Terminal Window */}
