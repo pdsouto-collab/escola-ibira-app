@@ -27,7 +27,7 @@ export default function DatabasePage() {
         }
 
         setIsExecuting(true);
-        const toastId = toast.loading(`Executando prisma ${type}...`);
+        const toastId = toast.loading(`Executando migração do banco de dados de desenvolvimento...`);
 
         let cmdDisplay = `npx prisma ${type}`;
         if (type === 'migrate-dev') cmdDisplay += ` --name "${migrationName}"`;
@@ -108,7 +108,7 @@ export default function DatabasePage() {
                                 <h3 className="font-semibold text-amber-800">Comandos Desabilitados Módulo Nuvem</h3>
                                 <p className="text-sm text-amber-700 leading-relaxed">
                                     Nenhum comando de banco de dados pode ser executado neste ambiente.
-                                    Você está acessando a plataforma em nuvem (Vercel) configurada com o ciclo <strong>Desenvolvimento</strong>. 
+                                    Você está acessando a plataforma em nuvem (Vercel) configurada com o ciclo <strong>Desenvolvimento</strong>.
                                     Como as migrações (<code className="bg-amber-100 px-1 rounded">migrate-dev</code>) geram arquivos físicos e precisam ser rastreadas pelo Git, elas só devem ser executadas localmente onde você programou usando <code className="bg-amber-100 px-1 rounded">localhost</code>.
                                 </p>
                             </div>

@@ -17,8 +17,10 @@ export async function POST(req: Request) {
         const body = await req.json();
         const { commandType, migrationName } = body;
 
-        const host = req.headers.get("host") || req.url || '';
-        const isLocalhost = host.includes('localhost');
+        const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || req.url || '';
+        const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1') || process.env.NODE_ENV === 'development';
+
+        console.log("Validador Localhost:", { host, isLocalhost, env: process.env.NODE_ENV });
 
         if (commandType === 'migrate-dev' && !isLocalhost) {
             return NextResponse.json({ success: false, error: "Operação inválida: Migrate Dev só pode ser executado localmente (localhost)." }, { status: 403 });
@@ -27,7 +29,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ success: false, error: "Operação inválida: Deploy não pode ser executado no ambiente de desenvolvimento." }, { status: 403 });
         }
 
-        let cmd = '';
+        let finalOutput = '';
 
         if (commandType === 'migrate-dev') {
             let nameParam = '';
@@ -41,18 +43,31 @@ export async function POST(req: Request) {
                     .replace(/_+/g, '_'); // Evita underscores duplicados
                 nameParam = `--name "${safeName}"`;
             }
-            cmd = `npx prisma migrate dev ${nameParam} && npx prisma generate`;
+
+            const migrateCmd = `npx prisma migrate dev ${nameParam}`;
+            const { stdout } = await execAsync(migrateCmd);
+
+            if (stdout.includes('Already in sync')) {
+                finalOutput = "O banco de dados já está sincronizado localmente! Nenhuma nova alteração de tabelas detectada.";
+            } else {
+                await execAsync('npx prisma generate');
+                finalOutput = "Migração executada com sucesso! Tabelas atualizadas localmente e Prisma Client regenerado para os tipos do código.";
+            }
+
         } else if (commandType === 'migrate-deploy') {
-            cmd = `npx prisma migrate deploy`;
+            const cmd = `npx prisma migrate deploy`;
+            const { stdout } = await execAsync(cmd);
+
+            if (stdout.includes('No pending migrations to apply') || stdout.includes('Already in sync')) {
+                finalOutput = "O banco de dados oficial já está na versão original. Nenhuma migração pendente precisou ser executada.";
+            } else {
+                finalOutput = "Deploy executado! Todas as migrações oficiais pendentes foram aplicadas com sucesso no banco principal.";
+            }
         } else {
             return NextResponse.json({ success: false, error: 'Comando inválido' }, { status: 400 });
         }
 
-        const { stdout, stderr } = await execAsync(cmd);
-
-        const output = stdout + (stderr ? '\n[STDERR]\n' + stderr : '');
-
-        return NextResponse.json({ success: true, output });
+        return NextResponse.json({ success: true, output: finalOutput });
 
     } catch (error: any) {
         console.error('Database command error:', error);
