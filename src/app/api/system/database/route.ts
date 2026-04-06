@@ -14,7 +14,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ success: false, error: "Não autorizado - É necessário ter privilégios de administrador." }, { status: 403 });
         }
 
-                const body = await req.json();
+        const body = await req.json();
         const { commandType, migrationName } = body;
 
         const host = req.headers.get("host") || req.url || '';
@@ -43,7 +43,7 @@ export async function POST(req: Request) {
             }
             cmd = `npx prisma migrate dev ${nameParam} && npx prisma generate`;
         } else if (commandType === 'migrate-deploy') {
-            cmd = `npx prisma migrate deploy && npx prisma generate`;
+            cmd = `npx prisma migrate deploy`;
         } else {
             return NextResponse.json({ success: false, error: 'Comando inválido' }, { status: 400 });
         }

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Database, Play, Code2, Rocket, Terminal } from "lucide-react";
+import { Database, Play, Code2, Rocket, Terminal, Info } from "lucide-react";
 import { toast } from "sonner";
 import { executeDatabaseCommand } from "@/services/system.service";
 
@@ -100,6 +100,21 @@ export default function DatabasePage() {
                             </div>
                         </div>
                     )}
+
+                    {isMounted && !isLocalhost && process.env.NEXT_PUBLIC_APP_ENV === 'development' && (
+                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 md:col-span-2 flex items-start gap-4">
+                            <Info className="h-6 w-6 text-amber-600 shrink-0 mt-0.5" />
+                            <div className="space-y-1">
+                                <h3 className="font-semibold text-amber-800">Comandos Desabilitados Módulo Nuvem</h3>
+                                <p className="text-sm text-amber-700 leading-relaxed">
+                                    Nenhum comando de banco de dados pode ser executado neste ambiente.
+                                    Você está acessando a plataforma em nuvem (Vercel) configurada com o ciclo <strong>Desenvolvimento</strong>. 
+                                    Como as migrações (<code className="bg-amber-100 px-1 rounded">migrate-dev</code>) geram arquivos físicos e precisam ser rastreadas pelo Git, elas só devem ser executadas localmente onde você programou usando <code className="bg-amber-100 px-1 rounded">localhost</code>.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
 
                 </div>
 
