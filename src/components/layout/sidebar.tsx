@@ -31,7 +31,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "sonner";
-import { resetDatabase } from "@/services/system.service";
+
 
 const navigation = [
     { name: "Início", href: "/", icon: LayoutDashboard },
@@ -116,16 +116,6 @@ export function Sidebar() {
             <div className="border-t p-4 space-y-1">
 
                 {currentUser?.role === 'admin' && (
-                    <button
-                        onClick={() => setIsConfirmResetOpen(true)}
-                        disabled={isResetting}
-                        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900 transition-colors mb-2 disabled:opacity-50"
-                    >
-                        <RefreshCw className={cn("h-4 w-4", isResetting && "animate-spin")} />
-                        {isResetting ? "Resetando..." : "Resetar Dados"}
-                    </button>
-                )}
-                {currentUser?.role === 'admin' && (
                     <Link
                         href="/banco-de-dados"
                         className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition-colors mb-2"
@@ -144,13 +134,6 @@ export function Sidebar() {
                 </button>
             </div>
 
-            <ConfirmDialog
-                open={isConfirmResetOpen}
-                onOpenChange={setIsConfirmResetOpen}
-                title="Resetar Banco de Dados"
-                description="Isso apagará todos os dados do banco e irá inserir os dados padrão. Esta ação não pode ser desfeita. Deseja continuar?"
-                onConfirm={resetData}
-            />
-        </div>
+            </div>
     );
 }

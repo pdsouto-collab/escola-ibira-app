@@ -20,7 +20,7 @@ export default function DatabasePage() {
         setIsMounted(true);
     }, []);
 
-    const runCommand = async (type: 'migrate-dev' | 'migrate-deploy') => {
+    const runCommand = async (type: 'migrate-dev' | 'migrate-deploy' | 'seed') => {
         if (type === 'migrate-dev' && !migrationName.trim()) {
             toast.error("Por favor, informe o nome da migração.");
             return;
@@ -100,6 +100,22 @@ export default function DatabasePage() {
                             </div>
                         </div>
                     )}
+
+                    <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3 md:col-span-1">
+                        <div className="flex items-center gap-2 text-orange-600 font-semibold text-lg">
+                            <Database className="h-5 w-5" />
+                            Resetar Dados (Seed)
+                        </div>
+                        <p className="text-sm text-slate-500">
+                            Apaga todos os dados e popula o banco com dados de teste iniciais. Recomendado apenas para ambientes seguros.
+                        </p>
+                        <div className="pt-2">
+                            <Button onClick={() => runCommand('seed')} disabled={isExecuting} className="w-full bg-orange-600 hover:bg-orange-700">
+                                <Play className="h-4 w-4 mr-2" /> Executar Seed
+                            </Button>
+                        </div>
+                    </div>
+
 
                     {isMounted && !isLocalhost && process.env.NEXT_PUBLIC_APP_ENV === 'development' && (
                         <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 md:col-span-2 flex items-start gap-4">

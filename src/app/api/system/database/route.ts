@@ -63,6 +63,12 @@ export async function POST(req: Request) {
             } else {
                 finalOutput = "Deploy executado! Todas as migrações oficiais pendentes foram aplicadas com sucesso no banco principal.";
             }
+        } else if (commandType === 'seed') {
+            const customEnv = { ...process.env };
+            delete customEnv.NODE_OPTIONS;
+            
+            const { stdout } = await execAsync('npm run seed', { env: customEnv });
+            finalOutput = "Banco de dados resetado com sucesso! Segue o log da execução:\n\n" + stdout;
         } else {
             return NextResponse.json({ success: false, error: 'Comando inválido' }, { status: 400 });
         }
