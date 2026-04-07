@@ -1,7 +1,13 @@
+import { getServerSessionOrJwt } from "@/lib/jwt";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+        const session = await getServerSessionOrJwt();
+        if (!session || !session.user || !session.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
     try {
         const { id } = await params;
         const event = await prisma.muralEvent.findUnique({
@@ -16,6 +22,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
+        const session = await getServerSessionOrJwt();
+        if (!session || !session.user || !session.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
     try {
         const { id } = await params;
         const body = await request.json();
@@ -43,6 +54,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+        const session = await getServerSessionOrJwt();
+        if (!session || !session.user || !session.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
     try {
         const { id } = await params;
         await prisma.muralEvent.delete({

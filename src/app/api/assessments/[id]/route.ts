@@ -1,3 +1,4 @@
+import { getServerSessionOrJwt } from "@/lib/jwt";
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { Assessment } from '@/types/assessment';
@@ -5,6 +6,11 @@ import { Assessment } from '@/types/assessment';
 type Params = { id: string };
 
 export async function GET(request: Request, context: { params: Promise<Params> }) {
+        const session = await getServerSessionOrJwt();
+        if (!session || !session.user || !session.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
     try {
         const { id } = await context.params;
 
@@ -33,6 +39,11 @@ export async function GET(request: Request, context: { params: Promise<Params> }
 }
 
 export async function PUT(request: Request, context: { params: Promise<Params> }) {
+        const session = await getServerSessionOrJwt();
+        if (!session || !session.user || !session.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
     try {
         const { id } = await context.params;
         const data = await request.json();
@@ -71,6 +82,11 @@ export async function PUT(request: Request, context: { params: Promise<Params> }
 }
 
 export async function DELETE(request: Request, context: { params: Promise<Params> }) {
+        const session = await getServerSessionOrJwt();
+        if (!session || !session.user || !session.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
     try {
         const { id } = await context.params;
 

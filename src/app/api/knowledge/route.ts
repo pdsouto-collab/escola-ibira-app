@@ -1,9 +1,15 @@
+import { getServerSessionOrJwt } from "@/lib/jwt";
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 export async function GET(request: Request) {
+        const session = await getServerSessionOrJwt();
+        if (!session || !session.user || !session.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
   try {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get("type"); // 'skill' or 'content'
@@ -38,6 +44,11 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+        const session = await getServerSessionOrJwt();
+        if (!session || !session.user || !session.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
   try {
     const { parentId, node } = await request.json();
 

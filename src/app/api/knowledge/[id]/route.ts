@@ -1,9 +1,15 @@
+import { getServerSessionOrJwt } from "@/lib/jwt";
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 export async function PUT(request: Request, context: { params: Promise<{ id: string }> }) {
+        const session = await getServerSessionOrJwt();
+        if (!session || !session.user || !session.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
   try {
     const { id } = await context.params;
     const body = await request.json();
@@ -27,6 +33,11 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
 }
 
 export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
+        const session = await getServerSessionOrJwt();
+        if (!session || !session.user || !session.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
   try {
     const { id } = await context.params;
 

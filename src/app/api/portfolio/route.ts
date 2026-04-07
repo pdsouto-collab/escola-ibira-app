@@ -1,9 +1,15 @@
+import { getServerSessionOrJwt } from "@/lib/jwt";
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 export async function GET(req: NextRequest) {
+        const session = await getServerSessionOrJwt();
+        if (!session || !session.user || !session.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
     try {
         const { searchParams } = new URL(req.url);
         const studentId = searchParams.get("studentId");
@@ -26,6 +32,11 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+        const session = await getServerSessionOrJwt();
+        if (!session || !session.user || !session.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
     try {
         const body = await req.json();
         const { studentId, date, title, description, imageUrl, images, tags } = body;

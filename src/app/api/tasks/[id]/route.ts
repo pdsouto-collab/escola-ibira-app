@@ -1,3 +1,4 @@
+import { getServerSessionOrJwt } from "@/lib/jwt";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { UpdateTaskInput } from "@/types/task";
@@ -6,6 +7,11 @@ export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+        const session = await getServerSessionOrJwt();
+        if (!session || !session.user || !session.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
   try {
     const { id } = await params;
 
@@ -29,6 +35,11 @@ export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+        const session = await getServerSessionOrJwt();
+        if (!session || !session.user || !session.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
   try {
     const { id } = await params;
     

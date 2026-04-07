@@ -1,9 +1,15 @@
+import { getServerSessionOrJwt } from "@/lib/jwt";
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+        const session = await getServerSessionOrJwt();
+        if (!session || !session.user || !session.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
     try {
         const params = await context.params;
         const id = params.id;
@@ -19,6 +25,11 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
 }
 
 export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+        const session = await getServerSessionOrJwt();
+        if (!session || !session.user || !session.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
     try {
         const params = await context.params;
         const id = params.id;
@@ -35,6 +46,11 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
 }
 
 export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+        const session = await getServerSessionOrJwt();
+        if (!session || !session.user || !session.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
     try {
         const params = await context.params;
         const id = params.id;

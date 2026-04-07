@@ -1,14 +1,25 @@
+import { getServerSessionOrJwt } from "@/lib/jwt";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { LibraryItem } from "@/types/library-item.js";
 import { subGroupRename } from "@/types/sub-group-rename";
 
 export async function GET() {
+        const session = await getServerSessionOrJwt();
+        if (!session || !session.user || !session.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
   const bncc = await prisma.bncc.findMany();
   return NextResponse.json(bncc);
 }
 
 export async function POST(request: Request) {
+        const session = await getServerSessionOrJwt();
+        if (!session || !session.user || !session.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
   const item: LibraryItem = await request.json();
   const created = await prisma.bncc.create({
     data: item
@@ -17,6 +28,11 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+        const session = await getServerSessionOrJwt();
+        if (!session || !session.user || !session.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
 
   const type = request.headers.get("type")
 
@@ -41,6 +57,11 @@ export async function DELETE(request: Request) {
 }
 
 export async function PUT(request: Request) {
+        const session = await getServerSessionOrJwt();
+        if (!session || !session.user || !session.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
 
   const type = request.headers.get("type")
 

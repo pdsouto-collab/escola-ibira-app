@@ -1,3 +1,4 @@
+import { getServerSessionOrJwt } from "@/lib/jwt";
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 
@@ -39,6 +40,11 @@ async function duplicateNodeRecursively(nodeId: string, newParentId: string | nu
 }
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
+        const session = await getServerSessionOrJwt();
+        if (!session || !session.user || !session.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
   try {
     const { id } = await context.params;
 

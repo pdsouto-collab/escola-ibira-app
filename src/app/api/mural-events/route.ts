@@ -1,7 +1,13 @@
+import { getServerSessionOrJwt } from "@/lib/jwt";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
 export async function GET(request: Request) {
+        const session = await getServerSessionOrJwt();
+        if (!session || !session.user || !session.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
     const { searchParams } = new URL(request.url);
     const classId = searchParams.get("classId");
 
@@ -27,6 +33,11 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+        const session = await getServerSessionOrJwt();
+        if (!session || !session.user || !session.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
     try {
         const body = await request.json();
         const { title, description, date, author, type, location, image, classId } = body;

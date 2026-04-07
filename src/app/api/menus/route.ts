@@ -1,7 +1,13 @@
+import { getServerSessionOrJwt } from "@/lib/jwt";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
 export async function GET() {
+        const session = await getServerSessionOrJwt();
+        if (!session || !session.user || !session.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
   try {
     const menus = await prisma.menu.findMany({
       include: {
@@ -19,6 +25,11 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+        const session = await getServerSessionOrJwt();
+        if (!session || !session.user || !session.user.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
   try {
     const body = await req.json();
     const { date, items } = body;
