@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { PegadaPost } from "@/types/pegada-post";
 import { PegadaInteraction } from "@/types/pegada-interaction";
-import { updatePegada, deletePegada, addPegadaInteraction } from "@/services/pegada.service";
+import { updatePegada, deletePegada, addPegadaInteraction, deletePegadaInteraction } from "@/services/pegada.service";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -47,17 +47,25 @@ export function PegadaPostCard({ post, onUpdated, onDeleted }: PegadaPostCardPro
     };
 
     const handleLike = async () => {
-        if (!currentUser || hasLiked || isLiking) return;
+        if (!currentUser || isLiking) return;
 
         setIsLiking(true);
         try {
-            const interaction = {
-                userId: currentUser.id,
-                userName: currentUser.name,
-                type: 'like'
-            };
-            await addPegadaInteraction(post.id, interaction as Omit<PegadaInteraction, 'id' | 'createdAt' | 'pegadaPostId'>);
-            if (onUpdated) onUpdated();
+            if (hasLiked) {
+                const likeInteraction = post.interactions.find(i => i.type === 'like' && i.userId === currentUser.id);
+                if (likeInteraction) {
+                    await deletePegadaInteraction(likeInteraction.id);
+                    if (onUpdated) onUpdated();
+                }
+            } else {
+                const interaction = {
+                    userId: currentUser.id,
+                    userName: currentUser.name,
+                    type: 'like'
+                };
+                await addPegadaInteraction(post.id, interaction as Omit<PegadaInteraction, 'id' | 'createdAt' | 'pegadaPostId'>);
+                if (onUpdated) onUpdated();
+            }
         } catch (error) {
             console.error("Erro ao curtir:", error);
         } finally {
@@ -239,7 +247,7 @@ export function PegadaPostCard({ post, onUpdated, onDeleted }: PegadaPostCardPro
                     <div className="flex items-center gap-4">
                         <button
                             onClick={handleLike}
-                            disabled={isLiking || hasLiked}
+                            disabled={isLiking}
                             className={`flex items-center gap-1.5 transition-all ${!isLiking && !hasLiked ? 'active:scale-125' : ''} ${hasLiked ? 'text-emerald-600' : 'text-slate-500 hover:text-emerald-500'} ${isLiking ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                             {isLiking ? <Loader2 className="h-5 w-5 animate-spin" /> : <TreeDeciduous className={`h-5 w-5 ${hasLiked ? 'fill-emerald-100' : ''}`} />}

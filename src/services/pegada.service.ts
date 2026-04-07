@@ -50,3 +50,11 @@ export async function addPegadaInteraction(postId: string, interaction: Omit<Peg
     if (!res.ok) throw new Error("Erro ao interagir com pegada");
     return res.json();
 }
+
+export async function deletePegadaInteraction(interactionId: string): Promise<boolean> {
+    const res = await fetch(`${BASE_URL}/interactions/${interactionId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" }
+    });
+    return res.ok;
+}
