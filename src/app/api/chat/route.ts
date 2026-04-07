@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getServerSessionOrJwt } from "@/lib/jwt";
 import { encodeId, decodeId } from "@/lib/maskId";
 
 export async function GET(req: NextRequest) {
     try {
-        const session = await getServerSession(authOptions);
+        const session = await getServerSessionOrJwt();
         if (!session || !session.user || !session.user.id) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
@@ -126,7 +125,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     try {
-        const session = await getServerSession(authOptions);
+        const session = await getServerSessionOrJwt();
         if (!session || !session.user || !session.user.id) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }

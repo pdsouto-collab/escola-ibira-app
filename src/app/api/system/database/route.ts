@@ -1,15 +1,14 @@
 import { NextResponse } from 'next/server';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getServerSessionOrJwt } from "@/lib/jwt";
 import { runSeed } from "../../../../../prisma/seed";
 
 const execAsync = promisify(exec);
 export async function POST(req: Request) {
     try {
         // Security session validation
-        const session = await getServerSession(authOptions);
+        const session = await getServerSessionOrJwt();
         if (!session || (session.user as any).role !== 'admin') {
             return NextResponse.json({ success: false, error: "Não autorizado - É necessário ter privilégios de administrador." }, { status: 403 });
         }

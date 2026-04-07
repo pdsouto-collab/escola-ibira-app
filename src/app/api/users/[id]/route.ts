@@ -33,9 +33,8 @@ export async function PUT(
         }
       } else {
         // Se não foi enviada a senha atual, só permite se for admin/director na sessão
-        const { getServerSession } = await import("next-auth/next");
-        const { authOptions } = await import("../../auth/[...nextauth]/route");
-        const session = await getServerSession(authOptions);
+        const { getServerSessionOrJwt } = await import("@/lib/jwt");
+        const session = await getServerSessionOrJwt();
         const isAdminOrDirector = session?.user && ["admin", "director"].includes((session.user as any).role);
         if (!isAdminOrDirector) {
           return new NextResponse("Senha atual é obrigatória", { status: 400 });
