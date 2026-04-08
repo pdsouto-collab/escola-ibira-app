@@ -6,10 +6,10 @@ export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-        const session = await getServerSessionOrJwt();
-        if (!session || !session.user || !session.user.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+  const session = await getServerSessionOrJwt();
+  if (!session || !session.user || !session.user.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   try {
     const { id } = await params;
@@ -33,32 +33,32 @@ export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-        const session = await getServerSessionOrJwt();
-        if (!session || !session.user || !session.user.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+  const session = await getServerSessionOrJwt();
+  if (!session || !session.user || !session.user.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   try {
     const { id } = await params;
     const body = await req.json();
-    const { 
-      name, 
-      dateOfBirth, 
-      document, 
-      schoolStage, 
-      period, 
-      photo, 
-      classId, 
-      status, 
-      age, 
-      parentName, 
-      guardians, 
-      financialResponsible, 
-      health, 
-      emergencyContacts, 
-      documents, 
-      hospitalPreference, 
-      hospitalAddress 
+    const {
+      name,
+      dateOfBirth,
+      document,
+      schoolStage,
+      period,
+      photo,
+      classId,
+      status,
+      age,
+      parentName,
+      guardians,
+      financialResponsible,
+      health,
+      emergencyContacts,
+      documents,
+      hospitalPreference,
+      hospitalAddress
     } = body;
 
     const student = await prisma.student.update({
@@ -97,19 +97,26 @@ export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-        const session = await getServerSessionOrJwt();
-        if (!session || !session.user || !session.user.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+  const session = await getServerSessionOrJwt();
+  if (!session || !session.user || !session.user.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   try {
     const { id } = await params;
 
-    await prisma.student.delete({
-      where: {
-        id,
-      }
-    });
+    // Excluir manualmente os registros relacionados, pois o Prisma não possui o método `onDelete: Cascade` para eles por padrão.
+    await prisma.$transaction([
+      prisma.portfolioEntry.deleteMany({
+        where: { studentId: id }
+      }),
+      prisma.dailyLog.deleteMany({
+        where: { studentId: id }
+      }),
+      prisma.student.delete({
+        where: { id }
+      })
+    ]);
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
