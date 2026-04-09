@@ -9,7 +9,7 @@ export const notificationsDataSeed: AppNotification[] = [
         type: "info",
         isRead: false,
         createdAt: new Date().toISOString(),
-        studentId: "1"
+        studentId: "s1"
     },
     {
         id: "n2",

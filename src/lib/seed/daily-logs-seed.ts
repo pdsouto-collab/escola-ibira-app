@@ -1,7 +1,7 @@
 export const dailyLogsDataSeed = [
     {
         id: "log-1",
-        studentId: "1",
+        studentId: "s1",
         date: "2024-02-12",
         mood: "happy",
         meals: {
@@ -18,7 +18,7 @@ export const dailyLogsDataSeed = [
     },
     {
         id: "log-2",
-        studentId: "2",
+        studentId: "s2",
         date: "2024-02-12",
         mood: "excited",
         meals: {

@@ -3,7 +3,7 @@ import { PortfolioEntry } from "@/types/portfolio-entry";
 export const portfolioDataSeed: PortfolioEntry[] = [
     {
         id: "port-1",
-        studentId: "1",
+        studentId: "s1",
         date: "2024-02-10",
         title: "Explorando Texturas",
         description: "Atividade sensorial com areia, água e folhas secas. Alice demonstrou muita curiosidade.",
@@ -12,7 +12,7 @@ export const portfolioDataSeed: PortfolioEntry[] = [
     },
     {
         id: "port-2",
-        studentId: "1",
+        studentId: "s1",
         date: "2024-02-05",
         title: "Primeira Letra do Nome",
         description: "Alice identificou a letra 'A' em cartazes pela sala e tentou traçá-la na areia.",
@@ -21,7 +21,7 @@ export const portfolioDataSeed: PortfolioEntry[] = [
     },
     {
         id: "port-3",
-        studentId: "1",
+        studentId: "s1",
         date: "2024-02-15",
         title: "Exploração da Horta",
         description: "Observação detalhada das plantas e entendimento do ciclo da água.",
@@ -30,7 +30,7 @@ export const portfolioDataSeed: PortfolioEntry[] = [
     },
     {
         id: "port-4",
-        studentId: "1",
+        studentId: "s1",
         date: "2024-02-18",
         title: "Brincadeiras Matriz Indígena",
         description: "Participação em jogos tradicionais e desenvolvimento de coordenação.",
@@ -39,7 +39,7 @@ export const portfolioDataSeed: PortfolioEntry[] = [
     },
     {
         id: "port-5",
-        studentId: "1",
+        studentId: "s1",
         date: "2024-02-20",
         title: "Oficina de Medidas",
         description: "Prática com réguas e fitas métricas para entender dimensões.",
@@ -48,7 +48,7 @@ export const portfolioDataSeed: PortfolioEntry[] = [
     },
     {
         id: "port-6",
-        studentId: "2",
+        studentId: "s2",
         date: "2024-02-11",
         title: "Construção Coletiva",
         description: "Bernardo liderou o grupo na construção de um castelo com blocos de madeira.",
