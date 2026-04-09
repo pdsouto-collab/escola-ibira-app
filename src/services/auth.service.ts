@@ -3,7 +3,18 @@ import { createUser } from "./user.service";
 
 export const authService = {
   async register(data: any) {
-    return await createUser(data);
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) {
+      const errorText = await res.text().catch(() => "");
+      throw new Error(errorText || "Erro ao criar conta na Web");
+    }
+    return res.json();
   },
 
   async login(credentials: { email: string; password: string }) {
