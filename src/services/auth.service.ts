@@ -2,6 +2,7 @@ import { signIn, signOut } from "next-auth/react";
 import { createUser } from "./user.service";
 
 export const authService = {
+
   async register(data: any) {
     const res = await fetch("/api/auth/register", {
       method: "POST",
