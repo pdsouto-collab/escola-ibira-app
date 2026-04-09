@@ -11,7 +11,7 @@ export async function POST(req: Request) {
       return new NextResponse("Nome, email, senha e cargo são obrigatórios", { status: 400 });
     }
 
-    // Role safety guard for public registration
+    // Role safety guard for public registrations
     const allowedRoles = ["guardian", "teacher", "director"];
     if (!allowedRoles.includes(role)) {
       return new NextResponse("Cargo inválido para registro público.", { status: 403 });
