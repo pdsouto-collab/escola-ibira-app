@@ -2,7 +2,7 @@ import { Student } from "@/types/student";
 
 export const studentsDataSeed: Student[] = [
     {
-        id: "1",
+        id: "s1",
         name: "Alice Souza",
         age: 4,
         dateOfBirth: "2020-05-15",
@@ -17,7 +17,7 @@ export const studentsDataSeed: Student[] = [
         ]
     },
     {
-        id: "2",
+        id: "s2",
         name: "Bernardo Silva",
         age: 5,
         dateOfBirth: "2019-08-20",
@@ -29,7 +29,7 @@ export const studentsDataSeed: Student[] = [
         ]
     },
     {
-        id: "3",
+        id: "s3",
         name: "Clara Oliveira",
         age: 3,
         dateOfBirth: "2021-02-10",
@@ -41,7 +41,7 @@ export const studentsDataSeed: Student[] = [
         ]
     },
     {
-        id: "4",
+        id: "s4",
         name: "Davi Santos",
         age: 4,
         dateOfBirth: "2020-11-05",
@@ -53,7 +53,7 @@ export const studentsDataSeed: Student[] = [
         ]
     },
     {
-        id: "5",
+        id: "s5",
         name: "Enzo Pereira",
         age: 5,
         dateOfBirth: "2019-06-30",
@@ -65,7 +65,7 @@ export const studentsDataSeed: Student[] = [
         ]
     },
     {
-        id: "6",
+        id: "s6",
         name: "Valentina Costa",
         age: 3,
         dateOfBirth: "2021-04-12",
