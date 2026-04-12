@@ -45,6 +45,7 @@ const emptyTeacher: Omit<User, "id"> = {
     avatar: "https://github.com/shadcn.png",
     status: "active",
     cpf: "",
+    rg: "",
     phone: "",
     birthDate: "",
     address: "",
@@ -157,7 +158,7 @@ export function TeacherDialog({ open, onOpenChange, user, classes, students, onS
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label htmlFor="cpf" className="text-sm font-semibold uppercase text-slate-500">CPF</Label>
                                             <Input
@@ -167,6 +168,17 @@ export function TeacherDialog({ open, onOpenChange, user, classes, students, onS
                                                 placeholder="000.000.000-00"
                                             />
                                         </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="rg" className="text-sm font-semibold uppercase text-slate-500">RG</Label>
+                                            <Input
+                                                id="rg"
+                                                value={formData.rg || ""}
+                                                onChange={e => setFormData({ ...formData, rg: e.target.value })}
+                                                placeholder="00.000.000-0"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label htmlFor="phone" className="text-sm font-semibold uppercase text-slate-500">Telefone</Label>
                                             <Input
