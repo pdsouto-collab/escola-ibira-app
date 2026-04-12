@@ -10,6 +10,7 @@ export type User = {
 
     // Additional Profile Fields
     cpf?: string;
+    rg?: string;
     phone?: string;
     birthDate?: string;
     address?: string;
