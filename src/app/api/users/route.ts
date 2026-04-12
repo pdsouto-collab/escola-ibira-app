@@ -29,7 +29,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const {
-      name, role, email, password, avatar, cpf, phone, birthDate, address,
+      name, role, email, password, avatar, cpf, rg, phone, birthDate, address,
       hiringDate, education, specialization, bio, status,
       assignedClassIds, linkedStudentIds
     } = body;
@@ -51,6 +51,7 @@ export async function POST(req: Request) {
         password: hashedPassword,
         avatar,
         cpf,
+        rg,
         phone,
         birthDate,
         address,
