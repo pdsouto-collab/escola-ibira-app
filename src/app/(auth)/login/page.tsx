@@ -81,22 +81,14 @@ export default function LoginPage() {
                 </Button>
             </form>
 
-            <div className="text-center text-sm text-slate-500">
+            {/* <div className="text-center text-sm text-slate-500">
                 <p>
                     Não tem uma conta?{" "}
                     <a href={`${basePath}/cadastro`} className="text-[#2E798A] hover:underline font-medium">
                         Cadastre-se
                     </a>
                 </p>
-                <div className="mt-4 text-xs bg-slate-50 p-2 rounded">
-                    <p className="font-semibold">Credenciais de teste (Senha '123'):</p>
-                    <p>ana.diretora@escolaibira.com.br</p>
-                    <p>admin@escolaibira.com.br</p>
-                    <p>claudia.prof@escolaibira.com.br</p>
-                    <p>juliana.nutri@escolaibira.com.br</p>
-                    <p>mariana.mae@email.com</p>
-                </div>
-            </div>
+            </div> */}
         </div>
     );
 }

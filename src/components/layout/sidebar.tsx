@@ -24,13 +24,15 @@ import {
     BookMarked,
     Utensils,
     Wallet,
-    Footprints
+    Footprints,
+    UserCog
 } from "lucide-react";
 import { SchoolLogo } from "@/components/ui/school-logo";
 import { useSession, signOut } from "next-auth/react";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "sonner";
+import { resetDatabase } from "@/services/system.service";
 
 
 const navigation = [
@@ -50,6 +52,7 @@ const navigation = [
     { name: "Docentes", href: "/professores", icon: GraduationCap, roles: ["director", "admin"] },
     { name: "Financeiro", href: "/financeiro", icon: Wallet, roles: ["director", "admin"] },
     { name: "Painel Admin", href: "/admin-panel", icon: Settings, roles: ["director", "admin"] },
+    { name: "Configurações de usuários", href: "/configuracoes-usuarios", icon: UserCog, roles: ["admin"] },
 ];
 
 export function Sidebar() {

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter, notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,8 @@ import { UserRole } from "@/types/user-role";
 import { signIn } from "next-auth/react";
 
 export default function SignupPage() {
+    notFound(); // FEATURE DISABLED TEMPORARILY
+    
     const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
