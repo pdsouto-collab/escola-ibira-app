@@ -67,8 +67,6 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
         let photos: string[] = [];
         if (customPhoto) {
             photos = [customPhoto];
-        } else if (!isAcontece) {
-            photos = ["https://images.unsplash.com/photo-1577880216142-8549e9488dad?auto=format&fit=crop&q=80"]; // default fallback
         }
 
         let finalTitle = title;
