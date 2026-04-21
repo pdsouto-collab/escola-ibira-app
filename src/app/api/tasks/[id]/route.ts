@@ -55,7 +55,7 @@ export async function PATCH(
       where: { id },
       data: {
         ...(title && { title }),
-        ...(dueDate !== undefined && { dueDate: dueDate ? new Date(dueDate) : null }),
+        ...(dueDate !== undefined && { dueDate: dueDate ? new Date(dueDate).toISOString() : null }),
         ...(priority && { priority }),
       },
     });
