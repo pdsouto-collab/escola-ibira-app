@@ -153,7 +153,7 @@ export function UserProfileMenu() {
                             <span>Redefinir Senha</span>
                         </DropdownMenuItem>
                         {/* Outros possíveis atalhos no futuro */}
-                        </DropdownMenuItem>
+
                     </DropdownMenuGroup>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => signOut()} className="cursor-pointer text-red-600 focus:bg-red-50 focus:text-red-700">
