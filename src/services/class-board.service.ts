@@ -55,3 +55,31 @@ export async function deletePostInteraction(interactionId: string): Promise<bool
         return false;
     }
 }
+
+export async function deleteClassBoardPost(postId: string): Promise<boolean> {
+    try {
+        const res = await fetch(`/api/class-board/${postId}`, {
+            method: "DELETE"
+        });
+        if (!res.ok) throw new Error("Failed to delete post");
+        return true;
+    } catch (error) {
+        console.error("Error deleting post:", error);
+        return false;
+    }
+}
+
+export async function updateClassBoardPost(postId: string, data: { title?: string; content?: string }): Promise<ClassBoardPost | null> {
+    try {
+        const res = await fetch(`/api/class-board/${postId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error("Failed to update post");
+        return res.json();
+    } catch (error) {
+        console.error("Error updating post:", error);
+        return null;
+    }
+}

@@ -41,7 +41,8 @@ export const authOptions: NextAuthOptions = {
                     name: user.name,
                     role: user.role,
                     phone: user.phone || undefined,
-                    avatar: user.avatar || undefined
+                    avatar: user.avatar || undefined,
+                    linkedStudentIds: user.linkedStudentIds || []
                 };
             }
         })
@@ -56,6 +57,7 @@ export const authOptions: NextAuthOptions = {
                 token.id = user.id;
                 token.phone = (user as any).phone;
                 token.avatar = (user as any).avatar;
+                token.linkedStudentIds = (user as any).linkedStudentIds;
             }
             if (trigger === "update" && session) {
                 token = { ...token, ...session }
@@ -68,6 +70,7 @@ export const authOptions: NextAuthOptions = {
                 (session.user as any).id = token.id as string;
                 (session.user as any).phone = token.phone as string | undefined;
                 (session.user as any).avatar = token.avatar as string | undefined;
+                (session.user as any).linkedStudentIds = token.linkedStudentIds as string[] | undefined;
             }
             return session;
         }
