@@ -41,6 +41,7 @@ export function UserProfileMenu() {
         lastName: "",
         email: "",
         phone: "",
+        avatar: "",
     });
 
     // Populate form data when currentUser is available
@@ -52,6 +53,7 @@ export function UserProfileMenu() {
                 lastName: currentUser.name?.split(" ").slice(1).join(" ") || "",
                 email: currentUser.email || "",
                 phone: currentUser.phone || "",
+                avatar: currentUser.avatar || "",
             });
         }
     }, [currentUser]);
@@ -73,6 +75,7 @@ export function UserProfileMenu() {
                 name: fullName,
                 email: formData.email,
                 phone: formData.phone,
+                avatar: formData.avatar,
             });
 
             // Forçar atualização da sessão no NextAuth
@@ -80,6 +83,7 @@ export function UserProfileMenu() {
                 name: fullName,
                 email: formData.email,
                 phone: formData.phone,
+                avatar: formData.avatar,
             });
 
             setIsProfileOpen(false);
@@ -149,10 +153,7 @@ export function UserProfileMenu() {
                             <span>Redefinir Senha</span>
                         </DropdownMenuItem>
                         {/* Outros possíveis atalhos no futuro */}
-                        <DropdownMenuItem className="cursor-pointer">
-                            <Settings className="mr-2 h-4 w-4" />
-                            <span>Configurações</span>
-                        </DropdownMenuItem>
+
                     </DropdownMenuGroup>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => signOut()} className="cursor-pointer text-red-600 focus:bg-red-50 focus:text-red-700">
@@ -168,10 +169,31 @@ export function UserProfileMenu() {
                     <DialogHeader>
                         <DialogTitle>Editar Perfil</DialogTitle>
                         <DialogDescription>
-                            Atualize as informações básicas do seu usuário. Clique em salvar quando terminar.
+                            Atualize as informações básicas e a foto do seu perfil.
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="grid gap-4 py-4">
+                    <div className="flex flex-col items-center justify-center space-y-3 mb-2 mt-2">
+                        <Avatar className="w-24 h-24 border-2 border-slate-200">
+                            <AvatarImage src={formData.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + currentUser.name} />
+                            <AvatarFallback>{currentUser.name?.substring(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <Input 
+                            type="file" 
+                            accept="image/*" 
+                            className="w-full max-w-xs text-sm cursor-pointer"
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                    const reader = new FileReader();
+                                    reader.onloadend = () => {
+                                        setFormData({ ...formData, avatar: reader.result as string });
+                                    };
+                                    reader.readAsDataURL(file);
+                                }
+                            }} 
+                        />
+                    </div>
+                    <div className="grid gap-4 py-2">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="name">Nome</Label>

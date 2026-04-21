@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { ClassBoardPost } from "@/types/class-board-post";
 import { PostInteraction } from "@/types/post-interaction";
-import { getClassBoardPosts, createPostInteraction, deletePostInteraction } from "@/services/class-board.service";
-import { TreeDeciduous, MessageCircle, MoreHorizontal, Shapes, Megaphone, Clock } from "lucide-react";
+import { getClassBoardPosts, createPostInteraction, deletePostInteraction, updateClassBoardPost, deleteClassBoardPost } from "@/services/class-board.service";
+import { TreeDeciduous, MessageCircle, MoreHorizontal, Shapes, Megaphone, Clock, Pencil, Trash } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -184,6 +185,8 @@ function PostInteractionsView({ post, onInteractionAdded, onInteractionRemoved }
 }
 
 export function TroncoFeed({ classId, categoryFilter }: { classId: string, categoryFilter?: string }) {
+    const { data: session } = useSession();
+    const currentUser = session?.user as any;
     const [posts, setPosts] = useState<LoadedPost[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -218,6 +221,32 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
             }
             return p;
         }));
+    };
+
+    const handleEditPost = async (post: LoadedPost) => {
+        const newTitle = window.prompt("Editar Título:", post.title);
+        if (newTitle === null) return;
+        const newContent = window.prompt("Editar Conteúdo:", post.content);
+        if (newContent === null) return;
+
+        const updated = await updateClassBoardPost(post.id, { title: newTitle, content: newContent });
+        if (updated) {
+            setPosts(prev => prev.map(p => p.id === post.id ? { ...p, title: newTitle, content: newContent } : p));
+            toast.success("Post editado com sucesso!");
+        } else {
+            toast.error("Erro ao editar post.");
+        }
+    };
+
+    const handleDeletePost = async (postId: string) => {
+        if (!window.confirm("Certeza que deseja excluir este post?")) return;
+        const success = await deleteClassBoardPost(postId);
+        if (success) {
+            setPosts(prev => prev.filter(p => p.id !== postId));
+            toast.success("Post excluído!");
+        } else {
+            toast.error("Erro ao excluir post.");
+        }
     };
 
     let filteredPosts = posts;
@@ -280,9 +309,25 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
                                         </div>
                                     </div>
                                 </div>
-                                <button className="text-slate-400 hover:text-slate-600 p-2 hover:bg-slate-50 rounded-full transition-colors">
-                                    <MoreHorizontal className="h-5 w-5" />
-                                </button>
+                                {currentUser && (post.authorId === currentUser.id || currentUser.role === "admin") && (
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <button className="text-slate-400 hover:text-slate-600 p-2 hover:bg-slate-50 rounded-full transition-colors outline-none focus:ring-0">
+                                                <MoreHorizontal className="h-5 w-5" />
+                                            </button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="w-40 bg-white border border-slate-200">
+                                            <DropdownMenuItem onClick={() => handleEditPost(post)} className="text-slate-700 hover:bg-slate-50 hover:text-slate-900 cursor-pointer">
+                                                <Pencil className="h-4 w-4 mr-2" />
+                                                Editar
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleDeletePost(post.id)} className="text-red-600 hover:bg-red-50 hover:text-red-700 cursor-pointer focus:bg-red-50 focus:text-red-700">
+                                                <Trash className="h-4 w-4 mr-2" />
+                                                Excluir
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                )}
                             </div>
 
                             {/* Tag */}

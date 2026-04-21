@@ -41,7 +41,7 @@ export const authOptions: NextAuthOptions = {
                     name: user.name,
                     role: user.role,
                     phone: user.phone || undefined,
-                    avatar: user.avatar || undefined
+                    linkedStudentIds: user.linkedStudentIds || []
                 };
             }
         })
@@ -55,19 +55,29 @@ export const authOptions: NextAuthOptions = {
                 token.role = (user as any).role;
                 token.id = user.id;
                 token.phone = (user as any).phone;
-                token.avatar = (user as any).avatar;
+                token.linkedStudentIds = (user as any).linkedStudentIds;
             }
             if (trigger === "update" && session) {
                 token = { ...token, ...session }
+                delete token.avatar;
             }
             return token;
         },
         async session({ session, token }) {
             if (token && session.user) {
+                // Fetch fresh user data from DB instead of relying on token stuffing for heavy data like avatars
+                const dbUser = await prisma.user.findUnique({ where: { id: token.id as string } });
+                
                 (session.user as any).role = token.role as string;
                 (session.user as any).id = token.id as string;
                 (session.user as any).phone = token.phone as string | undefined;
-                (session.user as any).avatar = token.avatar as string | undefined;
+                (session.user as any).linkedStudentIds = token.linkedStudentIds as string[] | undefined;
+                
+                if (dbUser) {
+                    (session.user as any).avatar = dbUser.avatar;
+                    (session.user as any).name = dbUser.name;
+                    (session.user as any).email = dbUser.email;
+                }
             }
             return session;
         }
