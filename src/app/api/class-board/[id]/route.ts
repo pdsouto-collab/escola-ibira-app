@@ -2,13 +2,14 @@ import { getServerSessionOrJwt } from "@/lib/jwt";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, props: { params: Promise<{ id: string }> }) {
     const session = await getServerSessionOrJwt();
     if (!session || !session.user || !session.user.id) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     try {
+        const params = await props.params;
         const { id } = params;
         const post = await prisma.classBoardPost.findUnique({
             where: { id }
@@ -18,7 +19,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
             return NextResponse.json({ error: "Post not found" }, { status: 404 });
         }
 
-        if (post.authorId !== session.user.id && session.user.role !== "admin") {
+        if (post.authorId !== session.user.id && session.user.role !== "admin" && session.user.role !== "director") {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
@@ -36,13 +37,14 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     }
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, props: { params: Promise<{ id: string }> }) {
     const session = await getServerSessionOrJwt();
     if (!session || !session.user || !session.user.id) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     try {
+        const params = await props.params;
         const { id } = params;
         const body = await request.json();
         const { title, content } = body;
@@ -55,7 +57,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
             return NextResponse.json({ error: "Post not found" }, { status: 404 });
         }
 
-        if (post.authorId !== session.user.id && session.user.role !== "admin") {
+        if (post.authorId !== session.user.id && session.user.role !== "admin" && session.user.role !== "director") {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
