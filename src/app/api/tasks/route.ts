@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     const task = await prisma.task.create({
       data: {
         title,
-        dueDate: dueDate ? new Date(dueDate) : null,
+        dueDate: dueDate ? new Date(dueDate).toISOString() : null,
         priority: priority || "medium",
         completed: false,
       },
