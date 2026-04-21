@@ -26,21 +26,25 @@ export async function POST(req: Request) {
       return new NextResponse("Credenciais invalidas", { status: 401 });
     }
 
-    const payload = {
+    const tokenPayload = {
       id: user.id,
       email: user.email,
       name: user.name,
       role: user.role,
       phone: user.phone || undefined,
+    };
+
+    const clientUserPayload = {
+      ...tokenPayload,
       avatar: user.avatar || undefined,
     };
 
     // Gera o token
-    const token = signJwtAccessToken(payload);
+    const token = signJwtAccessToken(tokenPayload);
 
     return NextResponse.json({
         token,
-        user: payload
+        user: clientUserPayload
     });
 
   } catch (error) {
