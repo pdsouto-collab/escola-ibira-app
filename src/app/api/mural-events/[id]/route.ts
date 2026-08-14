@@ -22,34 +22,42 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
-        const session = await getServerSessionOrJwt();
-        if (!session || !session.user || !session.user.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+    const session = await getServerSessionOrJwt();
+    if (!session || !session.user || !session.user.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     try {
         const { id } = await params;
         const body = await request.json();
         const { title, description, date, type, location, image, classId, likes } = body;
 
+        let parsedDate: Date | undefined = undefined;
+        if (date) {
+            const d = new Date(date);
+            if (!isNaN(d.getTime())) {
+                parsedDate = d;
+            }
+        }
+
         const updatedEvent = await prisma.muralEvent.update({
             where: { id },
             data: {
-                title,
-                description,
-                date: date ? new Date(date) : undefined,
-                type,
-                location,
-                image,
-                classId,
-                likes
+                title: title !== undefined ? title : undefined,
+                description: description !== undefined ? description : undefined,
+                date: parsedDate,
+                type: type !== undefined ? type : undefined,
+                location: location !== undefined ? (location || null) : undefined,
+                image: image !== undefined ? (image || null) : undefined,
+                classId: classId !== undefined ? (classId === "all" ? null : classId) : undefined,
+                likes: likes !== undefined ? likes : undefined
             },
             include: { comments: true }
         });
         return NextResponse.json(updatedEvent);
-    } catch (error) {
+    } catch (error: any) {
         console.error("Erro ao atualizar evento:", error);
-        return NextResponse.json({ error: "Erro ao atualizar evento" }, { status: 500 });
+        return NextResponse.json({ error: error?.message || "Erro ao atualizar evento" }, { status: 500 });
     }
 }
 

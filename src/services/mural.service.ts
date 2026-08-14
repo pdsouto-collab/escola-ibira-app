@@ -13,7 +13,10 @@ export async function getMuralEvents(classId?: string): Promise<MuralEvent[]> {
         headers: { "Content-Type": "application/json" },
         cache: "no-store"
     });
-    if (!res.ok) throw new Error("Erro ao buscar eventos do mural");
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Erro ao buscar eventos do mural");
+    }
     return res.json();
 }
 
@@ -23,7 +26,10 @@ export async function createMuralEvent(event: Partial<MuralEvent>): Promise<Mura
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(event)
     });
-    if (!res.ok) throw new Error("Erro ao criar evento");
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Erro ao criar evento");
+    }
     return res.json();
 }
 
@@ -33,7 +39,10 @@ export async function updateMuralEvent(id: string, updates: Partial<MuralEvent>)
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates)
     });
-    if (!res.ok) throw new Error("Erro ao atualizar evento");
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Erro ao atualizar evento");
+    }
     return res.json();
 }
 
@@ -42,7 +51,10 @@ export async function deleteMuralEvent(id: string): Promise<void> {
         method: "DELETE",
         headers: { "Content-Type": "application/json" }
     });
-    if (!res.ok) throw new Error("Erro ao excluir evento");
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Erro ao excluir evento");
+    }
 }
 
 export async function addMuralComment(eventId: string, comment: { author: string; text: string }): Promise<any> {
@@ -51,6 +63,9 @@ export async function addMuralComment(eventId: string, comment: { author: string
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(comment)
     });
-    if (!res.ok) throw new Error("Erro ao adicionar comentário");
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Erro ao adicionar comentário");
+    }
     return res.json();
 }

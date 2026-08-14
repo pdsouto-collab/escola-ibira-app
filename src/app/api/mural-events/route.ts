@@ -33,33 +33,38 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-        const session = await getServerSessionOrJwt();
-        if (!session || !session.user || !session.user.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+    const session = await getServerSessionOrJwt();
+    if (!session || !session.user || !session.user.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     try {
         const body = await request.json();
         const { title, description, date, author, type, location, image, classId } = body;
 
+        let parsedDate = date ? new Date(date) : new Date();
+        if (isNaN(parsedDate.getTime())) {
+            parsedDate = new Date();
+        }
+
         const newEvent = await prisma.muralEvent.create({
             data: {
-                title,
-                description,
-                date: new Date(date),
-                author,
-                type,
-                location,
-                image,
-                classId
+                title: (title || "").trim() || "Novo Evento",
+                description: description || "",
+                date: parsedDate,
+                author: author || session.user.name || "Administração",
+                type: type || "event",
+                location: location || null,
+                image: image || null,
+                classId: classId && classId !== "all" ? classId : null
             },
             include: {
                 comments: true
             }
         });
         return NextResponse.json(newEvent);
-    } catch (error) {
+    } catch (error: any) {
         console.error("Erro ao criar evento:", error);
-        return NextResponse.json({ error: "Erro ao criar evento" }, { status: 500 });
+        return NextResponse.json({ error: error?.message || "Erro ao criar evento" }, { status: 500 });
     }
 }

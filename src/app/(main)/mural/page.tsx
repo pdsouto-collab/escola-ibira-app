@@ -95,19 +95,63 @@ export default function MuralPage() {
         setShowNewEventForm(false);
     };
 
+    // Helper function to compress images to ensure lightweight payloads
+    const compressImage = (dataUrl: string, maxWidth = 1200, maxHeight = 1200, quality = 0.7): Promise<string> => {
+        return new Promise((resolve) => {
+            const img = new window.Image();
+            img.onload = () => {
+                const canvas = document.createElement("canvas");
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height *= maxWidth / width;
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width *= maxHeight / height;
+                        height = maxHeight;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext("2d");
+                ctx?.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL("image/jpeg", quality));
+            };
+            img.onerror = () => resolve(dataUrl);
+            img.src = dataUrl;
+        });
+    };
+
     const handleCreateEvent = async () => {
-        if (!newEvent.title || !newEvent.date || !currentUser) return;
+        if (!newEvent.title || !newEvent.date || !currentUser) {
+            toast.error("Por favor, preencha o título e a data do evento");
+            return;
+        }
 
         setIsSubmitting(true);
+        let finalImage = newEvent.image;
+        if (finalImage && finalImage.startsWith("data:image") && finalImage.length > 200000) {
+            try {
+                finalImage = await compressImage(finalImage);
+            } catch (err) {
+                console.warn("Falha ao comprimir imagem:", err);
+            }
+        }
+
         const eventDate = `${newEvent.date}T${newEvent.time || "00:00"}`;
         const eventData = {
             title: newEvent.title,
-            description: newEvent.description,
+            description: newEvent.description || "",
             date: eventDate,
-            location: newEvent.location,
-            image: newEvent.image,
+            location: newEvent.location || "",
+            image: finalImage || "",
             classId: newEvent.classId === "all" ? null : newEvent.classId,
-            author: currentUser.name,
+            author: currentUser.name || "Administração",
             type: "event" as const,
         };
 
@@ -121,9 +165,9 @@ export default function MuralPage() {
             }
             fetchMuralEvents(selectedClassId);
             resetForm();
-        } catch (error) {
+        } catch (error: any) {
             console.error("Erro ao salvar evento:", error);
-            toast.error("Erro ao salvar evento");
+            toast.error(error?.message || "Erro ao salvar evento");
         } finally {
             setIsSubmitting(false);
         }
@@ -327,8 +371,12 @@ export default function MuralPage() {
                                             const file = e.target.files?.[0];
                                             if (file) {
                                                 const reader = new FileReader();
-                                                reader.onloadend = () => {
-                                                    setNewEvent({ ...newEvent, image: reader.result as string });
+                                                reader.onload = async (ev) => {
+                                                    const raw = ev.target?.result as string;
+                                                    if (raw) {
+                                                        const compressed = await compressImage(raw);
+                                                        setNewEvent(prev => ({ ...prev, image: compressed }));
+                                                    }
                                                 };
                                                 reader.readAsDataURL(file);
                                             }
