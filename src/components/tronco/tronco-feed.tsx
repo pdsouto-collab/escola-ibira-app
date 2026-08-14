@@ -126,8 +126,8 @@ function PostInteractionsView({ post, onInteractionAdded, onInteractionRemoved }
                                             {comment.userName.charAt(0)}
                                         </AvatarFallback>
                                     </Avatar>
-                                    <div className="flex-1">
-                                        <div className="bg-white px-4 py-2.5 rounded-2xl rounded-tl-sm border border-slate-200 shadow-sm">
+                                    <div className="flex-1 min-w-0">
+                                        <div className="bg-white px-4 py-2.5 rounded-2xl rounded-tl-sm border border-slate-200 shadow-sm overflow-hidden">
                                             <div className="font-semibold text-slate-900 flex items-center gap-2">
                                                 {comment.userName}
                                                 {comment.userRole && (
@@ -136,7 +136,7 @@ function PostInteractionsView({ post, onInteractionAdded, onInteractionRemoved }
                                                     </span>
                                                 )}
                                             </div>
-                                            <div className="text-slate-600 mt-1 leading-relaxed">
+                                            <div className="text-slate-600 mt-1 leading-relaxed break-words [overflow-wrap:anywhere] whitespace-pre-wrap">
                                                 {comment.content}
                                             </div>
                                         </div>
@@ -339,10 +339,10 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
                             </div>
 
                             {/* Title and Content */}
-                            <h3 className="text-lg font-bold text-slate-900 mb-2 leading-tight">
+                            <h3 className="text-lg font-bold text-slate-900 mb-2 leading-tight break-words">
                                 {post.title}
                             </h3>
-                            <div className="text-slate-700 leading-relaxed max-w-none text-[15px] whitespace-pre-wrap">
+                            <div className="text-slate-700 leading-relaxed max-w-none text-[15px] whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
                                 {post.content}
                             </div>
 

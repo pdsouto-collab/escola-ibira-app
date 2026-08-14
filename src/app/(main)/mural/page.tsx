@@ -428,16 +428,16 @@ export default function MuralPage() {
                             )}
                             <div className="p-6">
                                 <div className="flex justify-between items-start mb-4">
-                                    <div>
-                                        <h2 className="text-xl font-bold text-slate-900">{event.title}</h2>
-                                        <div className="flex items-center gap-4 text-sm text-slate-500 mt-2">
+                                    <div className="w-full min-w-0">
+                                        <h2 className="text-xl font-bold text-slate-900 break-words">{event.title}</h2>
+                                        <div className="flex items-center gap-4 text-sm text-slate-500 mt-2 flex-wrap">
                                             <span className="flex items-center gap-1">
-                                                <Calendar className="h-4 w-4" />
+                                                <Calendar className="h-4 w-4 shrink-0" />
                                                 {format(new Date(event.date), "dd 'de' MMMM 'às' HH:mm", { locale: ptBR })}
                                             </span>
                                             {event.location && (
                                                 <span className="flex items-center gap-1">
-                                                    <MapPin className="h-4 w-4" />
+                                                    <MapPin className="h-4 w-4 shrink-0" />
                                                     {event.location}
                                                 </span>
                                             )}
@@ -445,27 +445,27 @@ export default function MuralPage() {
                                     </div>
                                 </div>
 
-                                <p className="text-slate-600 mb-6">{event.description}</p>
+                                <p className="text-slate-600 mb-6 break-words [overflow-wrap:anywhere] whitespace-pre-wrap">{event.description}</p>
 
                                 <div className="border-t pt-4">
                                     <div className="flex items-center gap-2 text-slate-900 font-medium mb-4">
-                                        <MessageCircle className="h-5 w-5" />
+                                        <MessageCircle className="h-5 w-5 shrink-0" />
                                         Comentários ({event.comments?.length || 0})
                                     </div>
 
                                     <div className="space-y-4 mb-4">
                                         {event.comments?.map((comment) => (
-                                            <div key={comment.id} className="bg-slate-50 p-3 rounded-lg text-sm">
-                                                <div className="flex justify-between items-center mb-1">
-                                                    <span className="font-semibold text-slate-900 flex items-center gap-2">
-                                                        <User className="h-3 w-3" />
-                                                        {comment.author}
+                                            <div key={comment.id} className="bg-slate-50 p-3 rounded-lg text-sm overflow-hidden">
+                                                <div className="flex justify-between items-center mb-1 gap-2">
+                                                    <span className="font-semibold text-slate-900 flex items-center gap-2 min-w-0 truncate">
+                                                        <User className="h-3 w-3 shrink-0" />
+                                                        <span className="truncate">{comment.author}</span>
                                                     </span>
-                                                    <span className="text-slate-400 text-xs">
+                                                    <span className="text-slate-400 text-xs shrink-0">
                                                         {format(new Date(comment.date), "dd/MM HH:mm")}
                                                     </span>
                                                 </div>
-                                                <p className="text-slate-700">{comment.text}</p>
+                                                <p className="text-slate-700 break-words [overflow-wrap:anywhere] whitespace-pre-wrap">{comment.text}</p>
                                             </div>
                                         ))}
                                     </div>

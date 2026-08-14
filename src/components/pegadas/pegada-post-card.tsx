@@ -235,7 +235,7 @@ export function PegadaPostCard({ post, onUpdated, onDeleted }: PegadaPostCardPro
                             </div>
                         </div>
                     ) : (
-                        <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">
+                        <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
                             {post.content}
                         </p>
                     )}
@@ -278,15 +278,15 @@ export function PegadaPostCard({ post, onUpdated, onDeleted }: PegadaPostCardPro
                                     <Avatar className="h-8 w-8 shrink-0">
                                         <AvatarFallback className="text-[10px] bg-slate-100 text-slate-600">{(int.userName || "U").substring(0, 2).toUpperCase()}</AvatarFallback>
                                     </Avatar>
-                                    <div className="flex-1 bg-slate-50 rounded-2xl p-3 text-xs">
+                                    <div className="flex-1 bg-slate-50 rounded-2xl p-3 text-xs overflow-hidden min-w-0">
                                         <div className="flex justify-between items-center mb-1">
-                                            <span className="font-bold text-slate-900">{int.userName || "Usuário"}</span>
-                                            <span className="text-[9px] text-slate-400">
+                                            <span className="font-bold text-slate-900 truncate">{int.userName || "Usuário"}</span>
+                                            <span className="text-[9px] text-slate-400 shrink-0">
                                                 {formatDistanceToNow(new Date(int.createdAt), { locale: ptBR })}
                                             </span>
                                         </div>
                                         {int.type === 'comment' ? (
-                                            <p className="text-slate-600 leading-normal">{int.content}</p>
+                                            <p className="text-slate-600 leading-normal break-words [overflow-wrap:anywhere] whitespace-pre-wrap">{int.content}</p>
                                         ) : (
                                             <div className="flex items-center gap-2 bg-white/50 p-2 rounded-lg border border-slate-100 mt-1">
                                                 <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
