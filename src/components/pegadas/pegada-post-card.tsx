@@ -29,12 +29,15 @@ export function PegadaPostCard({ post, onUpdated, onDeleted }: PegadaPostCardPro
     const [comment, setComment] = useState("");
     const [showComments, setShowComments] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const [editContent, setEditContent] = useState(post.content);
+    const [editTitle, setEditTitle] = useState(post.title || "");
+    const [editContent, setEditContent] = useState(post.content || "");
+    const [editPhotos, setEditPhotos] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isLiking, setIsLiking] = useState(false);
     const [isCommenting, setIsCommenting] = useState(false);
     const [lightboxData, setLightboxData] = useState<{ photos: string[], index: number } | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
+    const editFileInputRef = useRef<HTMLInputElement>(null);
 
     const hasLiked = post.interactions.some(i => i.type === 'like' && i.userId === currentUser?.id);
     const likeCount = post.interactions.filter(i => i.type === 'like').length;
@@ -46,6 +49,67 @@ export function PegadaPostCard({ post, onUpdated, onDeleted }: PegadaPostCardPro
             const amount = scrollRef.current.clientWidth;
             scrollRef.current.scrollBy({ left: direction === 'left' ? -amount : amount, behavior: 'smooth' });
         }
+    };
+
+    const startEdit = () => {
+        setEditTitle(post.title || "");
+        setEditContent(post.content || "");
+        const initialPhotos = post.mediaUrls && post.mediaUrls.length > 0
+            ? [...post.mediaUrls]
+            : (post.mediaUrl && post.mediaUrl.trim() !== "" && post.mediaUrl !== "null" && !post.mediaUrl.includes("photo-1502086223501") ? [post.mediaUrl] : []);
+        setEditPhotos(initialPhotos);
+        setIsEditing(true);
+    };
+
+    const handleEditFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
+
+        const availableSlots = 5 - editPhotos.length;
+        if (availableSlots <= 0) return;
+
+        const filesToProcess = files.slice(0, availableSlots);
+
+        const promises = filesToProcess.map(file => {
+            return new Promise<string>((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        const MAX_DIMENSION = 1600;
+                        if (width > height && width > MAX_DIMENSION) {
+                            height = Math.round((height * MAX_DIMENSION) / width);
+                            width = MAX_DIMENSION;
+                        } else if (height > MAX_DIMENSION) {
+                            width = Math.round((width * MAX_DIMENSION) / height);
+                            height = MAX_DIMENSION;
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        if (ctx) {
+                            ctx.imageSmoothingEnabled = true;
+                            ctx.imageSmoothingQuality = "high";
+                            ctx.drawImage(img, 0, 0, width, height);
+                        }
+                        resolve(canvas.toDataURL('image/jpeg', 0.85));
+                    };
+                    img.src = reader.result as string;
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        const newPhotos = await Promise.all(promises);
+        setEditPhotos(prev => [...prev, ...newPhotos].slice(0, 5));
+        if (editFileInputRef.current) editFileInputRef.current.value = "";
+    };
+
+    const handleRemoveEditPhoto = (index: number) => {
+        setEditPhotos(prev => prev.filter((_, i) => i !== index));
     };
 
     const handleLike = async () => {
@@ -112,7 +176,12 @@ export function PegadaPostCard({ post, onUpdated, onDeleted }: PegadaPostCardPro
         if (!editContent.trim()) return;
         setIsLoading(true);
         try {
-            await updatePegada(post.id, { content: editContent.trim() });
+            await updatePegada(post.id, {
+                title: editTitle.trim(),
+                content: editContent.trim(),
+                mediaUrls: editPhotos,
+                mediaUrl: editPhotos.length > 0 ? editPhotos[0] : null,
+            });
             setIsEditing(false);
             if (onUpdated) onUpdated();
         } catch (error) {
@@ -135,7 +204,7 @@ export function PegadaPostCard({ post, onUpdated, onDeleted }: PegadaPostCardPro
                         {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ptBR })}
                     </p>
                 </div>
-                {canManage && (
+                {canManage && !isEditing && (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="text-slate-400">
@@ -143,7 +212,7 @@ export function PegadaPostCard({ post, onUpdated, onDeleted }: PegadaPostCardPro
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => setIsEditing(true)} disabled={isLoading}>
+                            <DropdownMenuItem onClick={startEdit} disabled={isLoading}>
                                 <Pencil className="h-4 w-4 mr-2" /> Editar Post
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={handleDelete} disabled={isLoading} className="text-red-600 focus:bg-red-50 focus:text-red-600">
@@ -155,115 +224,195 @@ export function PegadaPostCard({ post, onUpdated, onDeleted }: PegadaPostCardPro
             </CardHeader>
 
             <CardContent className="p-0">
-                {post.type === "photo" && (
-                    post.mediaUrls && post.mediaUrls.length > 0 ? (
-                        <div className="relative aspect-[4/3] sm:aspect-[16/10] bg-slate-100 overflow-hidden group select-none">
-                            <div ref={scrollRef} className="flex w-full h-full overflow-x-auto snap-x snap-mandatory hide-scrollbar">
-                                {post.mediaUrls.map((url, i) => (
-                                    <div 
-                                        key={i} 
-                                        onClick={() => setLightboxData({ photos: post.mediaUrls || [], index: i })}
-                                        className="w-full h-full shrink-0 snap-center relative cursor-pointer"
-                                    >
-                                        <img src={url} alt={`${post.title} - foto ${i + 1}`} className="w-full h-full object-cover" />
-                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center pointer-events-none">
-                                            <span className="opacity-0 group-hover:opacity-100 bg-black/70 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-xs transition-opacity flex items-center gap-1.5 shadow-md">
-                                                <Maximize2 className="w-3.5 h-3.5" /> Ampliar foto
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                            {post.mediaUrls.length > 1 && (
-                                <>
-                                    <Button
-                                        variant="default"
-                                        size="icon"
-                                        className="absolute top-1/2 left-2 -translate-y-1/2 h-8 w-8 rounded-full bg-black/50 hover:bg-black/75 text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                                        onClick={() => scroll('left')}
-                                    >
-                                        <ChevronLeft className="h-5 w-5" />
-                                    </Button>
-                                    <Button
-                                        variant="default"
-                                        size="icon"
-                                        className="absolute top-1/2 right-2 -translate-y-1/2 h-8 w-8 rounded-full bg-black/50 hover:bg-black/75 text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                                        onClick={() => scroll('right')}
-                                    >
-                                        <ChevronRight className="h-5 w-5" />
-                                    </Button>
-                                    <div className="absolute top-3 right-3 z-10 bg-black/60 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                                        {post.mediaUrls.length} fotos
-                                    </div>
-                                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 bg-black/30 px-2.5 py-1 rounded-full backdrop-blur-sm">
-                                        {post.mediaUrls.map((_, i) => (
-                                            <div key={i} className="h-2 w-2 rounded-full bg-white shadow-sm opacity-60" />
+                {isEditing ? (
+                    <div className="p-4 space-y-4 bg-slate-50/50 border-y border-slate-100">
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-semibold text-slate-600 uppercase">Título da Pegada</label>
+                            <Input
+                                value={editTitle}
+                                onChange={(e) => setEditTitle(e.target.value)}
+                                placeholder="Título / Assunto da postagem"
+                                className="font-bold bg-white border-slate-200 focus-visible:ring-indigo-500"
+                            />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-semibold text-slate-600 uppercase">Mensagem</label>
+                            <textarea
+                                className="w-full min-h-[110px] p-3 text-slate-700 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-none transition-all leading-relaxed text-sm"
+                                value={editContent}
+                                onChange={(e) => setEditContent(e.target.value)}
+                                placeholder="Conteúdo da postagem..."
+                            />
+                        </div>
+
+                        {post.type !== "video" && (
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-xs font-semibold text-slate-600 uppercase">
+                                        Fotos Anexadas ({editPhotos.length}/5)
+                                    </label>
+                                    {editPhotos.length < 5 && (
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => editFileInputRef.current?.click()}
+                                            className="text-xs text-indigo-600 hover:text-indigo-700 h-8 gap-1.5"
+                                        >
+                                            <Pencil className="h-3.5 w-3.5" /> Adicionar foto
+                                        </Button>
+                                    )}
+                                </div>
+
+                                <input
+                                    type="file"
+                                    multiple
+                                    accept="image/*"
+                                    ref={editFileInputRef}
+                                    onChange={handleEditFileChange}
+                                    className="hidden"
+                                />
+
+                                {editPhotos.length > 0 && (
+                                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 pt-1">
+                                        {editPhotos.map((photo, index) => (
+                                            <div key={index} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-100 group">
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                <img src={photo} alt={`Foto ${index + 1}`} className="w-full h-full object-cover" />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveEditPhoto(index)}
+                                                    className="absolute top-1 right-1 bg-black/70 hover:bg-black/90 text-white rounded-full p-1 shadow-md transition-all z-10"
+                                                    title="Remover foto"
+                                                >
+                                                    <X className="w-3.5 h-3.5" />
+                                                </button>
+                                                <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                                                    {index + 1}
+                                                </span>
+                                            </div>
                                         ))}
                                     </div>
-                                </>
-                            )}
-                        </div>
-                    ) : post.mediaUrl && post.mediaUrl.trim() !== "" && post.mediaUrl !== "null" && !post.mediaUrl.includes("photo-1502086223501") ? (
-                        <div 
-                            onClick={() => setLightboxData({ photos: [post.mediaUrl!], index: 0 })}
-                            className="relative aspect-[4/3] sm:aspect-[16/10] bg-slate-100 cursor-pointer group"
-                        >
-                            <img src={post.mediaUrl} alt={post.title} className="w-full h-full object-cover" />
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center pointer-events-none">
-                                <span className="opacity-0 group-hover:opacity-100 bg-black/70 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-xs transition-opacity flex items-center gap-1.5 shadow-md">
-                                    <Maximize2 className="w-3.5 h-3.5" /> Ampliar foto
-                                </span>
-                            </div>
-                        </div>
-                    ) : null
-                )}
-
-                {post.type === "video" && post.mediaUrl && (
-                    <div className="relative aspect-video bg-black flex items-center justify-center group cursor-pointer">
-                        <video src={post.mediaUrl} className="w-full h-full object-contain opacity-80" />
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
-                            <div className="h-16 w-16 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center">
-                                <Play className="h-8 w-8 text-white fill-white" />
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                <div className="p-4 space-y-2">
-                    <div className="flex items-center justify-between">
-                        <h3 className="font-bold text-slate-800 leading-tight">{post.title}</h3>
-                        {post.tags && post.tags.length > 0 && (
-                            <div className="flex gap-1">
-                                {post.tags.map(tag => (
-                                    <Badge key={tag} variant="secondary" className="text-[9px] bg-emerald-50 text-emerald-700 border-emerald-100 uppercase tracking-tighter">
-                                        {tag}
-                                    </Badge>
-                                ))}
+                                )}
                             </div>
                         )}
-                    </div>
-                    {isEditing ? (
-                        <div className="space-y-3 mt-2">
-                            <textarea
-                                className="w-full min-h-[100px] p-3 text-slate-700 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-none transition-all leading-relaxed"
-                                value={editContent || ""}
-                                onChange={(e) => setEditContent(e.target.value)}
-                            />
-                            <div className="flex justify-end gap-2">
-                                <Button variant="outline" size="sm" onClick={() => { setIsEditing(false); setEditContent(post.content); }}>
-                                    <X className="h-4 w-4 mr-2" /> Cancelar
-                                </Button>
-                                <Button size="sm" onClick={handleUpdate} disabled={isLoading} className="bg-indigo-600 hover:bg-indigo-700">
-                                    <Save className="h-4 w-4 mr-2" /> Salvar
-                                </Button>
-                            </div>
+
+                        <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => { setIsEditing(false); }}
+                                disabled={isLoading}
+                            >
+                                <X className="h-4 w-4 mr-1.5" /> Cancelar
+                            </Button>
+                            <Button 
+                                size="sm" 
+                                onClick={handleUpdate} 
+                                disabled={isLoading || !editContent.trim()} 
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                            >
+                                {isLoading ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Save className="h-4 w-4 mr-1.5" />}
+                                Salvar Alterações
+                            </Button>
                         </div>
-                    ) : (
-                        <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
-                            {post.content}
-                        </p>
-                    )}
-                </div>
+                    </div>
+                ) : (
+                    <>
+                        {post.type === "photo" && (
+                            post.mediaUrls && post.mediaUrls.length > 0 ? (
+                                <div className="relative aspect-[4/3] sm:aspect-[16/10] bg-slate-100 overflow-hidden group select-none">
+                                    <div ref={scrollRef} className="flex w-full h-full overflow-x-auto snap-x snap-mandatory hide-scrollbar">
+                                        {post.mediaUrls.map((url, i) => (
+                                            <div 
+                                                key={i} 
+                                                onClick={() => setLightboxData({ photos: post.mediaUrls || [], index: i })}
+                                                className="w-full h-full shrink-0 snap-center relative cursor-pointer"
+                                            >
+                                                <img src={url} alt={`${post.title} - foto ${i + 1}`} className="w-full h-full object-cover" />
+                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center pointer-events-none">
+                                                    <span className="opacity-0 group-hover:opacity-100 bg-black/70 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-xs transition-opacity flex items-center gap-1.5 shadow-md">
+                                                        <Maximize2 className="w-3.5 h-3.5" /> Ampliar foto
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {post.mediaUrls.length > 1 && (
+                                        <>
+                                            <Button
+                                                variant="default"
+                                                size="icon"
+                                                className="absolute top-1/2 left-2 -translate-y-1/2 h-8 w-8 rounded-full bg-black/50 hover:bg-black/75 text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                                                onClick={() => scroll('left')}
+                                            >
+                                                <ChevronLeft className="h-5 w-5" />
+                                            </Button>
+                                            <Button
+                                                variant="default"
+                                                size="icon"
+                                                className="absolute top-1/2 right-2 -translate-y-1/2 h-8 w-8 rounded-full bg-black/50 hover:bg-black/75 text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                                                onClick={() => scroll('right')}
+                                            >
+                                                <ChevronRight className="h-5 w-5" />
+                                            </Button>
+                                            <div className="absolute top-3 right-3 z-10 bg-black/60 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                                                {post.mediaUrls.length} fotos
+                                            </div>
+                                            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 bg-black/30 px-2.5 py-1 rounded-full backdrop-blur-sm">
+                                                {post.mediaUrls.map((_, i) => (
+                                                    <div key={i} className="h-2 w-2 rounded-full bg-white shadow-sm opacity-60" />
+                                                ))}
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            ) : post.mediaUrl && post.mediaUrl.trim() !== "" && post.mediaUrl !== "null" && !post.mediaUrl.includes("photo-1502086223501") ? (
+                                <div 
+                                    onClick={() => setLightboxData({ photos: [post.mediaUrl!], index: 0 })}
+                                    className="relative aspect-[4/3] sm:aspect-[16/10] bg-slate-100 cursor-pointer group"
+                                >
+                                    <img src={post.mediaUrl} alt={post.title} className="w-full h-full object-cover" />
+                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center pointer-events-none">
+                                        <span className="opacity-0 group-hover:opacity-100 bg-black/70 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-xs transition-opacity flex items-center gap-1.5 shadow-md">
+                                            <Maximize2 className="w-3.5 h-3.5" /> Ampliar foto
+                                        </span>
+                                    </div>
+                                </div>
+                            ) : null
+                        )}
+
+                        {post.type === "video" && post.mediaUrl && (
+                            <div className="relative aspect-video bg-black flex items-center justify-center group cursor-pointer">
+                                <video src={post.mediaUrl} className="w-full h-full object-contain opacity-80" />
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
+                                    <div className="h-16 w-16 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center">
+                                        <Play className="h-8 w-8 text-white fill-white" />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="p-4 space-y-2">
+                            <div className="flex items-center justify-between">
+                                <h3 className="font-bold text-slate-800 leading-tight">{post.title}</h3>
+                                {post.tags && post.tags.length > 0 && (
+                                    <div className="flex gap-1">
+                                        {post.tags.map(tag => (
+                                            <Badge key={tag} variant="secondary" className="text-[9px] bg-emerald-50 text-emerald-700 border-emerald-100 uppercase tracking-tighter">
+                                                {tag}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                            <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
+                                {post.content}
+                            </p>
+                        </div>
+                    </>
+                )}
             </CardContent>
 
             <CardFooter className="p-4 pt-0 flex flex-col gap-4 border-t border-slate-50 mt-2">
