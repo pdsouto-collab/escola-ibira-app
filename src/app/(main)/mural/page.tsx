@@ -62,7 +62,10 @@ export default function MuralPage() {
         setIsEventsLoading(true);
         try {
             const data = await getMuralEvents(classId === "all" ? undefined : classId);
-            setMuralEvents(data);
+            const sortedEvents = Array.isArray(data)
+                ? [...data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                : [];
+            setMuralEvents(sortedEvents);
         } catch (error) {
             console.error("Erro ao buscar eventos do mural:", error);
         } finally {

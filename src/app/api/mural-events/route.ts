@@ -22,7 +22,7 @@ export async function GET(request: Request) {
                 }
             },
             orderBy: {
-                date: "desc"
+                date: "asc"
             }
         });
         return NextResponse.json(events);
