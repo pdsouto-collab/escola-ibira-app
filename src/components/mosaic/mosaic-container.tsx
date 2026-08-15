@@ -64,9 +64,16 @@ export function MosaicContainer() {
     const [students, setStudents] = useState<Student[]>([]);
     const [isLoadingStudents, setIsLoadingStudents] = useState(true);
 
+    const isTeacher = currentUser?.role === "teacher";
+    const teacherClasses = isTeacher
+        ? classes.filter(c => c.teacherId === currentUser?.id || c.assistantId === currentUser?.id || currentUser?.assignedClassIds?.includes(c.id))
+        : classes;
+
+    const availableClasses = isTeacher ? teacherClasses : classes;
+
     // Filter Students
     const filteredStudents = selectedClassId === "all"
-        ? students
+        ? (isTeacher ? students.filter(s => teacherClasses.some(c => c.id === s.classId)) : students)
         : students.filter(s => s.classId === selectedClassId);
 
     // Filtering logic for the tree itself based on class
@@ -209,8 +216,8 @@ export function MosaicContainer() {
                             <SelectValue placeholder="Todas as Turmas" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">Todas as Turmas</SelectItem>
-                            {classes.map(c => (
+                            <SelectItem value="all">Todas as {isTeacher ? "Minhas Turmas" : "Turmas"}</SelectItem>
+                            {availableClasses.map(c => (
                                 <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                             ))}
                         </SelectContent>

@@ -71,10 +71,21 @@ export default function ReportsPage() {
         loadData();
     }, []);
 
+    const isTeacher = currentUser?.role === "teacher";
+    const teacherClasses = isTeacher
+        ? classes.filter(c => c.teacherId === currentUser?.id || c.assistantId === currentUser?.id || currentUser?.assignedClassIds?.includes(c.id))
+        : classes;
+
+    const availableClasses = isTeacher ? teacherClasses : classes;
+
     // Filter students based on class and role
     const visibleStudents = currentUser?.role === "guardian"
         ? students.filter(s => currentUser.linkedStudentIds?.includes(s.id))
-        : (selectedClassId === "all" ? students : students.filter(s => s.classId === selectedClassId));
+        : (isTeacher
+            ? (selectedClassId === "all"
+                ? students.filter(s => teacherClasses.some(c => c.id === s.classId))
+                : students.filter(s => s.classId === selectedClassId))
+            : (selectedClassId === "all" ? students : students.filter(s => s.classId === selectedClassId)));
 
     // Use manual selection or default to first student in the filtered list
     const effectiveStudentId = (manualSelection && visibleStudents.find(s => s.id === manualSelection))
@@ -102,8 +113,46 @@ export default function ReportsPage() {
         );
     }
 
+    if (isTeacher && teacherClasses.length === 0) {
+        return (
+            <div className="space-y-6">
+                <div>
+                    <h1 className="text-3xl font-bold text-slate-800">Relatórios de Desenvolvimento</h1>
+                    <p className="text-slate-500">Acompanhe o progresso e o dia a dia das crianças.</p>
+                </div>
+                <div className="bg-amber-50/60 border border-amber-200 rounded-2xl p-10 text-center max-w-lg mx-auto shadow-sm">
+                    <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 text-amber-700">
+                        <User className="w-7 h-7" />
+                    </div>
+                    <h3 className="text-lg font-bold text-amber-900 mb-2">Nenhuma turma vinculada ao seu perfil</h3>
+                    <p className="text-amber-700/90 text-sm leading-relaxed">
+                        Você está autenticado como professor(a), mas ainda não possui nenhuma turma atribuída. Peça à administração ou coordenação da escola para vincular sua turma no painel de Docentes / Turmas.
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
     if (!selectedStudent && visibleStudents.length === 0) {
-        return <div className="p-8 text-center text-slate-500">Nenhum aluno encontrado ou permissão insuficiente.</div>;
+        return (
+            <div className="space-y-6">
+                <div>
+                    <h1 className="text-3xl font-bold text-slate-800">Relatórios de Desenvolvimento</h1>
+                    <p className="text-slate-500">Acompanhe o progresso e o dia a dia das crianças.</p>
+                </div>
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-10 text-center max-w-lg mx-auto shadow-sm">
+                    <div className="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-500">
+                        <User className="w-7 h-7" />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-800 mb-2">Nenhum aluno encontrado</h3>
+                    <p className="text-slate-500 text-sm leading-relaxed">
+                        {selectedClassId !== "all" 
+                            ? "Não há alunos cadastrados nesta turma selecionada."
+                            : "Não foram encontrados alunos disponíveis para o seu acesso."}
+                    </p>
+                </div>
+            </div>
+        );
     }
 
     return (
@@ -125,8 +174,8 @@ export default function ReportsPage() {
                                 <SelectValue placeholder="Filtrar por turma" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">Todas as Turmas</SelectItem>
-                                {classes.map((c) => (
+                                <SelectItem value="all">Todas as {isTeacher ? "Minhas Turmas" : "Turmas"}</SelectItem>
+                                {availableClasses.map((c) => (
                                     <SelectItem key={c.id} value={c.id}>
                                         {c.name}
                                     </SelectItem>
