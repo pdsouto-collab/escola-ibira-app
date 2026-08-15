@@ -137,38 +137,37 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
         const file = e.target.files?.[0];
         if (!file) return;
 
-        if (file.size > 2 * 1024 * 1024) {
-            toast.info("Comprimindo imagem para otimizar envio...");
-        }
-
         const reader = new FileReader();
         reader.onloadend = () => {
             const img = new Image();
             img.onload = () => {
                 const canvas = document.createElement("canvas");
-                const MAX_WIDTH = 1200;
-                const MAX_HEIGHT = 1200;
+                const MAX_DIM = 1600;
                 let width = img.width;
                 let height = img.height;
 
                 if (width > height) {
-                    if (width > MAX_WIDTH) {
-                        height *= MAX_WIDTH / width;
-                        width = MAX_WIDTH;
+                    if (width > MAX_DIM) {
+                        height = Math.round((height * MAX_DIM) / width);
+                        width = MAX_DIM;
                     }
                 } else {
-                    if (height > MAX_HEIGHT) {
-                        width *= MAX_HEIGHT / height;
-                        height = MAX_HEIGHT;
+                    if (height > MAX_DIM) {
+                        width = Math.round((width * MAX_DIM) / height);
+                        height = MAX_DIM;
                     }
                 }
 
                 canvas.width = width;
                 canvas.height = height;
                 const ctx = canvas.getContext("2d");
-                ctx?.drawImage(img, 0, 0, width, height);
+                if (ctx) {
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = "high";
+                    ctx.drawImage(img, 0, 0, width, height);
+                }
 
-                const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+                const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
                 setCustomPhoto(dataUrl);
             };
             img.src = reader.result as string;
@@ -214,28 +213,31 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
                                 <SelectValue placeholder="Selecione um Projeto" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="none" className="text-slate-500 italic">Nenhum projeto selecionado</SelectItem>
-                                {availableProjects.map(p => (
-                                    <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>
+                                <SelectItem value="none">Selecione um projeto...</SelectItem>
+                                {availableProjects.map((proj) => (
+                                    <SelectItem key={proj.id} value={proj.id}>
+                                        {proj.title}
+                                    </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
 
                         <Textarea
-                            placeholder="Materiais e Detalhes Adicionais (Ex: Livro específico usado)"
+                            placeholder="Materiais e Detalhes solicitados para os pais (opcional)..."
                             value={extraMaterials}
                             onChange={(e) => setExtraMaterials(e.target.value)}
                             disabled={isSubmitting}
-                            className="bg-white min-h-[80px]"
+                            className="text-xs bg-white/80 border-emerald-200/60 focus:bg-white"
+                            rows={2}
                         />
                     </div>
                 )}
 
-                {/* Main Content Area */}
+                {/* Title & Body */}
                 <div className="space-y-3">
                     {!isAcontece && (
                         <Input
-                            placeholder="Título do Recado"
+                            placeholder="Título do Recado (ex: Oficina de Música na Sexta)"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             disabled={isSubmitting}
@@ -253,17 +255,20 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
 
                     {/* Image Preview */}
                     {customPhoto && (
-                        <div className="relative mt-2 rounded-lg overflow-hidden border border-slate-200 aspect-[4/3] max-w-sm">
+                        <div className="relative mt-2 rounded-xl overflow-hidden border border-slate-200 bg-slate-900/5 max-h-[320px] flex items-center justify-center">
                             <button
-                                onClick={() => setCustomPhoto("")}
+                                onClick={() => {
+                                    setCustomPhoto("");
+                                    if (fileInputRef.current) fileInputRef.current.value = "";
+                                }}
                                 disabled={isSubmitting}
-                                className="absolute top-2 right-2 bg-white/90 text-slate-700 rounded-full p-1.5 shadow-sm hover:bg-red-50 hover:text-red-600 transition-colors z-10 disabled:opacity-50"
+                                className="absolute top-2.5 right-2.5 bg-black/70 hover:bg-black/90 text-white rounded-full p-1.5 shadow-md transition-all z-10 disabled:opacity-50"
+                                title="Remover foto"
                             >
-                                <span className="sr-only">Remover foto</span>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
                             </button>
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={customPhoto} alt="Preview Anexo" className="w-full h-full object-cover" />
+                            <img src={customPhoto} alt="Preview Anexo" className="w-full max-h-[320px] object-contain rounded-xl" />
                         </div>
                     )}
                 </div>

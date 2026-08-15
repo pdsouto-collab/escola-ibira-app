@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { ClassBoardPost } from "@/types/class-board-post";
 import { PostInteraction } from "@/types/post-interaction";
 import { getClassBoardPosts, createPostInteraction, deletePostInteraction, updateClassBoardPost, deleteClassBoardPost } from "@/services/class-board.service";
-import { TreeDeciduous, MessageCircle, MoreHorizontal, Shapes, Megaphone, Clock, Pencil, Trash } from "lucide-react";
+import { TreeDeciduous, MessageCircle, MoreHorizontal, Shapes, Megaphone, Clock, Pencil, Trash, Maximize2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow, parseISO } from "date-fns";
@@ -199,6 +199,7 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
 
     // Edit Post Modal State
     const [editingPost, setEditingPost] = useState<LoadedPost | null>(null);
+    const [selectedPhotoModal, setSelectedPhotoModal] = useState<string | null>(null);
     const [editForm, setEditForm] = useState({
         title: "",
         content: "",
@@ -417,13 +418,22 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
                             <div className="px-5 pb-3">
                                 <div className={`grid gap-2 ${post.photos.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
                                     {post.photos.map((photo, index) => (
-                                        <div key={index} className="relative aspect-[4/3] rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
+                                        <div 
+                                            key={index} 
+                                            onClick={() => setSelectedPhotoModal(photo)}
+                                            className={`relative rounded-2xl overflow-hidden bg-slate-900/5 border border-slate-200 group cursor-pointer ${post.photos.length === 1 ? 'max-h-[520px] aspect-[4/3] sm:aspect-[16/10]' : 'aspect-square'}`}
+                                        >
                                             {/* eslint-disable-next-line @next/next/no-img-element */}
                                             <img
                                                 src={photo}
                                                 alt={`Foto ${index + 1}`}
-                                                className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                                                className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                                             />
+                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center pointer-events-none">
+                                                <span className="opacity-0 group-hover:opacity-100 bg-black/70 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-xs transition-opacity flex items-center gap-1.5 shadow-md">
+                                                    <Maximize2 className="w-3.5 h-3.5" /> Ampliar foto
+                                                </span>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -518,6 +528,20 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
                             Salvar Alterações
                         </Button>
                     </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Photo Lightbox Modal */}
+            <Dialog open={!!selectedPhotoModal} onOpenChange={(open) => !open && setSelectedPhotoModal(null)}>
+                <DialogContent className="max-w-4xl p-2 bg-slate-950 border-slate-800 text-white overflow-hidden">
+                    <div className="relative max-h-[85vh] flex items-center justify-center p-2">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={selectedPhotoModal || ""}
+                            alt="Foto ampliada"
+                            className="max-h-[80vh] w-auto max-w-full object-contain rounded-lg shadow-2xl"
+                        />
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>
