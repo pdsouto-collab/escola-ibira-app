@@ -1,11 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ClassBoardPost } from "@/types/class-board-post";
 import { PostInteraction } from "@/types/post-interaction";
 import { getClassBoardPosts, createPostInteraction, deletePostInteraction, updateClassBoardPost, deleteClassBoardPost } from "@/services/class-board.service";
-import { TreeDeciduous, MessageCircle, MoreHorizontal, Shapes, Megaphone, Clock, Pencil, Trash, Maximize2, ChevronLeft, ChevronRight } from "lucide-react";
+import { TreeDeciduous, MessageCircle, MoreHorizontal, Shapes, Megaphone, Clock, Pencil, Trash, Maximize2, ChevronLeft, ChevronRight, Image as ImageIcon, Plus, X, Loader2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -184,13 +189,6 @@ function PostInteractionsView({ post, onInteractionAdded, onInteractionRemoved }
     );
 }
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Loader2 } from "lucide-react";
-
 function TroncoPhotoCarousel({ photos, onOpenLightbox }: { photos: string[], onOpenLightbox: (photos: string[], initialIndex: number) => void }) {
     const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -296,12 +294,20 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
     // Edit Post Modal State
     const [editingPost, setEditingPost] = useState<LoadedPost | null>(null);
     const [lightboxData, setLightboxData] = useState<{ photos: string[], index: number } | null>(null);
-    const [editForm, setEditForm] = useState({
+    const [editForm, setEditForm] = useState<{
+        title: string;
+        content: string;
+        categoryType: string;
+        extraMaterials: string;
+        photos: string[];
+    }>({
         title: "",
         content: "",
         categoryType: "Novidades da Turma",
-        extraMaterials: ""
+        extraMaterials: "",
+        photos: []
     });
+    const editFileInputRef = useRef<HTMLInputElement>(null);
     const [isSavingEdit, setIsSavingEdit] = useState(false);
 
     useEffect(() => {
@@ -343,32 +349,111 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
             title: post.title || "",
             content: post.content || "",
             categoryType: post.categoryType || "Novidades da Turma",
-            extraMaterials: post.extraMaterials || ""
+            extraMaterials: post.extraMaterials || "",
+            photos: Array.isArray(post.photos) ? [...post.photos] : []
         });
     };
 
-    const handleSaveEdit = async () => {
-        if (!editingPost || !editForm.title.trim() || !editForm.content.trim()) {
-            toast.error("Preencha o título e o conteúdo do post.");
+    const handleEditFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
+
+        const availableSlots = 5 - editForm.photos.length;
+        if (availableSlots <= 0) {
+            toast.warning("Limite de 5 fotos atingido.");
             return;
         }
+
+        const filesToProcess = files.slice(0, availableSlots);
+
+        const promises = filesToProcess.map(file => {
+            return new Promise<string>((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement("canvas");
+                        const MAX_DIM = 1200;
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > height) {
+                            if (width > MAX_DIM) {
+                                height = Math.round((height * MAX_DIM) / width);
+                                width = MAX_DIM;
+                            }
+                        } else {
+                            if (height > MAX_DIM) {
+                                width = Math.round((width * MAX_DIM) / height);
+                                height = MAX_DIM;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext("2d");
+                        if (ctx) {
+                            ctx.imageSmoothingEnabled = true;
+                            ctx.imageSmoothingQuality = "high";
+                            ctx.drawImage(img, 0, 0, width, height);
+                        }
+
+                        const dataUrl = canvas.toDataURL("image/jpeg", 0.75);
+                        resolve(dataUrl);
+                    };
+                    img.src = reader.result as string;
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        const newPhotos = await Promise.all(promises);
+        setEditForm(prev => ({
+            ...prev,
+            photos: [...prev.photos, ...newPhotos].slice(0, 5)
+        }));
+        if (editFileInputRef.current) editFileInputRef.current.value = "";
+    };
+
+    const handleRemoveEditPhoto = (index: number) => {
+        setEditForm(prev => ({
+            ...prev,
+            photos: prev.photos.filter((_, i) => i !== index)
+        }));
+    };
+
+    const handleSaveEdit = async () => {
+        if (!editingPost) return;
+
+        const trimmedTitle = editForm.title.trim();
+        const trimmedContent = editForm.content.trim();
+
+        if (!trimmedTitle && !trimmedContent && editForm.photos.length === 0) {
+            toast.error("Preencha ao menos o texto ou mantenha uma foto.");
+            return;
+        }
+
+        const finalTitle = trimmedTitle || (trimmedContent ? (trimmedContent.slice(0, 50) + (trimmedContent.length > 50 ? "..." : "")) : "Novidade da Turma");
+        const photosToSave = editForm.categoryType === "Projetos da Classe" ? editingPost.photos : editForm.photos;
 
         setIsSavingEdit(true);
         try {
             const updated = await updateClassBoardPost(editingPost.id, {
-                title: editForm.title.trim(),
-                content: editForm.content.trim(),
+                title: finalTitle,
+                content: trimmedContent,
                 categoryType: editForm.categoryType,
-                extraMaterials: editForm.extraMaterials ? editForm.extraMaterials.trim() : null
+                extraMaterials: editForm.extraMaterials ? editForm.extraMaterials.trim() : null,
+                photos: photosToSave
             });
 
             if (updated) {
                 setPosts(prev => prev.map(p => p.id === editingPost.id ? {
                     ...p,
-                    title: editForm.title.trim(),
-                    content: editForm.content.trim(),
+                    title: finalTitle,
+                    content: trimmedContent,
                     categoryType: editForm.categoryType,
-                    extraMaterials: editForm.extraMaterials ? editForm.extraMaterials.trim() : null
+                    extraMaterials: editForm.extraMaterials ? editForm.extraMaterials.trim() : null,
+                    photos: photosToSave
                 } : p));
                 toast.success("Post editado com sucesso!");
                 setEditingPost(null);
@@ -595,6 +680,62 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
                                 className="min-h-[75px] resize-none"
                             />
                         </div>
+
+                        {/* Photos editing section for Novidades da Turma */}
+                        {editForm.categoryType === "Novidades da Turma" && (
+                            <div className="space-y-2 pt-2 border-t border-slate-100">
+                                <div className="flex items-center justify-between">
+                                    <Label className="text-xs font-semibold text-slate-600">Fotos do Recado ({editForm.photos.length}/5)</Label>
+                                    {editForm.photos.length < 5 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => editFileInputRef.current?.click()}
+                                            className="text-emerald-600 hover:text-emerald-700 font-semibold text-xs flex items-center gap-1"
+                                        >
+                                            <Plus className="w-3.5 h-3.5" /> Adicionar foto
+                                        </button>
+                                    )}
+                                </div>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    multiple
+                                    className="hidden"
+                                    ref={editFileInputRef}
+                                    onChange={handleEditFileChange}
+                                />
+                                {editForm.photos.length > 0 ? (
+                                    <div className="grid grid-cols-5 gap-2">
+                                        {editForm.photos.map((photo, index) => (
+                                            <div key={index} className="relative aspect-square rounded-lg overflow-hidden border border-slate-200 bg-slate-100 group">
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                <img src={photo} alt={`Foto ${index + 1}`} className="w-full h-full object-cover" />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveEditPhoto(index)}
+                                                    className="absolute top-1 right-1 bg-black/70 hover:bg-black/90 text-white rounded-full p-0.5 shadow transition-all"
+                                                    title="Remover foto"
+                                                >
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                                <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1 rounded">
+                                                    {index + 1}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => editFileInputRef.current?.click()}
+                                        className="w-full py-3 border border-dashed border-slate-200 hover:border-emerald-300 rounded-lg text-xs font-medium text-slate-500 hover:text-emerald-600 flex items-center justify-center gap-2 bg-slate-50 hover:bg-emerald-50/50 transition-colors"
+                                    >
+                                        <ImageIcon className="w-4 h-4 text-slate-400" />
+                                        Anexar Fotos (até 5 fotos)
+                                    </button>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     <DialogFooter className="gap-2 sm:gap-0">
