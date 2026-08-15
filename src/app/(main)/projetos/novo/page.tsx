@@ -35,6 +35,7 @@ import { FinalProductType } from "@/types/final-product-type";
 import { getFinalProductTypes } from "@/services/final-product-type.service";
 import { getKnowledgeTrees } from "@/services/knowledge.service";
 import { ImageFramingDialog } from "@/components/ui/image-framing-dialog";
+import { compressImage } from "@/lib/image-compressor";
 
 function NewProjectWizardContent() {
     const router = useRouter();
@@ -353,42 +354,44 @@ function NewProjectWizardContent() {
         }
     };
 
-    const handleLocalImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleLocalImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            if (reader.result) {
-                setFramingContext({ type: "banner" });
-                setRawImageToFrame(reader.result as string);
-                setFramingModalOpen(true);
-            }
-        };
-        reader.readAsDataURL(file);
-        if (e.target) e.target.value = '';
+        try {
+            const compressed = await compressImage(file, 1280, 0.85);
+            setFramingContext({ type: "banner" });
+            setRawImageToFrame(compressed);
+            setFramingModalOpen(true);
+        } catch (err) {
+            console.error("Erro ao processar imagem:", err);
+            toast.error("Não foi possível carregar a imagem.");
+        } finally {
+            if (e.target) e.target.value = '';
+        }
     };
 
-    const handleComplementaryPhotosUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleComplementaryPhotosUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
         if (files.length === 0) return;
         const currentCount = formData.photos?.length || 0;
         const remainingSlots = Math.max(0, 5 - currentCount);
         const filesToProcess = files.slice(0, remainingSlots);
 
-        filesToProcess.forEach(file => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                if (reader.result) {
-                    setFormData(prev => ({
-                        ...prev,
-                        photos: [...(prev.photos || []), reader.result as string].slice(0, 5)
-                    }));
-                }
-            };
-            reader.readAsDataURL(file);
-        });
-        if (e.target) e.target.value = '';
+        try {
+            const compressedList = await Promise.all(
+                filesToProcess.map(file => compressImage(file, 1200, 0.82))
+            );
+            setFormData(prev => ({
+                ...prev,
+                photos: [...(prev.photos || []), ...compressedList].slice(0, 5)
+            }));
+        } catch (err) {
+            console.error("Erro ao comprimir fotos complementares:", err);
+            toast.error("Erro ao carregar fotos complementares.");
+        } finally {
+            if (e.target) e.target.value = '';
+        }
     };
 
     const steps = [

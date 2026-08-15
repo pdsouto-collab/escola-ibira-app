@@ -19,6 +19,12 @@ export async function GET() {
   }
 }
 
+function parseSafeDate(val: any, fallback: Date | null = null): Date | null {
+    if (!val) return fallback;
+    const d = new Date(val);
+    return isNaN(d.getTime()) ? fallback : d;
+}
+
 export async function POST(req: Request) {
     const session = await getServerSessionOrJwt();
     if (!session || !session.user || !session.user.id) {
@@ -33,8 +39,8 @@ export async function POST(req: Request) {
       title: data.title || "Novo Projeto",
       description: data.description || "",
       status: data.status || "draft",
-      startDate: data.startDate ? new Date(data.startDate) : new Date(),
-      endDate: data.endDate ? new Date(data.endDate) : null,
+      startDate: parseSafeDate(data.startDate, new Date()) as Date,
+      endDate: parseSafeDate(data.endDate, null),
       period: data.period || null,
       type: data.type || "Project",
       summary: data.summary || null,
@@ -60,8 +66,8 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(project, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Erro ao criar/atualizar projeto:", error);
-    return NextResponse.json({ error: "Erro interno do servidor" }, { status: 500 });
+    return NextResponse.json({ error: error?.message || "Erro interno do servidor ao salvar projeto" }, { status: 500 });
   }
 }

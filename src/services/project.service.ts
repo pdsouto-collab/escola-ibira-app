@@ -40,7 +40,12 @@ export async function createProject(project: Project): Promise<Project> {
     body: JSON.stringify(project)
   });
   if (!res.ok) {
-    throw new Error("Erro ao criar projeto");
+    let errorMsg = "Erro ao criar projeto";
+    try {
+      const errData = await res.json();
+      if (errData?.error) errorMsg = errData.error;
+    } catch (_) {}
+    throw new Error(errorMsg);
   }
   return res.json();
 }
@@ -54,7 +59,12 @@ export async function updateProject(id: string, updates: Partial<Project>): Prom
     body: JSON.stringify(updates)
   });
   if (!res.ok) {
-    throw new Error("Erro ao atualizar projeto");
+    let errorMsg = "Erro ao atualizar projeto";
+    try {
+      const errData = await res.json();
+      if (errData?.error) errorMsg = errData.error;
+    } catch (_) {}
+    throw new Error(errorMsg);
   }
   return res.json();
 }

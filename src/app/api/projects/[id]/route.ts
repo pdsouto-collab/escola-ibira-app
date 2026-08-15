@@ -33,6 +33,12 @@ export async function GET(
   }
 }
 
+function parseSafeDate(val: any, fallback: Date | null = null): Date | null {
+    if (!val) return fallback;
+    const d = new Date(val);
+    return isNaN(d.getTime()) ? fallback : d;
+}
+
 export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -48,12 +54,12 @@ export async function PUT(
 
     const dataToUpdate: any = { ...body };
     
-    // Convert date strings to Date objects if needed
+    // Convert date strings to Date objects safely
     if (dataToUpdate.startDate) {
-      dataToUpdate.startDate = new Date(dataToUpdate.startDate);
+      dataToUpdate.startDate = parseSafeDate(dataToUpdate.startDate, new Date());
     }
-    if (dataToUpdate.endDate) {
-      dataToUpdate.endDate = new Date(dataToUpdate.endDate);
+    if (dataToUpdate.endDate !== undefined) {
+      dataToUpdate.endDate = parseSafeDate(dataToUpdate.endDate, null);
     }
     
     // Remove fields generated automatically
@@ -87,9 +93,9 @@ export async function PUT(
     });
 
     return NextResponse.json(updatedProject);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Erro ao atualizar projeto:", error);
-    return NextResponse.json({ error: "Erro interno do servidor" }, { status: 500 });
+    return NextResponse.json({ error: error?.message || "Erro interno do servidor ao atualizar projeto" }, { status: 500 });
   }
 }
 
