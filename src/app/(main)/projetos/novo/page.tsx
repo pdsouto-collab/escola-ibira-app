@@ -276,32 +276,36 @@ function NewProjectWizardContent() {
                 await updateProject(projectId, projectData);
                 toast.success("Projeto atualizado com sucesso!");
                 if (projectData.status !== "planning" && formData.isTemplate !== "create_template") {
-                    await NotificationService.addNotification({
+                    NotificationService.addNotification({
                         userId: currentUser?.id,
                         title: "Projeto Atualizado",
                         message: `O projeto "${formData.title}" foi modificado.`,
                         type: "info"
-                    });
+                    }).catch(() => {});
                 }
             } else {
                 await createProject(projectData);
                 toast.success("Projeto criado com sucesso!");
-                await NotificationService.addNotification({
+                NotificationService.addNotification({
                     userId: currentUser?.id,
                     title: "Novo Projeto",
                     message: `O projeto "${formData.title}" foi criado e está pronto.`,
                     type: "success"
-                });
+                }).catch(() => {});
             }
 
             if (formData.projectSchedule.length > 0) {
-                // Re-sync store in case classes changed after sessions were added
-                await persistSessionsToStore(formData.projectSchedule);
+                try {
+                    await persistSessionsToStore(formData.projectSchedule);
+                } catch (sessErr) {
+                    console.error("Aviso ao salvar sessões da agenda:", sessErr);
+                }
             }
 
             setCurrentStep(5);
-        } catch (err) {
-            toast.error("Erro ao salvar o projeto.");
+        } catch (err: any) {
+            console.error("Erro ao salvar projeto:", err);
+            toast.error(err?.message || "Erro ao salvar o projeto.");
         } finally {
             setIsSaving(false);
         }

@@ -20,39 +20,48 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-        const session = await getServerSessionOrJwt();
-        if (!session || !session.user || !session.user.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+    const session = await getServerSessionOrJwt();
+    if (!session || !session.user || !session.user.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
   try {
     const data = await req.json();
-    const newProject = await prisma.project.create({
-      data: {
-        id: data.id,
-        title: data.title,
-        description: data.description || "",
-        status: data.status || "draft",
-        startDate: data.startDate ? new Date(data.startDate) : new Date(),
-        endDate: data.endDate ? new Date(data.endDate) : null,
-        period: data.period,
-        type: data.type,
-        summary: data.summary,
-        objectives: data.objectives,
-        finalProduct: data.finalProduct,
-        guidingQuestion: data.guidingQuestion,
-        imageUrl: data.imageUrl,
-        photos: data.photos || [],
-        tags: data.tags || [],
-        bnccSkillIds: data.bnccSkillIds || [],
-        contentIds: data.contentIds || [],
-        students: data.students || [],
-        classes: data.classes || []
+    const projectId = data.id || crypto.randomUUID();
+
+    const projectPayload = {
+      title: data.title || "Novo Projeto",
+      description: data.description || "",
+      status: data.status || "draft",
+      startDate: data.startDate ? new Date(data.startDate) : new Date(),
+      endDate: data.endDate ? new Date(data.endDate) : null,
+      period: data.period || null,
+      type: data.type || "Project",
+      summary: data.summary || null,
+      objectives: data.objectives || null,
+      finalProduct: data.finalProduct || null,
+      guidingQuestion: data.guidingQuestion || null,
+      imageUrl: data.imageUrl || null,
+      photos: Array.isArray(data.photos) ? data.photos : [],
+      tags: Array.isArray(data.tags) ? data.tags : [],
+      bnccSkillIds: Array.isArray(data.bnccSkillIds) ? data.bnccSkillIds : [],
+      contentIds: Array.isArray(data.contentIds) ? data.contentIds : [],
+      students: Array.isArray(data.students) ? data.students : [],
+      classes: Array.isArray(data.classes) ? data.classes : []
+    };
+
+    const project = await prisma.project.upsert({
+      where: { id: projectId },
+      update: projectPayload,
+      create: {
+        id: projectId,
+        ...projectPayload
       }
     });
-    return NextResponse.json(newProject, { status: 201 });
+
+    return NextResponse.json(project, { status: 201 });
   } catch (error) {
-    console.error("Erro ao criar projeto:", error);
+    console.error("Erro ao criar/atualizar projeto:", error);
     return NextResponse.json({ error: "Erro interno do servidor" }, { status: 500 });
   }
 }
