@@ -1,0 +1,341 @@
+"use client";
+
+import { useState } from "react";
+import { format, startOfWeek, addDays, startOfMonth, endOfMonth, eachWeekOfInterval, isSameMonth, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { Menu } from "@/types/menu";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Printer, Download, Calendar, FileText, ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { SchoolLogo } from "@/components/ui/school-logo";
+
+export interface MenuGuidelinesData {
+    intro: string;
+    points: string[];
+    glutenNote: string;
+    farmNote: string;
+    footerNote: string;
+}
+
+export const DEFAULT_GUIDELINES: MenuGuidelinesData = {
+    intro: "Por meio de nosso cardápio, mantemos o compromisso de uma alimentação equilibrada e variada, respeitando as preferências das crianças e incluindo mais nutrientes às preparações.",
+    points: [
+        "Não utilizamos açúcar e derivados de leite em nossas preparações;",
+        "Temos dois dias sem carne, sempre objetivando ampliar a experiência alimentar das crianças;",
+        "Nossas preparações são assadas, grelhadas ou cozidas;",
+        "Priorizamos ingredientes da época;"
+    ],
+    glutenNote: "Obs: o glúten será utilizado pontualmente na preparação dos pães pelas crianças.",
+    farmNote: "Os itens marcados com o símbolo (•) são cultivados na escola.",
+    footerNote: "O cardápio está sujeito a alterações devido à disponibilidade e perecibilidade dos alimentos, sempre mantendo a qualidade nutricional."
+};
+
+interface MenuPrintDialogProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    menus: Menu[];
+    initialDate?: Date;
+    guidelines?: MenuGuidelinesData;
+}
+
+export function MenuPrintDialog({
+    open,
+    onOpenChange,
+    menus,
+    initialDate = new Date(),
+    guidelines = DEFAULT_GUIDELINES
+}: MenuPrintDialogProps) {
+    const [viewMode, setViewMode] = useState<"week" | "month">("week");
+    const [selectedDate, setSelectedDate] = useState<Date>(initialDate);
+
+    const handlePrint = () => {
+        window.print();
+    };
+
+    const getMenuForDate = (date: Date) => {
+        const dateStr = format(date, "yyyy-MM-dd");
+        return menus.find(m => m.date === dateStr);
+    };
+
+    // Calculate Week Days (Monday to Friday)
+    const currentWeekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
+    const weekDays = Array.from({ length: 5 }).map((_, i) => addDays(currentWeekStart, i));
+
+    // Calculate Weeks for the Selected Month
+    const monthStart = startOfMonth(selectedDate);
+    const monthEnd = endOfMonth(selectedDate);
+    const monthWeeksStarts = eachWeekOfInterval(
+        { start: monthStart, end: monthEnd },
+        { weekStartsOn: 1 }
+    );
+
+    const monthWeeks = monthWeeksStarts.map(wStart => {
+        return Array.from({ length: 5 }).map((_, i) => addDays(wStart, i));
+    });
+
+    const navigate = (direction: "prev" | "next") => {
+        if (viewMode === "week") {
+            setSelectedDate(prev => addDays(prev, direction === "next" ? 7 : -7));
+        } else {
+            const nextMonth = new Date(selectedDate);
+            nextMonth.setMonth(nextMonth.getMonth() + (direction === "next" ? 1 : -1));
+            setSelectedDate(nextMonth);
+        }
+    };
+
+    return (
+        <>
+            <Dialog open={open} onOpenChange={onOpenChange}>
+                <DialogContent className="max-w-5xl max-h-[92vh] flex flex-col p-0 overflow-hidden bg-slate-100">
+                    <DialogHeader className="p-4 bg-white border-b flex flex-row items-center justify-between no-print">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-emerald-100 text-emerald-700 rounded-xl">
+                                <Printer className="h-5 w-5" />
+                            </div>
+                            <div>
+                                <DialogTitle className="text-lg font-bold text-slate-800">
+                                    Visualizar e Imprimir Cardápio (A4)
+                                </DialogTitle>
+                                <p className="text-xs text-slate-500">
+                                    Enquadrado para impressão em papel A4 e exportação em PDF com logotipo da Trilha Ibirá.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Mode Selector & Controls */}
+                        <div className="flex items-center gap-2">
+                            <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
+                                <button
+                                    type="button"
+                                    onClick={() => setViewMode("week")}
+                                    className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${viewMode === "week" ? "bg-white text-emerald-700 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
+                                >
+                                    Semana
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setViewMode("month")}
+                                    className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${viewMode === "month" ? "bg-white text-emerald-700 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
+                                >
+                                    Mês Inteiro
+                                </button>
+                            </div>
+
+                            <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg px-2 py-1">
+                                <button type="button" onClick={() => navigate("prev")} className="p-1 hover:bg-slate-100 rounded text-slate-600">
+                                    <ChevronLeft className="h-4 w-4" />
+                                </button>
+                                <span className="text-xs font-bold text-slate-700 min-w-[120px] text-center capitalize">
+                                    {viewMode === "week"
+                                        ? `${format(currentWeekStart, "dd/MM")} a ${format(addDays(currentWeekStart, 4), "dd/MM/yyyy")}`
+                                        : format(selectedDate, "MMMM 'de' yyyy", { locale: ptBR })}
+                                </span>
+                                <button type="button" onClick={() => navigate("next")} className="p-1 hover:bg-slate-100 rounded text-slate-600">
+                                    <ChevronRight className="h-4 w-4" />
+                                </button>
+                            </div>
+                        </div>
+                    </DialogHeader>
+
+                    {/* Scrollable Printable Document Container */}
+                    <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex justify-center">
+                        <div id="printable-cardapio" className="w-full max-w-[1000px] space-y-8">
+                            {viewMode === "week" ? (
+                                <PrintableWeekPage
+                                    weekDays={weekDays}
+                                    getMenuForDate={getMenuForDate}
+                                    guidelines={guidelines}
+                                    weekStart={currentWeekStart}
+                                />
+                            ) : (
+                                monthWeeks.map((mWeekDays, idx) => (
+                                    <div key={idx} className="print-page-break mb-8">
+                                        <PrintableWeekPage
+                                            weekDays={mWeekDays}
+                                            getMenuForDate={getMenuForDate}
+                                            guidelines={idx === monthWeeks.length - 1 ? guidelines : { ...guidelines, intro: "" }}
+                                            weekStart={mWeekDays[0]}
+                                            monthContext={format(selectedDate, "MMMM 'de' yyyy", { locale: ptBR })}
+                                            weekNumber={idx + 1}
+                                        />
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+
+                    <DialogFooter className="p-4 bg-white border-t flex flex-row items-center justify-between no-print">
+                        <Button variant="outline" onClick={() => onOpenChange(false)}>
+                            Fechar
+                        </Button>
+                        <div className="flex gap-2">
+                            <Button onClick={handlePrint} className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2">
+                                <Printer className="h-4 w-4" />
+                                Imprimir / Salvar PDF (A4)
+                            </Button>
+                        </div>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Print specific CSS rules */}
+            <style jsx global>{`
+                @media print {
+                    @page {
+                        size: A4 landscape;
+                        margin: 8mm;
+                    }
+                    body {
+                        background: #ffffff !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+                    .no-print {
+                        display: none !important;
+                    }
+                    /* Hide everything except printable container */
+                    body > *:not(#printable-cardapio-portal) {
+                        /* In case modal renders inside portal */
+                    }
+                    .print-page-break {
+                        page-break-after: always !important;
+                        break-after: page !important;
+                    }
+                    .a4-print-sheet {
+                        box-shadow: none !important;
+                        border: 1px solid #cbd5e1 !important;
+                        padding: 12px !important;
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        margin: 0 !important;
+                        page-break-inside: avoid !important;
+                    }
+                }
+            `}</style>
+        </>
+    );
+}
+
+function PrintableWeekPage({
+    weekDays,
+    getMenuForDate,
+    guidelines,
+    weekStart,
+    monthContext,
+    weekNumber
+}: {
+    weekDays: Date[];
+    getMenuForDate: (date: Date) => Menu | undefined;
+    guidelines: MenuGuidelinesData;
+    weekStart: Date;
+    monthContext?: string;
+    weekNumber?: number;
+}) {
+    const mealTitles = ["Lanche da Manhã", "Almoço", "Lanche da Tarde"];
+
+    return (
+        <div className="a4-print-sheet bg-white rounded-xl border border-slate-300 shadow-md p-6 text-slate-900 flex flex-col justify-between">
+            {/* Header with Logo */}
+            <div className="border-b-2 border-emerald-600 pb-3 mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <SchoolLogo className="h-12 w-auto" />
+                    <div>
+                        <h1 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                            ESCOLA TRILHA IBIRÁ
+                            <span className="text-xs bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full uppercase">
+                                Nutrição Escolar
+                            </span>
+                        </h1>
+                        <p className="text-xs text-slate-600 font-medium">
+                            Cardápio Semanal • {monthContext ? `${monthContext.toUpperCase()} (Semana ${weekNumber})` : "Alimentação Saudável e Consciente"}
+                        </p>
+                    </div>
+                </div>
+
+                <div className="text-right">
+                    <span className="text-[11px] font-bold text-slate-400 block uppercase">Período</span>
+                    <span className="text-sm font-extrabold text-emerald-800">
+                        {format(weekDays[0], "dd/MM")} a {format(weekDays[4], "dd/MM/yyyy")}
+                    </span>
+                </div>
+            </div>
+
+            {/* Main Menu Grid / Table (5 Days: Seg a Sex) */}
+            <div className="grid grid-cols-5 gap-2.5 mb-4">
+                {weekDays.map((day, idx) => {
+                    const menu = getMenuForDate(day);
+                    const isMonFri = format(day, "EEEE", { locale: ptBR });
+
+                    return (
+                        <div key={idx} className="border border-slate-200 rounded-lg overflow-hidden bg-white flex flex-col">
+                            {/* Day Header */}
+                            <div className="bg-emerald-50 border-b border-emerald-100 py-1.5 px-2 text-center">
+                                <span className="text-[11px] font-extrabold text-emerald-900 uppercase block truncate">
+                                    {isMonFri}
+                                </span>
+                                <span className="text-xs font-bold text-emerald-700">
+                                    {format(day, "dd/MM")}
+                                </span>
+                            </div>
+
+                            {/* Meals list */}
+                            <div className="p-2 space-y-2.5 flex-1 flex flex-col justify-between text-xs bg-slate-50/40">
+                                {mealTitles.map((mealType, mIdx) => {
+                                    const item = menu?.items?.find(it => it.title.toLowerCase().includes(mealType.toLowerCase()) || mealType.toLowerCase().includes(it.title.toLowerCase()))
+                                        || (menu?.items && menu.items[mIdx]);
+
+                                    return (
+                                        <div key={mIdx} className="bg-white p-2 rounded border border-slate-100 shadow-2xs">
+                                            <div className="flex items-center justify-between mb-1 pb-0.5 border-b border-slate-100">
+                                                <span className="font-extrabold text-[10px] text-emerald-800 uppercase tracking-tight">
+                                                    {mealType}
+                                                </span>
+                                                {item?.time && (
+                                                    <span className="text-[9px] font-semibold text-slate-400">
+                                                        {item.time}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="text-[10.5px] text-slate-700 leading-snug whitespace-pre-line break-words min-h-[28px]">
+                                                {item?.description?.trim() || <span className="text-slate-300 italic">Preparações do dia</span>}
+                                            </p>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* Descriptive Guidelines Footer (Excel Reference) */}
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-[10px] text-slate-700 space-y-1.5 leading-relaxed">
+                {guidelines.intro && (
+                    <p className="font-medium text-slate-800 border-b border-slate-200 pb-1">
+                        {guidelines.intro}
+                    </p>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-0.5 pt-0.5">
+                    <div>
+                        <span className="font-bold text-emerald-800 block mb-0.5 uppercase text-[9px]">
+                            Pontos importantes de nosso cardápio:
+                        </span>
+                        <ul className="list-disc pl-3 space-y-0.5 text-slate-600">
+                            {guidelines.points.map((pt, pIdx) => (
+                                <li key={pIdx}>{pt}</li>
+                            ))}
+                        </ul>
+                    </div>
+                    <div className="space-y-1 text-slate-600 border-t sm:border-t-0 sm:border-l border-slate-200 sm:pl-3 pt-1 sm:pt-0">
+                        <p className="font-medium text-slate-700">{guidelines.glutenNote}</p>
+                        <p className="font-medium text-emerald-700">{guidelines.farmNote}</p>
+                        <p className="italic text-[9.5px] text-slate-500 pt-0.5">{guidelines.footerNote}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}

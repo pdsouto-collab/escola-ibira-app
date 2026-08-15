@@ -8,7 +8,7 @@ import { Menu } from "@/types/menu";
 import { menuService } from "@/services/menu.service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Utensils, Edit, Copy, ChevronLeft, ChevronRight, Apple, MoreVertical, Calendar } from "lucide-react";
+import { Utensils, Edit, Copy, ChevronLeft, ChevronRight, Apple, MoreVertical, Calendar, Printer, FileText } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,8 @@ import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useSession } from "next-auth/react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { MenuPrintDialog, DEFAULT_GUIDELINES, MenuGuidelinesData } from "./menu-print-dialog";
+import { MenuGuidelinesCard } from "./menu-guidelines-card";
 
 
 export function MenuWeekView() {
@@ -27,6 +29,24 @@ export function MenuWeekView() {
 
     const [menus, setMenus] = useState<Menu[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+
+    const [guidelines, setGuidelines] = useState<MenuGuidelinesData>(() => {
+        if (typeof window !== "undefined") {
+            const saved = localStorage.getItem("menu_nutritional_guidelines");
+            if (saved) {
+                try { return JSON.parse(saved); } catch (e) {}
+            }
+        }
+        return DEFAULT_GUIDELINES;
+    });
+    const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
+
+    const handleUpdateGuidelines = (newG: MenuGuidelinesData) => {
+        setGuidelines(newG);
+        if (typeof window !== "undefined") {
+            localStorage.setItem("menu_nutritional_guidelines", JSON.stringify(newG));
+        }
+    };
 
     const loadMenus = async () => {
         try {
@@ -203,12 +223,22 @@ export function MenuWeekView() {
                     </Button>
                 </div>
 
-                {isNutritionist && (
-                    <Button variant="outline" onClick={handleCopyPreviousWeek} className="flex items-center gap-2">
-                        <Copy className="h-4 w-4" />
-                        Copiar da semana anterior
+                <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                        variant="outline"
+                        onClick={() => setIsPrintDialogOpen(true)}
+                        className="bg-white hover:bg-emerald-50 text-emerald-800 border-emerald-200 gap-2 shadow-xs font-semibold text-xs h-9"
+                    >
+                        <Printer className="h-4 w-4 text-emerald-600" />
+                        Visualizar / Imprimir PDF (A4)
                     </Button>
-                )}
+                    {isNutritionist && (
+                        <Button variant="outline" onClick={handleCopyPreviousWeek} className="flex items-center gap-2 text-xs h-9">
+                            <Copy className="h-4 w-4" />
+                            Copiar da semana anterior
+                        </Button>
+                    )}
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4 opacity-100 transition-opacity" style={{ opacity: isLoading ? 0.6 : 1 }}>
@@ -352,6 +382,22 @@ export function MenuWeekView() {
                 title="Limpar Cardápio"
                 description="Tem certeza que deseja apagar o cardápio deste dia? Esta ação não pode ser desfeita."
                 onConfirm={confirmClearAction}
+            />
+
+            {/* Pontos Importantes e Diretrizes Nutricionais */}
+            <MenuGuidelinesCard
+                guidelines={guidelines}
+                onUpdateGuidelines={handleUpdateGuidelines}
+                canEdit={isNutritionist}
+            />
+
+            {/* Modal de Impressão e Exportação em PDF A4 */}
+            <MenuPrintDialog
+                open={isPrintDialogOpen}
+                onOpenChange={setIsPrintDialogOpen}
+                menus={menus}
+                initialDate={currentDate}
+                guidelines={guidelines}
             />
         </div>
     );
