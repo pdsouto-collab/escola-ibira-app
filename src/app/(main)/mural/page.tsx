@@ -2,7 +2,7 @@
 
 
 
-import { Plus, Calendar, MapPin, MessageCircle, User, Edit2, Check, X, Users, MoreVertical, Trash2, Pencil, Clock, Loader2 } from "lucide-react";
+import { Plus, Calendar, MapPin, MessageCircle, User, Edit2, Check, X, Users, MoreVertical, Trash2, Pencil, Clock, Loader2, Maximize2, Sliders, Crop, Move, Sparkles } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
@@ -11,7 +11,7 @@ import { MuralEvent } from "@/types/mural";
 import { SchoolClass } from "@/types/school-class";
 import { getClasses } from "@/services/school-class.service";
 import { useSession } from "next-auth/react";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 
 import {
     Select,
@@ -27,6 +27,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 export default function MuralPage() {
     const { data: session } = useSession();
@@ -45,6 +46,16 @@ export default function MuralPage() {
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submittingCommentId, setSubmittingCommentId] = useState<string | null>(null);
+    const [selectedLightboxImage, setSelectedLightboxImage] = useState<string | null>(null);
+
+    // Framing / Crop Tool State
+    const [framingModalOpen, setFramingModalOpen] = useState(false);
+    const [rawImageToFrame, setRawImageToFrame] = useState<string | null>(null);
+    const [framingMode, setFramingMode] = useState<'cover' | 'contain'>('cover');
+    const [framingPosY, setFramingPosY] = useState<number>(50); // 0 (top) to 100 (bottom)
+    const [framingPosX, setFramingPosX] = useState<number>(50); // 0 (left) to 100 (right)
+    const [framingZoom, setFramingZoom] = useState<number>(1.0); // 1.0 to 2.5
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Fetching Data
     const fetchMuralEvents = useCallback(async (classId?: string) => {
@@ -95,36 +106,99 @@ export default function MuralPage() {
         setShowNewEventForm(false);
     };
 
-    // Helper function to compress images to ensure lightweight payloads
-    const compressImage = (dataUrl: string, maxWidth = 1200, maxHeight = 1200, quality = 0.7): Promise<string> => {
+    // Helper function to compress and frame images to ensure perfect alignment & lightweight payloads
+    const generateFramedImage = (
+        dataUrl: string,
+        posX: number,
+        posY: number,
+        zoom: number,
+        mode: 'cover' | 'contain'
+    ): Promise<string> => {
         return new Promise((resolve) => {
             const img = new window.Image();
             img.onload = () => {
                 const canvas = document.createElement("canvas");
-                let width = img.width;
-                let height = img.height;
-
-                if (width > height) {
-                    if (width > maxWidth) {
-                        height *= maxWidth / width;
-                        width = maxWidth;
-                    }
-                } else {
-                    if (height > maxHeight) {
-                        width *= maxHeight / height;
-                        height = maxHeight;
-                    }
+                const targetW = 1280;
+                const targetH = 720;
+                canvas.width = targetW;
+                canvas.height = targetH;
+                const ctx = canvas.getContext("2d");
+                if (!ctx) {
+                    resolve(dataUrl);
+                    return;
                 }
 
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext("2d");
-                ctx?.drawImage(img, 0, 0, width, height);
-                resolve(canvas.toDataURL("image/jpeg", quality));
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = "high";
+
+                if (mode === 'contain') {
+                    // Draw blurred cover background
+                    ctx.filter = "blur(18px) brightness(0.7)";
+                    ctx.drawImage(img, 0, 0, targetW, targetH);
+                    ctx.filter = "none";
+
+                    // Calculate contain dimensions
+                    const scale = Math.min(targetW / img.width, targetH / img.height);
+                    const drawW = img.width * scale;
+                    const drawH = img.height * scale;
+                    const drawX = (targetW - drawW) / 2;
+                    const drawY = (targetH - drawH) / 2;
+                    ctx.drawImage(img, drawX, drawY, drawW, drawH);
+                } else {
+                    // Cover mode with custom framing
+                    const targetRatio = targetW / targetH; // 1.777
+                    let baseCropW = img.width;
+                    let baseCropH = img.height;
+
+                    if (img.width / img.height > targetRatio) {
+                        baseCropH = img.height / zoom;
+                        baseCropW = baseCropH * targetRatio;
+                    } else {
+                        baseCropW = img.width / zoom;
+                        baseCropH = baseCropW / targetRatio;
+                    }
+
+                    const maxOffsetX = Math.max(0, img.width - baseCropW);
+                    const maxOffsetY = Math.max(0, img.height - baseCropH);
+                    const cropX = maxOffsetX * (posX / 100);
+                    const cropY = maxOffsetY * (posY / 100);
+
+                    ctx.drawImage(img, cropX, cropY, baseCropW, baseCropH, 0, 0, targetW, targetH);
+                }
+
+                resolve(canvas.toDataURL("image/jpeg", 0.88));
             };
             img.onerror = () => resolve(dataUrl);
             img.src = dataUrl;
         });
+    };
+
+    const handleApplyFraming = async () => {
+        if (!rawImageToFrame) return;
+        try {
+            const framed = await generateFramedImage(
+                rawImageToFrame,
+                framingPosX,
+                framingPosY,
+                framingZoom,
+                framingMode
+            );
+            setNewEvent(prev => ({ ...prev, image: framed }));
+            setFramingModalOpen(false);
+            toast.success("Enquadramento da foto aplicado!");
+        } catch (err) {
+            console.error("Erro ao aplicar enquadramento:", err);
+            toast.error("Não foi possível ajustar a imagem.");
+        }
+    };
+
+    const handleSelectRawImage = (dataUrl: string) => {
+        setRawImageToFrame(dataUrl);
+        setFramingPosY(50);
+        setFramingPosX(50);
+        setFramingZoom(1.0);
+        setFramingMode('cover');
+        setFramingModalOpen(true);
     };
 
     const handleCreateEvent = async () => {
@@ -134,22 +208,13 @@ export default function MuralPage() {
         }
 
         setIsSubmitting(true);
-        let finalImage = newEvent.image;
-        if (finalImage && finalImage.startsWith("data:image") && finalImage.length > 200000) {
-            try {
-                finalImage = await compressImage(finalImage);
-            } catch (err) {
-                console.warn("Falha ao comprimir imagem:", err);
-            }
-        }
-
         const eventDate = `${newEvent.date}T${newEvent.time || "00:00"}`;
         const eventData = {
             title: newEvent.title,
             description: newEvent.description || "",
             date: eventDate,
             location: newEvent.location || "",
-            image: finalImage || "",
+            image: newEvent.image || "",
             classId: newEvent.classId === "all" ? null : newEvent.classId,
             author: currentUser.name || "Administração",
             type: "event" as const,
@@ -354,54 +419,85 @@ export default function MuralPage() {
                             </div>
                         </div>
                         <div className="grid gap-2">
-                            <label className="text-sm font-medium">Imagem (Opcional)</label>
+                            <label className="text-sm font-medium">Imagem de Capa do Evento (Opcional)</label>
                             <div className="flex gap-2">
                                 <input
                                     type="text"
-                                    value={newEvent.image}
-                                    onChange={(e) => setNewEvent({ ...newEvent, image: e.target.value })}
+                                    value={newEvent.image.startsWith("data:") ? "(Foto personalizada carregada)" : newEvent.image}
+                                    onChange={(e) => {
+                                        if (!e.target.value.startsWith("(Foto")) {
+                                            setNewEvent({ ...newEvent, image: e.target.value });
+                                        }
+                                    }}
                                     className="flex-1 rounded-md border p-2 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                                    placeholder="Faça upload da imagem..."
+                                    placeholder="Cole a URL ou envie uma foto..."
                                 />
-                                <div className="relative">
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={(e) => {
-                                            const file = e.target.files?.[0];
-                                            if (file) {
-                                                const reader = new FileReader();
-                                                reader.onload = async (ev) => {
-                                                    const raw = ev.target?.result as string;
-                                                    if (raw) {
-                                                        const compressed = await compressImage(raw);
-                                                        setNewEvent(prev => ({ ...prev, image: compressed }));
-                                                    }
-                                                };
-                                                reader.readAsDataURL(file);
-                                            }
-                                        }}
-                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                    />
-                                    <button className="h-full px-4 py-2 bg-slate-100 border rounded-md text-sm font-medium text-slate-700 hover:bg-slate-200 transition-colors flex items-center gap-2">
-                                        <div className="h-4 w-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin hidden" />
-                                        Upload
-                                    </button>
-                                </div>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    ref={fileInputRef}
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                            const reader = new FileReader();
+                                            reader.onload = (ev) => {
+                                                const raw = ev.target?.result as string;
+                                                if (raw) {
+                                                    handleSelectRawImage(raw);
+                                                }
+                                            };
+                                            reader.readAsDataURL(file);
+                                            e.target.value = "";
+                                        }
+                                    }}
+                                    className="hidden"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="px-4 py-2 bg-slate-100 border rounded-md text-sm font-medium text-slate-700 hover:bg-slate-200 transition-colors flex items-center gap-1.5"
+                                >
+                                    <Crop className="h-4 w-4 text-primary" />
+                                    Enviar Foto
+                                </button>
                             </div>
+
                             {newEvent.image && (
-                                <div className="mt-2 relative h-48 w-full rounded-lg overflow-hidden bg-slate-50 border shadow-sm group/image">
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img src={newEvent.image} alt="Preview" className="h-full w-full object-cover" />
-                                    <button
-                                        onClick={() => setNewEvent({ ...newEvent, image: "" })}
-                                        className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-full hover:bg-red-500 transition-colors backdrop-blur-sm opacity-0 group-hover/image:opacity-100"
-                                    >
-                                        <X className="h-4 w-4" />
-                                    </button>
+                                <div className="mt-2 space-y-2">
+                                    <div className="relative aspect-[16/9] sm:aspect-[21/9] max-h-56 w-full rounded-lg overflow-hidden bg-slate-900 border shadow-sm group/image">
+                                        {/* Blurred backdrop */}
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img src={newEvent.image} alt="" className="absolute inset-0 w-full h-full object-cover blur-sm opacity-40" />
+                                        {/* Sharp image */}
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img src={newEvent.image} alt="Preview" className="relative h-full w-full object-cover" />
+                                        
+                                        <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover/image:opacity-100 transition-opacity">
+                                            <button
+                                                type="button"
+                                                onClick={() => handleSelectRawImage(newEvent.image)}
+                                                className="p-1.5 bg-black/70 text-white rounded-md hover:bg-black/90 transition-colors backdrop-blur-sm flex items-center gap-1 text-xs px-2.5 font-medium shadow-md"
+                                                title="Ajustar Enquadramento"
+                                            >
+                                                <Crop className="h-3.5 w-3.5" /> Reajustar
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setNewEvent({ ...newEvent, image: "" })}
+                                                className="p-1.5 bg-black/70 text-white rounded-md hover:bg-red-600 transition-colors backdrop-blur-sm shadow-md"
+                                                title="Remover foto"
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-slate-500">
+                                        💡 Dica: Clique em <strong>Reajustar</strong> para escolher a área visível (cima, centro, baixo, zoom) de fotos verticais ou horizontais.
+                                    </p>
                                 </div>
                             )}
                         </div>
+
                         <div className="flex gap-2 pt-2">
                             <button
                                 onClick={handleCreateEvent}
@@ -447,10 +543,10 @@ export default function MuralPage() {
                         <div key={event.id} className="rounded-xl border bg-white shadow-sm overflow-hidden relative group transition-all hover:shadow-md">
                             {/* RBAC: Only allowed roles can edit/delete */}
                             {["admin", "director", "teacher"].includes(currentUser?.role || "") && (
-                                <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="absolute top-4 right-4 z-20">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <button className="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm border hover:bg-white text-slate-600 transition-colors">
+                                            <button className="p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-md border hover:bg-white text-slate-700 transition-colors">
                                                 <MoreVertical className="h-4 w-4" />
                                             </button>
                                         </DropdownMenuTrigger>
@@ -469,9 +565,22 @@ export default function MuralPage() {
                             )}
 
                             {event.image && (
-                                <div className="h-48 w-full overflow-hidden bg-slate-100">
+                                <div 
+                                    onClick={() => setSelectedLightboxImage(event.image)}
+                                    className="relative w-full aspect-[16/9] sm:aspect-[21/9] max-h-[360px] overflow-hidden bg-slate-950 cursor-pointer group/cardimg select-none"
+                                >
+                                    {/* Blurred background */}
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img src={event.image} alt={event.title} className="h-full w-full object-cover" />
+                                    <img src={event.image} alt="" className="absolute inset-0 w-full h-full object-cover blur-md opacity-35 scale-105" />
+                                    {/* Crisp main image */}
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={event.image} alt={event.title} className="relative w-full h-full object-cover transition-transform duration-300 group-hover/cardimg:scale-[1.02]" />
+                                    
+                                    <div className="absolute inset-0 bg-black/0 group-hover/cardimg:bg-black/20 transition-colors flex items-center justify-center pointer-events-none">
+                                        <span className="opacity-0 group-hover/cardimg:opacity-100 bg-black/75 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-xs transition-opacity flex items-center gap-1.5 shadow-lg">
+                                            <Maximize2 className="w-3.5 h-3.5" /> Ampliar foto
+                                        </span>
+                                    </div>
                                 </div>
                             )}
                             <div className="p-6">
@@ -545,6 +654,151 @@ export default function MuralPage() {
                     ))
                 )}
             </div>
+
+            {/* Modal de Enquadramento Interativo */}
+            <Dialog open={framingModalOpen} onOpenChange={setFramingModalOpen}>
+                <DialogContent className="max-w-2xl bg-white p-6 rounded-2xl shadow-xl">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-slate-900 text-lg">
+                            <Crop className="h-5 w-5 text-primary" />
+                            Ajustar Enquadramento da Foto
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    {rawImageToFrame && (
+                        <div className="space-y-4 pt-2">
+                            {/* Live Preview Container 16:9 */}
+                            <div className="relative aspect-[16/9] w-full rounded-xl overflow-hidden bg-slate-950 border border-slate-200 shadow-inner">
+                                {framingMode === 'contain' ? (
+                                    <>
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img src={rawImageToFrame} alt="" className="absolute inset-0 w-full h-full object-cover blur-md opacity-40" />
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img src={rawImageToFrame} alt="Preview" className="relative w-full h-full object-contain" />
+                                    </>
+                                ) : (
+                                    /* eslint-disable-next-line @next/next/no-img-element */
+                                    <img
+                                        src={rawImageToFrame}
+                                        alt="Preview"
+                                        style={{
+                                            objectPosition: `${framingPosX}% ${framingPosY}%`,
+                                            transform: `scale(${framingZoom})`,
+                                            transformOrigin: `${framingPosX}% ${framingPosY}%`,
+                                        }}
+                                        className="w-full h-full object-cover transition-all duration-75"
+                                    />
+                                )}
+                            </div>
+
+                            {/* Mode Selection */}
+                            <div className="flex gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setFramingMode('cover')}
+                                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold border transition-all ${framingMode === 'cover' ? 'bg-primary/10 border-primary text-primary' : 'bg-slate-50 border-slate-200 text-slate-600'}`}
+                                >
+                                    Capa Panorâmica (16:9)
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setFramingMode('contain')}
+                                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold border transition-all ${framingMode === 'contain' ? 'bg-primary/10 border-primary text-primary' : 'bg-slate-50 border-slate-200 text-slate-600'}`}
+                                >
+                                    Foto Completa (Sem Cortes)
+                                </button>
+                            </div>
+
+                            {framingMode === 'cover' && (
+                                <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                    <div className="space-y-1.5">
+                                        <div className="flex justify-between items-center text-xs font-semibold text-slate-700">
+                                            <span>Posição Vertical (Cima / Baixo)</span>
+                                            <div className="flex gap-1">
+                                                <button type="button" onClick={() => setFramingPosY(15)} className="px-2 py-0.5 text-[10px] bg-white border rounded hover:bg-slate-100">Cima (Rosto)</button>
+                                                <button type="button" onClick={() => setFramingPosY(50)} className="px-2 py-0.5 text-[10px] bg-white border rounded hover:bg-slate-100">Centro</button>
+                                                <button type="button" onClick={() => setFramingPosY(85)} className="px-2 py-0.5 text-[10px] bg-white border rounded hover:bg-slate-100">Baixo</button>
+                                            </div>
+                                        </div>
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max="100"
+                                            value={framingPosY}
+                                            onChange={(e) => setFramingPosY(Number(e.target.value))}
+                                            className="w-full accent-primary cursor-pointer"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <div className="flex justify-between items-center text-xs font-semibold text-slate-700">
+                                            <span>Posição Horizontal (Esquerda / Direita)</span>
+                                            <span className="text-[10px] text-slate-500">{framingPosX}%</span>
+                                        </div>
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max="100"
+                                            value={framingPosX}
+                                            onChange={(e) => setFramingPosX(Number(e.target.value))}
+                                            className="w-full accent-primary cursor-pointer"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <div className="flex justify-between items-center text-xs font-semibold text-slate-700">
+                                            <span>Zoom / Escala</span>
+                                            <span className="text-[10px] text-slate-500">{framingZoom.toFixed(1)}x</span>
+                                        </div>
+                                        <input
+                                            type="range"
+                                            min="1.0"
+                                            max="2.5"
+                                            step="0.05"
+                                            value={framingZoom}
+                                            onChange={(e) => setFramingZoom(Number(e.target.value))}
+                                            className="w-full accent-primary cursor-pointer"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    <DialogFooter className="flex justify-end gap-2 pt-2">
+                        <button
+                            type="button"
+                            onClick={() => setFramingModalOpen(false)}
+                            className="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg text-sm hover:bg-slate-50"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleApplyFraming}
+                            className="px-4 py-2 bg-primary text-white font-medium rounded-lg text-sm hover:bg-primary/90 shadow-sm"
+                        >
+                            Aplicar Enquadramento
+                        </button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Modal Lightbox Foto Ampliada */}
+            <Dialog open={!!selectedLightboxImage} onOpenChange={(open) => !open && setSelectedLightboxImage(null)}>
+                <DialogContent className="max-w-4xl p-2 bg-black/95 border-none shadow-2xl flex flex-col items-center justify-center">
+                    <div className="relative w-full max-h-[85vh] flex items-center justify-center overflow-hidden">
+                        {selectedLightboxImage && (
+                            /* eslint-disable-next-line @next/next/no-img-element */
+                            <img 
+                                src={selectedLightboxImage} 
+                                alt="Evento ampliado" 
+                                className="max-h-[80vh] w-auto max-w-full object-contain rounded-lg shadow-2xl" 
+                            />
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             <ConfirmDialog
                 open={!!confirmDeleteEventId}
