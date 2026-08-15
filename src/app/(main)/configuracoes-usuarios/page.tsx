@@ -13,6 +13,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "sonner";
 import { User as UserType } from "@/types/user";
 import { Student } from "@/types/student";
+import { formatPhone } from "@/lib/utils";
 
 export default function UsersSettingsPage() {
     const [users, setUsers] = useState<UserType[]>([]);
@@ -71,7 +72,7 @@ export default function UsersSettingsPage() {
                 name: user.name || "",
                 email: user.email || "",
                 cpf: user.cpf || "",
-                phone: user.phone || "",
+                phone: formatPhone(user.phone || ""),
                 birthDate: user.birthDate ? new Date(user.birthDate).toISOString().split('T')[0] : "",
                 address: user.address || "",
                 password: "", // In edit mode, leave blank to not change
@@ -277,7 +278,7 @@ export default function UsersSettingsPage() {
                             </div>
                             <div className="space-y-1">
                                 <label className="text-xs font-semibold text-slate-600 uppercase ml-1">Telefone</label>
-                                <Input value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} placeholder="(00) 00000-0000" />
+                                <Input value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: formatPhone(e.target.value) })} placeholder="(00) 00000-0000" />
                             </div>
 
                             <div className="space-y-1">

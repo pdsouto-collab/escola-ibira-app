@@ -56,13 +56,18 @@ const emptyTeacher: Omit<User, "id"> = {
     password: "",
 };
 
+import { formatPhone } from "@/lib/utils";
+
 export function TeacherDialog({ open, onOpenChange, user, classes, students, onSave, isLoading = false }: TeacherDialogProps) {
     const [formData, setFormData] = useState<Partial<User>>(emptyTeacher);
     const [activeTab, setActiveTab] = useState("personal");
 
     useEffect(() => {
         if (user) {
-            setFormData({ ...user });
+            setFormData({
+                ...user,
+                phone: formatPhone(user.phone || "")
+            });
         } else {
             setFormData(emptyTeacher);
         }
@@ -184,7 +189,7 @@ export function TeacherDialog({ open, onOpenChange, user, classes, students, onS
                                             <Input
                                                 id="phone"
                                                 value={formData.phone || ""}
-                                                onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                                onChange={e => setFormData({ ...formData, phone: formatPhone(e.target.value) })}
                                                 placeholder="(11) 99999-9999"
                                             />
                                         </div>

@@ -8,6 +8,7 @@ import { Bell, Moon, User, Lock, Save, CheckCircle2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { updateUser as updateUserService } from "@/services/user.service";
+import { formatPhone } from "@/lib/utils";
 
 export default function SettingsPage() {
     const { data: session, update } = useSession();
@@ -40,7 +41,7 @@ export default function SettingsPage() {
             console.log("SettingsPage - Usuário Atual:", currentUser);
             setName(currentUser.name || "");
             setEmail(currentUser.email || "");
-            setPhone(currentUser.phone || "");
+            setPhone(formatPhone(currentUser.phone || ""));
         }
     }, [currentUser]);
 
@@ -150,7 +151,7 @@ export default function SettingsPage() {
                                 <label className="text-sm font-semibold text-slate-700">Telefone para Contato</label>
                                 <Input
                                     value={phone}
-                                    onChange={(e) => setPhone(e.target.value)}
+                                    onChange={(e) => setPhone(formatPhone(e.target.value))}
                                     placeholder="(11) 99999-9999"
                                     className="focus-visible:ring-[#2E798A]"
                                 />

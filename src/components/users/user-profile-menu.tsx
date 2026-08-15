@@ -56,6 +56,8 @@ const processProfileAvatar = (dataUrl: string, size = 512): Promise<string> => {
     });
 };
 
+import { formatPhone } from "@/lib/utils";
+
 export function UserProfileMenu() {
     const { data: session, update } = useSession();
     const currentUser = session?.user as any;
@@ -81,7 +83,7 @@ export function UserProfileMenu() {
                 name: currentUser.name?.split(" ")[0] || "",
                 lastName: currentUser.name?.split(" ").slice(1).join(" ") || "",
                 email: currentUser.email || "",
-                phone: currentUser.phone || "",
+                phone: formatPhone(currentUser.phone || ""),
                 avatar: currentUser.avatar || "",
             });
         }
@@ -292,8 +294,9 @@ export function UserProfileMenu() {
                             <Label htmlFor="phone">Telefone</Label>
                             <Input
                                 id="phone"
+                                placeholder="(11) 99999-9999"
                                 value={formData.phone}
-                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                onChange={(e) => setFormData({ ...formData, phone: formatPhone(e.target.value) })}
                             />
                         </div>
                     </div>

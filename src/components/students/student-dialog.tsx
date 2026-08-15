@@ -34,6 +34,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { Upload, AlertCircle, Check, FileText, Users } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { formatPhone } from "@/lib/utils";
 
 interface StudentDialogProps {
     open: boolean;
@@ -86,22 +87,26 @@ export function StudentDialog({ open, onOpenChange, student, classes, onSave }: 
     const updateGuardian = (index: number, field: keyof StudentGuardian, value: string) => {
         const newGuardians = [...(formData.guardians || [])];
         if (!newGuardians[index]) newGuardians[index] = { name: "", kinship: "", phone: "" };
-        newGuardians[index] = { ...newGuardians[index], [field]: value };
+        const finalVal = field === "phone" ? formatPhone(value) : value;
+        newGuardians[index] = { ...newGuardians[index], [field]: finalVal };
         setFormData({ ...formData, guardians: newGuardians });
     };
 
     const updateFinancial = (field: keyof StudentFinancialResponsible, value: string) => {
-        setFormData({ ...formData, financialResponsible: { ...formData.financialResponsible, [field]: value } as StudentFinancialResponsible });
+        const finalVal = field === "phone" ? formatPhone(value) : value;
+        setFormData({ ...formData, financialResponsible: { ...formData.financialResponsible, [field]: finalVal } as StudentFinancialResponsible });
     };
 
     const updateHealth = (field: keyof StudentHealth, value: any) => {
-        setFormData({ ...formData, health: { ...formData.health, [field]: value } as StudentHealth });
+        const finalVal = field === "pediatricianPhone" ? formatPhone(value) : value;
+        setFormData({ ...formData, health: { ...formData.health, [field]: finalVal } as StudentHealth });
     };
 
     const updateEmergency = (index: number, field: keyof StudentEmergencyContact, value: string) => {
         const newContacts = [...(formData.emergencyContacts || [])];
         if (!newContacts[index]) newContacts[index] = { name: "", kinship: "", phone: "" };
-        newContacts[index] = { ...newContacts[index], [field]: value };
+        const finalVal = field === "phone" ? formatPhone(value) : value;
+        newContacts[index] = { ...newContacts[index], [field]: finalVal };
         setFormData({ ...formData, emergencyContacts: newContacts });
     };
 
