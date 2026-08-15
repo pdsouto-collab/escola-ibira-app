@@ -59,8 +59,20 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
     };
 
     const handleSubmit = async () => {
-        if (!title.trim() && !isAcontece) return; // Validation
-        if (isAcontece && linkedProjectId === "none") return;
+        const trimmedTitle = title.trim();
+        const trimmedContent = content.trim();
+
+        if (isAcontece) {
+            if (linkedProjectId === "none") {
+                toast.warning("Selecione um projeto para vincular.");
+                return;
+            }
+        } else {
+            if (!trimmedTitle && !trimmedContent && customPhotos.length === 0) {
+                toast.warning("Escreva uma mensagem ou anexe ao menos uma foto.");
+                return;
+            }
+        }
 
         setIsSubmitting(true);
 
@@ -69,7 +81,7 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
             photos = customPhotos;
         }
 
-        let finalTitle = title;
+        let finalTitle = trimmedTitle;
 
         if (isAcontece && linkedProjectId !== "none") {
             const proj = availableProjects.find(p => p.id === linkedProjectId);
@@ -79,37 +91,46 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
             if (proj) {
                 finalTitle = proj.title;
             }
+        } else if (!finalTitle) {
+            finalTitle = trimmedContent
+                ? (trimmedContent.slice(0, 50) + (trimmedContent.length > 50 ? "..." : ""))
+                : "Novidade da Turma";
         }
 
-        const newPost = await createClassBoardPost({
-            classId: selectedClassId,
-            authorId: currentUser?.id || "u2",
-            authorName: currentUser?.name || "Professor",
-            authorRole: "Responsável pela Turma",
-            categoryType,
-            linkedProjectId: isAcontece && linkedProjectId !== "none" ? linkedProjectId : undefined,
-            title: finalTitle,
-            content,
-            extraMaterials: isAcontece ? extraMaterials : undefined,
-            photos,
-        });
+        try {
+            const newPost = await createClassBoardPost({
+                classId: selectedClassId,
+                authorId: currentUser?.id || "u2",
+                authorName: currentUser?.name || "Professor",
+                authorRole: "Responsável pela Turma",
+                categoryType,
+                linkedProjectId: isAcontece && linkedProjectId !== "none" ? linkedProjectId : undefined,
+                title: finalTitle,
+                content: trimmedContent,
+                extraMaterials: isAcontece ? extraMaterials : undefined,
+                photos,
+            });
 
-        setIsSubmitting(false);
+            if (newPost) {
+                toast.success("Recado postado com sucesso!");
+                window.dispatchEvent(new Event("classBoardPostAdded"));
 
-        if (newPost) {
-            toast.success("Recado postado com sucesso!");
-            window.dispatchEvent(new Event("classBoardPostAdded"));
-
-            // Reset form
-            setIsExpanded(false);
-            setTitle("");
-            setContent("");
-            setExtraMaterials("");
-            setLinkedProjectId("none");
-            setCustomPhotos([]);
-            if (fileInputRef.current) fileInputRef.current.value = "";
-        } else {
-            toast.error("Erro ao postar recado. Tente novamente.");
+                // Reset form
+                setIsExpanded(false);
+                setTitle("");
+                setContent("");
+                setExtraMaterials("");
+                setLinkedProjectId("none");
+                setCustomPhotos([]);
+                if (fileInputRef.current) fileInputRef.current.value = "";
+            } else {
+                toast.error("Erro ao postar recado. Tente novamente.");
+            }
+        } catch (error) {
+            console.error("Erro ao postar recado:", error);
+            toast.error("Falha ao postar recado. Tente novamente.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -152,7 +173,7 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
                     const img = new Image();
                     img.onload = () => {
                         const canvas = document.createElement("canvas");
-                        const MAX_DIM = 1600;
+                        const MAX_DIM = 1200;
                         let width = img.width;
                         let height = img.height;
 
@@ -177,7 +198,7 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
                             ctx.drawImage(img, 0, 0, width, height);
                         }
 
-                        const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+                        const dataUrl = canvas.toDataURL("image/jpeg", 0.75);
                         resolve(dataUrl);
                     };
                     img.src = reader.result as string;
@@ -345,7 +366,10 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
                     <Button
                         onClick={handleSubmit}
                         className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-6 shadow-sm"
-                        disabled={(!title.trim() && !isAcontece) || isSubmitting}
+                        disabled={
+                            isSubmitting ||
+                            (isAcontece ? linkedProjectId === "none" : (!title.trim() && !content.trim() && customPhotos.length === 0))
+                        }
                     >
                         {isSubmitting ? (
                             <span className="flex items-center">

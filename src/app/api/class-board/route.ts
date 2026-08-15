@@ -58,16 +58,16 @@ export async function POST(request: Request) {
 
         const post = await prisma.classBoardPost.create({
             data: {
-                classId,
-                authorId,
-                authorName,
-                authorRole,
-                categoryType,
-                linkedProjectId,
-                title,
-                content,
-                extraMaterials,
-                photos: photos || [],
+                classId: classId || "",
+                authorId: authorId || session.user.id,
+                authorName: authorName || session.user.name || "Professor",
+                authorRole: authorRole || "Responsável pela Turma",
+                categoryType: categoryType || "Novidades da Turma",
+                linkedProjectId: linkedProjectId || null,
+                title: (title || "").trim() || (content ? (content.trim().slice(0, 50) + (content.trim().length > 50 ? "..." : "")) : "Novidade da Turma"),
+                content: content || "",
+                extraMaterials: extraMaterials || null,
+                photos: Array.isArray(photos) ? photos : [],
             },
         });
 
