@@ -8,7 +8,7 @@ import { Menu } from "@/types/menu";
 import { menuService } from "@/services/menu.service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Utensils, Edit, Copy, ChevronLeft, ChevronRight, Apple, MoreVertical, Calendar, Printer, FileText } from "lucide-react";
+import { Utensils, Edit, Copy, ChevronLeft, ChevronRight, Apple, MoreVertical, Calendar, Printer, FileText, AlertTriangle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -69,6 +69,8 @@ export function MenuWeekView() {
 
     const [isEditing, setIsEditing] = useState(false);
     const [editingMenu, setEditingMenu] = useState<Menu | null>(null);
+    const [originalMenuSnapshot, setOriginalMenuSnapshot] = useState<string>("");
+    const [isConfirmUnsavedOpen, setIsConfirmUnsavedOpen] = useState(false);
     const [editDate, setEditDate] = useState<Date | null>(null);
     const [isConfirmClearOpen, setIsConfirmClearOpen] = useState(false);
 
@@ -84,10 +86,11 @@ export function MenuWeekView() {
     const handleEdit = (menu: Menu | undefined, date: Date) => {
         if (!isNutritionist) return;
         setEditDate(date);
+        let initialObj: Menu;
         if (menu) {
-            setEditingMenu(JSON.parse(JSON.stringify(menu))); // deep copy
+            initialObj = JSON.parse(JSON.stringify(menu)); // deep copy
         } else {
-            setEditingMenu({
+            initialObj = {
                 id: `menu-${Date.now()}`,
                 date: format(date, "yyyy-MM-dd"),
                 items: [
@@ -95,9 +98,23 @@ export function MenuWeekView() {
                     { time: "11:30", title: "Almoço", description: "" },
                     { time: "15:00", title: "Lanche da Tarde", description: "" }
                 ]
-            });
+            };
         }
+        setEditingMenu(initialObj);
+        setOriginalMenuSnapshot(JSON.stringify(initialObj));
         setIsEditing(true);
+    };
+
+    const hasUnsavedChanges = Boolean(
+        editingMenu && originalMenuSnapshot && JSON.stringify(editingMenu) !== originalMenuSnapshot
+    );
+
+    const handleRequestCloseEdit = () => {
+        if (hasUnsavedChanges) {
+            setIsConfirmUnsavedOpen(true);
+        } else {
+            setIsEditing(false);
+        }
     };
 
     const handleSave = async () => {
@@ -307,8 +324,22 @@ export function MenuWeekView() {
                 })}
             </div>
 
-            <Dialog open={isEditing} onOpenChange={setIsEditing}>
-                <DialogContent className="max-w-md max-h-[90vh] flex flex-col p-0 overflow-hidden">
+            <Dialog open={isEditing} onOpenChange={(open) => { if (!open) handleRequestCloseEdit(); }}>
+                <DialogContent
+                    onPointerDownOutside={(e) => {
+                        if (hasUnsavedChanges) {
+                            e.preventDefault();
+                            setIsConfirmUnsavedOpen(true);
+                        }
+                    }}
+                    onEscapeKeyDown={(e) => {
+                        if (hasUnsavedChanges) {
+                            e.preventDefault();
+                            setIsConfirmUnsavedOpen(true);
+                        }
+                    }}
+                    className="max-w-md max-h-[90vh] flex flex-col p-0 overflow-hidden"
+                >
                     <DialogHeader className="p-6 pb-2 border-b">
                         <DialogTitle className="flex items-center gap-2">
                             <Utensils className="h-5 w-5 text-green-500" />
@@ -369,9 +400,55 @@ export function MenuWeekView() {
                     <DialogFooter className="p-4 border-t bg-slate-50 flex items-center sm:justify-between">
                         <Button variant="ghost" className="text-red-500 hover:text-red-600 hover:bg-red-50" onClick={handleClearDay}>Apagar Dia</Button>
                         <div className="flex gap-2">
-                            <Button variant="outline" onClick={() => setIsEditing(false)}>Cancelar</Button>
+                            <Button variant="outline" onClick={handleRequestCloseEdit}>Cancelar</Button>
                             <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700 text-white">Salvar Cardápio</Button>
                         </div>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Pop-up de Confirmação para Salvar Alterações Não Salvas */}
+            <Dialog open={isConfirmUnsavedOpen} onOpenChange={setIsConfirmUnsavedOpen}>
+                <DialogContent className="max-w-md p-6">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-amber-600 text-base font-bold">
+                            <AlertTriangle className="h-5 w-5" />
+                            Deseja salvar as alterações?
+                        </DialogTitle>
+                    </DialogHeader>
+                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed py-2">
+                        Você estava preenchendo o cardápio. Para não perder os dados digitados, escolha se deseja salvar antes de sair ou descartar o texto.
+                    </p>
+                    <DialogFooter className="gap-2 sm:gap-2 flex-col sm:flex-row justify-end pt-3">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-slate-600 text-xs"
+                            onClick={() => setIsConfirmUnsavedOpen(false)}
+                        >
+                            Continuar Editando
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-red-600 border-red-200 hover:bg-red-50 text-xs"
+                            onClick={() => {
+                                setIsConfirmUnsavedOpen(false);
+                                setIsEditing(false);
+                            }}
+                        >
+                            Descartar
+                        </Button>
+                        <Button
+                            size="sm"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs"
+                            onClick={async () => {
+                                setIsConfirmUnsavedOpen(false);
+                                await handleSave();
+                            }}
+                        >
+                            Salvar Cardápio
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
