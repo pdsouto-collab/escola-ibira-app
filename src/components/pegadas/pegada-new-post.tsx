@@ -15,7 +15,8 @@ import {
     X,
     Plus,
     Footprints,
-    Upload
+    Upload,
+    Crop
 } from "lucide-react";
 import { useRef } from "react";
 import { BulkPortfolioDialog } from "@/components/portfolio/bulk-portfolio-dialog";
@@ -25,6 +26,7 @@ import { getClasses } from "@/services/school-class.service";
 import { getStudents } from "@/services/student.service";
 import { SchoolClass } from "@/types/school-class";
 import { Student } from "@/types/student";
+import { ImageFramingDialog } from "@/components/ui/image-framing-dialog";
 
 interface PegadaNewPostProps {
     onSuccess?: () => void;
@@ -38,7 +40,9 @@ export function PegadaNewPost({ onSuccess }: PegadaNewPostProps = {}) {
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [isBulkOpen, setIsBulkOpen] = useState(false);
-     const [mediaUrls, setMediaUrls] = useState<string[]>([]);
+    const [mediaUrls, setMediaUrls] = useState<string[]>([]);
+    const [framingModalOpen, setFramingModalOpen] = useState(false);
+    const [imageToFrame, setImageToFrame] = useState<{ src: string; index: number } | null>(null);
     const [classes, setClasses] = useState<SchoolClass[]>([]);
     const [students, setStudents] = useState<Student[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -208,16 +212,31 @@ export function PegadaNewPost({ onSuccess }: PegadaNewPostProps = {}) {
                                     ) : (
                                         <>
                                             {mediaUrls.map((url, i) => (
-                                                <div key={i} className="relative shrink-0 snap-center w-[85%] sm:w-[60%] h-full rounded-lg overflow-hidden border border-slate-200 shadow-sm">
+                                                <div key={i} className="relative shrink-0 snap-center w-[85%] sm:w-[60%] h-full rounded-lg overflow-hidden border border-slate-200 shadow-sm group">
                                                     <img src={url} alt={`Preview ${i}`} className="w-full h-full object-cover bg-slate-100" />
-                                                    <Button
-                                                        variant="destructive"
-                                                        size="icon"
-                                                        className="absolute top-2 right-2 h-8 w-8 rounded-full shadow-md opacity-90 transition-opacity hover:opacity-100"
-                                                        onClick={() => setMediaUrls(prev => prev.filter((_, index) => index !== i))}
-                                                    >
-                                                        <X className="h-4 w-4" />
-                                                    </Button>
+                                                    <div className="absolute top-2 right-2 flex items-center gap-1.5 z-10">
+                                                        <Button
+                                                            type="button"
+                                                            size="icon"
+                                                            className="h-8 w-8 rounded-full bg-black/70 hover:bg-indigo-600 text-white shadow-md transition-all"
+                                                            onClick={() => {
+                                                                setImageToFrame({ src: url, index: i });
+                                                                setFramingModalOpen(true);
+                                                            }}
+                                                            title="Ajustar Enquadramento / Recorte"
+                                                        >
+                                                            <Crop className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button
+                                                            variant="destructive"
+                                                            size="icon"
+                                                            className="h-8 w-8 rounded-full shadow-md opacity-90 transition-opacity hover:opacity-100"
+                                                            onClick={() => setMediaUrls(prev => prev.filter((_, index) => index !== i))}
+                                                            title="Remover foto"
+                                                        >
+                                                            <X className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
                                                 </div>
                                             ))}
                                             {mediaUrls.length < 5 && (
@@ -300,6 +319,24 @@ export function PegadaNewPost({ onSuccess }: PegadaNewPostProps = {}) {
                 classId="all"
                 classes={classes}
                 students={students}
+            />
+
+            {/* Modal de Enquadramento Reutilizável de Fotos */}
+            <ImageFramingDialog
+                open={framingModalOpen}
+                onOpenChange={setFramingModalOpen}
+                imageSrc={imageToFrame?.src || null}
+                aspectRatio="4/3"
+                title="Ajustar Enquadramento da Foto"
+                onApply={(framedDataUrl) => {
+                    if (imageToFrame && typeof imageToFrame.index === "number") {
+                        setMediaUrls(prev => {
+                            const copy = [...prev];
+                            copy[imageToFrame.index] = framedDataUrl;
+                            return copy;
+                        });
+                    }
+                }}
             />
         </Card>
     );

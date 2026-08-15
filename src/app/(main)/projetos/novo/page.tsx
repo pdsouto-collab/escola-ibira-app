@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Check, ChevronLeft, Plus, Search, Calendar, Clock, Users, Target, BookOpen, Layers, Trash2, PartyPopper, CalendarRange, Pencil, X, Upload, ImagePlus, Loader2 } from "lucide-react";
+import { Check, ChevronLeft, Plus, Search, Calendar, Clock, Users, Target, BookOpen, Layers, Trash2, PartyPopper, CalendarRange, Pencil, X, Upload, ImagePlus, Loader2, Crop } from "lucide-react";
 import { format } from "date-fns";
 import { useSession } from "next-auth/react";
 import { BulkSessionDialog } from "@/components/projetos/bulk-session-dialog";
@@ -34,6 +34,7 @@ import { getListBncc } from "@/services/bncc.service";
 import { FinalProductType } from "@/types/final-product-type";
 import { getFinalProductTypes } from "@/services/final-product-type.service";
 import { getKnowledgeTrees } from "@/services/knowledge.service";
+import { ImageFramingDialog } from "@/components/ui/image-framing-dialog";
 
 function NewProjectWizardContent() {
     const router = useRouter();
@@ -132,6 +133,10 @@ function NewProjectWizardContent() {
     const [searchTermCompetencias, setSearchTermCompetencias] = useState("");
     const [filterTrilhaBaseBNCC, setFilterTrilhaBaseBNCC] = useState(false);
     const [filterTrilhaBaseCompetencias, setFilterTrilhaBaseCompetencias] = useState(false);
+
+    // Framing Dialog State
+    const [framingModalOpen, setFramingModalOpen] = useState(false);
+    const [rawImageToFrame, setRawImageToFrame] = useState<string | null>(null);
 
     // Immediately write sessions to store (expanded per selected classes)
     const persistSessionsToStore = async (updatedSessions: Partial<ScheduleItem>[]) => {
@@ -345,38 +350,13 @@ function NewProjectWizardContent() {
 
         const reader = new FileReader();
         reader.onloadend = () => {
-            const img = new window.Image();
-            img.onload = () => {
-                const canvas = document.createElement("canvas");
-                const MAX_WIDTH = 1200;
-                const MAX_HEIGHT = 800;
-                let width = img.width;
-                let height = img.height;
-
-                if (width > height) {
-                    if (width > MAX_WIDTH) {
-                        height = Math.round(height * (MAX_WIDTH / width));
-                        width = MAX_WIDTH;
-                    }
-                } else {
-                    if (height > MAX_HEIGHT) {
-                        width = Math.round(width * (MAX_HEIGHT / height));
-                        height = MAX_HEIGHT;
-                    }
-                }
-
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext("2d");
-                if (ctx) {
-                    ctx.drawImage(img, 0, 0, width, height);
-                    const resizedBase64 = canvas.toDataURL("image/webp", 0.7);
-                    setFormData(prev => ({ ...prev, imageUrl: resizedBase64 }));
-                }
-            };
-            img.src = reader.result as string;
+            if (reader.result) {
+                setRawImageToFrame(reader.result as string);
+                setFramingModalOpen(true);
+            }
         };
         reader.readAsDataURL(file);
+        if (e.target) e.target.value = '';
     };
 
     const steps = [
@@ -591,7 +571,7 @@ function NewProjectWizardContent() {
                                             </p>
                                         </div>
                                         {formData.imageUrl && (
-                                            <div className="w-24 h-16 rounded-lg border overflow-hidden bg-slate-100 flex-shrink-0 relative">
+                                            <div className="w-28 h-20 rounded-xl border border-slate-200 overflow-hidden bg-slate-100 flex-shrink-0 relative group shadow-sm">
                                                 <Image
                                                     src={formData.imageUrl}
                                                     alt="Preview"
@@ -599,6 +579,18 @@ function NewProjectWizardContent() {
                                                     className="object-cover"
                                                     unoptimized
                                                 />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setRawImageToFrame(formData.imageUrl);
+                                                        setFramingModalOpen(true);
+                                                    }}
+                                                    className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[10px] font-bold gap-1 cursor-pointer"
+                                                    title="Ajustar Enquadramento da Foto"
+                                                >
+                                                    <Crop className="w-4 h-4" />
+                                                    <span>Enquadrar</span>
+                                                </button>
                                             </div>
                                         )}
                                     </div>
@@ -1223,6 +1215,18 @@ function NewProjectWizardContent() {
 
                 </div>
             </div>
+
+            {/* Modal de Enquadramento Reutilizável de Banner */}
+            <ImageFramingDialog
+                open={framingModalOpen}
+                onOpenChange={setFramingModalOpen}
+                imageSrc={rawImageToFrame}
+                aspectRatio="16/9"
+                title="Ajustar Enquadramento do Banner do Projeto"
+                onApply={(framedDataUrl) => {
+                    setFormData(prev => ({ ...prev, imageUrl: framedDataUrl }));
+                }}
+            />
         </div>
     );
 }

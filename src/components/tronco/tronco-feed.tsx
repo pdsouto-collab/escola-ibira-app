@@ -5,7 +5,7 @@ import { ClassBoardPost } from "@/types/class-board-post";
 import { PostInteraction } from "@/types/post-interaction";
 import { SchoolClass } from "@/types/school-class";
 import { getClassBoardPosts, createPostInteraction, deletePostInteraction, updateClassBoardPost, deleteClassBoardPost } from "@/services/class-board.service";
-import { TreeDeciduous, MessageCircle, MoreHorizontal, Shapes, Megaphone, Clock, Pencil, Trash, Maximize2, ChevronLeft, ChevronRight, Image as ImageIcon, Plus, X, Loader2, GraduationCap } from "lucide-react";
+import { TreeDeciduous, MessageCircle, MoreHorizontal, Shapes, Megaphone, Clock, Pencil, Trash, Maximize2, ChevronLeft, ChevronRight, Image as ImageIcon, Plus, X, Loader2, GraduationCap, Crop } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import { formatDistanceToNow, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
+import { ImageFramingDialog } from "@/components/ui/image-framing-dialog";
 
 
 type LoadedPost = ClassBoardPost & { interactions: PostInteraction[] };
@@ -312,6 +313,8 @@ export function TroncoFeed({ classId, categoryFilter, classes = [] }: { classId?
     });
     const editFileInputRef = useRef<HTMLInputElement>(null);
     const [isSavingEdit, setIsSavingEdit] = useState(false);
+    const [editFramingOpen, setEditFramingOpen] = useState(false);
+    const [editImageToFrame, setEditImageToFrame] = useState<{ src: string; index: number } | null>(null);
 
     useEffect(() => {
         async function fetchPosts() {
@@ -751,14 +754,27 @@ export function TroncoFeed({ classId, categoryFilter, classes = [] }: { classId?
                                             <div key={index} className="relative aspect-square rounded-lg overflow-hidden border border-slate-200 bg-slate-100 group">
                                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                                 <img src={photo} alt={`Foto ${index + 1}`} className="w-full h-full object-cover" />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleRemoveEditPhoto(index)}
-                                                    className="absolute top-1 right-1 bg-black/70 hover:bg-black/90 text-white rounded-full p-0.5 shadow transition-all"
-                                                    title="Remover foto"
-                                                >
-                                                    <X className="w-3 h-3" />
-                                                </button>
+                                                <div className="absolute top-1 right-1 flex items-center gap-1 z-10">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setEditImageToFrame({ src: photo, index });
+                                                            setEditFramingOpen(true);
+                                                        }}
+                                                        className="bg-black/70 hover:bg-indigo-600 text-white rounded-full p-1 shadow transition-all"
+                                                        title="Ajustar Enquadramento / Recorte"
+                                                    >
+                                                        <Crop className="w-3 h-3" />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemoveEditPhoto(index)}
+                                                        className="absolute top-1 right-1 bg-black/70 hover:bg-black/90 text-white rounded-full p-0.5 shadow transition-all"
+                                                        title="Remover foto"
+                                                    >
+                                                        <X className="w-3 h-3" />
+                                                    </button>
+                                                </div>
                                                 <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1 rounded">
                                                     {index + 1}
                                                 </span>
@@ -794,6 +810,22 @@ export function TroncoFeed({ classId, categoryFilter, classes = [] }: { classId?
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {/* Modal de Enquadramento Reutilizável na Edição */}
+            <ImageFramingDialog
+                open={editFramingOpen}
+                onOpenChange={setEditFramingOpen}
+                imageSrc={editImageToFrame?.src || null}
+                onApply={(framedDataUrl) => {
+                    if (editImageToFrame && typeof editImageToFrame.index === "number") {
+                        setEditForm(prev => {
+                            const copy = [...prev.photos];
+                            copy[editImageToFrame.index] = framedDataUrl;
+                            return { ...prev, photos: copy };
+                        });
+                    }
+                }}
+            />
 
             {/* Photo Lightbox Modal */}
             <Dialog open={!!lightboxData} onOpenChange={(open) => !open && setLightboxData(null)}>

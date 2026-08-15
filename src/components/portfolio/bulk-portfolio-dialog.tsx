@@ -15,12 +15,13 @@ import { ptBR } from "date-fns/locale";
 import { createPegada } from "@/services/pegada.service";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ImagePlus, Images, Sparkles, Trash2, Users, Target, Check, ChevronRight, ChevronLeft, Search, Loader2 } from "lucide-react";
+import { ImagePlus, Images, Sparkles, Trash2, Users, Target, Check, ChevronRight, ChevronLeft, Search, Loader2, Crop } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
+import { ImageFramingDialog } from "@/components/ui/image-framing-dialog";
 
 
 interface BulkPortfolioDialogProps {
@@ -56,6 +57,8 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
     const [title, setTitle] = useState("");
     const [tagsInput, setTagsInput] = useState("");
     const [images, setImages] = useState<string[]>([]);
+    const [framingModalOpen, setFramingModalOpen] = useState(false);
+    const [imageToFrame, setImageToFrame] = useState<{ src: string; index: number } | null>(null);
     const [baseNarrative, setBaseNarrative] = useState("");
     const [isSaving, setIsSaving] = useState(false);
 
@@ -447,13 +450,27 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
                                             {images.map((img, idx) => (
                                                 <div key={idx} className="w-32 h-32 shrink-0 border border-slate-200 rounded-2xl p-1 bg-slate-50 relative group overflow-hidden">
                                                     <img src={img} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover rounded-xl" />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setImages(prev => prev.filter((_, i) => i !== idx))}
-                                                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                                                    >
-                                                        <Trash2 className="w-3.5 h-3.5" />
-                                                    </button>
+                                                    <div className="absolute top-2 right-2 flex items-center gap-1 z-10">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setImageToFrame({ src: img, index: idx });
+                                                                setFramingModalOpen(true);
+                                                            }}
+                                                            className="bg-black/70 hover:bg-indigo-600 text-white rounded-full p-1.5 shadow-md transition-all"
+                                                            title="Ajustar Enquadramento / Recorte"
+                                                        >
+                                                            <Crop className="w-3.5 h-3.5" />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setImages(prev => prev.filter((_, i) => i !== idx))}
+                                                            className="bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            title="Remover foto"
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             ))}
                                             {images.length < 5 && (
@@ -583,6 +600,24 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
                     </div>
                 </DialogFooter>
             </DialogContent>
+
+            {/* Modal de Enquadramento Reutilizável de Fotos */}
+            <ImageFramingDialog
+                open={framingModalOpen}
+                onOpenChange={setFramingModalOpen}
+                imageSrc={imageToFrame?.src || null}
+                aspectRatio="4/3"
+                title="Ajustar Enquadramento da Foto"
+                onApply={(framedDataUrl) => {
+                    if (imageToFrame && typeof imageToFrame.index === "number") {
+                        setImages(prev => {
+                            const copy = [...prev];
+                            copy[imageToFrame.index] = framedDataUrl;
+                            return copy;
+                        });
+                    }
+                }}
+            />
         </Dialog>
     );
 }

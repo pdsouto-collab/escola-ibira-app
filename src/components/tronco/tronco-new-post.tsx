@@ -9,10 +9,11 @@ import { SchoolClass } from "@/types/school-class";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { TreeDeciduous, Image as ImageIcon, Send, Shapes, Megaphone, GraduationCap } from "lucide-react";
+import { TreeDeciduous, Image as ImageIcon, Send, Shapes, Megaphone, GraduationCap, Crop } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
+import { ImageFramingDialog } from "@/components/ui/image-framing-dialog";
 
 
 export function TroncoNewPost({ selectedClassId, classes = [] }: { selectedClassId: string; classes?: SchoolClass[] }) {
@@ -28,6 +29,8 @@ export function TroncoNewPost({ selectedClassId, classes = [] }: { selectedClass
     const [content, setContent] = useState("");
     const [extraMaterials, setExtraMaterials] = useState("");
     const [customPhotos, setCustomPhotos] = useState<string[]>([]);
+    const [framingModalOpen, setFramingModalOpen] = useState(false);
+    const [imageToFrame, setImageToFrame] = useState<{ src: string; index?: number } | null>(null);
     const [targetClassIds, setTargetClassIds] = useState<string[]>(() => {
         if (selectedClassId && selectedClassId !== "all") {
             return [selectedClassId];
@@ -376,15 +379,31 @@ export function TroncoNewPost({ selectedClassId, classes = [] }: { selectedClass
                                     <div key={index} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-100 group">
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img src={photo} alt={`Anexo ${index + 1}`} className="w-full h-full object-cover" />
-                                        <button
-                                            type="button"
-                                            onClick={() => handleRemovePhoto(index)}
-                                            disabled={isSubmitting}
-                                            className="absolute top-1 right-1 bg-black/70 hover:bg-black/90 text-white rounded-full p-1 shadow-md transition-all z-10"
-                                            title="Remover foto"
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
-                                        </button>
+                                        
+                                        {/* Ações de Foto: Enquadrar e Remover */}
+                                        <div className="absolute top-1 right-1 flex items-center gap-1 z-10">
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setImageToFrame({ src: photo, index });
+                                                    setFramingModalOpen(true);
+                                                }}
+                                                className="bg-black/70 hover:bg-indigo-600 text-white rounded-full p-1 shadow-md transition-all"
+                                                title="Ajustar Enquadramento / Recorte"
+                                            >
+                                                <Crop className="w-3 h-3" />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemovePhoto(index)}
+                                                disabled={isSubmitting}
+                                                className="bg-black/70 hover:bg-red-600 text-white rounded-full p-1 shadow-md transition-all"
+                                                title="Remover foto"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                                            </button>
+                                        </div>
+
                                         <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
                                             {index + 1}
                                         </span>
@@ -450,6 +469,22 @@ export function TroncoNewPost({ selectedClassId, classes = [] }: { selectedClass
                     </Button>
                 </div>
             </div>
+
+            {/* Modal de Enquadramento Reutilizável */}
+            <ImageFramingDialog
+                open={framingModalOpen}
+                onOpenChange={setFramingModalOpen}
+                imageSrc={imageToFrame?.src || null}
+                onApply={(framedDataUrl) => {
+                    if (imageToFrame && typeof imageToFrame.index === "number") {
+                        setCustomPhotos(prev => {
+                            const copy = [...prev];
+                            copy[imageToFrame.index!] = framedDataUrl;
+                            return copy;
+                        });
+                    }
+                }}
+            />
         </div>
     );
 }
