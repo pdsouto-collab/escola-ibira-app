@@ -3,16 +3,24 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
 export async function GET(request: Request) {
-        const session = await getServerSessionOrJwt();
-        if (!session || !session.user || !session.user.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+    const session = await getServerSessionOrJwt();
+    if (!session || !session.user || !session.user.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     try {
         const { searchParams } = new URL(request.url);
         const classId = searchParams.get("classId");
 
-        const where = classId ? { classId } : {};
+        const where = (classId && classId !== "all")
+            ? {
+                OR: [
+                    { classId: classId },
+                    { classId: "all" },
+                    { classId: "" }
+                ]
+            }
+            : {};
 
         const posts = await prisma.classBoardPost.findMany({
             where,
@@ -35,16 +43,17 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-        const session = await getServerSessionOrJwt();
-        if (!session || !session.user || !session.user.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+    const session = await getServerSessionOrJwt();
+    if (!session || !session.user || !session.user.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     try {
         const body = await request.json();
         
         const {
             classId,
+            classIds,
             authorId,
             authorName,
             authorRole,
@@ -56,22 +65,47 @@ export async function POST(request: Request) {
             photos,
         } = body;
 
-        const post = await prisma.classBoardPost.create({
-            data: {
-                classId: classId || "",
-                authorId: authorId || session.user.id,
-                authorName: authorName || session.user.name || "Professor",
-                authorRole: authorRole || "Responsável pela Turma",
-                categoryType: categoryType || "Novidades da Turma",
-                linkedProjectId: linkedProjectId || null,
-                title: (title || "").trim() || (content ? (content.trim().slice(0, 50) + (content.trim().length > 50 ? "..." : "")) : "Novidade da Turma"),
-                content: content || "",
-                extraMaterials: extraMaterials || null,
-                photos: Array.isArray(photos) ? photos : [],
-            },
-        });
+        const targetClassIds = Array.isArray(classIds) && classIds.length > 0
+            ? classIds
+            : [classId || "all"];
 
-        return NextResponse.json(post, { status: 201 });
+        if (targetClassIds.includes("all")) {
+            const post = await prisma.classBoardPost.create({
+                data: {
+                    classId: "all",
+                    authorId: authorId || session.user.id,
+                    authorName: authorName || session.user.name || "Professor",
+                    authorRole: authorRole || "Responsável pela Turma",
+                    categoryType: categoryType || "Novidades da Turma",
+                    linkedProjectId: linkedProjectId || null,
+                    title: (title || "").trim() || (content ? (content.trim().slice(0, 50) + (content.trim().length > 50 ? "..." : "")) : "Novidade da Turma"),
+                    content: content || "",
+                    extraMaterials: extraMaterials || null,
+                    photos: Array.isArray(photos) ? photos : [],
+                },
+            });
+            return NextResponse.json(post, { status: 201 });
+        } else {
+            const createdPosts = [];
+            for (const cId of targetClassIds) {
+                const post = await prisma.classBoardPost.create({
+                    data: {
+                        classId: cId,
+                        authorId: authorId || session.user.id,
+                        authorName: authorName || session.user.name || "Professor",
+                        authorRole: authorRole || "Responsável pela Turma",
+                        categoryType: categoryType || "Novidades da Turma",
+                        linkedProjectId: linkedProjectId || null,
+                        title: (title || "").trim() || (content ? (content.trim().slice(0, 50) + (content.trim().length > 50 ? "..." : "")) : "Novidade da Turma"),
+                        content: content || "",
+                        extraMaterials: extraMaterials || null,
+                        photos: Array.isArray(photos) ? photos : [],
+                    },
+                });
+                createdPosts.push(post);
+            }
+            return NextResponse.json(createdPosts[0], { status: 201 });
+        }
     } catch (error) {
         console.error("Error creating class board post:", error);
         return NextResponse.json(

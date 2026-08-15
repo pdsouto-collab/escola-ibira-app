@@ -5,16 +5,17 @@ import { ClassBoardCategoryType } from "@/types/class-board-post";
 import { createClassBoardPost } from "@/services/class-board.service";
 import { Project } from "@/types/project";
 import { getProjects } from "@/services/project.service";
+import { SchoolClass } from "@/types/school-class";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { TreeDeciduous, Image as ImageIcon, Send, Shapes, Megaphone } from "lucide-react";
+import { TreeDeciduous, Image as ImageIcon, Send, Shapes, Megaphone, GraduationCap } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 
 
-export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) {
+export function TroncoNewPost({ selectedClassId, classes = [] }: { selectedClassId: string; classes?: SchoolClass[] }) {
     const { data: session } = useSession();
     const currentUser = session?.user as any;
     const [isExpanded, setIsExpanded] = useState(false);
@@ -27,8 +28,20 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
     const [content, setContent] = useState("");
     const [extraMaterials, setExtraMaterials] = useState("");
     const [customPhotos, setCustomPhotos] = useState<string[]>([]);
+    const [targetClassIds, setTargetClassIds] = useState<string[]>(() => {
+        if (selectedClassId && selectedClassId !== "all") {
+            return [selectedClassId];
+        }
+        return ["all"];
+    });
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [projects, setProjects] = useState<Project[]>([]);
+
+    useEffect(() => {
+        if (selectedClassId && selectedClassId !== "all") {
+            setTargetClassIds([selectedClassId]);
+        }
+    }, [selectedClassId]);
 
     useEffect(() => {
         async function fetchProj() {
@@ -99,7 +112,8 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
 
         try {
             const newPost = await createClassBoardPost({
-                classId: selectedClassId,
+                classId: targetClassIds[0] || selectedClassId || "all",
+                classIds: targetClassIds,
                 authorId: currentUser?.id || "u2",
                 authorName: currentUser?.name || "Professor",
                 authorRole: "Responsável pela Turma",
@@ -109,7 +123,7 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
                 content: trimmedContent,
                 extraMaterials: isAcontece ? extraMaterials : undefined,
                 photos,
-            });
+            } as any);
 
             if (newPost) {
                 toast.success("Recado postado com sucesso!");
@@ -242,6 +256,54 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
                         <Shapes className="h-4 w-4" />
                         Projetos da Classe
                     </button>
+                </div>
+
+                {/* Seletor de Turma Destino */}
+                <div className="space-y-2 p-3 bg-slate-50 rounded-xl border border-slate-200/80">
+                    <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                            <GraduationCap className="h-4 w-4 text-emerald-600" />
+                            Turma Destino do Recado
+                        </label>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (targetClassIds.includes("all")) {
+                                    setTargetClassIds(classes.length > 0 ? [classes[0].id] : []);
+                                } else {
+                                    setTargetClassIds(["all"]);
+                                }
+                            }}
+                            className={`text-xs font-bold px-2.5 py-1 rounded-md transition-all ${targetClassIds.includes("all") ? "bg-purple-600 text-white shadow-xs" : "bg-white border border-slate-300 text-slate-700 hover:bg-slate-100"}`}
+                        >
+                            🏫 Todas as Turmas
+                        </button>
+                    </div>
+
+                    {!targetClassIds.includes("all") && (
+                        <div className="flex flex-wrap gap-1.5 pt-1">
+                            {classes.map(c => {
+                                const isSelected = targetClassIds.includes(c.id);
+                                return (
+                                    <button
+                                        key={c.id}
+                                        type="button"
+                                        onClick={() => {
+                                            if (isSelected) {
+                                                const next = targetClassIds.filter(id => id !== c.id);
+                                                setTargetClassIds(next.length > 0 ? next : ["all"]);
+                                            } else {
+                                                setTargetClassIds([...targetClassIds.filter(id => id !== "all"), c.id]);
+                                            }
+                                        }}
+                                        className={`text-xs font-semibold px-2.5 py-1 rounded-lg border transition-all ${isSelected ? "bg-emerald-600 text-white border-emerald-600 shadow-2xs" : "bg-white border-slate-200 text-slate-600 hover:border-emerald-300"}`}
+                                    >
+                                        {c.name}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
 
                 {isAcontece && (

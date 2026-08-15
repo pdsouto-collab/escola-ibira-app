@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import { ClassBoardPost } from "@/types/class-board-post";
 import { PostInteraction } from "@/types/post-interaction";
+import { SchoolClass } from "@/types/school-class";
 import { getClassBoardPosts, createPostInteraction, deletePostInteraction, updateClassBoardPost, deleteClassBoardPost } from "@/services/class-board.service";
-import { TreeDeciduous, MessageCircle, MoreHorizontal, Shapes, Megaphone, Clock, Pencil, Trash, Maximize2, ChevronLeft, ChevronRight, Image as ImageIcon, Plus, X, Loader2 } from "lucide-react";
+import { TreeDeciduous, MessageCircle, MoreHorizontal, Shapes, Megaphone, Clock, Pencil, Trash, Maximize2, ChevronLeft, ChevronRight, Image as ImageIcon, Plus, X, Loader2, GraduationCap } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -285,7 +286,7 @@ function TroncoPhotoCarousel({ photos, onOpenLightbox }: { photos: string[], onO
     );
 }
 
-export function TroncoFeed({ classId, categoryFilter }: { classId: string, categoryFilter?: string }) {
+export function TroncoFeed({ classId, categoryFilter, classes = [] }: { classId?: string, categoryFilter?: string, classes?: any[] }) {
     const { data: session } = useSession();
     const currentUser = session?.user as any;
     const [posts, setPosts] = useState<LoadedPost[]>([]);
@@ -300,12 +301,14 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
         categoryType: string;
         extraMaterials: string;
         photos: string[];
+        classId: string;
     }>({
         title: "",
         content: "",
         categoryType: "Novidades da Turma",
         extraMaterials: "",
-        photos: []
+        photos: [],
+        classId: classId || "all"
     });
     const editFileInputRef = useRef<HTMLInputElement>(null);
     const [isSavingEdit, setIsSavingEdit] = useState(false);
@@ -350,7 +353,8 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
             content: post.content || "",
             categoryType: post.categoryType || "Novidades da Turma",
             extraMaterials: post.extraMaterials || "",
-            photos: Array.isArray(post.photos) ? [...post.photos] : []
+            photos: post.photos ? [...post.photos] : [],
+            classId: post.classId || "all"
         });
     };
 
@@ -441,9 +445,10 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
             const updated = await updateClassBoardPost(editingPost.id, {
                 title: finalTitle,
                 content: trimmedContent,
-                categoryType: editForm.categoryType,
+                categoryType: editForm.categoryType as any,
                 extraMaterials: editForm.extraMaterials ? editForm.extraMaterials.trim() : null,
-                photos: photosToSave
+                photos: photosToSave,
+                classId: editForm.classId
             });
 
             if (updated) {
@@ -564,8 +569,20 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
                                 )}
                             </div>
 
-                            {/* Tag */}
-                            <div className="mb-3">
+                            {/* Turma & Categoria Badges */}
+                            <div className="mb-3 flex items-center gap-2 flex-wrap">
+                                {post.classId === "all" ? (
+                                    <span className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full bg-purple-100 text-purple-900 border border-purple-200 shadow-2xs">
+                                        <GraduationCap className="h-3.5 w-3.5 text-purple-700" />
+                                        Todas as Turmas
+                                    </span>
+                                ) : (
+                                    <span className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-200 shadow-2xs">
+                                        <GraduationCap className="h-3.5 w-3.5 text-emerald-700" />
+                                        Turma: {classes.find((c: any) => c.id === post.classId)?.name || post.classId || "Turma Geral"}
+                                    </span>
+                                )}
+
                                 <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${isAcontece ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-blue-50 text-blue-700 border-blue-200'}`}>
                                     {isAcontece ? <Shapes className="h-3.5 w-3.5" /> : <Megaphone className="h-3.5 w-3.5" />}
                                     {post.categoryType}
@@ -623,6 +640,30 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
                     </DialogHeader>
 
                     <div className="space-y-4 py-2">
+                        {/* Class selection */}
+                        <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold text-slate-600">Turma Destino</Label>
+                            <div className="flex flex-wrap gap-1.5">
+                                <button
+                                    type="button"
+                                    onClick={() => setEditForm(prev => ({ ...prev, classId: "all" }))}
+                                    className={`py-1.5 px-2.5 text-xs font-bold rounded-lg border transition-all ${editForm.classId === "all" ? "bg-purple-600 border-purple-600 text-white shadow-2xs" : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"}`}
+                                >
+                                    🏫 Todas as Turmas
+                                </button>
+                                {classes.map((c: any) => (
+                                    <button
+                                        key={c.id}
+                                        type="button"
+                                        onClick={() => setEditForm(prev => ({ ...prev, classId: c.id }))}
+                                        className={`py-1.5 px-2.5 text-xs font-semibold rounded-lg border transition-all ${editForm.classId === c.id ? "bg-emerald-600 border-emerald-600 text-white shadow-2xs" : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"}`}
+                                    >
+                                        {c.name}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
                         {/* Category selection */}
                         <div className="space-y-1.5">
                             <Label className="text-xs font-semibold text-slate-600">Categoria</Label>

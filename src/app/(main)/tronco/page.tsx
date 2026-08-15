@@ -91,10 +91,11 @@ export default function TroncoPage() {
                             </div>
                             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1 sm:justify-end">
                                 <Select value={selectedClassId} onValueChange={setSelectedClassId}>
-                                    <SelectTrigger className="w-full sm:w-[180px] h-9 text-xs font-medium text-slate-700 bg-slate-50 border-transparent hover:border-slate-200 focus:bg-white transition-colors">
+                                    <SelectTrigger className="w-full sm:w-[200px] h-9 text-xs font-medium text-slate-700 bg-slate-50 border-transparent hover:border-slate-200 focus:bg-white transition-colors">
                                         <SelectValue placeholder="Selecione a turma..." />
                                     </SelectTrigger>
                                     <SelectContent>
+                                        <SelectItem value="all">🏫 Todas as Turmas</SelectItem>
                                         {classes.map(c => (
                                             <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                                         ))}
@@ -117,10 +118,10 @@ export default function TroncoPage() {
                     )}
 
                     {/* New Post Creator (Teachers/Admins only) */}
-                    {isTeacherOrAdmin && <TroncoNewPost selectedClassId={selectedClassId} />}
+                    {isTeacherOrAdmin && <TroncoNewPost selectedClassId={selectedClassId} classes={classes} />}
 
                     {/* Feed */}
-                    <TroncoFeed classId={selectedClassId} categoryFilter={selectedCategory === "all" ? undefined : selectedCategory} />
+                    <TroncoFeed classId={selectedClassId === "all" ? undefined : selectedClassId} categoryFilter={selectedCategory === "all" ? undefined : selectedCategory} classes={classes} />
                 </div>
             </main>
         </div>

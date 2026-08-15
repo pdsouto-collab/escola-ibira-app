@@ -55,7 +55,7 @@ export async function PUT(request: Request, props: { params: Promise<{ id: strin
         const params = await props.params;
         const { id } = params;
         const body = await request.json();
-        const { title, content, extraMaterials, categoryType, photos } = body;
+        const { title, content, extraMaterials, categoryType, photos, classId } = body;
 
         const post = await prisma.classBoardPost.findUnique({
             where: { id }
@@ -79,7 +79,8 @@ export async function PUT(request: Request, props: { params: Promise<{ id: strin
                 content: content !== undefined ? content : post.content,
                 extraMaterials: extraMaterials !== undefined ? extraMaterials : post.extraMaterials,
                 categoryType: categoryType !== undefined ? categoryType : post.categoryType,
-                photos: photos !== undefined ? photos : post.photos
+                photos: photos !== undefined ? photos : post.photos,
+                classId: classId !== undefined ? classId : post.classId
             }
         });
 
