@@ -26,7 +26,7 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [extraMaterials, setExtraMaterials] = useState("");
-    const [customPhoto, setCustomPhoto] = useState("");
+    const [customPhotos, setCustomPhotos] = useState<string[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [projects, setProjects] = useState<Project[]>([]);
 
@@ -65,8 +65,8 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
         setIsSubmitting(true);
 
         let photos: string[] = [];
-        if (customPhoto) {
-            photos = [customPhoto];
+        if (!isAcontece && customPhotos.length > 0) {
+            photos = customPhotos;
         }
 
         let finalTitle = title;
@@ -106,7 +106,7 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
             setContent("");
             setExtraMaterials("");
             setLinkedProjectId("none");
-            setCustomPhoto("");
+            setCustomPhotos([]);
             if (fileInputRef.current) fileInputRef.current.value = "";
         } else {
             toast.error("Erro ao postar recado. Tente novamente.");
@@ -133,46 +133,66 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
         fileInputRef.current?.click();
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
 
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            const img = new Image();
-            img.onload = () => {
-                const canvas = document.createElement("canvas");
-                const MAX_DIM = 1600;
-                let width = img.width;
-                let height = img.height;
+        const availableSlots = 5 - customPhotos.length;
+        if (availableSlots <= 0) {
+            toast.warning("Limite de 5 fotos atingido.");
+            return;
+        }
 
-                if (width > height) {
-                    if (width > MAX_DIM) {
-                        height = Math.round((height * MAX_DIM) / width);
-                        width = MAX_DIM;
-                    }
-                } else {
-                    if (height > MAX_DIM) {
-                        width = Math.round((width * MAX_DIM) / height);
-                        height = MAX_DIM;
-                    }
-                }
+        const filesToProcess = files.slice(0, availableSlots);
 
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext("2d");
-                if (ctx) {
-                    ctx.imageSmoothingEnabled = true;
-                    ctx.imageSmoothingQuality = "high";
-                    ctx.drawImage(img, 0, 0, width, height);
-                }
+        const promises = filesToProcess.map(file => {
+            return new Promise<string>((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement("canvas");
+                        const MAX_DIM = 1600;
+                        let width = img.width;
+                        let height = img.height;
 
-                const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
-                setCustomPhoto(dataUrl);
-            };
-            img.src = reader.result as string;
-        };
-        reader.readAsDataURL(file);
+                        if (width > height) {
+                            if (width > MAX_DIM) {
+                                height = Math.round((height * MAX_DIM) / width);
+                                width = MAX_DIM;
+                            }
+                        } else {
+                            if (height > MAX_DIM) {
+                                width = Math.round((width * MAX_DIM) / height);
+                                height = MAX_DIM;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext("2d");
+                        if (ctx) {
+                            ctx.imageSmoothingEnabled = true;
+                            ctx.imageSmoothingQuality = "high";
+                            ctx.drawImage(img, 0, 0, width, height);
+                        }
+
+                        const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+                        resolve(dataUrl);
+                    };
+                    img.src = reader.result as string;
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        const newPhotos = await Promise.all(promises);
+        setCustomPhotos(prev => [...prev, ...newPhotos].slice(0, 5));
+        if (fileInputRef.current) fileInputRef.current.value = "";
+    };
+
+    const handleRemovePhoto = (index: number) => {
+        setCustomPhotos(prev => prev.filter((_, i) => i !== index));
     };
 
     return (
@@ -253,46 +273,70 @@ export function TroncoNewPost({ selectedClassId }: { selectedClassId: string }) 
                         className="min-h-[120px] bg-slate-50 border-transparent hover:border-slate-200 focus:border-emerald-300 focus:bg-white"
                     />
 
-                    {/* Image Preview */}
-                    {customPhoto && (
-                        <div className="relative mt-2 rounded-xl overflow-hidden border border-slate-200 bg-slate-900/5 max-h-[320px] flex items-center justify-center">
-                            <button
-                                onClick={() => {
-                                    setCustomPhoto("");
-                                    if (fileInputRef.current) fileInputRef.current.value = "";
-                                }}
-                                disabled={isSubmitting}
-                                className="absolute top-2.5 right-2.5 bg-black/70 hover:bg-black/90 text-white rounded-full p-1.5 shadow-md transition-all z-10 disabled:opacity-50"
-                                title="Remover foto"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
-                            </button>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={customPhoto} alt="Preview Anexo" className="w-full max-h-[320px] object-contain rounded-xl" />
+                    {/* Image Preview Carousel / Grid (up to 5 photos) */}
+                    {!isAcontece && customPhotos.length > 0 && (
+                        <div className="space-y-2 pt-1">
+                            <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
+                                <span>Fotos do Carrossel ({customPhotos.length}/5)</span>
+                                {customPhotos.length < 5 && (
+                                    <button
+                                        type="button"
+                                        onClick={handleAttachImage}
+                                        className="text-emerald-600 hover:text-emerald-700 font-medium flex items-center gap-1"
+                                    >
+                                        + Adicionar foto
+                                    </button>
+                                )}
+                            </div>
+                            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                                {customPhotos.map((photo, index) => (
+                                    <div key={index} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-100 group">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img src={photo} alt={`Anexo ${index + 1}`} className="w-full h-full object-cover" />
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemovePhoto(index)}
+                                            disabled={isSubmitting}
+                                            className="absolute top-1 right-1 bg-black/70 hover:bg-black/90 text-white rounded-full p-1 shadow-md transition-all z-10"
+                                            title="Remover foto"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                                        </button>
+                                        <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                                            {index + 1}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
                 </div>
             </div>
 
             <div className="bg-slate-50 px-4 py-3 border-t flex items-center justify-between">
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2">
                     <input
                         type="file"
                         accept="image/*"
+                        multiple
                         className="hidden"
                         ref={fileInputRef}
                         onChange={handleFileChange}
                     />
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={handleAttachImage}
-                        disabled={isSubmitting}
-                        className="h-9 w-9 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-full transition-colors"
-                        title="Anexar imagem (arquivo)"
-                    >
-                        <ImageIcon className="h-4 w-4" />
-                    </Button>
+                    {!isAcontece && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            type="button"
+                            onClick={handleAttachImage}
+                            disabled={isSubmitting || customPhotos.length >= 5}
+                            className="text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg gap-1.5 text-xs font-medium"
+                            title="Anexar fotos (até 5)"
+                        >
+                            <ImageIcon className="h-4 w-4" />
+                            {customPhotos.length > 0 ? `Adicionar Fotos (${customPhotos.length}/5)` : "Fotos (até 5)"}
+                        </Button>
+                    )}
                 </div>
                 <div className="flex items-center gap-2">
                     <Button variant="ghost" onClick={() => setIsExpanded(false)} disabled={isSubmitting} className="text-slate-500 hover:text-slate-900">

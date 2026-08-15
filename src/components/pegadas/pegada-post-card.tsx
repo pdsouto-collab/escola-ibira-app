@@ -9,10 +9,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { TreeDeciduous, MessageSquare, Mic, Send, MoreVertical, Play, Pencil, Trash, X, Save, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { TreeDeciduous, MessageSquare, Mic, Send, MoreVertical, Play, Pencil, Trash, X, Save, ChevronLeft, ChevronRight, Loader2, Maximize2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useSession } from "next-auth/react";
 
 
@@ -32,6 +33,7 @@ export function PegadaPostCard({ post, onUpdated, onDeleted }: PegadaPostCardPro
     const [isLoading, setIsLoading] = useState(false);
     const [isLiking, setIsLiking] = useState(false);
     const [isCommenting, setIsCommenting] = useState(false);
+    const [lightboxData, setLightboxData] = useState<{ photos: string[], index: number } | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
 
     const hasLiked = post.interactions.some(i => i.type === 'like' && i.userId === currentUser?.id);
@@ -155,10 +157,21 @@ export function PegadaPostCard({ post, onUpdated, onDeleted }: PegadaPostCardPro
             <CardContent className="p-0">
                 {post.type === "photo" && (
                     post.mediaUrls && post.mediaUrls.length > 0 ? (
-                        <div className="relative aspect-video bg-slate-100 overflow-hidden group">
+                        <div className="relative aspect-[4/3] sm:aspect-[16/10] bg-slate-100 overflow-hidden group select-none">
                             <div ref={scrollRef} className="flex w-full h-full overflow-x-auto snap-x snap-mandatory hide-scrollbar">
                                 {post.mediaUrls.map((url, i) => (
-                                    <img key={i} src={url} alt={`${post.title} - foto ${i + 1}`} className="w-full h-full object-cover shrink-0 snap-center" />
+                                    <div 
+                                        key={i} 
+                                        onClick={() => setLightboxData({ photos: post.mediaUrls || [], index: i })}
+                                        className="w-full h-full shrink-0 snap-center relative cursor-pointer"
+                                    >
+                                        <img src={url} alt={`${post.title} - foto ${i + 1}`} className="w-full h-full object-cover" />
+                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center pointer-events-none">
+                                            <span className="opacity-0 group-hover:opacity-100 bg-black/70 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-xs transition-opacity flex items-center gap-1.5 shadow-md">
+                                                <Maximize2 className="w-3.5 h-3.5" /> Ampliar foto
+                                            </span>
+                                        </div>
+                                    </div>
                                 ))}
                             </div>
                             {post.mediaUrls.length > 1 && (
@@ -166,7 +179,7 @@ export function PegadaPostCard({ post, onUpdated, onDeleted }: PegadaPostCardPro
                                     <Button
                                         variant="default"
                                         size="icon"
-                                        className="absolute top-1/2 left-2 -translate-y-1/2 h-8 w-8 rounded-full bg-black/30 hover:bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                                        className="absolute top-1/2 left-2 -translate-y-1/2 h-8 w-8 rounded-full bg-black/50 hover:bg-black/75 text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
                                         onClick={() => scroll('left')}
                                     >
                                         <ChevronLeft className="h-5 w-5" />
@@ -174,22 +187,33 @@ export function PegadaPostCard({ post, onUpdated, onDeleted }: PegadaPostCardPro
                                     <Button
                                         variant="default"
                                         size="icon"
-                                        className="absolute top-1/2 right-2 -translate-y-1/2 h-8 w-8 rounded-full bg-black/30 hover:bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                                        className="absolute top-1/2 right-2 -translate-y-1/2 h-8 w-8 rounded-full bg-black/50 hover:bg-black/75 text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
                                         onClick={() => scroll('right')}
                                     >
                                         <ChevronRight className="h-5 w-5" />
                                     </Button>
-                                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 bg-black/20 px-2 py-1 rounded-full backdrop-blur-sm">
+                                    <div className="absolute top-3 right-3 z-10 bg-black/60 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                                        {post.mediaUrls.length} fotos
+                                    </div>
+                                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 bg-black/30 px-2.5 py-1 rounded-full backdrop-blur-sm">
                                         {post.mediaUrls.map((_, i) => (
-                                            <div key={i} className="h-1.5 w-1.5 rounded-full bg-white shadow-sm opacity-50 first:opacity-100" />
+                                            <div key={i} className="h-2 w-2 rounded-full bg-white shadow-sm opacity-60" />
                                         ))}
                                     </div>
                                 </>
                             )}
                         </div>
                     ) : post.mediaUrl && post.mediaUrl.trim() !== "" && post.mediaUrl !== "null" && !post.mediaUrl.includes("photo-1502086223501") ? (
-                        <div className="relative aspect-video bg-slate-100">
+                        <div 
+                            onClick={() => setLightboxData({ photos: [post.mediaUrl!], index: 0 })}
+                            className="relative aspect-[4/3] sm:aspect-[16/10] bg-slate-100 cursor-pointer group"
+                        >
                             <img src={post.mediaUrl} alt={post.title} className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center pointer-events-none">
+                                <span className="opacity-0 group-hover:opacity-100 bg-black/70 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-xs transition-opacity flex items-center gap-1.5 shadow-md">
+                                    <Maximize2 className="w-3.5 h-3.5" /> Ampliar foto
+                                </span>
+                            </div>
                         </div>
                     ) : null
                 )}
@@ -323,6 +347,48 @@ export function PegadaPostCard({ post, onUpdated, onDeleted }: PegadaPostCardPro
                     </div>
                 )}
             </CardFooter>
+
+            {/* Photo Lightbox Modal */}
+            <Dialog open={!!lightboxData} onOpenChange={(open) => !open && setLightboxData(null)}>
+                <DialogContent className="max-w-4xl p-2 bg-slate-950 border-slate-800 text-white overflow-hidden">
+                    <div className="relative max-h-[85vh] min-h-[300px] flex items-center justify-center p-2">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={lightboxData?.photos[lightboxData.index] || ""}
+                            alt="Foto ampliada"
+                            className="max-h-[80vh] w-auto max-w-full object-contain rounded-lg shadow-2xl"
+                        />
+
+                        {lightboxData && lightboxData.photos.length > 1 && (
+                            <>
+                                <div className="absolute top-4 left-4 bg-black/70 text-white text-xs font-bold px-3 py-1 rounded-full">
+                                    {lightboxData.index + 1} de {lightboxData.photos.length}
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setLightboxData(prev => prev ? {
+                                        ...prev,
+                                        index: prev.index === 0 ? prev.photos.length - 1 : prev.index - 1
+                                    } : null)}
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/85 text-white p-2.5 rounded-full backdrop-blur-xs transition-all shadow-lg"
+                                >
+                                    <ChevronLeft className="w-6 h-6" />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setLightboxData(prev => prev ? {
+                                        ...prev,
+                                        index: prev.index === prev.photos.length - 1 ? 0 : prev.index + 1
+                                    } : null)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/85 text-white p-2.5 rounded-full backdrop-blur-xs transition-all shadow-lg"
+                                >
+                                    <ChevronRight className="w-6 h-6" />
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
         </Card>
     );
 }

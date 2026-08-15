@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { ClassBoardPost } from "@/types/class-board-post";
 import { PostInteraction } from "@/types/post-interaction";
 import { getClassBoardPosts, createPostInteraction, deletePostInteraction, updateClassBoardPost, deleteClassBoardPost } from "@/services/class-board.service";
-import { TreeDeciduous, MessageCircle, MoreHorizontal, Shapes, Megaphone, Clock, Pencil, Trash, Maximize2 } from "lucide-react";
+import { TreeDeciduous, MessageCircle, MoreHorizontal, Shapes, Megaphone, Clock, Pencil, Trash, Maximize2, ChevronLeft, ChevronRight } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow, parseISO } from "date-fns";
@@ -191,6 +191,102 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 
+function TroncoPhotoCarousel({ photos, onOpenLightbox }: { photos: string[], onOpenLightbox: (photos: string[], initialIndex: number) => void }) {
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    if (!photos || photos.length === 0) return null;
+
+    if (photos.length === 1) {
+        return (
+            <div 
+                onClick={() => onOpenLightbox(photos, 0)}
+                className="relative rounded-2xl overflow-hidden bg-slate-900/5 border border-slate-200 group cursor-pointer max-h-[520px] aspect-[4/3] sm:aspect-[16/10]"
+            >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                    src={photos[0]}
+                    alt="Foto do recado"
+                    className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center pointer-events-none">
+                    <span className="opacity-0 group-hover:opacity-100 bg-black/70 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-xs transition-opacity flex items-center gap-1.5 shadow-md">
+                        <Maximize2 className="w-3.5 h-3.5" /> Ampliar foto
+                    </span>
+                </div>
+            </div>
+        );
+    }
+
+    const prevSlide = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setCurrentIndex(prev => (prev === 0 ? photos.length - 1 : prev - 1));
+    };
+
+    const nextSlide = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setCurrentIndex(prev => (prev === photos.length - 1 ? 0 : prev + 1));
+    };
+
+    return (
+        <div className="relative rounded-2xl overflow-hidden bg-slate-950/5 border border-slate-200 group aspect-[4/3] sm:aspect-[16/10] max-h-[520px] select-none">
+            <div 
+                onClick={() => onOpenLightbox(photos, currentIndex)}
+                className="w-full h-full cursor-pointer relative"
+            >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                    src={photos[currentIndex]}
+                    alt={`Foto ${currentIndex + 1}`}
+                    className="w-full h-full object-cover object-center transition-all duration-300"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors flex items-center justify-center pointer-events-none">
+                    <span className="opacity-0 group-hover:opacity-100 bg-black/70 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-xs transition-opacity flex items-center gap-1.5 shadow-md">
+                        <Maximize2 className="w-3.5 h-3.5" /> Ampliar foto
+                    </span>
+                </div>
+            </div>
+
+            {/* Counter Badge */}
+            <div className="absolute top-3 right-3 bg-black/65 text-white text-xs font-bold px-2.5 py-1 rounded-full backdrop-blur-xs shadow-sm pointer-events-none">
+                {currentIndex + 1}/{photos.length}
+            </div>
+
+            {/* Navigation Arrows */}
+            <button
+                type="button"
+                onClick={prevSlide}
+                className="absolute left-2.5 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-2 rounded-full backdrop-blur-xs transition-all opacity-0 group-hover:opacity-100 shadow-md"
+                title="Foto anterior"
+            >
+                <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+                type="button"
+                onClick={nextSlide}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-2 rounded-full backdrop-blur-xs transition-all opacity-0 group-hover:opacity-100 shadow-md"
+                title="Próxima foto"
+            >
+                <ChevronRight className="w-4 h-4" />
+            </button>
+
+            {/* Indicator Dots */}
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-black/40 px-2.5 py-1 rounded-full backdrop-blur-xs">
+                {photos.map((_, i) => (
+                    <button
+                        key={i}
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setCurrentIndex(i);
+                        }}
+                        className={`h-2 rounded-full transition-all ${i === currentIndex ? 'w-5 bg-white' : 'w-2 bg-white/50 hover:bg-white/75'}`}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+}
+
 export function TroncoFeed({ classId, categoryFilter }: { classId: string, categoryFilter?: string }) {
     const { data: session } = useSession();
     const currentUser = session?.user as any;
@@ -199,7 +295,7 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
 
     // Edit Post Modal State
     const [editingPost, setEditingPost] = useState<LoadedPost | null>(null);
-    const [selectedPhotoModal, setSelectedPhotoModal] = useState<string | null>(null);
+    const [lightboxData, setLightboxData] = useState<{ photos: string[], index: number } | null>(null);
     const [editForm, setEditForm] = useState({
         title: "",
         content: "",
@@ -413,30 +509,13 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
                             )}
                         </div>
 
-                        {/* Photos (if any) */}
+                        {/* Photos Carousel (up to 5 photos) */}
                         {post.photos && post.photos.length > 0 && (
                             <div className="px-5 pb-3">
-                                <div className={`grid gap-2 ${post.photos.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                                    {post.photos.map((photo, index) => (
-                                        <div 
-                                            key={index} 
-                                            onClick={() => setSelectedPhotoModal(photo)}
-                                            className={`relative rounded-2xl overflow-hidden bg-slate-900/5 border border-slate-200 group cursor-pointer ${post.photos.length === 1 ? 'max-h-[520px] aspect-[4/3] sm:aspect-[16/10]' : 'aspect-square'}`}
-                                        >
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img
-                                                src={photo}
-                                                alt={`Foto ${index + 1}`}
-                                                className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
-                                            />
-                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center pointer-events-none">
-                                                <span className="opacity-0 group-hover:opacity-100 bg-black/70 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-xs transition-opacity flex items-center gap-1.5 shadow-md">
-                                                    <Maximize2 className="w-3.5 h-3.5" /> Ampliar foto
-                                                </span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
+                                <TroncoPhotoCarousel
+                                    photos={post.photos}
+                                    onOpenLightbox={(photos, index) => setLightboxData({ photos, index })}
+                                />
                             </div>
                         )}
 
@@ -535,15 +614,43 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
             </Dialog>
 
             {/* Photo Lightbox Modal */}
-            <Dialog open={!!selectedPhotoModal} onOpenChange={(open) => !open && setSelectedPhotoModal(null)}>
+            <Dialog open={!!lightboxData} onOpenChange={(open) => !open && setLightboxData(null)}>
                 <DialogContent className="max-w-4xl p-2 bg-slate-950 border-slate-800 text-white overflow-hidden">
-                    <div className="relative max-h-[85vh] flex items-center justify-center p-2">
+                    <div className="relative max-h-[85vh] min-h-[300px] flex items-center justify-center p-2">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                            src={selectedPhotoModal || ""}
+                            src={lightboxData?.photos[lightboxData.index] || ""}
                             alt="Foto ampliada"
                             className="max-h-[80vh] w-auto max-w-full object-contain rounded-lg shadow-2xl"
                         />
+
+                        {lightboxData && lightboxData.photos.length > 1 && (
+                            <>
+                                <div className="absolute top-4 left-4 bg-black/70 text-white text-xs font-bold px-3 py-1 rounded-full">
+                                    {lightboxData.index + 1} de {lightboxData.photos.length}
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setLightboxData(prev => prev ? {
+                                        ...prev,
+                                        index: prev.index === 0 ? prev.photos.length - 1 : prev.index - 1
+                                    } : null)}
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/85 text-white p-2.5 rounded-full backdrop-blur-xs transition-all shadow-lg"
+                                >
+                                    <ChevronLeft className="w-6 h-6" />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setLightboxData(prev => prev ? {
+                                        ...prev,
+                                        index: prev.index === prev.photos.length - 1 ? 0 : prev.index + 1
+                                    } : null)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/85 text-white p-2.5 rounded-full backdrop-blur-xs transition-all shadow-lg"
+                                >
+                                    <ChevronRight className="w-6 h-6" />
+                                </button>
+                            </>
+                        )}
                     </div>
                 </DialogContent>
             </Dialog>
