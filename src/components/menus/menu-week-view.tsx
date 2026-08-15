@@ -261,7 +261,7 @@ export function MenuWeekView() {
                                                 <Badge variant="outline" className="mb-1 text-[10px] font-bold tracking-wider text-slate-400 border-slate-200">
                                                     {item.time} - {item.title}
                                                 </Badge>
-                                                <p className="text-slate-700 leading-snug">{item.description}</p>
+                                                <p className="text-slate-700 leading-relaxed whitespace-pre-line break-words">{item.description}</p>
                                             </div>
                                         ))}
                                     </div>

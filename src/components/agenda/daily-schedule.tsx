@@ -83,12 +83,12 @@ export function DailySchedule({ items, onEdit, onDelete }: DailyScheduleProps) {
                                             )}
                                             <h3 className="font-semibold text-slate-800">{item.title}</h3>
                                             {item.type === "meal" ? (
-                                                <p className="mt-1 text-sm text-green-600 font-medium italic">
+                                                <p className="mt-1 text-sm text-green-600 font-medium italic whitespace-pre-line break-words">
                                                     {getMenuDescription(item.title, item.date || undefined) || item.description || "Cardápio não definido"}
                                                 </p>
                                             ) : (
                                                 item.description && (
-                                                    <p className="mt-1 text-sm text-slate-500">{item.description}</p>
+                                                    <p className="mt-1 text-sm text-slate-500 whitespace-pre-line break-words">{item.description}</p>
                                                 )
                                             )}
                                         </div>

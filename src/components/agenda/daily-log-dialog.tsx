@@ -374,7 +374,7 @@ export function DailyLogDialog({ open, onOpenChange, date, classId, students: pr
                                                 <div>
                                                     <div className="flex flex-col mb-1">
                                                         <Label className="text-[10px] text-indigo-600 font-bold uppercase">Lanche da Manhã</Label>
-                                                        <p className="text-[9px] text-slate-400 leading-tight">{getMenuDescription("Lanche da Manhã") || "Cardápio não definido"}</p>
+                                                        <p className="text-[9px] text-slate-400 leading-tight whitespace-pre-line break-words">{getMenuDescription("Lanche da Manhã") || "Cardápio não definido"}</p>
                                                     </div>
                                                     {renderMealSelector(student.id, "breakfast", form.breakfast)}
                                                 </div>

@@ -172,7 +172,7 @@ function MealCard({ title, description, status }: { title: string, description: 
         <div className="text-center p-3 rounded-xl border bg-white flex flex-col items-center">
             <div className="text-xs font-bold text-slate-500 uppercase mb-1">{title}</div>
             {description && (
-                <div className="text-[10px] text-slate-400 leading-tight mb-2 italic">
+                <div className="text-[10px] text-slate-400 leading-tight mb-2 italic whitespace-pre-line break-words">
                     {description}
                 </div>
             )}
