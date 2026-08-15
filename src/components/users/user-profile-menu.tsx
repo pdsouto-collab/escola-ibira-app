@@ -24,8 +24,37 @@ import {
     DialogTitle,
 } from "../ui/dialog";
 import { updateUser as updateUserService } from "@/services/user.service";
-import { Settings, LogOut, User as UserIcon, Lock } from "lucide-react";
+import { Settings, LogOut, User as UserIcon, Lock, Camera } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
+
+// Helper to crop to a sharp 1:1 center square and optimize resolution
+const processProfileAvatar = (dataUrl: string, size = 512): Promise<string> => {
+    return new Promise((resolve) => {
+        const img = new window.Image();
+        img.onload = () => {
+            const canvas = document.createElement("canvas");
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext("2d");
+            if (!ctx) {
+                resolve(dataUrl);
+                return;
+            }
+
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = "high";
+
+            const minDim = Math.min(img.width, img.height);
+            const startX = (img.width - minDim) / 2;
+            const startY = (img.height - minDim) / 2;
+
+            ctx.drawImage(img, startX, startY, minDim, minDim, 0, 0, size, size);
+            resolve(canvas.toDataURL("image/jpeg", 0.90));
+        };
+        img.onerror = () => resolve(dataUrl);
+        img.src = dataUrl;
+    });
+};
 
 export function UserProfileMenu() {
     const { data: session, update } = useSession();
@@ -86,6 +115,7 @@ export function UserProfileMenu() {
                 avatar: formData.avatar,
             });
 
+            toast.success("Perfil atualizado com sucesso!");
             setIsProfileOpen(false);
         } catch (error) {
             console.error("Erro ao atualizar perfil", error);
@@ -124,15 +154,37 @@ export function UserProfileMenu() {
         }
     };
 
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+                const raw = ev.target?.result as string;
+                if (raw) {
+                    const processed = await processProfileAvatar(raw, 512);
+                    setFormData(prev => ({ ...prev, avatar: processed }));
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     if (!currentUser) return null;
+
+    const userInitial = currentUser.name ? currentUser.name.charAt(0).toUpperCase() : "U";
 
     return (
         <>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Avatar className="border-2 border-white cursor-pointer hover:ring-2 hover:ring-emerald-500 transition-all">
-                        <AvatarImage src={currentUser.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + currentUser.name} />
-                        <AvatarFallback>{currentUser.name?.substring(0, 2).toUpperCase()}</AvatarFallback>
+                    <Avatar className="h-10 w-10 border-2 border-white/80 shadow-sm cursor-pointer hover:ring-2 hover:ring-emerald-500 hover:scale-105 transition-all bg-slate-100">
+                        <AvatarImage 
+                            src={currentUser.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + encodeURIComponent(currentUser.name || 'user')} 
+                            className="object-cover object-center w-full h-full"
+                        />
+                        <AvatarFallback className="bg-emerald-600 text-white font-bold text-sm">{currentUser.name?.substring(0, 2).toUpperCase()}</AvatarFallback>
                     </Avatar>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end" forceMount>
@@ -173,25 +225,40 @@ export function UserProfileMenu() {
                         </DialogDescription>
                     </DialogHeader>
                     <div className="flex flex-col items-center justify-center space-y-3 mb-2 mt-2">
-                        <Avatar className="w-24 h-24 border-2 border-slate-200">
-                            <AvatarImage src={formData.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + currentUser.name} />
-                            <AvatarFallback>{currentUser.name?.substring(0, 2).toUpperCase()}</AvatarFallback>
-                        </Avatar>
-                        <Input 
+                        <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                            <Avatar className="w-24 h-24 border-4 border-white shadow-md bg-slate-100 ring-2 ring-slate-200">
+                                <AvatarImage 
+                                    src={formData.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + encodeURIComponent(currentUser.name || 'user')} 
+                                    className="object-cover object-center w-full h-full"
+                                />
+                                <AvatarFallback className="bg-emerald-600 text-white font-bold text-2xl">{currentUser.name?.substring(0, 2).toUpperCase()}</AvatarFallback>
+                            </Avatar>
+                            <div className="absolute inset-0 bg-black/40 rounded-full flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Camera className="h-6 w-6 mb-0.5" />
+                                <span className="text-[10px] font-semibold">Alterar</span>
+                            </div>
+                            <div className="absolute bottom-0 right-0 p-1.5 bg-[#E89F67] text-white rounded-full border-2 border-white shadow-xs">
+                                <Camera className="h-3.5 w-3.5" />
+                            </div>
+                        </div>
+
+                        <input 
+                            ref={fileInputRef}
                             type="file" 
                             accept="image/*" 
-                            className="w-full max-w-xs text-sm cursor-pointer"
-                            onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                    const reader = new FileReader();
-                                    reader.onloadend = () => {
-                                        setFormData({ ...formData, avatar: reader.result as string });
-                                    };
-                                    reader.readAsDataURL(file);
-                                }
-                            }} 
+                            className="hidden"
+                            onChange={handleFileChange} 
                         />
+                        <Button 
+                            type="button" 
+                            variant="outline" 
+                            size="sm" 
+                            className="text-xs text-slate-600 hover:text-slate-900 flex items-center gap-1.5"
+                            onClick={() => fileInputRef.current?.click()}
+                        >
+                            <Camera className="h-3.5 w-3.5 text-slate-500" />
+                            Carregar nova foto
+                        </Button>
                     </div>
                     <div className="grid gap-4 py-2">
                         <div className="grid grid-cols-2 gap-4">
