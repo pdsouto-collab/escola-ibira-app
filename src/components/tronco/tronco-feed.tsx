@@ -502,17 +502,20 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
                         </div>
 
                         {/* Extra materials */}
-                        {editForm.categoryType === "Projetos da Classe" && (
-                            <div className="space-y-1.5">
-                                <Label className="text-xs font-semibold text-slate-600">Materiais e Detalhes (Opcional)</Label>
-                                <Textarea
-                                    value={editForm.extraMaterials}
-                                    onChange={e => setEditForm(prev => ({ ...prev, extraMaterials: e.target.value }))}
-                                    placeholder="Ex: Trazer tesoura sem ponta, garrafa pet..."
-                                    className="min-h-[70px] resize-none"
-                                />
+                        <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                                <Label className="text-xs font-semibold text-slate-600">Materiais e Detalhes Vinculados (Opcional)</Label>
+                                {editForm.categoryType === "Projetos da Classe" && (
+                                    <span className="text-[11px] font-medium text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">Projeto</span>
+                                )}
                             </div>
-                        )}
+                            <Textarea
+                                value={editForm.extraMaterials}
+                                onChange={e => setEditForm(prev => ({ ...prev, extraMaterials: e.target.value }))}
+                                placeholder="Ex: Trazer tesoura sem ponta, garrafa pet, avental..."
+                                className="min-h-[75px] resize-none"
+                            />
+                        </div>
                     </div>
 
                     <DialogFooter className="gap-2 sm:gap-0">
