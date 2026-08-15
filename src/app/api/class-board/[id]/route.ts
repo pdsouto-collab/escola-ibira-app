@@ -16,12 +16,20 @@ export async function DELETE(request: Request, props: { params: Promise<{ id: st
         });
 
         if (!post) {
-            return NextResponse.json({ error: "Post not found" }, { status: 404 });
+            return NextResponse.json({ error: "Post não encontrado" }, { status: 404 });
         }
 
-        if (post.authorId !== session.user.id && session.user.role !== "admin" && session.user.role !== "director") {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        const userRole = (session.user.role || "").toLowerCase();
+        const isStaff = userRole === "admin" || userRole === "director" || userRole === "teacher" || userRole === "educator";
+
+        if (post.authorId !== session.user.id && !isStaff) {
+            return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
         }
+
+        // Delete interactions first to avoid constraint issues
+        await prisma.classBoardPostInteraction.deleteMany({
+            where: { postId: id }
+        });
 
         await prisma.classBoardPost.delete({
             where: { id }
@@ -29,9 +37,9 @@ export async function DELETE(request: Request, props: { params: Promise<{ id: st
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error("Error deleting post:", error);
+        console.error("Erro ao excluir post:", error);
         return NextResponse.json(
-            { error: "Internal server error" },
+            { error: "Erro interno ao excluir post" },
             { status: 500 }
         );
     }
@@ -47,33 +55,39 @@ export async function PUT(request: Request, props: { params: Promise<{ id: strin
         const params = await props.params;
         const { id } = params;
         const body = await request.json();
-        const { title, content } = body;
+        const { title, content, extraMaterials, categoryType, photos } = body;
 
         const post = await prisma.classBoardPost.findUnique({
             where: { id }
         });
 
         if (!post) {
-            return NextResponse.json({ error: "Post not found" }, { status: 404 });
+            return NextResponse.json({ error: "Post não encontrado" }, { status: 404 });
         }
 
-        if (post.authorId !== session.user.id && session.user.role !== "admin" && session.user.role !== "director") {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        const userRole = (session.user.role || "").toLowerCase();
+        const isStaff = userRole === "admin" || userRole === "director" || userRole === "teacher" || userRole === "educator";
+
+        if (post.authorId !== session.user.id && !isStaff) {
+            return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
         }
 
         const updatedPost = await prisma.classBoardPost.update({
             where: { id },
             data: {
                 title: title !== undefined ? title : post.title,
-                content: content !== undefined ? content : post.content
+                content: content !== undefined ? content : post.content,
+                extraMaterials: extraMaterials !== undefined ? extraMaterials : post.extraMaterials,
+                categoryType: categoryType !== undefined ? categoryType : post.categoryType,
+                photos: photos !== undefined ? photos : post.photos
             }
         });
 
         return NextResponse.json(updatedPost);
     } catch (error) {
-        console.error("Error updating post:", error);
+        console.error("Erro ao atualizar post:", error);
         return NextResponse.json(
-            { error: "Internal server error" },
+            { error: "Erro interno ao atualizar post" },
             { status: 500 }
         );
     }

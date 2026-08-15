@@ -69,7 +69,7 @@ export async function deleteClassBoardPost(postId: string): Promise<boolean> {
     }
 }
 
-export async function updateClassBoardPost(postId: string, data: { title?: string; content?: string }): Promise<ClassBoardPost | null> {
+export async function updateClassBoardPost(postId: string, data: Partial<ClassBoardPost>): Promise<ClassBoardPost | null> {
     try {
         const res = await fetch(`/api/class-board/${postId}`, {
             method: "PUT",

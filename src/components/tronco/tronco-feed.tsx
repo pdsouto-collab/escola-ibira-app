@@ -184,11 +184,28 @@ function PostInteractionsView({ post, onInteractionAdded, onInteractionRemoved }
     );
 }
 
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Loader2 } from "lucide-react";
+
 export function TroncoFeed({ classId, categoryFilter }: { classId: string, categoryFilter?: string }) {
     const { data: session } = useSession();
     const currentUser = session?.user as any;
     const [posts, setPosts] = useState<LoadedPost[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+
+    // Edit Post Modal State
+    const [editingPost, setEditingPost] = useState<LoadedPost | null>(null);
+    const [editForm, setEditForm] = useState({
+        title: "",
+        content: "",
+        categoryType: "Novidades da Turma",
+        extraMaterials: ""
+    });
+    const [isSavingEdit, setIsSavingEdit] = useState(false);
 
     useEffect(() => {
         async function fetchPosts() {
@@ -223,18 +240,49 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
         }));
     };
 
-    const handleEditPost = async (post: LoadedPost) => {
-        const newTitle = window.prompt("Editar Título:", post.title);
-        if (newTitle === null) return;
-        const newContent = window.prompt("Editar Conteúdo:", post.content);
-        if (newContent === null) return;
+    const handleOpenEdit = (post: LoadedPost) => {
+        setEditingPost(post);
+        setEditForm({
+            title: post.title || "",
+            content: post.content || "",
+            categoryType: post.categoryType || "Novidades da Turma",
+            extraMaterials: post.extraMaterials || ""
+        });
+    };
 
-        const updated = await updateClassBoardPost(post.id, { title: newTitle, content: newContent });
-        if (updated) {
-            setPosts(prev => prev.map(p => p.id === post.id ? { ...p, title: newTitle, content: newContent } : p));
-            toast.success("Post editado com sucesso!");
-        } else {
+    const handleSaveEdit = async () => {
+        if (!editingPost || !editForm.title.trim() || !editForm.content.trim()) {
+            toast.error("Preencha o título e o conteúdo do post.");
+            return;
+        }
+
+        setIsSavingEdit(true);
+        try {
+            const updated = await updateClassBoardPost(editingPost.id, {
+                title: editForm.title.trim(),
+                content: editForm.content.trim(),
+                categoryType: editForm.categoryType,
+                extraMaterials: editForm.extraMaterials ? editForm.extraMaterials.trim() : null
+            });
+
+            if (updated) {
+                setPosts(prev => prev.map(p => p.id === editingPost.id ? {
+                    ...p,
+                    title: editForm.title.trim(),
+                    content: editForm.content.trim(),
+                    categoryType: editForm.categoryType,
+                    extraMaterials: editForm.extraMaterials ? editForm.extraMaterials.trim() : null
+                } : p));
+                toast.success("Post editado com sucesso!");
+                setEditingPost(null);
+            } else {
+                toast.error("Erro ao editar post.");
+            }
+        } catch (error) {
+            console.error("Erro ao atualizar post:", error);
             toast.error("Erro ao editar post.");
+        } finally {
+            setIsSavingEdit(false);
         }
     };
 
@@ -253,6 +301,9 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
     if (categoryFilter) {
         filteredPosts = filteredPosts.filter(p => p.categoryType === categoryFilter);
     }
+
+    const userRole = (currentUser?.role || "").toLowerCase();
+    const isStaff = userRole === "admin" || userRole === "director" || userRole === "teacher" || userRole === "educator";
 
     if (isLoading) {
         return (
@@ -280,6 +331,7 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
         <div className="space-y-6">
             {filteredPosts.map(post => {
                 const isAcontece = post.categoryType === "Projetos da Classe";
+                const canManagePost = Boolean(currentUser && (post.authorId === currentUser.id || isStaff));
 
                 return (
                     <div key={post.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
@@ -309,7 +361,7 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
                                         </div>
                                     </div>
                                 </div>
-                                {currentUser && (post.authorId === currentUser.id || currentUser.role === "admin") && (
+                                {canManagePost && (
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <button className="text-slate-400 hover:text-slate-600 p-2 hover:bg-slate-50 rounded-full transition-colors outline-none focus:ring-0">
@@ -317,7 +369,7 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
                                             </button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end" className="w-40 bg-white border border-slate-200">
-                                            <DropdownMenuItem onClick={() => handleEditPost(post)} className="text-slate-700 hover:bg-slate-50 hover:text-slate-900 cursor-pointer">
+                                            <DropdownMenuItem onClick={() => handleOpenEdit(post)} className="text-slate-700 hover:bg-slate-50 hover:text-slate-900 cursor-pointer">
                                                 <Pencil className="h-4 w-4 mr-2" />
                                                 Editar
                                             </DropdownMenuItem>
@@ -385,6 +437,89 @@ export function TroncoFeed({ classId, categoryFilter }: { classId: string, categ
                     </div>
                 );
             })}
+
+            {/* Edit Post Dialog */}
+            <Dialog open={!!editingPost} onOpenChange={(open) => !open && setEditingPost(null)}>
+                <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Pencil className="h-5 w-5 text-emerald-600" />
+                            Editar Recado do Tronco
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    <div className="space-y-4 py-2">
+                        {/* Category selection */}
+                        <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold text-slate-600">Categoria</Label>
+                            <div className="flex gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setEditForm(prev => ({ ...prev, categoryType: "Novidades da Turma" }))}
+                                    className={`flex-1 py-2 px-3 text-xs font-medium rounded-lg border transition-all ${editForm.categoryType === "Novidades da Turma" ? "bg-blue-50 border-blue-200 text-blue-700 font-semibold" : "bg-slate-50 border-slate-200 text-slate-600"}`}
+                                >
+                                    Novidades da Turma
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setEditForm(prev => ({ ...prev, categoryType: "Projetos da Classe" }))}
+                                    className={`flex-1 py-2 px-3 text-xs font-medium rounded-lg border transition-all ${editForm.categoryType === "Projetos da Classe" ? "bg-amber-50 border-amber-200 text-amber-700 font-semibold" : "bg-slate-50 border-slate-200 text-slate-600"}`}
+                                >
+                                    Projetos da Classe
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Title */}
+                        <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold text-slate-600">Título</Label>
+                            <Input
+                                value={editForm.title}
+                                onChange={e => setEditForm(prev => ({ ...prev, title: e.target.value }))}
+                                placeholder="Título do recado..."
+                            />
+                        </div>
+
+                        {/* Content */}
+                        <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold text-slate-600">Conteúdo</Label>
+                            <Textarea
+                                value={editForm.content}
+                                onChange={e => setEditForm(prev => ({ ...prev, content: e.target.value }))}
+                                placeholder="Escreva o recado aqui..."
+                                className="min-h-[120px] resize-none"
+                            />
+                        </div>
+
+                        {/* Extra materials */}
+                        {editForm.categoryType === "Projetos da Classe" && (
+                            <div className="space-y-1.5">
+                                <Label className="text-xs font-semibold text-slate-600">Materiais e Detalhes (Opcional)</Label>
+                                <Textarea
+                                    value={editForm.extraMaterials}
+                                    onChange={e => setEditForm(prev => ({ ...prev, extraMaterials: e.target.value }))}
+                                    placeholder="Ex: Trazer tesoura sem ponta, garrafa pet..."
+                                    className="min-h-[70px] resize-none"
+                                />
+                            </div>
+                        )}
+                    </div>
+
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button variant="outline" onClick={() => setEditingPost(null)} disabled={isSavingEdit}>
+                            Cancelar
+                        </Button>
+                        <Button 
+                            onClick={handleSaveEdit} 
+                            disabled={isSavingEdit}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2"
+                        >
+                            {isSavingEdit && <Loader2 className="h-4 w-4 animate-spin" />}
+                            Salvar Alterações
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
