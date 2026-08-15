@@ -228,6 +228,7 @@ model Project {
   finalProduct    String?
   guidingQuestion String?   @db.Text
   imageUrl        String?
+  photos          String[]  @default([])
   tags            String[]
   bnccSkillIds    String[]
   contentIds      String[]

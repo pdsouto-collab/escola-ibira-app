@@ -13,6 +13,7 @@ export interface Project {
     contentIds?: string[]; // IDs of Custom Content
     guidingQuestion?: string; // e.g. "Como podemos cuidar da natureza?"
     imageUrl?: string; // Banner image url for the project card
+    photos?: string[]; // Up to 5 complementary photos for the project
     type?: string; // e.g. "Project"
     summary?: string; // rich text overview
     objectives?: string; // learning objectives

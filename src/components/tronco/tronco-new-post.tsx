@@ -101,10 +101,13 @@ export function TroncoNewPost({ selectedClassId, classes = [] }: { selectedClass
 
         if (isAcontece && linkedProjectId !== "none") {
             const proj = availableProjects.find(p => p.id === linkedProjectId);
-            if (proj?.imageUrl) {
-                photos = [proj.imageUrl];
-            }
             if (proj) {
+                const projectPhotos: string[] = [];
+                if (proj.imageUrl) projectPhotos.push(proj.imageUrl);
+                if (proj.photos && Array.isArray(proj.photos)) {
+                    projectPhotos.push(...proj.photos);
+                }
+                photos = projectPhotos.filter(Boolean);
                 finalTitle = proj.title;
             }
         } else if (!finalTitle) {
@@ -358,6 +361,46 @@ export function TroncoNewPost({ selectedClassId, classes = [] }: { selectedClass
                         disabled={isSubmitting}
                         className="min-h-[120px] bg-slate-50 border-transparent hover:border-slate-200 focus:border-emerald-300 focus:bg-white"
                     />
+
+                    {/* Preview de Fotos do Projeto Vinculado (Banner + Fotos Complementares) */}
+                    {isAcontece && linkedProjectId !== "none" && (() => {
+                        const selectedProj = availableProjects.find(p => p.id === linkedProjectId);
+                        const projPhotos: string[] = [];
+                        if (selectedProj?.imageUrl) projPhotos.push(selectedProj.imageUrl);
+                        if (selectedProj?.photos && Array.isArray(selectedProj.photos)) {
+                            projPhotos.push(...selectedProj.photos);
+                        }
+                        const validPhotos = projPhotos.filter(Boolean);
+
+                        if (validPhotos.length === 0) return null;
+
+                        return (
+                            <div className="space-y-2 pt-2 p-3 bg-emerald-50/70 border border-emerald-200/80 rounded-xl">
+                                <div className="flex items-center justify-between text-xs font-bold text-emerald-800">
+                                    <span className="flex items-center gap-1.5">
+                                        <Shapes className="h-3.5 w-3.5" /> Fotos Carregadas do Projeto ({validPhotos.length})
+                                    </span>
+                                    <Badge variant="secondary" className="bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                                        Banner + Complementares
+                                    </Badge>
+                                </div>
+                                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 pt-1">
+                                    {validPhotos.map((photo, index) => (
+                                        <div key={index} className="relative aspect-video sm:aspect-square rounded-lg overflow-hidden border border-emerald-200 bg-white shadow-xs">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img src={photo} alt={`Foto do Projeto ${index + 1}`} className="w-full h-full object-cover" />
+                                            <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[8px] font-bold px-1 py-0.5 rounded">
+                                                {index === 0 ? "Banner" : `Foto ${index}`}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <p className="text-[10px] text-emerald-700 italic">
+                                    Todas as fotos acima serão automaticamente publicadas no carrossel de fotos deste recado.
+                                </p>
+                            </div>
+                        );
+                    })()}
 
                     {/* Image Preview Carousel / Grid (up to 5 photos) */}
                     {!isAcontece && customPhotos.length > 0 && (

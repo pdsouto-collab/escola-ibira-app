@@ -108,7 +108,8 @@ function NewProjectWizardContent() {
         bnccSkills: [] as string[],
         customContent: [] as string[],
         projectSchedule: [] as Partial<ScheduleItem>[],
-        imageUrl: ""
+        imageUrl: "",
+        photos: [] as string[]
     });
 
     // Stable project ID across steps
@@ -137,6 +138,7 @@ function NewProjectWizardContent() {
     // Framing Dialog State
     const [framingModalOpen, setFramingModalOpen] = useState(false);
     const [rawImageToFrame, setRawImageToFrame] = useState<string | null>(null);
+    const [framingContext, setFramingContext] = useState<{ type: "banner" } | { type: "complementary"; index: number } | null>(null);
 
     // Immediately write sessions to store (expanded per selected classes)
     const persistSessionsToStore = async (updatedSessions: Partial<ScheduleItem>[]) => {
@@ -230,7 +232,8 @@ function NewProjectWizardContent() {
                         bnccSkills: projectToEdit.bnccSkillIds || [],
                         customContent: projectToEdit.contentIds || [],
                         projectSchedule: uniqueItems.map(item => ({ ...item })),
-                        imageUrl: projectToEdit.imageUrl || ""
+                        imageUrl: projectToEdit.imageUrl || "",
+                        photos: projectToEdit.photos || []
                     });
                 }
             }).catch(err => {
@@ -264,7 +267,8 @@ function NewProjectWizardContent() {
             contentIds: formData.customContent,
             students: formData.students,
             classes: formData.classes,
-            imageUrl: formData.imageUrl
+            imageUrl: formData.imageUrl,
+            photos: formData.photos || []
         };
 
         try {
@@ -322,7 +326,8 @@ function NewProjectWizardContent() {
             contentIds: formData.customContent,
             students: formData.students,
             classes: formData.classes,
-            imageUrl: formData.imageUrl
+            imageUrl: formData.imageUrl,
+            photos: formData.photos || []
         };
 
         try {
@@ -351,11 +356,34 @@ function NewProjectWizardContent() {
         const reader = new FileReader();
         reader.onloadend = () => {
             if (reader.result) {
+                setFramingContext({ type: "banner" });
                 setRawImageToFrame(reader.result as string);
                 setFramingModalOpen(true);
             }
         };
         reader.readAsDataURL(file);
+        if (e.target) e.target.value = '';
+    };
+
+    const handleComplementaryPhotosUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
+        const currentCount = formData.photos?.length || 0;
+        const remainingSlots = Math.max(0, 5 - currentCount);
+        const filesToProcess = files.slice(0, remainingSlots);
+
+        filesToProcess.forEach(file => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                if (reader.result) {
+                    setFormData(prev => ({
+                        ...prev,
+                        photos: [...(prev.photos || []), reader.result as string].slice(0, 5)
+                    }));
+                }
+            };
+            reader.readAsDataURL(file);
+        });
         if (e.target) e.target.value = '';
     };
 
@@ -582,16 +610,90 @@ function NewProjectWizardContent() {
                                                 <button
                                                     type="button"
                                                     onClick={() => {
+                                                        setFramingContext({ type: "banner" });
                                                         setRawImageToFrame(formData.imageUrl);
                                                         setFramingModalOpen(true);
                                                     }}
                                                     className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[10px] font-bold gap-1 cursor-pointer"
-                                                    title="Ajustar Enquadramento da Foto"
+                                                    title="Ajustar Enquadramento do Banner"
                                                 >
                                                     <Crop className="w-4 h-4" />
                                                     <span>Enquadrar</span>
                                                 </button>
                                             </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Fotos Complementares do Projeto (Até 5 fotos) */}
+                                <div className="p-4 border border-slate-200/80 rounded-xl bg-slate-50/60 space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <Label className="font-bold text-slate-800 text-sm block">Fotos Complementares do Projeto</Label>
+                                            <span className="text-xs text-slate-500">Adicione até 5 fotos extras que serão exibidas automaticamente no Tronco de Recados</span>
+                                        </div>
+                                        <Badge variant="secondary" className="font-bold text-xs bg-indigo-50 text-indigo-700 border-indigo-200">
+                                            {formData.photos?.length || 0}/5 fotos
+                                        </Badge>
+                                    </div>
+
+                                    <input
+                                        id="complementary-photos-upload"
+                                        type="file"
+                                        multiple
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={handleComplementaryPhotosUpload}
+                                    />
+
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 pt-1">
+                                        {(formData.photos || []).map((photo, index) => (
+                                            <div key={index} className="relative aspect-video sm:aspect-square rounded-xl overflow-hidden border border-slate-200 bg-white group shadow-xs">
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                <img src={photo} alt={`Foto extra ${index + 1}`} className="w-full h-full object-cover" />
+                                                <div className="absolute top-1 right-1 flex items-center gap-1 z-10">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setFramingContext({ type: "complementary", index });
+                                                            setRawImageToFrame(photo);
+                                                            setFramingModalOpen(true);
+                                                        }}
+                                                        className="bg-black/75 hover:bg-indigo-600 text-white rounded-full p-1 shadow-md transition-all"
+                                                        title="Ajustar Enquadramento da Foto"
+                                                    >
+                                                        <Crop className="w-3 h-3" />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                photos: (prev.photos || []).filter((_, i) => i !== index)
+                                                            }));
+                                                        }}
+                                                        className="bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-md transition-all"
+                                                        title="Remover foto"
+                                                    >
+                                                        <Trash2 className="w-3 h-3" />
+                                                    </button>
+                                                </div>
+                                                <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+                                                    {index + 1}
+                                                </span>
+                                            </div>
+                                        ))}
+
+                                        {(formData.photos?.length || 0) < 5 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => document.getElementById('complementary-photos-upload')?.click()}
+                                                className="aspect-video sm:aspect-square border-2 border-dashed border-indigo-200 rounded-xl flex flex-col items-center justify-center hover:border-indigo-400 hover:bg-indigo-50/50 transition-all text-indigo-500 group bg-white shadow-xs"
+                                            >
+                                                <ImagePlus className="w-5 h-5 mb-1 group-hover:scale-110 transition-transform" />
+                                                <span className="text-[10px] font-bold uppercase tracking-wider">Add Foto</span>
+                                                <span className="text-[9px] text-slate-400">({5 - (formData.photos?.length || 0)} restantes)</span>
+                                            </button>
                                         )}
                                     </div>
                                 </div>
@@ -1216,15 +1318,23 @@ function NewProjectWizardContent() {
                 </div>
             </div>
 
-            {/* Modal de Enquadramento Reutilizável de Banner */}
+            {/* Modal de Enquadramento Reutilizável de Fotos do Projeto */}
             <ImageFramingDialog
                 open={framingModalOpen}
                 onOpenChange={setFramingModalOpen}
                 imageSrc={rawImageToFrame}
-                aspectRatio="16/9"
-                title="Ajustar Enquadramento do Banner do Projeto"
+                aspectRatio={framingContext?.type === "complementary" ? "4/3" : "16/9"}
+                title={framingContext?.type === "complementary" ? "Ajustar Enquadramento da Foto Complementar" : "Ajustar Enquadramento do Banner do Projeto"}
                 onApply={(framedDataUrl) => {
-                    setFormData(prev => ({ ...prev, imageUrl: framedDataUrl }));
+                    if (framingContext?.type === "complementary" && typeof framingContext.index === "number") {
+                        setFormData(prev => {
+                            const copy = [...(prev.photos || [])];
+                            copy[framingContext.index] = framedDataUrl;
+                            return { ...prev, photos: copy };
+                        });
+                    } else {
+                        setFormData(prev => ({ ...prev, imageUrl: framedDataUrl }));
+                    }
                 }}
             />
         </div>

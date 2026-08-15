@@ -44,6 +44,7 @@ export async function POST(req: Request) {
         finalProduct: data.finalProduct,
         guidingQuestion: data.guidingQuestion,
         imageUrl: data.imageUrl,
+        photos: data.photos || [],
         tags: data.tags || [],
         bnccSkillIds: data.bnccSkillIds || [],
         contentIds: data.contentIds || [],
