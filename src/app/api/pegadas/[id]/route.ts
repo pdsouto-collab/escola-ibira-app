@@ -5,18 +5,24 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
-        const session = await getServerSessionOrJwt();
-        if (!session || !session.user || !session.user.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+    const session = await getServerSessionOrJwt();
+    if (!session || !session.user || !session.user.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     try {
         const { id } = await params;
         const data = await req.json();
 
+        const updateData: any = { ...data };
+        if (data.mediaUrls !== undefined) {
+            updateData.mediaUrls = Array.isArray(data.mediaUrls) ? data.mediaUrls : [];
+            updateData.mediaUrl = updateData.mediaUrls.length > 0 ? updateData.mediaUrls[0] : null;
+        }
+
         const post = await prisma.pegadaPost.update({
             where: { id },
-            data,
+            data: updateData,
             include: {
                 interactions: true,
             },
@@ -30,10 +36,10 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 }
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
-        const session = await getServerSessionOrJwt();
-        if (!session || !session.user || !session.user.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+    const session = await getServerSessionOrJwt();
+    if (!session || !session.user || !session.user.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     try {
         const { id } = await params;

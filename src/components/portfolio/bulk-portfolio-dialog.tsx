@@ -55,7 +55,7 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
     // Step 2: Global Context & Narrative
     const [title, setTitle] = useState("");
     const [tagsInput, setTagsInput] = useState("");
-    const [images, setImages] = useState<string[]>(["https://images.unsplash.com/photo-1544717297-fa95b6ee9643?q=80&w=600&auto=format&fit=crop"]);
+    const [images, setImages] = useState<string[]>([]);
     const [baseNarrative, setBaseNarrative] = useState("");
     const [isSaving, setIsSaving] = useState(false);
 
@@ -74,6 +74,7 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
             setStudentSearch("");
             setTitle("");
             setTagsInput("");
+            setImages([]);
             setBaseNarrative("");
             setForms({});
         }
@@ -101,16 +102,17 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
         }
     };
 
-    const toggleStudentSelection = (id: string) => {
+    const toggleStudentSelection = (studentId: string) => {
         setSelectedStudentIds(prev =>
-            prev.includes(id) ? prev.filter(sid => sid !== id) : [...prev, id]
+            prev.includes(studentId)
+                ? prev.filter(id => id !== studentId)
+                : [...prev, studentId]
         );
     };
 
     const selectAllVisibleStudents = () => {
         const visibleIds = filteredStudents.map(s => s.id);
-        const mergedSet = new Set([...selectedStudentIds, ...visibleIds]);
-        setSelectedStudentIds(Array.from(mergedSet));
+        setSelectedStudentIds(prev => Array.from(new Set([...prev, ...visibleIds])));
     };
 
     const deselectAllVisibleStudents = () => {
@@ -120,7 +122,7 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
 
     const handleNext = () => {
         if (selectedStudentIds.length === 0) {
-            toast.warning("Por favor, selecione pelo menos um aluno.");
+            toast.warning("Selecione pelo menos um aluno para continuar.");
             return;
         }
 
@@ -138,6 +140,10 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
     };
 
     const handleImageClick = () => {
+        if (images.length >= 5) {
+            toast.warning("Limite máximo de 5 fotos atingido.");
+            return;
+        }
         fileInputRef.current?.click();
     };
 
@@ -145,12 +151,15 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
         const files = Array.from(e.target.files || []);
         if (files.length === 0) return;
 
-        setImages(prev => {
-            if (prev.length === 1 && prev[0].includes("unsplash.com")) return [];
-            return prev;
-        });
+        const currentSlots = 5 - images.length;
+        if (currentSlots <= 0) {
+            toast.warning("Limite máximo de 5 fotos atingido.");
+            return;
+        }
 
-        files.forEach(file => {
+        const filesToProcess = files.slice(0, currentSlots);
+
+        filesToProcess.forEach(file => {
             const reader = new FileReader();
             reader.onload = (event) => {
                 const img = new Image();
@@ -171,7 +180,7 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
                     const ctx = canvas.getContext('2d');
                     ctx?.drawImage(img, 0, 0, width, height);
                     const newBase = canvas.toDataURL('image/jpeg', 0.7);
-                    setImages(prev => [...prev, newBase]);
+                    setImages(prev => [...prev, newBase].slice(0, 5));
                 };
                 img.src = event.target?.result as string;
             };
@@ -249,6 +258,7 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
                 title: title.trim(),
                 content: baseNarrative.trim() || "Nova vivência registrada para a turma.",
                 mediaUrl: images[0] || undefined,
+                mediaUrls: images,
                 tags: tagsArray,
             });
 
@@ -427,8 +437,8 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
 
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
-                                        <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Fotos da Vivência</Label>
-                                        <Badge variant="secondary" className="text-[10px]">{images.length} fotos</Badge>
+                                        <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Fotos da Vivência ({images.length}/5)</Label>
+                                        <Badge variant="secondary" className="text-[10px] font-bold">{images.length}/5 fotos</Badge>
                                     </div>
                                     <input type="file" multiple ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageChange} />
 
@@ -438,20 +448,23 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
                                                 <div key={idx} className="w-32 h-32 shrink-0 border border-slate-200 rounded-2xl p-1 bg-slate-50 relative group overflow-hidden">
                                                     <img src={img} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover rounded-xl" />
                                                     <button
+                                                        type="button"
                                                         onClick={() => setImages(prev => prev.filter((_, i) => i !== idx))}
-                                                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10"
                                                     >
                                                         <Trash2 className="w-3.5 h-3.5" />
                                                     </button>
                                                 </div>
                                             ))}
-                                            <div
-                                                onClick={handleImageClick}
-                                                className="w-32 h-32 shrink-0 border-2 border-dashed border-slate-300 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 transition-all text-slate-400 hover:text-indigo-500 group shadow-sm bg-white"
-                                            >
-                                                <ImagePlus className="h-6 w-6 mb-2 group-hover:scale-110 transition-transform" />
-                                                <span className="text-[10px] font-bold uppercase tracking-wider">Add Foto</span>
-                                            </div>
+                                            {images.length < 5 && (
+                                                <div
+                                                    onClick={handleImageClick}
+                                                    className="w-32 h-32 shrink-0 border-2 border-dashed border-slate-300 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 transition-all text-slate-400 hover:text-indigo-500 group shadow-sm bg-white"
+                                                >
+                                                    <ImagePlus className="h-6 w-6 mb-2 group-hover:scale-110 transition-transform" />
+                                                    <span className="text-[10px] font-bold uppercase tracking-wider">Add Foto</span>
+                                                </div>
+                                            )}
                                         </div>
                                     </ScrollArea>
                                 </div>
