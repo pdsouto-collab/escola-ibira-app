@@ -10,6 +10,9 @@ export interface PegadaPost {
     mediaUrl?: string;
     mediaUrls?: string[]; // Multiple images up to 5
     tags?: string[];
+    classId?: string;
+    classIds?: string[];
+    studentIds?: string[];
     interactions: PegadaInteraction[];
     createdAt: string;
 }

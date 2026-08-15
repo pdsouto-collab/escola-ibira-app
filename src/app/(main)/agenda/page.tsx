@@ -87,17 +87,30 @@ export default function AgendaPage() {
         ? classes.filter(c => c.teacherId === currentUser.id)
         : classes;
 
-    const filteredSchedule = schedule.filter(item => {
+    const filteredSchedule = schedule.filter((item, index, self) => {
         const todayStr = format(currentDate, 'yyyy-MM-dd');
         const itemDateMatches = item.date ? item.date === todayStr : true;
 
         const classMatches = selectedClassId === "all"
-            ? (currentUser?.role === "teacher" ? availableClasses.some(c => c.id === item.classId) : true)
+            ? (currentUser?.role === "teacher" ? (!item.classId || availableClasses.some(c => c.id === item.classId)) : true)
             : item.classId === selectedClassId || !item.classId;
 
         const typeMatches = selectedType === "all" || item.type === selectedType;
 
-        return itemDateMatches && classMatches && typeMatches;
+        if (!itemDateMatches || !classMatches || !typeMatches) return false;
+
+        // Deduplicação visual se houver itens duplicados de rotina anteriores
+        if (selectedClassId === "all") {
+            const firstIdx = self.findIndex(x => 
+                (x.date || "") === (item.date || "") && 
+                x.time === item.time && 
+                (x.title || "").trim().toLowerCase() === (item.title || "").trim().toLowerCase() && 
+                x.type === item.type
+            );
+            return firstIdx === index;
+        }
+
+        return true;
     });
 
     const handleAdd = () => {
@@ -117,8 +130,22 @@ export default function AgendaPage() {
     const confirmDeleteAction = async () => {
         if (confirmDeleteItem) {
             try {
+                // Encontra duplicatas idênticas para remover tudo de uma vez
+                const matchingDuplicates = schedule.filter(i => 
+                    i.id !== confirmDeleteItem.id &&
+                    (i.date || "") === (confirmDeleteItem.date || "") &&
+                    i.time === confirmDeleteItem.time &&
+                    (i.title || "").trim().toLowerCase() === (confirmDeleteItem.title || "").trim().toLowerCase() &&
+                    i.type === confirmDeleteItem.type
+                );
+
                 await deleteScheduleService(confirmDeleteItem.id);
-                setSchedule(schedule.filter(i => i.id !== confirmDeleteItem.id));
+                if (matchingDuplicates.length > 0) {
+                    await Promise.all(matchingDuplicates.map(d => deleteScheduleService(d.id).catch(() => {})));
+                }
+
+                const deletedIds = new Set([confirmDeleteItem.id, ...matchingDuplicates.map(d => d.id)]);
+                setSchedule(schedule.filter(i => !deletedIds.has(i.id)));
                 toast.success("Item removido");
             } catch (err) {
                 toast.error("Erro ao remover item");
@@ -128,9 +155,13 @@ export default function AgendaPage() {
     };
 
     const handleSave = async (item: ScheduleItem) => {
+        const targetClassId = (item.classId === "all" || (!item.classId && selectedClassId === "all")) 
+            ? null 
+            : (item.classId || (selectedClassId !== "all" ? selectedClassId : null));
+
         const newItem = {
             ...item,
-            classId: item.classId || (selectedClassId === "all" ? availableClasses[0]?.id : selectedClassId),
+            classId: targetClassId,
             date: item.date || format(currentDate, 'yyyy-MM-dd'),
             projectId: item.projectId
         };
@@ -169,7 +200,7 @@ export default function AgendaPage() {
 
         const newItems: Omit<ScheduleItem, "id" | "createdAt" | "updatedAt">[] = [];
 
-        const addItem = (date: Date, cId?: string) => {
+        const addItem = (date: Date, cId?: string | null) => {
             newItems.push({
                 time: config.time,
                 endTime: config.endTime || null,
@@ -186,7 +217,7 @@ export default function AgendaPage() {
         for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
             if (config.daysOfWeek.includes(d.getDay())) {
                 if (config.classId === "all") {
-                    availableClasses.forEach(c => addItem(new Date(d), c.id));
+                    addItem(new Date(d), null);
                 } else {
                     addItem(new Date(d), config.classId);
                 }
@@ -195,8 +226,6 @@ export default function AgendaPage() {
 
         try {
             if (editingRoutineId) {
-                // Bulk delete old routine items using API is complex if we map one by one. 
-                // We'll delete them one by one via service, then push new ones.
                 const itemsToDelete = schedule.filter(i => i.routineId === editingRoutineId);
                 await Promise.all(itemsToDelete.map(i => deleteScheduleService(i.id)));
                 currentSchedule = schedule.filter(i => i.routineId !== editingRoutineId);

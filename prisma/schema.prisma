@@ -194,6 +194,9 @@ model PegadaPost {
   mediaUrl     String?
   mediaUrls    String[]
   tags         String[]
+  classId      String?             @default("all")
+  classIds     String[]            @default([])
+  studentIds   String[]            @default([])
   createdAt    DateTime            @default(now())
   updatedAt    DateTime            @updatedAt
   interactions PegadaInteraction[]

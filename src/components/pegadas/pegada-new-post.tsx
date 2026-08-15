@@ -16,7 +16,8 @@ import {
     Plus,
     Footprints,
     Upload,
-    Crop
+    Crop,
+    GraduationCap
 } from "lucide-react";
 import { useRef } from "react";
 import { BulkPortfolioDialog } from "@/components/portfolio/bulk-portfolio-dialog";
@@ -39,6 +40,7 @@ export function PegadaNewPost({ onSuccess }: PegadaNewPostProps = {}) {
     const [type, setType] = useState<'photo' | 'video' | 'note'>('photo');
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
+    const [targetClassIds, setTargetClassIds] = useState<string[]>(["all"]);
     const [isBulkOpen, setIsBulkOpen] = useState(false);
     const [mediaUrls, setMediaUrls] = useState<string[]>([]);
     const [framingModalOpen, setFramingModalOpen] = useState(false);
@@ -76,6 +78,8 @@ export function PegadaNewPost({ onSuccess }: PegadaNewPostProps = {}) {
                 content: content.trim(),
                 mediaUrl: mediaUrls.length > 0 ? mediaUrls[0] : undefined,
                 mediaUrls: mediaUrls.length > 0 ? mediaUrls : undefined,
+                classId: targetClassIds[0] || "all",
+                classIds: targetClassIds,
                 tags: []
             };
 
@@ -84,6 +88,7 @@ export function PegadaNewPost({ onSuccess }: PegadaNewPostProps = {}) {
             setTitle("");
             setContent("");
             setMediaUrls([]);
+            setTargetClassIds(["all"]);
             setIsExpanded(false);
             if (onSuccess) onSuccess();
         } catch (error) {
@@ -178,6 +183,54 @@ export function PegadaNewPost({ onSuccess }: PegadaNewPostProps = {}) {
                             <Button variant="ghost" size="icon" onClick={() => setIsExpanded(false)} className="h-8 w-8 text-slate-400 hover:text-red-500">
                                 <X className="h-4 w-4" />
                             </Button>
+                        </div>
+
+                        {/* Seletor de Turma Destino */}
+                        <div className="space-y-2 p-3 bg-white/80 rounded-xl border border-indigo-100">
+                            <div className="flex items-center justify-between">
+                                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                                    <GraduationCap className="h-4 w-4 text-indigo-600" />
+                                    Turma Destino da Pegada
+                                </label>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (targetClassIds.includes("all")) {
+                                            setTargetClassIds(classes.length > 0 ? [classes[0].id] : []);
+                                        } else {
+                                            setTargetClassIds(["all"]);
+                                        }
+                                    }}
+                                    className={`text-xs font-bold px-2.5 py-1 rounded-md transition-all ${targetClassIds.includes("all") ? "bg-purple-600 text-white shadow-xs" : "bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200"}`}
+                                >
+                                    🏫 Todas as Turmas
+                                </button>
+                            </div>
+
+                            {!targetClassIds.includes("all") && (
+                                <div className="flex flex-wrap gap-1.5 pt-1">
+                                    {classes.map(c => {
+                                        const isSelected = targetClassIds.includes(c.id);
+                                        return (
+                                            <button
+                                                key={c.id}
+                                                type="button"
+                                                onClick={() => {
+                                                    if (isSelected) {
+                                                        const next = targetClassIds.filter(id => id !== c.id);
+                                                        setTargetClassIds(next.length > 0 ? next : ["all"]);
+                                                    } else {
+                                                        setTargetClassIds([...targetClassIds.filter(id => id !== "all"), c.id]);
+                                                    }
+                                                }}
+                                                className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-all ${isSelected ? "bg-indigo-600 text-white shadow-xs" : "bg-white border border-indigo-100 text-slate-600 hover:bg-indigo-50"}`}
+                                            >
+                                                {c.name}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
 
                         <Input

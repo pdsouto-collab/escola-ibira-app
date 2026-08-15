@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { ImageFramingDialog } from "@/components/ui/image-framing-dialog";
 
 export default function MuralPage() {
     const { data: session } = useSession();
@@ -51,10 +52,6 @@ export default function MuralPage() {
     // Framing / Crop Tool State
     const [framingModalOpen, setFramingModalOpen] = useState(false);
     const [rawImageToFrame, setRawImageToFrame] = useState<string | null>(null);
-    const [framingMode, setFramingMode] = useState<'cover' | 'contain'>('cover');
-    const [framingPosY, setFramingPosY] = useState<number>(50); // 0 (top) to 100 (bottom)
-    const [framingPosX, setFramingPosX] = useState<number>(50); // 0 (left) to 100 (right)
-    const [framingZoom, setFramingZoom] = useState<number>(1.0); // 1.0 to 2.5
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Fetching Data
@@ -658,134 +655,18 @@ export default function MuralPage() {
                 )}
             </div>
 
-            {/* Modal de Enquadramento Interativo */}
-            <Dialog open={framingModalOpen} onOpenChange={setFramingModalOpen}>
-                <DialogContent className="max-w-2xl bg-white p-6 rounded-2xl shadow-xl">
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 text-slate-900 text-lg">
-                            <Crop className="h-5 w-5 text-primary" />
-                            Ajustar Enquadramento da Foto
-                        </DialogTitle>
-                    </DialogHeader>
-
-                    {rawImageToFrame && (
-                        <div className="space-y-4 pt-2">
-                            {/* Live Preview Container 16:9 */}
-                            <div className="relative aspect-[16/9] w-full rounded-xl overflow-hidden bg-slate-950 border border-slate-200 shadow-inner">
-                                {framingMode === 'contain' ? (
-                                    <>
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img src={rawImageToFrame} alt="" className="absolute inset-0 w-full h-full object-cover blur-md opacity-40" />
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img src={rawImageToFrame} alt="Preview" className="relative w-full h-full object-contain" />
-                                    </>
-                                ) : (
-                                    /* eslint-disable-next-line @next/next/no-img-element */
-                                    <img
-                                        src={rawImageToFrame}
-                                        alt="Preview"
-                                        style={{
-                                            objectPosition: `${framingPosX}% ${framingPosY}%`,
-                                            transform: `scale(${framingZoom})`,
-                                            transformOrigin: `${framingPosX}% ${framingPosY}%`,
-                                        }}
-                                        className="w-full h-full object-cover transition-all duration-75"
-                                    />
-                                )}
-                            </div>
-
-                            {/* Mode Selection */}
-                            <div className="flex gap-2">
-                                <button
-                                    type="button"
-                                    onClick={() => setFramingMode('cover')}
-                                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold border transition-all ${framingMode === 'cover' ? 'bg-primary/10 border-primary text-primary' : 'bg-slate-50 border-slate-200 text-slate-600'}`}
-                                >
-                                    Capa Panorâmica (16:9)
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setFramingMode('contain')}
-                                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold border transition-all ${framingMode === 'contain' ? 'bg-primary/10 border-primary text-primary' : 'bg-slate-50 border-slate-200 text-slate-600'}`}
-                                >
-                                    Foto Completa (Sem Cortes)
-                                </button>
-                            </div>
-
-                            {framingMode === 'cover' && (
-                                <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
-                                    <div className="space-y-1.5">
-                                        <div className="flex justify-between items-center text-xs font-semibold text-slate-700">
-                                            <span>Posição Vertical (Cima / Baixo)</span>
-                                            <div className="flex gap-1">
-                                                <button type="button" onClick={() => setFramingPosY(15)} className="px-2 py-0.5 text-[10px] bg-white border rounded hover:bg-slate-100">Cima (Rosto)</button>
-                                                <button type="button" onClick={() => setFramingPosY(50)} className="px-2 py-0.5 text-[10px] bg-white border rounded hover:bg-slate-100">Centro</button>
-                                                <button type="button" onClick={() => setFramingPosY(85)} className="px-2 py-0.5 text-[10px] bg-white border rounded hover:bg-slate-100">Baixo</button>
-                                            </div>
-                                        </div>
-                                        <input
-                                            type="range"
-                                            min="0"
-                                            max="100"
-                                            value={framingPosY}
-                                            onChange={(e) => setFramingPosY(Number(e.target.value))}
-                                            className="w-full accent-primary cursor-pointer"
-                                        />
-                                    </div>
-
-                                    <div className="space-y-1.5">
-                                        <div className="flex justify-between items-center text-xs font-semibold text-slate-700">
-                                            <span>Posição Horizontal (Esquerda / Direita)</span>
-                                            <span className="text-[10px] text-slate-500">{framingPosX}%</span>
-                                        </div>
-                                        <input
-                                            type="range"
-                                            min="0"
-                                            max="100"
-                                            value={framingPosX}
-                                            onChange={(e) => setFramingPosX(Number(e.target.value))}
-                                            className="w-full accent-primary cursor-pointer"
-                                        />
-                                    </div>
-
-                                    <div className="space-y-1.5">
-                                        <div className="flex justify-between items-center text-xs font-semibold text-slate-700">
-                                            <span>Zoom / Escala</span>
-                                            <span className="text-[10px] text-slate-500">{framingZoom.toFixed(1)}x</span>
-                                        </div>
-                                        <input
-                                            type="range"
-                                            min="1.0"
-                                            max="2.5"
-                                            step="0.05"
-                                            value={framingZoom}
-                                            onChange={(e) => setFramingZoom(Number(e.target.value))}
-                                            className="w-full accent-primary cursor-pointer"
-                                        />
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    <DialogFooter className="flex justify-end gap-2 pt-2">
-                        <button
-                            type="button"
-                            onClick={() => setFramingModalOpen(false)}
-                            className="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg text-sm hover:bg-slate-50"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleApplyFraming}
-                            className="px-4 py-2 bg-primary text-white font-medium rounded-lg text-sm hover:bg-primary/90 shadow-sm"
-                        >
-                            Aplicar Enquadramento
-                        </button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+            {/* Modal de Enquadramento Interativo Global */}
+            <ImageFramingDialog
+                open={framingModalOpen}
+                onOpenChange={setFramingModalOpen}
+                imageSrc={rawImageToFrame}
+                aspectRatio="16/9"
+                title="Ajustar Capa do Evento"
+                onApply={(framed) => {
+                    setNewEvent(prev => ({ ...prev, image: framed }));
+                    toast.success("Foto de capa enquadrada com sucesso!");
+                }}
+            />
 
             {/* Modal Lightbox Foto Ampliada */}
             <Dialog open={!!selectedLightboxImage} onOpenChange={(open) => !open && setSelectedLightboxImage(null)}>
