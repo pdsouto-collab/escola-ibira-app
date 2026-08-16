@@ -6,7 +6,7 @@ import { ptBR } from "date-fns/locale";
 import { Menu } from "@/types/menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Printer, Download, Calendar, FileText, ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { Printer, Download, Calendar, FileText, ChevronLeft, ChevronRight, Check, CheckCircle2, Info, Sprout, Cake } from "lucide-react";
 import { SchoolLogo } from "@/components/ui/school-logo";
 
 export interface MenuGuidelinesData {
@@ -368,39 +368,63 @@ function PrintableWeekPage({
                 })}
             </div>
 
-            {/* Descriptive Guidelines Footer (Excel Reference) */}
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-[10px] text-slate-700 space-y-1.5 leading-relaxed">
+            {/* Descriptive Guidelines Footer - Formatação idêntica à visualização */}
+            <div className="bg-linear-to-br from-emerald-50/40 via-white to-amber-50/20 border border-emerald-100 rounded-xl p-3 text-slate-800 space-y-2.5 text-[10.5px]">
                 {guidelines.intro && (
-                    <p className="font-medium text-slate-800 border-b border-slate-200 pb-1 whitespace-pre-line break-words">
+                    <div className="bg-white/90 border border-emerald-100/80 rounded-lg p-2.5 text-slate-700 font-medium leading-relaxed whitespace-pre-line break-words">
                         {guidelines.intro}
-                    </p>
+                    </div>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-0.5 pt-0.5">
-                    <div>
-                        <span className="font-bold text-emerald-800 block mb-0.5 uppercase text-[9px]">
-                            Pontos importantes de nosso cardápio:
-                        </span>
-                        <ul className="list-disc pl-3 space-y-0.5 text-slate-600">
-                            {guidelines.points.map((pt, pIdx) => (
-                                <li key={pIdx} className="whitespace-pre-line break-words">{pt}</li>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                    {/* Left: Pilares de Preparo com ícone e bullets estilizados */}
+                    <div className="bg-white/80 border border-emerald-100/70 rounded-lg p-2.5 space-y-1.5 flex flex-col justify-start">
+                        <h4 className="text-[10px] font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5 mb-1">
+                            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                            Pilares de Preparo
+                        </h4>
+                        <ul className="space-y-1 text-[10px] text-slate-700">
+                            {guidelines.points.map((point, index) => (
+                                <li key={index} className="flex items-start gap-1.5">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 mt-1 shrink-0" />
+                                    <span className="whitespace-pre-line break-words">{point}</span>
+                                </li>
                             ))}
                         </ul>
                     </div>
-                    <div className="space-y-1 text-slate-600 border-t sm:border-t-0 sm:border-l border-slate-200 sm:pl-3 pt-1 sm:pt-0">
-                        {guidelines.glutenNote && (
-                            <p className="font-medium text-slate-700 whitespace-pre-line break-words">{guidelines.glutenNote}</p>
-                        )}
-                        {guidelines.farmNote && (
-                            <p className="font-medium text-emerald-700 whitespace-pre-line break-words">{guidelines.farmNote}</p>
-                        )}
-                        {guidelines.birthdayNote && (
-                            <p className="font-semibold text-amber-800 whitespace-pre-line break-words bg-amber-50/80 p-1 rounded border border-amber-200/50">
-                                🎂 {guidelines.birthdayNote}
-                            </p>
-                        )}
+
+                    {/* Right: Retângulos Coloridos idênticos à visualização */}
+                    <div className="space-y-2 flex flex-col justify-between">
+                        <div className="space-y-1.5 text-[10px]">
+                            {guidelines.glutenNote && (
+                                <div className="flex items-start gap-2 bg-amber-50/90 border border-amber-200/70 rounded-lg p-2 text-amber-900">
+                                    <Info className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
+                                    <span className="whitespace-pre-line break-words leading-tight">{guidelines.glutenNote}</span>
+                                </div>
+                            )}
+
+                            {guidelines.farmNote && (
+                                <div className="flex items-start gap-2 bg-emerald-50/90 border border-emerald-200/70 rounded-lg p-2 text-emerald-900">
+                                    <Sprout className="h-3.5 w-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                                    <span className="whitespace-pre-line break-words leading-tight">{guidelines.farmNote}</span>
+                                </div>
+                            )}
+
+                            {guidelines.birthdayNote && (
+                                <div className="flex items-start gap-2 bg-rose-50/90 border border-rose-200/80 rounded-lg p-2 text-rose-900">
+                                    <Cake className="h-3.5 w-3.5 text-rose-600 shrink-0 mt-0.5" />
+                                    <div className="flex-1">
+                                        <span className="font-bold text-rose-900 block text-[9.5px] uppercase mb-0.5">Aniversariantes do Mês</span>
+                                        <span className="whitespace-pre-line break-words text-rose-800 text-[10px] leading-tight">{guidelines.birthdayNote}</span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
                         {guidelines.footerNote && (
-                            <p className="italic text-[9.5px] text-slate-500 pt-0.5 whitespace-pre-line break-words">{guidelines.footerNote}</p>
+                            <p className="text-[9.5px] italic text-slate-500 border-t border-slate-100 pt-1.5 whitespace-pre-line break-words">
+                                {guidelines.footerNote}
+                            </p>
                         )}
                     </div>
                 </div>
