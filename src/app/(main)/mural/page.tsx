@@ -145,7 +145,7 @@ export default function MuralPage() {
     useEffect(() => {
         fetchClasses();
         fetchMuralEvents(selectedClassId, viewTab === "archived");
-    }, [selectedClassId, viewTab, fetchMuralEvents]);
+    }, [selectedClassId, viewTab, session, fetchMuralEvents]);
 
     const handleArchiveToggle = async (event: MuralEvent) => {
         const newStatus = !event.isArchived;

@@ -3,11 +3,6 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
 export async function GET(request: Request) {
-    const session = await getServerSessionOrJwt();
-    if (!session || !session.user) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const classId = searchParams.get("classId");
     const archivedParam = searchParams.get("archived");
