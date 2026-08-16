@@ -6,8 +6,12 @@ const BASE_URL = "/api/mural-events";
  * Fetch all mural events.
  * If classId is provided, filters by class.
  */
-export async function getMuralEvents(classId?: string): Promise<MuralEvent[]> {
-    const url = classId ? `${BASE_URL}?classId=${classId}` : BASE_URL;
+export async function getMuralEvents(classId?: string, archived: boolean = false): Promise<MuralEvent[]> {
+    const params = new URLSearchParams();
+    if (classId && classId !== "all") params.append("classId", classId);
+    if (archived) params.append("archived", "true");
+    const query = params.toString();
+    const url = query ? `${BASE_URL}?${query}` : BASE_URL;
     const res = await fetch(url, {
         method: "GET",
         headers: { "Content-Type": "application/json" },

@@ -10,6 +10,7 @@ export interface MuralEvent {
     location?: string | null;
     image?: string | null;
     classId?: string | null;
+    isArchived?: boolean;
     likes: number;
     comments: MuralComment[];
     createdAt?: Date | string;

@@ -10,10 +10,23 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const classId = searchParams.get("classId");
+    const archivedParam = searchParams.get("archived");
 
     try {
+        const whereClause: any = {};
+        if (classId) {
+            whereClause.classId = classId;
+        }
+        if (archivedParam === "true") {
+            whereClause.isArchived = true;
+        } else if (archivedParam === "all") {
+            // include both
+        } else {
+            whereClause.isArchived = false;
+        }
+
         const events = await prisma.muralEvent.findMany({
-            where: classId ? { classId } : {},
+            where: whereClause,
             include: {
                 comments: {
                     orderBy: {

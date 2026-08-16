@@ -1,15 +1,17 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { PegadaPost } from "@/types/pegada-post";
 import { PegadaInteraction } from "@/types/pegada-interaction";
 import { updatePegada, deletePegada, addPegadaInteraction, deletePegadaInteraction } from "@/services/pegada.service";
+import { getClasses } from "@/services/school-class.service";
+import { SchoolClass } from "@/types/school-class";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { TreeDeciduous, MessageSquare, Mic, Send, MoreVertical, Play, Pencil, Trash, X, Save, ChevronLeft, ChevronRight, Loader2, Maximize2, Crop } from "lucide-react";
+import { TreeDeciduous, MessageSquare, Mic, Send, MoreVertical, Play, Pencil, Trash, X, Save, ChevronLeft, ChevronRight, Loader2, Maximize2, Crop, School } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -42,10 +44,36 @@ export function PegadaPostCard({ post, onUpdated, onDeleted }: PegadaPostCardPro
     const scrollRef = useRef<HTMLDivElement>(null);
     const editFileInputRef = useRef<HTMLInputElement>(null);
 
+    const [classes, setClasses] = useState<SchoolClass[]>([]);
+
+    useEffect(() => {
+        getClasses().then(setClasses).catch(() => {});
+    }, []);
+
     const hasLiked = post.interactions.some(i => i.type === 'like' && i.userId === currentUser?.id);
     const likeCount = post.interactions.filter(i => i.type === 'like').length;
     const commentCount = post.interactions.filter(i => i.type === 'comment' || i.type === 'audio').length;
     const canManage = currentUser?.id === post.authorId || currentUser?.role === "admin" || currentUser?.role === "director";
+
+    const getVisibilityInfo = () => {
+        const rawClassIds = post.classIds && post.classIds.length > 0
+            ? post.classIds
+            : (post.classId ? [post.classId] : ["all"]);
+
+        if (rawClassIds.includes("all") || rawClassIds.length === 0) {
+            return { label: "Visível para Todos", isSpecific: false };
+        }
+
+        const classNames = rawClassIds
+            .map(cid => classes.find(c => c.id === cid)?.name)
+            .filter(Boolean);
+
+        if (classNames.length > 0) {
+            return { label: `Turma: ${classNames.join(", ")}`, isSpecific: true };
+        }
+
+        return { label: "Turma Específica", isSpecific: true };
+    };
 
     const scroll = (direction: 'left' | 'right') => {
         if (scrollRef.current) {
@@ -452,11 +480,18 @@ export function PegadaPostCard({ post, onUpdated, onDeleted }: PegadaPostCardPro
                         </button>
                     </div>
 
-                    {currentUser?.role !== "guardian" && (
-                        <div className="text-[10px] font-medium text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-100 uppercase tracking-widest">
-                            Visível para Todos
-                        </div>
-                    )}
+                    {(() => {
+                        const vis = getVisibilityInfo();
+                        return (
+                            <div className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border uppercase tracking-wider ${
+                                !vis.isSpecific
+                                    ? "bg-slate-100 text-slate-600 border-slate-200"
+                                    : "bg-purple-100 text-purple-800 border-purple-200"
+                            }`}>
+                                {vis.label}
+                            </div>
+                        );
+                    })()}
                 </div>
 
                 {showComments && (

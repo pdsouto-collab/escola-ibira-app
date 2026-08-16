@@ -21,22 +21,42 @@ export async function GET() {
             },
         });
 
-        // Administradores, Diretores e Professores podem ver TUDO sempre
-        const isPrivileged = ["admin", "director", "teacher"].includes(userRole);
-        if (isPrivileged) {
+        // Administradores e Diretores podem ver TUDO sempre
+        const isAdminOrDirector = ["admin", "director"].includes(userRole);
+        if (isAdminOrDirector) {
             return NextResponse.json(posts);
         }
 
-        // Para pais / responsáveis / outros usuários, buscar turmas e alunos vinculados
+        // Buscar dados do usuário no banco
         const dbUser = await prisma.user.findUnique({
             where: { id: userId },
-            select: { assignedClassIds: true, linkedStudentIds: true }
+            select: { assignedClassIds: true, linkedStudentIds: true, email: true, document: true, name: true, role: true }
         });
 
-        // Buscar alunos associados diretamente ou por ID
-        const linkedStudentIds = dbUser?.linkedStudentIds || [];
-        const assignedClassIds = dbUser?.assignedClassIds || [];
+        const linkedStudentIds = [...(dbUser?.linkedStudentIds || [])];
+        const assignedClassIds = [...(dbUser?.assignedClassIds || [])];
 
+        // Se for professor, busca turmas atribuídas
+        if (userRole === "teacher") {
+            const visiblePosts = posts.filter(post => {
+                // Post do próprio professor
+                if (post.authorId === userId) return true;
+                const postClassId = post.classId || "all";
+                const postClassIds = post.classIds || [];
+                // Post geral para todas as turmas
+                if (postClassId === "all" || postClassIds.includes("all") || (postClassIds.length === 0 && !post.classId)) {
+                    return true;
+                }
+                // Post da turma atribuída ao professor
+                if (assignedClassIds.includes(postClassId) || postClassIds.some(cid => assignedClassIds.includes(cid))) {
+                    return true;
+                }
+                return false;
+            });
+            return NextResponse.json(visiblePosts);
+        }
+
+        // Para pais / responsáveis / familiares:
         let studentClassIds = [...assignedClassIds];
 
         if (linkedStudentIds.length > 0) {
@@ -46,6 +66,31 @@ export async function GET() {
             });
             students.forEach(s => {
                 if (s.classId) studentClassIds.push(s.classId);
+            });
+        }
+
+        // Também verificar se o responsável está cadastrado em Student.guardians por email/CPF
+        const userEmail = (session.user.email || "").toLowerCase().trim();
+        const userDoc = (session.user.document || "").replace(/\D/g, "");
+
+        if (userEmail || userDoc) {
+            const allStudents = await prisma.student.findMany({
+                select: { id: true, classId: true, guardians: true }
+            });
+            allStudents.forEach((st: any) => {
+                if (st.guardians && Array.isArray(st.guardians)) {
+                    const match = st.guardians.some((g: any) => {
+                        const gEmail = (g.email || "").toLowerCase().trim();
+                        const gCpf = (g.cpf || "").replace(/\D/g, "");
+                        if (userEmail && gEmail === userEmail) return true;
+                        if (userDoc && gCpf === userDoc) return true;
+                        return false;
+                    });
+                    if (match) {
+                        if (!linkedStudentIds.includes(st.id)) linkedStudentIds.push(st.id);
+                        if (st.classId && !studentClassIds.includes(st.classId)) studentClassIds.push(st.classId);
+                    }
+                }
             });
         }
 
@@ -67,7 +112,7 @@ export async function GET() {
                 return true;
             }
 
-            // Se alguma turma do post coincide com as turmas dos alunos
+            // Se alguma turma do post coincide com as turmas dos alunos do responsável
             if (postClassIds.some(cid => uniqueStudentClassIds.includes(cid))) {
                 return true;
             }

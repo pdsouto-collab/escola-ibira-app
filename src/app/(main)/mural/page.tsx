@@ -2,7 +2,7 @@
 
 
 
-import { Plus, Calendar, MapPin, MessageCircle, User, Edit2, Check, X, Users, MoreVertical, Trash2, Pencil, Clock, Loader2, Maximize2, Sliders, Crop, Move, Sparkles, GraduationCap } from "lucide-react";
+import { Plus, Calendar, MapPin, MessageCircle, User, Edit2, Check, X, Users, MoreVertical, Trash2, Pencil, Clock, Loader2, Maximize2, Sliders, Crop, Move, Sparkles, GraduationCap, Archive, ArchiveRestore } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
@@ -93,13 +93,29 @@ export default function MuralPage() {
         });
     };
 
+    const [viewTab, setViewTab] = useState<"active" | "archived">("active");
+
     // Fetching Data
-    const fetchMuralEvents = useCallback(async (classId?: string) => {
+    const fetchMuralEvents = useCallback(async (classId?: string, isArchived: boolean = false) => {
         setIsEventsLoading(true);
         try {
-            const data = await getMuralEvents(classId === "all" ? undefined : classId);
+            const data = await getMuralEvents(classId === "all" ? undefined : classId, isArchived);
+            const now = new Date().getTime();
             const sortedEvents = Array.isArray(data)
-                ? [...data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                ? [...data].sort((a, b) => {
+                    const timeA = new Date(a.date).getTime();
+                    const timeB = new Date(b.date).getTime();
+                    const isUpcomingA = timeA >= now;
+                    const isUpcomingB = timeB >= now;
+
+                    // Both upcoming: closest to current date first (ascending)
+                    if (isUpcomingA && isUpcomingB) return timeA - timeB;
+                    // Upcoming events come first
+                    if (isUpcomingA && !isUpcomingB) return -1;
+                    if (!isUpcomingA && isUpcomingB) return 1;
+                    // Both past: most recent past first (descending)
+                    return timeB - timeA;
+                })
                 : [];
             setMuralEvents(sortedEvents);
         } catch (error) {
@@ -122,8 +138,20 @@ export default function MuralPage() {
 
     useEffect(() => {
         fetchClasses();
-        fetchMuralEvents(selectedClassId);
-    }, [selectedClassId, fetchMuralEvents]);
+        fetchMuralEvents(selectedClassId, viewTab === "archived");
+    }, [selectedClassId, viewTab, fetchMuralEvents]);
+
+    const handleArchiveToggle = async (event: MuralEvent) => {
+        const newStatus = !event.isArchived;
+        try {
+            await updateMuralEvent(event.id, { isArchived: newStatus });
+            toast.success(newStatus ? "Evento arquivado com sucesso" : "Evento reativado no mural!");
+            await fetchMuralEvents(selectedClassId, viewTab === "archived");
+        } catch (error) {
+            console.error("Erro ao alterar status do evento:", error);
+            toast.error("Erro ao alterar status do evento");
+        }
+    };
 
     // New Event Form State
     const [newEvent, setNewEvent] = useState({
@@ -496,6 +524,34 @@ export default function MuralPage() {
                 </div>
             )}
 
+            {/* Tabs for Active vs Archived Events */}
+            <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
+                <button
+                    onClick={() => setViewTab("active")}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                        viewTab === "active"
+                            ? "bg-purple-600 text-white shadow-xs"
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    }`}
+                >
+                    <Calendar className="w-3.5 h-3.5" />
+                    Eventos Ativos
+                </button>
+                {["admin", "director", "teacher"].includes(currentUser?.role || "") && (
+                    <button
+                        onClick={() => setViewTab("archived")}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                            viewTab === "archived"
+                                ? "bg-purple-600 text-white shadow-xs"
+                                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        }`}
+                    >
+                        <Archive className="w-3.5 h-3.5" />
+                        Eventos Arquivados
+                    </button>
+                )}
+            </div>
+
             <div className="grid gap-6">
                 {isEventsLoading ? (
                     <div className="flex flex-col items-center justify-center py-20 text-slate-400 gap-4">
@@ -505,12 +561,12 @@ export default function MuralPage() {
                 ) : muralEvents.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-slate-400 gap-4 border rounded-xl bg-slate-50/50 border-dashed">
                         <Calendar className="h-12 w-12 opacity-20" />
-                        <p>Nenhum evento encontrado.</p>
+                        <p>{viewTab === "archived" ? "Nenhum evento arquivado." : "Nenhum evento encontrado."}</p>
                     </div>
                 ) : (
                     muralEvents.map((event) => (
                         <div key={event.id} className="rounded-xl border bg-white shadow-sm overflow-hidden relative group transition-all hover:shadow-md">
-                            {/* RBAC: Only allowed roles can edit/delete */}
+                            {/* RBAC: Only allowed roles can edit/delete/archive */}
                             {["admin", "director", "teacher"].includes(currentUser?.role || "") && (
                                 <div className="absolute top-4 right-4 z-20">
                                     <DropdownMenu>
@@ -523,6 +579,19 @@ export default function MuralPage() {
                                             <DropdownMenuItem onClick={() => handleEditClick(event)}>
                                                 <Pencil className="mr-2 h-4 w-4" />
                                                 Editar
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleArchiveToggle(event)}>
+                                                {event.isArchived ? (
+                                                    <>
+                                                        <ArchiveRestore className="mr-2 h-4 w-4 text-emerald-600" />
+                                                        <span className="text-emerald-700 font-medium">Reativar no Mural</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Archive className="mr-2 h-4 w-4 text-amber-600" />
+                                                        <span className="text-amber-700 font-medium">Arquivar Evento</span>
+                                                    </>
+                                                )}
                                             </DropdownMenuItem>
                                             <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-50" onClick={() => handleDeleteClick(event.id)}>
                                                 <Trash2 className="mr-2 h-4 w-4" />

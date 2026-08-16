@@ -268,6 +268,10 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
 
             await Promise.all(promises);
 
+            // Determinar turmas envolvidas nos alunos selecionados
+            const involvedStudents = students.filter(s => selectedStudentIds.includes(s.id));
+            const involvedClassIds = Array.from(new Set(involvedStudents.map(s => s.classId).filter(Boolean))) as string[];
+
             // Add a single PegadaPost to the feed as well
             await createPegada({
                 authorId: currentUser?.id,
@@ -278,6 +282,9 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
                 mediaUrl: images[0] || undefined,
                 mediaUrls: images,
                 tags: tagsArray,
+                classId: involvedClassIds.length === 1 ? involvedClassIds[0] : (involvedClassIds.length > 0 ? involvedClassIds[0] : "all"),
+                classIds: involvedClassIds.length > 0 ? involvedClassIds : ["all"],
+                studentIds: selectedStudentIds,
             });
 
             onOpenChange(false);

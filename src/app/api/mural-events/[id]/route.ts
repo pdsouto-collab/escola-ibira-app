@@ -30,7 +30,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     try {
         const { id } = await params;
         const body = await request.json();
-        const { title, description, date, type, location, image, classId, likes } = body;
+        const { title, description, date, type, location, image, classId, likes, isArchived } = body;
 
         let parsedDate: Date | undefined = undefined;
         if (date) {
@@ -50,6 +50,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
                 location: location !== undefined ? (location || null) : undefined,
                 image: image !== undefined ? (image || null) : undefined,
                 classId: classId !== undefined ? (classId === "all" ? null : classId) : undefined,
+                isArchived: isArchived !== undefined ? Boolean(isArchived) : undefined,
                 likes: likes !== undefined ? likes : undefined
             },
             include: { comments: true }
