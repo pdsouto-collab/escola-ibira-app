@@ -2,7 +2,7 @@
 
 
 
-import { Plus, Calendar, MapPin, MessageCircle, User, Edit2, Check, X, Users, MoreVertical, Trash2, Pencil, Clock, Loader2, Maximize2, Sliders, Crop, Move, Sparkles } from "lucide-react";
+import { Plus, Calendar, MapPin, MessageCircle, User, Edit2, Check, X, Users, MoreVertical, Trash2, Pencil, Clock, Loader2, Maximize2, Sliders, Crop, Move, Sparkles, GraduationCap } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
@@ -555,15 +555,25 @@ export default function MuralPage() {
                             <div className="p-6">
                                 <div className="flex justify-between items-start mb-4">
                                     <div className="w-full min-w-0">
+                                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold shadow-2xs ${
+                                                event.classId 
+                                                    ? "bg-purple-100 text-purple-800 border border-purple-200" 
+                                                    : "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                                            }`}>
+                                                <GraduationCap className="w-3.5 h-3.5" />
+                                                {event.classId ? (classes.find(c => c.id === event.classId)?.name || "Turma Específica") : "Todas as Turmas"}
+                                            </span>
+                                        </div>
                                         <h2 className="text-xl font-bold text-slate-900 break-words">{event.title}</h2>
                                         <div className="flex items-center gap-4 text-sm text-slate-500 mt-2 flex-wrap">
-                                            <span className="flex items-center gap-1">
-                                                <Calendar className="h-4 w-4 shrink-0" />
+                                            <span className="flex items-center gap-1 font-medium">
+                                                <Calendar className="h-4 w-4 shrink-0 text-slate-400" />
                                                 {format(new Date(event.date), "dd 'de' MMMM 'às' HH:mm", { locale: ptBR })}
                                             </span>
                                             {event.location && (
-                                                <span className="flex items-center gap-1">
-                                                    <MapPin className="h-4 w-4 shrink-0" />
+                                                <span className="flex items-center gap-1 font-medium">
+                                                    <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
                                                     {event.location}
                                                 </span>
                                             )}

@@ -4,6 +4,8 @@ import React, { useState, useMemo, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { SEMESTERS } from "@/constants/semesters";
 import { YEARS } from "@/constants/years";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { Assessment } from "@/types/assessment";
 import { AssessmentService } from "@/services/assessment.service";
 import { AssessmentDrawer } from "@/components/assessment/assessment-drawer";
@@ -789,18 +791,74 @@ function StudentView({
                                 );
                             })()}
 
-                            {photos.length > 0 && (
-                                <div>
-                                    <h3 className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                        <ImageIcon className="w-4 h-4" /> Galeria de Vivências ({photos.length})
-                                    </h3>
-                                    <div className="grid grid-cols-4 gap-2">
-                                        {photos.map((p, i) => (
-                                            <img key={i} src={p.url} alt={p.name} className="w-full aspect-square object-cover rounded-lg border" />
-                                        ))}
+                            {(() => {
+                                const vivenciasComFotos = studentAssessments
+                                    .filter(a => a.attachments && a.attachments.some(att => att.type === "photo" && att.url))
+                                    .map(a => {
+                                        const proj = projects.find(p => p.id === a.projectId);
+                                        const node = [...skillsTree, ...contentsTree].find(n => n.id === a.knowledgeNodeId);
+                                        const sess = schedule.find(s => s.id === a.sessionId);
+                                        const title = sess?.title || node?.name || (a as any).contextLabel || "Vivência Pedagógica";
+                                        const projTitle = proj?.title || "Vivência da Turma";
+                                        const photos = (a.attachments || []).filter(att => att.type === "photo" && att.url);
+                                        return {
+                                            id: a.id,
+                                            title,
+                                            projTitle,
+                                            rating: a.rating,
+                                            date: a.createdAt,
+                                            observation: a.observation || (a as any).observations,
+                                            photos
+                                        };
+                                    });
+
+                                if (vivenciasComFotos.length === 0) return null;
+
+                                const totalPhotos = vivenciasComFotos.reduce((acc, v) => acc + v.photos.length, 0);
+
+                                return (
+                                    <div className="space-y-4 pt-4 border-t border-slate-100">
+                                        <div className="flex items-center justify-between">
+                                            <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                                                <ImageIcon className="w-4 h-4 text-emerald-600" /> Galeria de Fotos por Vivência / Projeto ({totalPhotos} fotos)
+                                            </h3>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {vivenciasComFotos.map(vivencia => (
+                                                <div key={vivencia.id} className="border border-slate-200 rounded-2xl p-4 bg-slate-50/60 hover:bg-slate-50 transition-colors shadow-2xs">
+                                                    <div className="flex items-start justify-between gap-2 mb-2">
+                                                        <div className="min-w-0 flex-1">
+                                                            <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200 inline-block mb-1.5 truncate max-w-full">
+                                                                {vivencia.projTitle}
+                                                            </span>
+                                                            <h4 className="text-sm font-bold text-slate-900 leading-snug break-words">{vivencia.title}</h4>
+                                                            <p className="text-[11px] text-slate-400 font-medium mt-0.5">
+                                                                {format(new Date(vivencia.date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                                                            </p>
+                                                        </div>
+                                                        {vivencia.rating && <MiniTree rating={vivencia.rating} />}
+                                                    </div>
+
+                                                    {vivencia.observation && (
+                                                        <p className="text-xs text-slate-600 italic bg-white p-2.5 rounded-xl border border-slate-100 mb-3 leading-relaxed">
+                                                            "{vivencia.observation}"
+                                                        </p>
+                                                    )}
+
+                                                    <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 scrollbar-thin">
+                                                        {vivencia.photos.map((p, i) => (
+                                                            <div key={i} className="relative group w-24 h-24 shrink-0 rounded-xl overflow-hidden border border-slate-200 bg-white shadow-2xs">
+                                                                <img src={p.url} alt={p.name || vivencia.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
-                            )}
+                                );
+                            })()}
 
                         </div>
                     </div>

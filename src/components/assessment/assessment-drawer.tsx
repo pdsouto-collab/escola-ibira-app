@@ -13,7 +13,8 @@ import { SchoolClass } from "@/types/school-class";
 import { Assessment } from "@/types/assessment";
 import { AssessmentAttachment } from "@/types/assessment-attachment";
 import { AssessmentService } from "@/services/assessment.service";
-import { Camera, FileUp, X, Users, User, Trash2, Loader2 } from "lucide-react";
+import { Camera, FileUp, X, Users, User, Trash2, Loader2, GraduationCap } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -299,15 +300,33 @@ export function AssessmentDrawer({
 
     useEffect(() => {
         if (open) {
-            if (defaultStudentId) setStudentId(defaultStudentId);
-            if (defaultClassId) setClassId(defaultClassId);
+            if (defaultStudentId) {
+                setStudentId(defaultStudentId);
+                const sObj = students.find(s => s.id === defaultStudentId);
+                if (sObj?.classId) {
+                    setClassId(sObj.classId);
+                } else if (defaultClassId) {
+                    setClassId(defaultClassId);
+                }
+                setScope("student");
+            } else {
+                if (defaultClassId) setClassId(defaultClassId);
+                setScope("class");
+            }
             if (propProjectId) setSelectedProjectId(propProjectId);
             if (propSessionId) setSelectedSessionId(propSessionId);
             if (propRoutineId) setSelectedRoutineId(propRoutineId);
-            if (defaultStudentId) setScope("student");
-            else setScope("class");
         }
-    }, [open, defaultStudentId, defaultClassId, propProjectId, propSessionId, propRoutineId]);
+    }, [open, defaultStudentId, defaultClassId, propProjectId, propSessionId, propRoutineId, students]);
+
+    useEffect(() => {
+        if (scope === "student" && studentId) {
+            const currentStudent = students.find(s => s.id === studentId);
+            if (currentStudent && currentStudent.classId && currentStudent.classId !== classId) {
+                setClassId(currentStudent.classId);
+            }
+        }
+    }, [scope, studentId, students, classId]);
 
     // Hydrate existing assessments based on current context
     useEffect(() => {
@@ -466,28 +485,79 @@ export function AssessmentDrawer({
                         </div>
 
                         {scope === "class" && (
-                            <Select value={classId} onValueChange={setClassId} disabled={!!assessmentId}>
-                                <SelectTrigger><SelectValue placeholder="Selecione a turma" /></SelectTrigger>
-                                <SelectContent>
-                                    {classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                        )}
-
-                        {scope === "student" && (
-                            <div className="space-y-2">
-                                <Select value={classId} onValueChange={v => { setClassId(v); setStudentId(""); }} disabled={!!assessmentId}>
-                                    <SelectTrigger><SelectValue placeholder="Turma" /></SelectTrigger>
+                            <div className="space-y-1.5">
+                                <Label className="text-xs font-bold text-slate-600">Turma</Label>
+                                <Select value={classId} onValueChange={setClassId} disabled={!!assessmentId}>
+                                    <SelectTrigger className="bg-white"><SelectValue placeholder="Selecione a turma" /></SelectTrigger>
                                     <SelectContent>
                                         {classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
-                                <Select value={studentId} onValueChange={setStudentId} disabled={!!assessmentId}>
-                                    <SelectTrigger><SelectValue placeholder="Selecione o aluno" /></SelectTrigger>
-                                    <SelectContent>
-                                        {studentsInClass.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
+                            </div>
+                        )}
+
+                        {scope === "student" && (
+                            <div className="space-y-3">
+                                {/* Student Selector */}
+                                {!defaultStudentId ? (
+                                    <div className="space-y-1.5">
+                                        <Label className="text-xs font-bold text-slate-600">Aluno</Label>
+                                        <Select
+                                            value={studentId}
+                                            onValueChange={v => {
+                                                setStudentId(v);
+                                                const sObj = students.find(s => s.id === v);
+                                                if (sObj?.classId) setClassId(sObj.classId);
+                                            }}
+                                            disabled={!!assessmentId}
+                                        >
+                                            <SelectTrigger className="bg-white"><SelectValue placeholder="Selecione o aluno" /></SelectTrigger>
+                                            <SelectContent>
+                                                {students.map(s => {
+                                                    const sClass = classes.find(c => c.id === s.classId);
+                                                    return (
+                                                        <SelectItem key={s.id} value={s.id}>
+                                                            {s.name} {sClass ? `· ${sClass.name}` : ""}
+                                                        </SelectItem>
+                                                    );
+                                                })}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                ) : (
+                                    <div className="p-3 bg-emerald-50/70 border border-emerald-200/80 rounded-xl flex items-center justify-between">
+                                        <div className="flex items-center gap-2.5">
+                                            <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-800 font-bold text-xs">
+                                                {(students.find(s => s.id === studentId)?.name || "AL").substring(0, 2).toUpperCase()}
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] uppercase font-bold text-emerald-700">Aluno Selecionado</p>
+                                                <p className="text-xs font-bold text-slate-800">{students.find(s => s.id === studentId)?.name || "Aluno"}</p>
+                                            </div>
+                                        </div>
+                                        <Badge variant="outline" className="text-[10px] bg-white text-emerald-700 border-emerald-200">
+                                            Individual
+                                        </Badge>
+                                    </div>
+                                )}
+
+                                {/* Auto-filled & Locked Class */}
+                                {studentId && (
+                                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <GraduationCap className="w-4 h-4 text-indigo-600" />
+                                            <div>
+                                                <p className="text-[10px] uppercase font-bold text-slate-400">Turma da Criança</p>
+                                                <p className="text-xs font-bold text-slate-800">
+                                                    {classes.find(c => c.id === (students.find(s => s.id === studentId)?.classId || classId))?.name || "Turma Vinculada"}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <Badge variant="outline" className="text-[10px] bg-slate-100 text-slate-600 border-slate-200">
+                                            Vinculada automaticamente
+                                        </Badge>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
