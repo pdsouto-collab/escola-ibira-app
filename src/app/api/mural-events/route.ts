@@ -13,17 +13,24 @@ export async function GET(request: Request) {
     const archivedParam = searchParams.get("archived");
 
     try {
-        const whereClause: any = {};
-        if (classId) {
-            whereClause.classId = classId;
+        const whereConditions: any[] = [];
+
+        if (classId && classId !== "all") {
+            whereConditions.push({
+                OR: [
+                    { classId: classId },
+                    { classId: null }
+                ]
+            });
         }
+
         if (archivedParam === "true") {
-            whereClause.isArchived = true;
-        } else if (archivedParam === "all") {
-            // include both
-        } else {
-            whereClause.isArchived = false;
+            whereConditions.push({ isArchived: true });
+        } else if (archivedParam !== "all") {
+            whereConditions.push({ isArchived: false });
         }
+
+        const whereClause = whereConditions.length > 0 ? { AND: whereConditions } : {};
 
         const events = await prisma.muralEvent.findMany({
             where: whereClause,
