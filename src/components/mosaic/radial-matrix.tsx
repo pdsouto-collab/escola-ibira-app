@@ -8,6 +8,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Student } from "@/types/student";
 import { LibraryItem } from "@/types/library-item";
 
+import { matchesPeriod } from "@/lib/filter-utils";
+
 interface RadialMatrixProps {
     data: KnowledgeNode[]; // Extracted from Admin Panel Tree
     treeType: "skill" | "content";
@@ -17,6 +19,8 @@ interface RadialMatrixProps {
     selectedStudentId: string;
     selectedClassId: string;
     selectedProjectId?: string;
+    selectedSemester?: string;
+    selectedYear?: string;
     drilledNodeId?: string;
     libraryItems?: LibraryItem[];
     onNodeClick?: (node: KnowledgeNode) => void;
@@ -52,10 +56,24 @@ function describeArc(x: number, y: number, innerRadius: number, outerRadius: num
     ].join(" ");
 }
 
-// Counts how many leaves are under a node to divide the 360 circle proportionally.
-// For radially stacked outer rings, all competence nodes (maxDepth - 2) carry a weight of 1.
+// ----------------------------------------------------------------------
+// Aggregation & State Calculations
+// ----------------------------------------------------------------------
+
+function getSatLevelSit02(score: number): number {
+    if (score >= 4.0) return 4; // High
+    if (score >= 3.0) return 3; // Med
+    if (score >= 2.0) return 2; // Low
+    if (score >= 1.0) return 1; // Base
+    return 0; // Not saturated / 0
+}
+
+function getPoints(rating?: number): number {
+    if (!rating) return 0;
+    return rating;
+}
+
 function countLeavesForRender(node: KnowledgeNode, currentDepth: number, maxDepth: number): number {
-    // If the next level is the radially stacked level, we don't count its children for angular width!
     if (currentDepth === maxDepth - 2) {
         return 1;
     }
@@ -66,7 +84,7 @@ function countLeavesForRender(node: KnowledgeNode, currentDepth: number, maxDept
 }
 
 // ----------------------------------------------------------------------
-// Base Colors per level for distinction when not dynamically "filled" by projects yet
+// Base Colors
 // ----------------------------------------------------------------------
 const BASE_COLORS = [
     "#3b82f6", // blue
@@ -77,29 +95,6 @@ const BASE_COLORS = [
     "#06b6d4"  // cyan
 ];
 
-// Helper to get point value from assessment rating
-function getPoints(rating: number | undefined): number {
-    return rating || 0;
-}
-
-// Helper to get saturation level based on Situation 01 (Percentage of points from children)
-function getSatLevelSit01(points: number, maxPoints: number): 0 | 1 | 2 | 3 {
-    if (maxPoints === 0 || points === 0) return 0;
-    const percentage = points / maxPoints;
-    if (percentage > 0.80) return 3; // 81% to 100%
-    if (percentage > 0.40) return 2; // 41% to 80%
-    if (percentage > 0) return 1;    // 1% to 40%
-    return 0;
-}
-
-// Helper to get saturation level based on Situation 02 (Direct assessment)
-function getSatLevelSit02(points: number): 0 | 1 | 2 | 3 {
-    if (points >= 5) return 3;
-    if (points >= 3) return 2;
-    if (points >= 1) return 1;
-    return 0;
-}
-
 function getNodeData(
     node: KnowledgeNode,
     assessments: Assessment[],
@@ -107,10 +102,10 @@ function getNodeData(
     studentId: string,
     classId: string,
     selectedProjectId: string,
-    libraryItems: LibraryItem[] = []
+    libraryItems: LibraryItem[] = [],
+    selectedSemester = "all",
+    selectedYear = "all"
 ): { points: number; maxPoints: number; sat: number; isTrabalhado: boolean } {
-    // 1. Check if node is "Trabalhado" (linked to a relevant project)
-    // A node is trabalhado if it is in an ACTIVE project for this student or class
     const relevantProjects = projects.filter(p => {
         const isActive = p.status === 'active';
         const matchesFilter = selectedProjectId === "all" || p.id === selectedProjectId;
@@ -122,9 +117,11 @@ function getNodeData(
     // Check if node itself or any of its children are in a project
     const checkInProject = (n: KnowledgeNode): boolean => {
         const inThisNode = relevantProjects.some(p => {
-            // Check student/class context
-            const studentMatch = studentId && studentId !== "all" ? p.students.includes(studentId) : true;
-            const classMatch = classId && classId !== "all" ? p.classes?.includes(classId) : true;
+            // Check student/class context: either student is directly assigned or student's class is assigned
+            const studentMatch = studentId && studentId !== "all"
+                ? (p.students?.includes(studentId) || (classId && classId !== "all" && p.classes?.includes(classId)))
+                : true;
+            const classMatch = classId && classId !== "all" ? (p.classes?.includes(classId) || !p.classes || p.classes.length === 0) : true;
 
             if (!studentMatch && !classMatch) return false;
 
@@ -135,7 +132,6 @@ function getNodeData(
             if (isMatch) return true;
 
             // Name-based fallback for BNCC Fields (Education Infantil)
-            // If the node name matches any of the selected skills' names, it's a match.
             const projectBnccSkills = (p.bnccSkillIds || []).map(sid => libraryItems.find(li => li.id === sid)).filter(Boolean);
             const nameMatch = projectBnccSkills.some(skill =>
                 skill?.name?.trim().toLowerCase() === n.name.trim().toLowerCase()
@@ -153,11 +149,14 @@ function getNodeData(
 
     isTrabalhado = checkInProject(node);
 
-    // 2. Get direct assessment (most recent) for this student and this node
-    const studentAssessments = assessments.filter(a =>
+    // 2. Get direct assessment for this student and this node filtered by semester and year
+    const filteredAssessments = assessments.filter(a =>
+        matchesPeriod(a.period, a.createdAt, selectedSemester, selectedYear)
+    );
+
+    const studentAssessments = filteredAssessments.filter(a =>
         a.knowledgeNodeId === node.id &&
-        a.studentId === studentId &&
-        a.scope === "student"
+        (studentId === "all" ? true : (a.studentId === studentId || (a.scope === "class" && a.classId === classId)))
     );
 
     // Sort by date descending
@@ -175,21 +174,14 @@ function getNodeData(
 
     if (node.children && node.children.length > 0) {
         node.children.forEach(child => {
-            const cData = getNodeData(child, assessments, projects, studentId, classId, selectedProjectId, libraryItems);
+            const cData = getNodeData(child, assessments, projects, studentId, classId, selectedProjectId, libraryItems, selectedSemester, selectedYear);
             childPoints += cData.points;
             childMaxPoints += cData.maxPoints;
-            childSats.push(cData.sat);
+            if (cData.sat > 0) childSats.push(cData.sat);
             if (cData.isTrabalhado) isTrabalhado = true;
         });
     }
 
-    if (node.level === "micro") {
-        // L3: Habilidade ou Conteúdo
-        // Can be evaluated Sit 01 (sum of L4 hijos) or Sit 02 (direct)
-        const recursiveSat = getSatLevelSit01(childPoints, childMaxPoints);
-        const finalSat = Math.max(directSat, recursiveSat);
-        return { points: directPoints + childPoints, maxPoints: 5 + childMaxPoints, sat: finalSat, isTrabalhado };
-    }
 
     if (node.level === "atomico") {
         // L4: Habilidade específica ou Evidência
@@ -321,7 +313,7 @@ export function RadialMatrix({
             const isViewingEvaluation = (studentId && studentId !== "all") || (classId && classId !== "all") || (projectId && projectId !== "all");
 
             const nodeData = isViewingEvaluation
-                ? getNodeData(node, assessments, projects, studentId || "all", classId || "all", projectId || "all", libraryItems || [])
+                ? getNodeData(node, assessments, projects, studentId || "all", classId || "all", projectId || "all", libraryItems || [], selectedSemester, selectedYear)
                 : { points: 0, maxPoints: 0, sat: 0, isTrabalhado: false };
             const satLevel = nodeData.sat;
             const isTrabalhado = nodeData.isTrabalhado;

@@ -23,7 +23,7 @@ import { Student } from "@/types/student";
 import { getStudents } from "@/services/student.service";
 import { getProjects } from "@/services/project.service";
 import { Project } from "@/types/project";
-
+import { matchesPeriod } from "@/lib/filter-utils";
 
 export function MosaicContainer() {
     const [skillsTree, setSkillsTree] = useState<KnowledgeNode[]>([]);
@@ -47,10 +47,12 @@ export function MosaicContainer() {
     const [drilledNode, setDrilledNode] = useState<KnowledgeNode | null>(null);
 
     // Filter States
+    // Filter States
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
     const [selectedProjectId, setSelectedProjectId] = useState<string>("all");
     const [selectedStudentId, setSelectedStudentId] = useState<string>("all");
-    const [selectedPeriod, setSelectedPeriod] = useState<string>("all");
+    const [selectedSemester, setSelectedSemester] = useState<string>("all");
+    const [selectedYear, setSelectedYear] = useState<string>("all");
 
     // Assessment Drawer State
     const [drawerCtx, setDrawerCtx] = useState<Partial<Assessment> & { contextLabel: string } | null>(null);
@@ -88,7 +90,7 @@ export function MosaicContainer() {
             }
         }
 
-        const periodMatch = selectedPeriod === "all" || node.period === selectedPeriod;
+        const periodMatch = matchesPeriod(node.period, null, selectedSemester, selectedYear);
         return (activeClassId === "all" || (node.classId || "all") === activeClassId) && periodMatch;
     });
 
@@ -263,12 +265,9 @@ export function MosaicContainer() {
                         </SelectContent>
                     </Select>
 
-                    {/* Filter: Período */}
+                    {/* Filter: Período (Semestre e Ano) */}
                     <div className="flex gap-2">
-                        <Select value={selectedPeriod === "all" ? "all" : selectedPeriod.split(" / ")[0]} onValueChange={(val) => {
-                            if (val === "all") setSelectedPeriod("all");
-                            else setSelectedPeriod(`${val} / ${selectedPeriod === "all" ? new Date().getFullYear() : selectedPeriod.split(" / ")[1] || new Date().getFullYear()}`);
-                        }}>
+                        <Select value={selectedSemester} onValueChange={setSelectedSemester}>
                             <SelectTrigger className="h-9 text-xs bg-white border-slate-200 w-32">
                                 <SelectValue placeholder="Semestre" />
                             </SelectTrigger>
@@ -279,10 +278,7 @@ export function MosaicContainer() {
                                 ))}
                             </SelectContent>
                         </Select>
-                        <Select value={selectedPeriod === "all" ? "all" : selectedPeriod.split(" / ")[1]} onValueChange={(val) => {
-                            if (val === "all") setSelectedPeriod("all");
-                            else setSelectedPeriod(`${selectedPeriod === "all" ? "1º Semestre" : selectedPeriod.split(" / ")[0] || "1º Semestre"} / ${val}`);
-                        }}>
+                        <Select value={selectedYear} onValueChange={setSelectedYear}>
                             <SelectTrigger className="h-9 text-xs bg-white border-slate-200 w-28">
                                 <SelectValue placeholder="Ano" />
                             </SelectTrigger>
@@ -354,6 +350,8 @@ export function MosaicContainer() {
                             selectedStudentId={selectedStudentId}
                             selectedClassId={selectedClassId}
                             selectedProjectId={selectedProjectId}
+                            selectedSemester={selectedSemester}
+                            selectedYear={selectedYear}
                             drilledNodeId={drilledNode?.id}
                             onNodeDoubleClick={(node: KnowledgeNode) => {
                                 if (node && node.level === "macro") {

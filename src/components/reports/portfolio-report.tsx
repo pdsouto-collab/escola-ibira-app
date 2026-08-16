@@ -9,13 +9,26 @@ import { Button } from "@/components/ui/button";
 
 import { PortfolioEntryViewer } from "@/components/portfolio/portfolio-entry-viewer";
 import type { PortfolioEntry } from "@/types/portfolio-entry";
+import { matchesPeriod } from "@/lib/filter-utils";
 
 interface Props {
     studentId: string;
     onEdit?: (date: string) => void;
+    period?: string;
+    semester?: string;
+    year?: string;
 }
 
-export function PortfolioReport({ studentId, onEdit }: Props) {
+export function PortfolioReport({
+    studentId,
+    onEdit,
+    period = "all",
+    semester = "all",
+    year = "all"
+}: Props) {
+    const effSemester = semester !== "all" ? semester : (period !== "all" && period.includes("Semestre") ? period.split(" / ")[0] : "all");
+    const effYear = year !== "all" ? year : (period !== "all" && /\d{4}/.test(period) ? (period.split(" / ")[1] || period) : "all");
+
     const [entries, setEntries] = useState<PortfolioEntry[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedEntry, setSelectedEntry] = useState<PortfolioEntry | null>(null);
@@ -28,6 +41,10 @@ export function PortfolioReport({ studentId, onEdit }: Props) {
             .finally(() => setIsLoading(false));
     }, [studentId]);
 
+    const filteredEntries = entries.filter(e =>
+        matchesPeriod(e.period, e.date || e.createdAt, effSemester, effYear)
+    );
+
     if (isLoading) {
         return (
             <div className="text-center py-10 text-slate-500">
@@ -36,10 +53,10 @@ export function PortfolioReport({ studentId, onEdit }: Props) {
         );
     }
 
-    if (entries.length === 0) {
+    if (filteredEntries.length === 0) {
         return (
             <div className="text-center py-10 text-slate-500">
-                <p>Nenhum registro de portfólio encontrado.</p>
+                <p>Nenhum registro de portfólio encontrado para os filtros selecionados.</p>
             </div>
         );
     }
@@ -47,7 +64,7 @@ export function PortfolioReport({ studentId, onEdit }: Props) {
     return (
         <>
             <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-2">
-                {entries.map((entry) => {
+                {filteredEntries.map((entry) => {
                     const firstImage = entry.images && entry.images.length > 0 ? entry.images[0] : entry.imageUrl;
                     return (
                         <Card key={entry.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group" onClick={() => setSelectedEntry(entry)}>

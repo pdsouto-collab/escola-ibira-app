@@ -28,6 +28,7 @@ import { getProjects } from "@/services/project.service";
 import { ScheduleItem } from "@/types/schedule";
 import { getSchedules } from "@/services/schedule.service";
 import { getKnowledgeTrees } from "@/services/knowledge.service";
+import { matchesPeriod } from "@/lib/filter-utils";
 
 // ────────────────────────────────────────────
 // Helper: find node name recursively
@@ -833,7 +834,8 @@ function PortfolioContent() {
 
     const [view, setView] = useState<"project" | "student">(initialClassId ? "student" : "project");
     const [projectFilter, setProjectFilter] = useState("all");
-    const [periodFilter, setPeriodFilter] = useState("all");
+    const [semesterFilter, setSemesterFilter] = useState("all");
+    const [yearFilter, setYearFilter] = useState("all");
     const [classFilter, setClassFilter] = useState(initialClassId || "all");
     const [studentFilter, setStudentFilter] = useState("all");
     const [drawerCtx, setDrawerCtx] = useState<(Partial<Assessment> & { contextLabel: string }) | null>(null);
@@ -925,9 +927,12 @@ function PortfolioContent() {
     };
 
     const filteredProjects = useMemo(() => {
-        if (periodFilter === "all") return allProjects;
-        return allProjects.filter(p => p.period === periodFilter);
-    }, [allProjects, periodFilter]);
+        return allProjects.filter(p => matchesPeriod(p.period, p.startDate, semesterFilter, yearFilter));
+    }, [allProjects, semesterFilter, yearFilter]);
+
+    const filteredAssessments = useMemo(() => {
+        return assessments.filter(a => matchesPeriod(a.period, a.createdAt, semesterFilter, yearFilter));
+    }, [assessments, semesterFilter, yearFilter]);
 
     if (isLoadingClasses || isLoadingStudents || isLoadingSchedules || isLoadingAssessments) {
         return (
@@ -967,20 +972,14 @@ function PortfolioContent() {
             </div>
 
             <div className="bg-white border-b px-8 py-3 flex items-center gap-3">
-                <Select value={periodFilter === "all" ? "all" : periodFilter.split(" / ")[0]} onValueChange={(val) => {
-                    if (val === "all") setPeriodFilter("all");
-                    else setPeriodFilter(`${val} / ${periodFilter === "all" ? new Date().getFullYear() : periodFilter.split(" / ")[1] || new Date().getFullYear()}`);
-                }}>
+                <Select value={semesterFilter} onValueChange={setSemesterFilter}>
                     <SelectTrigger className="w-32 h-8 text-sm"><SelectValue placeholder="Semestre" /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">Todo Sem.</SelectItem>
                         {SEMESTERS.map(sem => <SelectItem key={sem} value={sem}>{sem}</SelectItem>)}
                     </SelectContent>
                 </Select>
-                <Select value={periodFilter === "all" ? "all" : periodFilter.split(" / ")[1]} onValueChange={(val) => {
-                    if (val === "all") setPeriodFilter("all");
-                    else setPeriodFilter(`${periodFilter === "all" ? "1º Semestre" : periodFilter.split(" / ")[0] || "1º Semestre"} / ${val}`);
-                }}>
+                <Select value={yearFilter} onValueChange={setYearFilter}>
                     <SelectTrigger className="w-28 h-8 text-sm"><SelectValue placeholder="Ano" /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">Todo Ano</SelectItem>
@@ -1031,11 +1030,6 @@ function PortfolioContent() {
                             <FileText className="w-3.5 h-3.5" /> Gerar Report Card do Projeto
                         </Button>
                     )}
-                    {periodFilter !== "all" && projectFilter === "all" && studentFilter !== "all" && (
-                        <Button size="sm" variant="outline" className="text-xs gap-1.5 border-violet-200 text-violet-700 hover:bg-violet-50" onClick={() => window.open(`/portfolio/report?student=${studentFilter}&period=${periodFilter}`, "_blank")}>
-                            <FileText className="w-3.5 h-3.5" /> Report Card do Semestre
-                        </Button>
-                    )}
                 </div>
             </div>
 
@@ -1044,7 +1038,7 @@ function PortfolioContent() {
                     <ProjectView
                         projectFilter={projectFilter}
                         allProjects={filteredProjects}
-                        assessments={assessments}
+                        assessments={filteredAssessments}
                         schedule={schedule}
                         students={students}
                         classes={classes}
@@ -1056,7 +1050,7 @@ function PortfolioContent() {
                     />
                 ) : (
                     <StudentView
-                        assessments={assessments}
+                        assessments={filteredAssessments}
                         students={students}
                         classes={classes}
                         projects={filteredProjects}

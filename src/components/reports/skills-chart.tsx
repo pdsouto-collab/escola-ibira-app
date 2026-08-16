@@ -72,14 +72,28 @@ const getAllEvaluatableNodes = (nodes: any[], parentName?: string): any[] => {
             results.push({ ...node, subject: (node.level === "atomico" ? parentName : currentSubject) || "Outros" });
         }
 
-        if (node.children) {
-            results.push(...getAllEvaluatableNodes(node.children, currentSubject));
-        }
     }
     return results;
-};
+}
 
-export function SkillsChart({ student, filter = "all", period = "all" }: { student: Student | undefined; filter?: "bncc" | "ibira" | "all"; period?: string }) {
+import { matchesPeriod } from "@/lib/filter-utils";
+
+export function SkillsChart({
+    student,
+    filter = "all",
+    period = "all",
+    semester = "all",
+    year = "all"
+}: {
+    student: Student | undefined;
+    filter?: "bncc" | "ibira" | "all";
+    period?: string;
+    semester?: string;
+    year?: string;
+}) {
+    // Resolve effective semester & year from explicit props or legacy period string
+    const effSemester = semester !== "all" ? semester : (period !== "all" && period.includes("Semestre") ? period.split(" / ")[0] : "all");
+    const effYear = year !== "all" ? year : (period !== "all" && /\d{4}/.test(period) ? (period.split(" / ")[1] || period) : "all");
 
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
     const [assessments, setAssessments] = useState<Assessment[]>([]);
@@ -131,7 +145,7 @@ export function SkillsChart({ student, filter = "all", period = "all" }: { stude
 
     const studentAssessments = assessments.filter(a => 
         (a.studentId === studentId || (a.scope === "class" && a.classId === student.classId)) &&
-        (period === "all" || a.period === period)
+        matchesPeriod(a.period, a.createdAt, effSemester, effYear)
     );
 
     // 1. Identify which Library Items belong to the "Trilha Base" for the student's class
@@ -146,7 +160,7 @@ export function SkillsChart({ student, filter = "all", period = "all" }: { stude
     const allTrees = [...skillsTree, ...contentsTree];
     const classRoots = allTrees.filter(node => 
         node.classId === student.classId && 
-        (period === "all" || node.period === period)
+        matchesPeriod(node.period, null, effSemester, effYear)
     );
     collectBaseIds(classRoots);
 

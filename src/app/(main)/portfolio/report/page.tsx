@@ -27,6 +27,7 @@ import { getProjects } from "@/services/project.service";
 import { ScheduleItem } from "@/types/schedule";
 import { getSchedules } from "@/services/schedule.service";
 import { getKnowledgeTrees } from "@/services/knowledge.service";
+import { matchesPeriod } from "@/lib/filter-utils";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Node Resolvers
@@ -277,17 +278,20 @@ function ReportCard({
         return studentMatch || classMatch;
     });
 
+    const effSemester = period && period !== "all" && period.includes("Semestre") ? period.split(" / ")[0] : "all";
+    const effYear = period && period !== "all" && /\d{4}/.test(period) ? (period.split(" / ")[1] || period) : "all";
+
     if (projectId && projectId !== "all") {
         studentProjects = studentProjects.filter(p => p.id === projectId);
     }
     if (period && period !== "all") {
-        studentProjects = studentProjects.filter(p => p.period === period);
+        studentProjects = studentProjects.filter(p => matchesPeriod(p.period, p.startDate, effSemester, effYear));
     }
 
     // Get relevant assessments
     const relevantAssessments = assessments.filter(a => {
         const isStudent = a.studentId === studentId || (a.scope === "class" && a.classId === student.classId);
-        const isPeriod = !period || period === "all" || a.period === period;
+        const isPeriod = matchesPeriod(a.period, a.createdAt, effSemester, effYear);
         return isStudent && isPeriod;
     });
 

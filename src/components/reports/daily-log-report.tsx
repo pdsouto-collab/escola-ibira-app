@@ -9,13 +9,26 @@ import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarDays, Utensils, Moon, Smile, Meh, Frown, Sparkles, Edit2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { matchesPeriod } from "@/lib/filter-utils";
 
 interface DailyLogReportProps {
     studentId: string;
     onEdit?: (date: string) => void;
+    period?: string;
+    semester?: string;
+    year?: string;
 }
 
-export function DailyLogReport({ studentId, onEdit }: DailyLogReportProps) {
+export function DailyLogReport({
+    studentId,
+    onEdit,
+    period = "all",
+    semester = "all",
+    year = "all"
+}: DailyLogReportProps) {
+    const effSemester = semester !== "all" ? semester : (period !== "all" && period.includes("Semestre") ? period.split(" / ")[0] : "all");
+    const effYear = year !== "all" ? year : (period !== "all" && /\d{4}/.test(period) ? (period.split(" / ")[1] || period) : "all");
+
     const [menus, setMenus] = useState<Menu[]>([]);
     const [logs, setLogs] = useState<DailyLog[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -31,6 +44,10 @@ export function DailyLogReport({ studentId, onEdit }: DailyLogReportProps) {
             .finally(() => setIsLoading(false));
     }, [studentId]);
 
+    const filteredLogs = logs.filter(l =>
+        matchesPeriod(null, l.date, effSemester, effYear)
+    );
+
     if (isLoading) {
         return (
             <div className="flex justify-center py-10">
@@ -39,10 +56,10 @@ export function DailyLogReport({ studentId, onEdit }: DailyLogReportProps) {
         );
     }
 
-    if (logs.length === 0) {
+    if (filteredLogs.length === 0) {
         return (
             <div className="text-center py-10 text-slate-500">
-                <p>Nenhum registro diário encontrado para este aluno.</p>
+                <p>Nenhum registro diário encontrado para os filtros selecionados.</p>
             </div>
         );
     }
