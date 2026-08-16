@@ -3,10 +3,10 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
 export async function GET(request: Request) {
-        const session = await getServerSessionOrJwt();
-        if (!session || !session.user || !session.user.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+    const session = await getServerSessionOrJwt();
+    if (!session || !session.user) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const { searchParams } = new URL(request.url);
     const classId = searchParams.get("classId");
@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     try {
         const whereConditions: any[] = [];
 
-        if (classId && classId !== "all") {
+        if (classId && classId !== "all" && classId !== "undefined") {
             whereConditions.push({
                 OR: [
                     { classId: classId },

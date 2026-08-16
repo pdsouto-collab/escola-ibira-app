@@ -101,10 +101,15 @@ export default function MuralPage() {
         try {
             const data = await getMuralEvents(classId === "all" ? undefined : classId, isArchived);
             const now = new Date().getTime();
+            const getTime = (d: any) => {
+                if (!d) return 0;
+                const t = new Date(d).getTime();
+                return isNaN(t) ? 0 : t;
+            };
             const sortedEvents = Array.isArray(data)
                 ? [...data].sort((a, b) => {
-                    const timeA = new Date(a.date).getTime();
-                    const timeB = new Date(b.date).getTime();
+                    const timeA = getTime(a.date);
+                    const timeB = getTime(b.date);
                     const isUpcomingA = timeA >= now;
                     const isUpcomingB = timeB >= now;
 
@@ -120,6 +125,7 @@ export default function MuralPage() {
             setMuralEvents(sortedEvents);
         } catch (error) {
             console.error("Erro ao buscar eventos do mural:", error);
+            setMuralEvents([]);
         } finally {
             setIsEventsLoading(false);
         }
