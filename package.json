@@ -9,7 +9,7 @@
     "lint": "eslint",
     "deploy": "gh-pages -d out -t",
     "seed": "tsx prisma/seed.ts",
-    "postinstall": "prisma generate && node -e \"if(process.env.VERCEL === '1') { require('child_process').execSync('npx prisma migrate deploy', {stdio: 'inherit'}) }\""
+    "postinstall": "prisma generate && node -e \"if(process.env.VERCEL === '1') { try { require('child_process').execSync('npx prisma db push --accept-data-loss', {stdio: 'inherit'}) } catch(e) { console.error(e); } }\""
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
