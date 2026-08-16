@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Apple, Info, Edit, CheckCircle2, Sprout, AlertCircle } from "lucide-react";
+import { Apple, Info, Edit, CheckCircle2, Sprout, AlertCircle, Cake } from "lucide-react";
 import { MenuGuidelinesData, DEFAULT_GUIDELINES } from "./menu-print-dialog";
 import { toast } from "sonner";
 
@@ -73,7 +73,7 @@ export function MenuGuidelinesCard({
 
                 <CardContent className="p-4 sm:p-5 space-y-4 text-sm">
                     {/* Intro */}
-                    <div className="bg-white/80 border border-emerald-100/60 rounded-xl p-3.5 text-slate-700 leading-relaxed font-medium">
+                    <div className="bg-white/80 border border-emerald-100/60 rounded-xl p-3.5 text-slate-700 leading-relaxed font-medium whitespace-pre-line break-words">
                         {guidelines.intro}
                     </div>
 
@@ -88,7 +88,7 @@ export function MenuGuidelinesCard({
                                 {guidelines.points.map((point, index) => (
                                     <li key={index} className="flex items-start gap-2">
                                         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
-                                        <span>{point}</span>
+                                        <span className="whitespace-pre-line break-words">{point}</span>
                                     </li>
                                 ))}
                             </ul>
@@ -99,16 +99,26 @@ export function MenuGuidelinesCard({
                             <div className="space-y-2 text-xs text-slate-700">
                                 <div className="flex items-start gap-2 bg-amber-50/70 border border-amber-200/50 rounded-lg p-2.5 text-amber-900">
                                     <Info className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
-                                    <span>{guidelines.glutenNote}</span>
+                                    <span className="whitespace-pre-line break-words">{guidelines.glutenNote}</span>
                                 </div>
 
                                 <div className="flex items-start gap-2 bg-emerald-50/70 border border-emerald-200/50 rounded-lg p-2.5 text-emerald-900">
                                     <Sprout className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-                                    <span>{guidelines.farmNote}</span>
+                                    <span className="whitespace-pre-line break-words">{guidelines.farmNote}</span>
                                 </div>
+
+                                {guidelines.birthdayNote && (
+                                    <div className="flex items-start gap-2 bg-rose-50/70 border border-rose-200/60 rounded-lg p-2.5 text-rose-900">
+                                        <Cake className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
+                                        <div>
+                                            <span className="font-bold text-rose-900 block text-[11px] uppercase mb-0.5">Aniversariantes do Mês</span>
+                                            <span className="whitespace-pre-line break-words text-rose-800 text-xs">{guidelines.birthdayNote}</span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
-                            <p className="text-[11px] italic text-slate-500 border-t border-slate-100 pt-2">
+                            <p className="text-[11px] italic text-slate-500 border-t border-slate-100 pt-2 whitespace-pre-line break-words">
                                 {guidelines.footerNote}
                             </p>
                         </div>
@@ -164,6 +174,19 @@ export function MenuGuidelinesCard({
                                 onChange={e => setFormData({ ...formData, farmNote: e.target.value })}
                                 rows={2}
                                 className="text-xs"
+                            />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <Label className="text-xs font-bold text-rose-800 flex items-center gap-1.5">
+                                <Cake className="h-3.5 w-3.5" /> Aniversariantes do Mês (Comemorações / Bolo)
+                            </Label>
+                            <Textarea
+                                value={formData.birthdayNote || ""}
+                                onChange={e => setFormData({ ...formData, birthdayNote: e.target.value })}
+                                rows={3}
+                                placeholder="Descreva os aniversariantes do mês e comemorações com bolo..."
+                                className="text-xs border-rose-200 focus:border-rose-400"
                             />
                         </div>
 

@@ -14,6 +14,7 @@ export interface MenuGuidelinesData {
     points: string[];
     glutenNote: string;
     farmNote: string;
+    birthdayNote?: string;
     footerNote: string;
 }
 
@@ -27,6 +28,7 @@ export const DEFAULT_GUIDELINES: MenuGuidelinesData = {
     ],
     glutenNote: "Obs: o glúten será utilizado pontualmente na preparação dos pães pelas crianças.",
     farmNote: "Os itens marcados com o símbolo (•) são cultivados na escola.",
+    birthdayNote: "No dia da comemoração do aniversariante, oferecemos um bolo sem glúten e açúcar, preparado em nossa cozinha.",
     footerNote: "O cardápio está sujeito a alterações devido à disponibilidade e perecibilidade dos alimentos, sempre mantendo a qualidade nutricional."
 };
 
@@ -369,7 +371,7 @@ function PrintableWeekPage({
             {/* Descriptive Guidelines Footer (Excel Reference) */}
             <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-[10px] text-slate-700 space-y-1.5 leading-relaxed">
                 {guidelines.intro && (
-                    <p className="font-medium text-slate-800 border-b border-slate-200 pb-1">
+                    <p className="font-medium text-slate-800 border-b border-slate-200 pb-1 whitespace-pre-line break-words">
                         {guidelines.intro}
                     </p>
                 )}
@@ -381,14 +383,25 @@ function PrintableWeekPage({
                         </span>
                         <ul className="list-disc pl-3 space-y-0.5 text-slate-600">
                             {guidelines.points.map((pt, pIdx) => (
-                                <li key={pIdx}>{pt}</li>
+                                <li key={pIdx} className="whitespace-pre-line break-words">{pt}</li>
                             ))}
                         </ul>
                     </div>
                     <div className="space-y-1 text-slate-600 border-t sm:border-t-0 sm:border-l border-slate-200 sm:pl-3 pt-1 sm:pt-0">
-                        <p className="font-medium text-slate-700">{guidelines.glutenNote}</p>
-                        <p className="font-medium text-emerald-700">{guidelines.farmNote}</p>
-                        <p className="italic text-[9.5px] text-slate-500 pt-0.5">{guidelines.footerNote}</p>
+                        {guidelines.glutenNote && (
+                            <p className="font-medium text-slate-700 whitespace-pre-line break-words">{guidelines.glutenNote}</p>
+                        )}
+                        {guidelines.farmNote && (
+                            <p className="font-medium text-emerald-700 whitespace-pre-line break-words">{guidelines.farmNote}</p>
+                        )}
+                        {guidelines.birthdayNote && (
+                            <p className="font-semibold text-amber-800 whitespace-pre-line break-words bg-amber-50/80 p-1 rounded border border-amber-200/50">
+                                🎂 {guidelines.birthdayNote}
+                            </p>
+                        )}
+                        {guidelines.footerNote && (
+                            <p className="italic text-[9.5px] text-slate-500 pt-0.5 whitespace-pre-line break-words">{guidelines.footerNote}</p>
+                        )}
                     </div>
                 </div>
             </div>

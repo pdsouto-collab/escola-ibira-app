@@ -33,6 +33,7 @@ import { useState } from "react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { toast } from "sonner";
 import { resetDatabase } from "@/services/system.service";
+import { useChatNotifications } from "@/components/chat/chat-notification-provider";
 
 
 const navigation = [
@@ -60,6 +61,7 @@ export function Sidebar() {
 
     const { data: session } = useSession();
     const currentUser = session?.user as any;
+    const { unreadCount } = useChatNotifications();
 
     const [isConfirmResetOpen, setIsConfirmResetOpen] = useState(false);
     const [isResetting, setIsResetting] = useState(false);
@@ -103,14 +105,19 @@ export function Sidebar() {
                                 key={item.name}
                                 href={item.href}
                                 className={cn(
-                                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors relative",
                                     isActive
-                                        ? "bg-primary/10 text-primary z-10"
+                                        ? "bg-primary/10 text-primary z-10 font-bold"
                                         : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                                 )}
                             >
-                                <item.icon className={cn("h-5 w-5", isActive ? "text-primary" : "text-slate-500")} />
-                                {item.name}
+                                <item.icon className={cn("h-5 w-5 shrink-0", isActive ? "text-primary" : "text-slate-500")} />
+                                <span className="truncate">{item.name}</span>
+                                {item.href === "/conversas" && unreadCount > 0 && (
+                                    <span className="ml-auto flex h-5 min-w-[20px] px-1.5 items-center justify-center rounded-full bg-emerald-600 text-[11px] font-black text-white shadow-xs animate-in zoom-in-50">
+                                        {unreadCount > 99 ? "99+" : unreadCount}
+                                    </span>
+                                )}
                             </Link>
                         );
                     })}
