@@ -45,7 +45,7 @@ export function MenuPrintDialog({
     initialDate = new Date(),
     guidelines = DEFAULT_GUIDELINES
 }: MenuPrintDialogProps) {
-    const [viewMode, setViewMode] = useState<"week" | "month">("week");
+    const [viewMode, setViewMode] = useState<"week" | "undated" | "month">("undated");
     const [selectedDate, setSelectedDate] = useState<Date>(initialDate);
 
     const handlePrint = () => {
@@ -60,6 +60,31 @@ export function MenuPrintDialog({
     // Calculate Week Days (Monday to Friday)
     const currentWeekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
     const weekDays = Array.from({ length: 5 }).map((_, i) => addDays(currentWeekStart, i));
+
+    // Fallback search for a day of week within the month if the current week doesn't have it
+    const getMenuForWeekdayInMonth = (dayIndex: number) => {
+        // First try the selected week
+        const weekMenu = getMenuForDate(weekDays[dayIndex]);
+        if (weekMenu && weekMenu.items && weekMenu.items.some(it => it.title || it.description)) {
+            return weekMenu;
+        }
+        // Fallback: search any date in the same month with this weekday (1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex)
+        const targetDayOfWeek = dayIndex + 1; // 1 for Monday, 5 for Friday
+        const monthStart = startOfMonth(selectedDate);
+        const monthEnd = endOfMonth(selectedDate);
+        const match = menus.find(m => {
+            try {
+                const parsed = parseISO(m.date);
+                if (isSameMonth(parsed, selectedDate) && parsed.getDay() === targetDayOfWeek) {
+                    return m.items && m.items.some(it => it.title || it.description);
+                }
+            } catch {
+                return false;
+            }
+            return false;
+        });
+        return match || weekMenu;
+    };
 
     // Calculate Weeks for the Selected Month
     const monthStart = startOfMonth(selectedDate);
@@ -103,19 +128,29 @@ export function MenuPrintDialog({
                         </div>
 
                         {/* Mode Selector & Controls */}
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                             <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
                                 <button
                                     type="button"
-                                    onClick={() => setViewMode("week")}
-                                    className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${viewMode === "week" ? "bg-white text-emerald-700 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
+                                    onClick={() => setViewMode("undated")}
+                                    className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${viewMode === "undated" ? "bg-white text-emerald-700 shadow-sm font-bold" : "text-slate-600 hover:text-slate-900"}`}
+                                    title="Cardápio semanal recorrente sem data específica, identificando o mês"
                                 >
-                                    Semana
+                                    Semanal Padrão (Sem Datas)
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setViewMode("week")}
+                                    className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${viewMode === "week" ? "bg-white text-emerald-700 shadow-sm font-bold" : "text-slate-600 hover:text-slate-900"}`}
+                                    title="Semana com datas específicas"
+                                >
+                                    Semana com Datas
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setViewMode("month")}
-                                    className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${viewMode === "month" ? "bg-white text-emerald-700 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
+                                    className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${viewMode === "month" ? "bg-white text-emerald-700 shadow-sm font-bold" : "text-slate-600 hover:text-slate-900"}`}
+                                    title="Todas as semanas do mês"
                                 >
                                     Mês Inteiro
                                 </button>
@@ -140,12 +175,22 @@ export function MenuPrintDialog({
                     {/* Scrollable Printable Document Container */}
                     <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex justify-center">
                         <div id="printable-cardapio" className="w-full max-w-[1000px] space-y-8">
-                            {viewMode === "week" ? (
+                            {viewMode === "undated" ? (
+                                <PrintableWeekPage
+                                    weekDays={weekDays}
+                                    getMenuForDate={(_, index) => getMenuForWeekdayInMonth(index ?? 0)}
+                                    guidelines={guidelines}
+                                    weekStart={currentWeekStart}
+                                    isUndated={true}
+                                    undatedMonthName={format(selectedDate, "MMMM 'de' yyyy", { locale: ptBR })}
+                                />
+                            ) : viewMode === "week" ? (
                                 <PrintableWeekPage
                                     weekDays={weekDays}
                                     getMenuForDate={getMenuForDate}
                                     guidelines={guidelines}
                                     weekStart={currentWeekStart}
+                                    isUndated={false}
                                 />
                             ) : (
                                 monthWeeks.map((mWeekDays, idx) => (
@@ -157,6 +202,7 @@ export function MenuPrintDialog({
                                             weekStart={mWeekDays[0]}
                                             monthContext={format(selectedDate, "MMMM 'de' yyyy", { locale: ptBR })}
                                             weekNumber={idx + 1}
+                                            isUndated={false}
                                         />
                                     </div>
                                 ))
@@ -224,16 +270,22 @@ function PrintableWeekPage({
     guidelines,
     weekStart,
     monthContext,
-    weekNumber
+    weekNumber,
+    isUndated = false,
+    undatedMonthName
 }: {
     weekDays: Date[];
-    getMenuForDate: (date: Date) => Menu | undefined;
+    getMenuForDate: (date: Date, index?: number) => Menu | undefined;
     guidelines: MenuGuidelinesData;
     weekStart: Date;
     monthContext?: string;
     weekNumber?: number;
+    isUndated?: boolean;
+    undatedMonthName?: string;
 }) {
     const mealTitles = ["Lanche da Manhã", "Almoço", "Lanche da Tarde"];
+
+    const monthDisplay = undatedMonthName || format(weekStart, "MMMM 'de' yyyy", { locale: ptBR });
 
     return (
         <div className="a4-print-sheet bg-white rounded-xl border border-slate-300 shadow-md p-6 text-slate-900 flex flex-col justify-between">
@@ -248,16 +300,18 @@ function PrintableWeekPage({
                                 Nutrição Escolar
                             </span>
                         </h1>
-                        <p className="text-xs text-slate-600 font-medium">
-                            Cardápio Semanal • {monthContext ? `${monthContext.toUpperCase()} (Semana ${weekNumber})` : "Alimentação Saudável e Consciente"}
+                        <p className="text-xs text-slate-600 font-medium capitalize">
+                            Cardápio Semanal • {isUndated ? `Padrão do Mês de ${monthDisplay}` : (monthContext ? `${monthContext} (Semana ${weekNumber})` : "Alimentação Saudável e Consciente")}
                         </p>
                     </div>
                 </div>
 
                 <div className="text-right">
-                    <span className="text-[11px] font-bold text-slate-400 block uppercase">Período</span>
-                    <span className="text-sm font-extrabold text-emerald-800">
-                        {format(weekDays[0], "dd/MM")} a {format(weekDays[4], "dd/MM/yyyy")}
+                    <span className="text-[11px] font-bold text-slate-400 block uppercase">
+                        {isUndated ? "Mês de Referência" : "Período"}
+                    </span>
+                    <span className="text-sm font-extrabold text-emerald-800 uppercase">
+                        {isUndated ? monthDisplay : `${format(weekDays[0], "dd/MM")} a ${format(weekDays[4], "dd/MM/yyyy")}`}
                     </span>
                 </div>
             </div>
@@ -265,19 +319,21 @@ function PrintableWeekPage({
             {/* Main Menu Grid / Table (5 Days: Seg a Sex) */}
             <div className="grid grid-cols-5 gap-2.5 mb-4">
                 {weekDays.map((day, idx) => {
-                    const menu = getMenuForDate(day);
+                    const menu = getMenuForDate(day, idx);
                     const isMonFri = format(day, "EEEE", { locale: ptBR });
 
                     return (
                         <div key={idx} className="border border-slate-200 rounded-lg overflow-hidden bg-white flex flex-col">
                             {/* Day Header */}
-                            <div className="bg-emerald-50 border-b border-emerald-100 py-1.5 px-2 text-center">
+                            <div className={`bg-emerald-50 border-b border-emerald-100 px-2 text-center flex flex-col items-center justify-center ${isUndated ? "py-2.5" : "py-1.5"}`}>
                                 <span className="text-[11px] font-extrabold text-emerald-900 uppercase block truncate">
                                     {isMonFri}
                                 </span>
-                                <span className="text-xs font-bold text-emerald-700">
-                                    {format(day, "dd/MM")}
-                                </span>
+                                {!isUndated && (
+                                    <span className="text-xs font-bold text-emerald-700">
+                                        {format(day, "dd/MM")}
+                                    </span>
+                                )}
                             </div>
 
                             {/* Meals list */}
