@@ -100,7 +100,7 @@ export function ChatNotificationProvider({ children }: { children: React.ReactNo
                         // 2. Trigger native OS / Browser Notification (like WhatsApp Web)
                         if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
                             try {
-                                const n = new Notification(`Escola Trilha Ibirá • ${contact.name}`, {
+                                const n = new Notification(`Escola Ibirá • ${contact.name}`, {
                                     body: contact.lastMessage,
                                     icon: "/logo-ibira.png",
                                     badge: "/logo-ibira.png",

@@ -53,7 +53,7 @@ export function MenuGuidelinesCard({
                                 </span>
                             </CardTitle>
                             <p className="text-xs text-slate-500 font-medium">
-                                Diretrizes e princípios de alimentação saudável e equilibrada da Escola Trilha Ibirá.
+                                Diretrizes e princípios de alimentação saudável e equilibrada da Escola Ibirá.
                             </p>
                         </div>
                     </div>

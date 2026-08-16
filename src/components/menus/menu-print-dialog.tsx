@@ -297,7 +297,7 @@ function PrintableWeekPage({
                     <SchoolLogo className="h-12 w-auto" />
                     <div>
                         <h1 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                            ESCOLA TRILHA IBIRÁ
+                            ESCOLA IBIRÁ
                             <span className="text-xs bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full uppercase">
                                 Nutrição Escolar
                             </span>
