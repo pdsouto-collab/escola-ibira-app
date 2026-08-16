@@ -99,7 +99,7 @@ export default function MuralPage() {
         try {
             const data = await getMuralEvents(classId === "all" ? undefined : classId);
             const sortedEvents = Array.isArray(data)
-                ? [...data].sort((a, b) => new Date(b.createdAt || b.date).getTime() - new Date(a.createdAt || a.date).getTime())
+                ? [...data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
                 : [];
             setMuralEvents(sortedEvents);
         } catch (error) {

@@ -147,10 +147,13 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
             toast.warning("Limite máximo de 5 fotos atingido.");
             return;
         }
-        fileInputRef.current?.click();
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+            fileInputRef.current.click();
+        }
     };
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
         if (files.length === 0) return;
 
@@ -162,36 +165,48 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
 
         const filesToProcess = files.slice(0, currentSlots);
 
-        filesToProcess.forEach(file => {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-                    const MAX_DIMENSION = 800; // Limit rendering size
-                    if (width > height && width > MAX_DIMENSION) {
-                        height *= MAX_DIMENSION / width;
-                        width = MAX_DIMENSION;
-                    } else if (height > MAX_DIMENSION) {
-                        width *= MAX_DIMENSION / height;
-                        height = MAX_DIMENSION;
-                    }
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx?.drawImage(img, 0, 0, width, height);
-                    const newBase = canvas.toDataURL('image/jpeg', 0.7);
-                    setImages(prev => [...prev, newBase].slice(0, 5));
-                };
-                img.src = event.target?.result as string;
-            };
-            reader.readAsDataURL(file);
-        });
+        try {
+            const promises = filesToProcess.map(file => {
+                return new Promise<string>((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            let width = img.width;
+                            let height = img.height;
+                            const MAX_DIMENSION = 1000;
+                            if (width > height && width > MAX_DIMENSION) {
+                                height *= MAX_DIMENSION / width;
+                                width = MAX_DIMENSION;
+                            } else if (height > MAX_DIMENSION) {
+                                width *= MAX_DIMENSION / height;
+                                height = MAX_DIMENSION;
+                            }
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx?.drawImage(img, 0, 0, width, height);
+                            resolve(canvas.toDataURL('image/jpeg', 0.75));
+                        };
+                        img.onerror = () => resolve(event.target?.result as string);
+                        img.src = event.target?.result as string;
+                    };
+                    reader.onerror = () => resolve("");
+                    reader.readAsDataURL(file);
+                });
+            });
 
-        // Clear input value to allow selecting same file again
-        if (e.target) e.target.value = '';
+            const newBase64s = await Promise.all(promises);
+            const valid = newBase64s.filter(Boolean);
+            setImages(prev => [...prev, ...valid].slice(0, 5));
+        } catch (err) {
+            console.error("Erro ao processar fotos:", err);
+            toast.error("Erro ao carregar fotos");
+        } finally {
+            if (e.target) e.target.value = '';
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
     };
 
     const updateForm = (studentId: string, updates: Partial<StudentPortfolioForm>) => {
@@ -441,49 +456,66 @@ export function BulkPortfolioDialog({ open, onOpenChange, date, classes, student
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
                                         <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Fotos da Vivência ({images.length}/5)</Label>
-                                        <Badge variant="secondary" className="text-[10px] font-bold">{images.length}/5 fotos</Badge>
+                                        <div className="flex items-center gap-2">
+                                            {images.length < 5 && (
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={handleImageClick}
+                                                    className="h-6 text-[10px] font-bold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 px-2 flex items-center gap-1"
+                                                >
+                                                    <ImagePlus className="w-3.5 h-3.5" />
+                                                    + Adicionar Foto
+                                                </Button>
+                                            )}
+                                            <Badge variant="secondary" className="text-[10px] font-bold">{images.length}/5 fotos</Badge>
+                                        </div>
                                     </div>
                                     <input type="file" multiple ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageChange} />
 
-                                    <ScrollArea className="w-full whitespace-nowrap pb-4">
-                                        <div className="flex gap-3">
-                                            {images.map((img, idx) => (
-                                                <div key={idx} className="w-32 h-32 shrink-0 border border-slate-200 rounded-2xl p-1 bg-slate-50 relative group overflow-hidden">
-                                                    <img src={img} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover rounded-xl" />
-                                                    <div className="absolute top-2 right-2 flex items-center gap-1 z-10">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                setImageToFrame({ src: img, index: idx });
-                                                                setFramingModalOpen(true);
-                                                            }}
-                                                            className="bg-black/70 hover:bg-indigo-600 text-white rounded-full p-1.5 shadow-md transition-all"
-                                                            title="Ajustar Enquadramento / Recorte"
-                                                        >
-                                                            <Crop className="w-3.5 h-3.5" />
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => setImages(prev => prev.filter((_, i) => i !== idx))}
-                                                            className="bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                            title="Remover foto"
-                                                        >
-                                                            <Trash2 className="w-3.5 h-3.5" />
-                                                        </button>
-                                                    </div>
+                                    <div className="w-full overflow-x-auto overflow-y-hidden pb-3 pt-1 flex items-center gap-3 border border-slate-200/80 rounded-2xl bg-slate-50/70 p-2 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 min-h-[140px]">
+                                        {images.map((img, idx) => (
+                                            <div key={idx} className="w-28 h-28 shrink-0 border border-slate-200 rounded-xl p-1 bg-white relative group overflow-hidden shadow-2xs">
+                                                <img src={img} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover rounded-lg" />
+                                                <div className="absolute top-1.5 right-1.5 flex items-center gap-1 z-10">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setImageToFrame({ src: img, index: idx });
+                                                            setFramingModalOpen(true);
+                                                        }}
+                                                        className="bg-black/75 hover:bg-indigo-600 text-white rounded-full p-1 shadow-md transition-all"
+                                                        title="Ajustar Enquadramento / Recorte"
+                                                    >
+                                                        <Crop className="w-3.5 h-3.5" />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setImages(prev => prev.filter((_, i) => i !== idx))}
+                                                        className="bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-md transition-all"
+                                                        title="Remover foto"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </button>
                                                 </div>
-                                            ))}
-                                            {images.length < 5 && (
-                                                <div
-                                                    onClick={handleImageClick}
-                                                    className="w-32 h-32 shrink-0 border-2 border-dashed border-slate-300 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 transition-all text-slate-400 hover:text-indigo-500 group shadow-sm bg-white"
-                                                >
-                                                    <ImagePlus className="h-6 w-6 mb-2 group-hover:scale-110 transition-transform" />
-                                                    <span className="text-[10px] font-bold uppercase tracking-wider">Add Foto</span>
+                                                <div className="absolute bottom-1.5 left-1.5 bg-black/60 px-1.5 py-0.5 rounded text-[9px] font-bold text-white">
+                                                    {idx + 1}
                                                 </div>
-                                            )}
-                                        </div>
-                                    </ScrollArea>
+                                            </div>
+                                        ))}
+                                        {images.length < 5 && (
+                                            <button
+                                                type="button"
+                                                onClick={handleImageClick}
+                                                className="w-28 h-28 shrink-0 border-2 border-dashed border-indigo-200 hover:border-indigo-500 rounded-xl flex flex-col items-center justify-center cursor-pointer bg-white hover:bg-indigo-50/50 transition-all text-indigo-600 group shadow-2xs"
+                                            >
+                                                <ImagePlus className="h-6 w-6 mb-1.5 text-indigo-500 group-hover:scale-110 transition-transform" />
+                                                <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-900">+ Adicionar</span>
+                                                <span className="text-[9px] text-slate-400 font-semibold">{images.length}/5</span>
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
 
                                 <div>

@@ -128,7 +128,7 @@ export function MenuGuidelinesCard({
 
             {/* Edit Dialog */}
             <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-                <DialogContent className="max-w-lg max-h-[90vh] flex flex-col p-0 overflow-hidden">
+                <DialogContent className="max-w-2xl max-h-[92vh] flex flex-col p-0 overflow-hidden">
                     <DialogHeader className="p-5 border-b">
                         <DialogTitle className="flex items-center gap-2">
                             <Apple className="h-5 w-5 text-emerald-600" />
@@ -148,12 +148,16 @@ export function MenuGuidelinesCard({
                         </div>
 
                         <div className="space-y-1.5">
-                            <Label className="text-xs font-bold text-slate-600">Pontos Importantes (um por linha)</Label>
+                            <div className="flex items-center justify-between">
+                                <Label className="text-xs font-bold text-emerald-950">Pontos Importantes (um por linha)</Label>
+                                <span className="text-[10px] text-slate-400 font-semibold">Cada linha se torna um pilar de preparo</span>
+                            </div>
                             <Textarea
                                 value={formData.points.join("\n")}
                                 onChange={e => setFormData({ ...formData, points: e.target.value.split("\n").filter(Boolean) })}
-                                rows={4}
-                                className="text-xs font-mono"
+                                rows={9}
+                                className="text-xs font-mono leading-relaxed min-h-[170px]"
+                                placeholder="Digite cada ponto importante em uma nova linha..."
                             />
                         </div>
 

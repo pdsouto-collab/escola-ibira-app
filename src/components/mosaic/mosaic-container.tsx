@@ -91,7 +91,7 @@ export function MosaicContainer() {
         }
 
         const periodMatch = matchesPeriod(node.period, null, selectedSemester, selectedYear);
-        return (activeClassId === "all" || (node.classId || "all") === activeClassId) && periodMatch;
+        return (activeClassId === "all" || !node.classId || node.classId === "all" || node.classId === activeClassId) && periodMatch;
     });
 
     // If drilled down, we only render the drilled node as the root.

@@ -112,7 +112,13 @@ export function PegadaNewPost({ onSuccess }: PegadaNewPostProps = {}) {
             };
             reader.readAsDataURL(file);
         } else {
-            const promises = files.map(file => {
+            const currentSlots = 5 - (type === 'photo' ? mediaUrls.length : 0);
+            if (currentSlots <= 0) {
+                toast.warning("Limite máximo de 5 fotos atingido.");
+                return;
+            }
+            const filesToProcess = files.slice(0, currentSlots);
+            const promises = filesToProcess.map(file => {
                 return new Promise<string>((resolve) => {
                     const reader = new FileReader();
                     reader.onload = (event) => {
@@ -136,20 +142,24 @@ export function PegadaNewPost({ onSuccess }: PegadaNewPostProps = {}) {
                             // Quality 0.7 to significantly reduce Base64 string length
                             resolve(canvas.toDataURL('image/jpeg', 0.7));
                         };
+                        img.onerror = () => resolve(event.target?.result as string);
                         img.src = event.target?.result as string;
                     };
+                    reader.onerror = () => resolve("");
                     reader.readAsDataURL(file);
                 });
             });
             const results = await Promise.all(promises);
+            const valid = results.filter(Boolean);
             setMediaUrls(prev => {
-                const newUrls = type === 'photo' ? [...prev, ...results] : results;
+                const newUrls = type === 'photo' ? [...prev, ...valid] : valid;
                 return newUrls.slice(0, 5); // Limita a 5 fotos no total
             });
             setType(fileType);
         }
 
-        e.target.value = '';
+        if (e.target) e.target.value = '';
+        if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
     return (

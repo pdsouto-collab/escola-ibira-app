@@ -22,8 +22,8 @@ export async function GET(request: Request) {
                 }
             },
             orderBy: [
-                { createdAt: "desc" },
-                { date: "desc" }
+                { date: "asc" },
+                { createdAt: "asc" }
             ]
         });
         return NextResponse.json(events);

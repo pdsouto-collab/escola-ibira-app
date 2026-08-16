@@ -97,16 +97,17 @@ const BASE_COLORS = [
 
 function getNodeData(
     node: KnowledgeNode,
-    assessments: Assessment[],
-    projects: Project[],
-    studentId: string,
-    classId: string,
-    selectedProjectId: string,
+    assessments: Assessment[] = [],
+    projects: Project[] = [],
+    studentId: string = "all",
+    classId: string = "all",
+    selectedProjectId: string = "all",
     libraryItems: LibraryItem[] = [],
     selectedSemester = "all",
     selectedYear = "all"
 ): { points: number; maxPoints: number; sat: number; isTrabalhado: boolean } {
-    const relevantProjects = projects.filter(p => {
+    const relevantProjects = (projects || []).filter(p => {
+        if (!p) return false;
         const isActive = p.status === 'active';
         const matchesFilter = selectedProjectId === "all" || p.id === selectedProjectId;
         return isActive && matchesFilter;
@@ -116,32 +117,39 @@ function getNodeData(
 
     // Check if node itself or any of its children are in a project
     const checkInProject = (n: KnowledgeNode): boolean => {
+        if (!n) return false;
         const inThisNode = relevantProjects.some(p => {
+            if (!p) return false;
+            const pStudents = Array.isArray(p.students) ? p.students : [];
+            const pClasses = Array.isArray(p.classes) ? p.classes : [];
+            const pBnccSkills = Array.isArray(p.bnccSkillIds) ? p.bnccSkillIds : [];
+            const pContents = Array.isArray(p.contentIds) ? p.contentIds : [];
+
             // Check student/class context: either student is directly assigned or student's class is assigned
             const studentMatch = studentId && studentId !== "all"
-                ? (p.students?.includes(studentId) || (classId && classId !== "all" && p.classes?.includes(classId)))
+                ? (pStudents.includes(studentId) || (classId && classId !== "all" && pClasses.includes(classId)))
                 : true;
-            const classMatch = classId && classId !== "all" ? (p.classes?.includes(classId) || !p.classes || p.classes.length === 0) : true;
+            const classMatch = classId && classId !== "all" ? (pClasses.includes(classId) || pClasses.length === 0) : true;
 
             if (!studentMatch && !classMatch) return false;
 
-            const isMatch = (p.bnccSkillIds?.includes(n.id) ||
-                p.contentIds?.includes(n.id) ||
-                (n.libraryItemId && p.bnccSkillIds?.includes(n.libraryItemId)));
+            const isMatch = (pBnccSkills.includes(n.id) ||
+                pContents.includes(n.id) ||
+                (n.libraryItemId && pBnccSkills.includes(n.libraryItemId)));
 
             if (isMatch) return true;
 
             // Name-based fallback for BNCC Fields (Education Infantil)
-            const projectBnccSkills = (p.bnccSkillIds || []).map(sid => libraryItems.find(li => li.id === sid)).filter(Boolean);
+            const projectBnccSkills = pBnccSkills.map(sid => (libraryItems || []).find(li => li?.id === sid)).filter(Boolean);
             const nameMatch = projectBnccSkills.some(skill =>
-                skill?.name?.trim().toLowerCase() === n.name.trim().toLowerCase()
+                skill?.name && n?.name && skill.name.trim().toLowerCase() === n.name.trim().toLowerCase()
             );
 
             return nameMatch;
         });
 
         if (inThisNode) return true;
-        if (n.children) {
+        if (n.children && Array.isArray(n.children)) {
             return n.children.some(child => checkInProject(child));
         }
         return false;
