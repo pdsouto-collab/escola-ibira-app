@@ -54,13 +54,52 @@ export default function MuralPage() {
     const [rawImageToFrame, setRawImageToFrame] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // Helper function to compress image files before storing / sending to prevent payload limits
+    const compressImageFile = (file: File, maxDim = 1280, quality = 0.82): Promise<string> => {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const rawData = e.target?.result as string;
+                const img = new Image();
+                img.onload = () => {
+                    let { width, height } = img;
+                    if (width > maxDim || height > maxDim) {
+                        if (width > height) {
+                            height = Math.round((height * maxDim) / width);
+                            width = maxDim;
+                        } else {
+                            width = Math.round((width * maxDim) / height);
+                            height = maxDim;
+                        }
+                    }
+                    const canvas = document.createElement("canvas");
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext("2d");
+                    if (!ctx) {
+                        resolve(rawData);
+                        return;
+                    }
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = "high";
+                    ctx.drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL("image/jpeg", quality));
+                };
+                img.onerror = () => resolve(rawData);
+                img.src = rawData;
+            };
+            reader.onerror = () => resolve("");
+            reader.readAsDataURL(file);
+        });
+    };
+
     // Fetching Data
     const fetchMuralEvents = useCallback(async (classId?: string) => {
         setIsEventsLoading(true);
         try {
             const data = await getMuralEvents(classId === "all" ? undefined : classId);
             const sortedEvents = Array.isArray(data)
-                ? [...data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                ? [...data].sort((a, b) => new Date(b.createdAt || b.date).getTime() - new Date(a.createdAt || a.date).getTime())
                 : [];
             setMuralEvents(sortedEvents);
         } catch (error) {
@@ -151,8 +190,11 @@ export default function MuralPage() {
                 await updateMuralEvent(editingEventId, eventData);
                 toast.success("Evento atualizado com sucesso");
             } else {
-                await createMuralEvent(eventData);
+                const created = await createMuralEvent(eventData);
                 toast.success("Evento criado com sucesso");
+                if (created) {
+                    setMuralEvents(prev => [created, ...prev.filter(ev => ev.id !== created.id)]);
+                }
             }
             await fetchMuralEvents(selectedClassId);
             resetForm();
@@ -362,17 +404,18 @@ export default function MuralPage() {
                                     type="file"
                                     accept="image/*"
                                     ref={fileInputRef}
-                                    onChange={(e) => {
+                                    onChange={async (e) => {
                                         const file = e.target.files?.[0];
                                         if (file) {
-                                            const reader = new FileReader();
-                                            reader.onload = (ev) => {
-                                                const raw = ev.target?.result as string;
-                                                if (raw) {
-                                                    handleSelectRawImage(raw);
+                                            try {
+                                                const compressed = await compressImageFile(file);
+                                                if (compressed) {
+                                                    handleSelectRawImage(compressed);
                                                 }
-                                            };
-                                            reader.readAsDataURL(file);
+                                            } catch (err) {
+                                                console.error("Erro ao carregar imagem:", err);
+                                                toast.error("Erro ao processar imagem.");
+                                            }
                                             e.target.value = "";
                                         }
                                     }}

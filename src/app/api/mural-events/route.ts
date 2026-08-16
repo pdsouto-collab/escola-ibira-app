@@ -21,9 +21,10 @@ export async function GET(request: Request) {
                     }
                 }
             },
-            orderBy: {
-                date: "asc"
-            }
+            orderBy: [
+                { createdAt: "desc" },
+                { date: "desc" }
+            ]
         });
         return NextResponse.json(events);
     } catch (error) {
