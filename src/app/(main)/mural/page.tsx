@@ -90,8 +90,8 @@ export default function MuralPage() {
     const [newEvent, setNewEvent] = useState({
         title: "",
         description: "",
-        date: "",
-        time: "",
+        date: format(new Date(), "yyyy-MM-dd"),
+        time: "09:00",
         location: "",
         image: "",
         classId: "all"
@@ -101,122 +101,48 @@ export default function MuralPage() {
     const [newCommentText, setNewCommentText] = useState<{ [key: string]: string }>({});
 
     const resetForm = () => {
-        setNewEvent({ title: "", description: "", date: "", time: "", location: "", image: "", classId: "all" });
+        setNewEvent({
+            title: "",
+            description: "",
+            date: format(new Date(), "yyyy-MM-dd"),
+            time: "09:00",
+            location: "",
+            image: "",
+            classId: "all"
+        });
         setEditingEventId(null);
         setShowNewEventForm(false);
-    };
-
-    // Helper function to compress and frame images to ensure perfect alignment & lightweight payloads
-    const generateFramedImage = (
-        dataUrl: string,
-        posX: number,
-        posY: number,
-        zoom: number,
-        mode: 'cover' | 'contain'
-    ): Promise<string> => {
-        return new Promise((resolve) => {
-            const img = new window.Image();
-            img.onload = () => {
-                const canvas = document.createElement("canvas");
-                const targetW = 1280;
-                const targetH = 720;
-                canvas.width = targetW;
-                canvas.height = targetH;
-                const ctx = canvas.getContext("2d");
-                if (!ctx) {
-                    resolve(dataUrl);
-                    return;
-                }
-
-                ctx.imageSmoothingEnabled = true;
-                ctx.imageSmoothingQuality = "high";
-
-                if (mode === 'contain') {
-                    // Draw blurred cover background
-                    ctx.filter = "blur(18px) brightness(0.7)";
-                    ctx.drawImage(img, 0, 0, targetW, targetH);
-                    ctx.filter = "none";
-
-                    // Calculate contain dimensions
-                    const scale = Math.min(targetW / img.width, targetH / img.height);
-                    const drawW = img.width * scale;
-                    const drawH = img.height * scale;
-                    const drawX = (targetW - drawW) / 2;
-                    const drawY = (targetH - drawH) / 2;
-                    ctx.drawImage(img, drawX, drawY, drawW, drawH);
-                } else {
-                    // Cover mode with custom framing
-                    const targetRatio = targetW / targetH; // 1.777
-                    let baseCropW = img.width;
-                    let baseCropH = img.height;
-
-                    if (img.width / img.height > targetRatio) {
-                        baseCropH = img.height / zoom;
-                        baseCropW = baseCropH * targetRatio;
-                    } else {
-                        baseCropW = img.width / zoom;
-                        baseCropH = baseCropW / targetRatio;
-                    }
-
-                    const maxOffsetX = Math.max(0, img.width - baseCropW);
-                    const maxOffsetY = Math.max(0, img.height - baseCropH);
-                    const cropX = maxOffsetX * (posX / 100);
-                    const cropY = maxOffsetY * (posY / 100);
-
-                    ctx.drawImage(img, cropX, cropY, baseCropW, baseCropH, 0, 0, targetW, targetH);
-                }
-
-                resolve(canvas.toDataURL("image/jpeg", 0.88));
-            };
-            img.onerror = () => resolve(dataUrl);
-            img.src = dataUrl;
-        });
-    };
-
-    const handleApplyFraming = async () => {
-        if (!rawImageToFrame) return;
-        try {
-            const framed = await generateFramedImage(
-                rawImageToFrame,
-                framingPosX,
-                framingPosY,
-                framingZoom,
-                framingMode
-            );
-            setNewEvent(prev => ({ ...prev, image: framed }));
-            setFramingModalOpen(false);
-            toast.success("Enquadramento da foto aplicado!");
-        } catch (err) {
-            console.error("Erro ao aplicar enquadramento:", err);
-            toast.error("Não foi possível ajustar a imagem.");
-        }
+        setRawImageToFrame(null);
     };
 
     const handleSelectRawImage = (dataUrl: string) => {
         setRawImageToFrame(dataUrl);
-        setFramingPosY(50);
-        setFramingPosX(50);
-        setFramingZoom(1.0);
-        setFramingMode('cover');
+        // Pre-set the image so it's loaded immediately
+        setNewEvent(prev => ({ ...prev, image: dataUrl }));
         setFramingModalOpen(true);
     };
 
     const handleCreateEvent = async () => {
-        if (!newEvent.title || !newEvent.date || !currentUser) {
-            toast.error("Por favor, preencha o título e a data do evento");
+        if (!newEvent.title || !newEvent.title.trim()) {
+            toast.error("Por favor, preencha o título do evento.");
             return;
         }
 
         setIsSubmitting(true);
-        const eventDate = `${newEvent.date}T${newEvent.time || "00:00"}`;
+        const finalDate = newEvent.date || format(new Date(), "yyyy-MM-dd");
+        const finalTime = newEvent.time || "09:00";
+        const eventDate = `${finalDate}T${finalTime}:00`;
+
+        const authorName = currentUser?.name || session?.user?.name || "Administração";
+
         const eventData = {
-            title: newEvent.title,
+            title: newEvent.title.trim(),
             description: newEvent.description || "",
             date: eventDate,
             location: newEvent.location || "",
             image: newEvent.image || "",
             classId: newEvent.classId === "all" ? null : newEvent.classId,
-            author: currentUser.name || "Administração",
+            author: authorName,
             type: "event" as const,
         };
 
@@ -228,7 +154,7 @@ export default function MuralPage() {
                 await createMuralEvent(eventData);
                 toast.success("Evento criado com sucesso");
             }
-            fetchMuralEvents(selectedClassId);
+            await fetchMuralEvents(selectedClassId);
             resetForm();
         } catch (error: any) {
             console.error("Erro ao salvar evento:", error);
