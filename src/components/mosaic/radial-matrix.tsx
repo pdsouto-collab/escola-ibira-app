@@ -214,6 +214,8 @@ export function RadialMatrix({
     selectedStudentId,
     selectedClassId,
     selectedProjectId = "all",
+    selectedSemester = "all",
+    selectedYear = "all",
     drilledNodeId,
     libraryItems,
     onNodeClick,

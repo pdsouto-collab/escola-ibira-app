@@ -231,21 +231,52 @@ export function MenuPrintDialog({
                 @media print {
                     @page {
                         size: A4 landscape;
-                        margin: 8mm;
+                        margin: 6mm;
                     }
-                    body {
+                    html, body {
                         background: #ffffff !important;
                         margin: 0 !important;
                         padding: 0 !important;
+                        overflow: visible !important;
+                        height: auto !important;
                         -webkit-print-color-adjust: exact !important;
                         print-color-adjust: exact !important;
+                        color-adjust: exact !important;
                     }
-                    .no-print {
+                    /* Hide anything marked no-print */
+                    .no-print, [data-radix-dialog-overlay] {
                         display: none !important;
                     }
-                    /* Hide everything except printable container */
-                    body > *:not(#printable-cardapio-portal) {
-                        /* In case modal renders inside portal */
+                    /* Reset all scroll containers and fixed overlays for print */
+                    [role="dialog"], [data-radix-portal], [data-radix-dialog-content] {
+                        position: static !important;
+                        display: block !important;
+                        overflow: visible !important;
+                        max-height: none !important;
+                        height: auto !important;
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        padding: 0 !important;
+                        margin: 0 !important;
+                        background: #ffffff !important;
+                        border: none !important;
+                        box-shadow: none !important;
+                        transform: none !important;
+                    }
+                    div, main, section {
+                        overflow: visible !important;
+                        max-height: none !important;
+                    }
+                    ::-webkit-scrollbar {
+                        display: none !important;
+                    }
+                    #printable-cardapio {
+                        display: block !important;
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        margin: 0 auto !important;
+                        padding: 0 !important;
+                        box-shadow: none !important;
                     }
                     .print-page-break {
                         page-break-after: always !important;
@@ -253,12 +284,14 @@ export function MenuPrintDialog({
                     }
                     .a4-print-sheet {
                         box-shadow: none !important;
-                        border: 1px solid #cbd5e1 !important;
-                        padding: 12px !important;
+                        border: 1.5px solid #10b981 !important;
+                        border-radius: 12px !important;
+                        padding: 14px !important;
                         width: 100% !important;
                         max-width: 100% !important;
-                        margin: 0 !important;
+                        margin: 0 0 16px 0 !important;
                         page-break-inside: avoid !important;
+                        background: #ffffff !important;
                     }
                 }
             `}</style>
