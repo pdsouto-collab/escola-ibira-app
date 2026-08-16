@@ -19,6 +19,7 @@ import { Project } from "@/types/project";
 import { getProjects, deleteProject } from "@/services/project.service";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { ProjectViewDialog } from "@/components/projetos/project-view-dialog";
 
 export default function ProjectsPage() {
     const [projects, setProjects] = useState<Project[]>([]);
@@ -28,6 +29,7 @@ export default function ProjectsPage() {
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
     const [activeTab, setActiveTab] = useState("active");
     const [confirmDeleteProject, setConfirmDeleteProject] = useState<{ id: string; title: string } | null>(null);
+    const [viewingProject, setViewingProject] = useState<Project | null>(null);
 
     async function fetchData() {
         try {
@@ -206,6 +208,7 @@ export default function ProjectsPage() {
                                                     key={project.id}
                                                     project={project}
                                                     classNames={getClassNames(project.classes)}
+                                                    onView={() => setViewingProject(project)}
                                                     onDelete={() => handleDelete(project.id, project.title)}
                                                 />
                                             ))}
@@ -230,6 +233,7 @@ export default function ProjectsPage() {
                                                         key={project.id}
                                                         project={project}
                                                         classNames={getClassNames(project.classes)}
+                                                        onView={() => setViewingProject(project)}
                                                         onDelete={() => handleDelete(project.id, project.title)}
                                                     />
                                                 ))}
@@ -258,6 +262,7 @@ export default function ProjectsPage() {
                                         key={project.id}
                                         project={project}
                                         classNames={getClassNames(project.classes)}
+                                        onView={() => setViewingProject(project)}
                                         onDelete={() => handleDelete(project.id, project.title)}
                                     />
                                 ))}
@@ -280,6 +285,14 @@ export default function ProjectsPage() {
                 ))}
             </Tabs>
 
+            {/* Modal de Detalhes e Visualização Completa do Projeto */}
+            <ProjectViewDialog
+                project={viewingProject}
+                open={!!viewingProject}
+                onOpenChange={(open) => !open && setViewingProject(null)}
+                classes={classes}
+            />
+
             <ConfirmDialog
                 open={!!confirmDeleteProject}
                 onOpenChange={(open) => !open && setConfirmDeleteProject(null)}
@@ -295,10 +308,12 @@ export default function ProjectsPage() {
 function ProjectCard({
     project,
     classNames,
+    onView,
     onDelete
 }: {
     project: any;
     classNames: string;
+    onView: () => void;
     onDelete: () => void;
 }) {
     // Generate a default color for the banner top bar
@@ -313,19 +328,26 @@ function ProjectCard({
         <Card className="hover:shadow-lg transition-all duration-300 group border-slate-200 relative flex flex-col h-full rounded-2xl overflow-hidden bg-white">
 
             {/* Top Colored Banner with Grade and Title */}
-            <div className={cn("p-5 flex flex-col justify-end min-h-[140px] relative", bannerColor)}>
-                <div className="absolute top-3 right-3 z-10 text-white">
+            <div
+                onClick={onView}
+                className={cn("p-5 flex flex-col justify-end min-h-[140px] relative cursor-pointer", bannerColor)}
+            >
+                <div className="absolute top-3 right-3 z-10 text-white" onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/20">
                                 <MoreVertical className="w-4 h-4" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-40 border-slate-200">
+                        <DropdownMenuContent align="end" className="w-44 border-slate-200">
+                            <DropdownMenuItem className="cursor-pointer" onClick={onView}>
+                                <ChevronRight className="w-4 h-4 mr-2 text-indigo-600" />
+                                Ver Detalhes
+                            </DropdownMenuItem>
                             <Link href={`/projetos/novo?edit=${project.id}`}>
                                 <DropdownMenuItem className="cursor-pointer">
-                                    <Edit className="w-4 h-4 mr-2" />
-                                    Editar
+                                    <Edit className="w-4 h-4 mr-2 text-slate-600" />
+                                    Editar Projeto
                                 </DropdownMenuItem>
                             </Link>
                             <DropdownMenuItem
@@ -348,10 +370,10 @@ function ProjectCard({
                 </h3>
             </div>
 
-            {/* Optional Banner Image directly below or just structural split */}
+            {/* Optional Banner Image directly below with click to view */}
             {project.imageUrl && (
-                <div className="h-32 w-full relative">
-                    <Image src={project.imageUrl} alt={project.title} fill className="object-cover" priority />
+                <div className="h-32 w-full relative cursor-pointer group/img" onClick={onView}>
+                    <Image src={project.imageUrl} alt={project.title} fill className="object-cover transition-transform duration-300 group-hover/img:scale-105" priority />
                 </div>
             )}
 
@@ -390,10 +412,24 @@ function ProjectCard({
                     </p>
                 </div>
 
-                <div className="mt-auto pt-4 flex items-center justify-end">
-                    <Link href={`/projetos/novo?edit=${project.id}`} className="text-sm font-bold text-indigo-600 hover:text-indigo-800 transition-colors uppercase tracking-wider flex items-center gap-1">
-                        Detalhes <ChevronRight className="w-4 h-4" />
+                {/* Bottom Actions: Detalhes (Visualizar) & Editar */}
+                <div className="mt-auto pt-4 flex items-center justify-between border-t border-slate-100">
+                    <Link
+                        href={`/projetos/novo?edit=${project.id}`}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+                        title="Editar Projeto"
+                    >
+                        <Edit className="w-3.5 h-3.5 text-slate-500" />
+                        Editar
                     </Link>
+
+                    <button
+                        type="button"
+                        onClick={onView}
+                        className="text-xs sm:text-sm font-bold text-indigo-600 hover:text-indigo-800 transition-colors uppercase tracking-wider flex items-center gap-1 cursor-pointer"
+                    >
+                        Detalhes <ChevronRight className="w-4 h-4" />
+                    </button>
                 </div>
             </CardContent>
         </Card>

@@ -455,7 +455,10 @@ function NewProjectWizardContent() {
                             {isSaving ? "Salvando..." : "Salvar Rascunho"}
                         </Button>
                         <Link href="/projetos">
-                            <Button variant="ghost" className="text-slate-400 hover:text-slate-600">Cancelar</Button>
+                            <Button variant="outline" className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 font-semibold gap-1.5">
+                                <X className="w-4 h-4" />
+                                Cancelar e Sair
+                            </Button>
                         </Link>
                     </div>
                 </div>
@@ -732,7 +735,13 @@ function NewProjectWizardContent() {
                                 </div>
                             </div>
 
-                            <div className="flex justify-end pt-8 mt-8 border-t">
+                            <div className="flex justify-between items-center pt-8 mt-8 border-t">
+                                <Link href="/projetos">
+                                    <Button variant="ghost" className="text-slate-500 hover:text-red-600 gap-1.5">
+                                        <X className="w-4 h-4" />
+                                        Cancelar e Sair
+                                    </Button>
+                                </Link>
                                 <Button onClick={() => setCurrentStep(2)} disabled={!formData.title || isSaving}>{isSaving ? "Salvando..." : "Continuar"}</Button>
                             </div>
                         </div>
@@ -827,8 +836,16 @@ function NewProjectWizardContent() {
                                 </div>
                             </div>
 
-                            <div className="flex justify-between pt-8 mt-8 border-t">
-                                <Button variant="outline" onClick={() => setCurrentStep(1)}>Voltar</Button>
+                            <div className="flex justify-between items-center pt-8 mt-8 border-t">
+                                <div className="flex items-center gap-2">
+                                    <Button variant="outline" onClick={() => setCurrentStep(1)}>Voltar</Button>
+                                    <Link href="/projetos">
+                                        <Button variant="ghost" className="text-slate-500 hover:text-red-600 gap-1.5">
+                                            <X className="w-4 h-4" />
+                                            Cancelar e Sair
+                                        </Button>
+                                    </Link>
+                                </div>
                                 <Button onClick={() => setCurrentStep(3)}>Continuar</Button>
                             </div>
                         </div>
@@ -1116,8 +1133,14 @@ function NewProjectWizardContent() {
                                         </>
                                     )}
                                 </div>
-                                <div className="pt-6 border-t mt-4 flex gap-3">
+                                <div className="pt-6 border-t mt-4 flex items-center gap-2">
                                     <Button variant="outline" className="flex-1" onClick={() => setCurrentStep(2)}>Voltar</Button>
+                                    <Link href="/projetos" className="flex-1">
+                                        <Button variant="ghost" className="w-full text-slate-500 hover:text-red-600 gap-1.5">
+                                            <X className="w-4 h-4" />
+                                            Cancelar
+                                        </Button>
+                                    </Link>
                                     <Button className="flex-1" onClick={() => setCurrentStep(4)}>Continuar</Button>
                                 </div>
                             </div>
@@ -1297,9 +1320,17 @@ function NewProjectWizardContent() {
                                 </div>
                             </div>
 
-                            <div className="flex justify-between pt-8 mt-8 border-t">
-                                <Button variant="outline" onClick={() => setCurrentStep(3)}>Voltar</Button>
-                                <Button onClick={handleSaveAndComplete} className="bg-green-600 hover:bg-green-700">Concluir Projeto</Button>
+                            <div className="flex justify-between items-center pt-8 mt-8 border-t">
+                                <div className="flex items-center gap-2">
+                                    <Button variant="outline" onClick={() => setCurrentStep(3)}>Voltar</Button>
+                                    <Link href="/projetos">
+                                        <Button variant="ghost" className="text-slate-500 hover:text-red-600 gap-1.5">
+                                            <X className="w-4 h-4" />
+                                            Cancelar e Sair
+                                        </Button>
+                                    </Link>
+                                </div>
+                                <Button onClick={handleSaveAndComplete} className="bg-green-600 hover:bg-green-700 font-bold">Concluir Projeto</Button>
                             </div>
                         </div>
                     )}
