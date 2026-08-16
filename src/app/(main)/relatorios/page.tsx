@@ -9,11 +9,12 @@ import { MilestoneReport } from "@/components/reports/milestone-report";
 import { DailyLogReport } from "@/components/reports/daily-log-report";
 import { PortfolioReport } from "@/components/reports/portfolio-report";
 import { SkillsChart } from "@/components/reports/skills-chart";
-import { User, Loader2 } from "lucide-react";
+import { User, Loader2, ArrowLeft, Users, Home, RotateCcw } from "lucide-react";
 import { BulkPortfolioDialog } from "@/components/portfolio/bulk-portfolio-dialog";
 import { DailyLogDialog } from "@/components/agenda/daily-log-dialog";
 import { parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
     Select,
     SelectContent,
@@ -26,6 +27,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSession } from "next-auth/react";
 import { getClasses } from "@/services/school-class.service";
 import { SchoolClass } from "@/types/school-class";
+import Link from "next/link";
 
 export default function ReportsPage() {
     const [students, setStudents] = useState<Student[]>([]);
@@ -93,6 +95,7 @@ export default function ReportsPage() {
         : (visibleStudents.length > 0 ? visibleStudents[0].id : "");
 
     const selectedStudent = students.find(s => s.id === effectiveStudentId);
+    const selectedClassObj = classes.find(c => c.id === selectedClassId);
 
     const handleEditPortfolio = (dateStr: string) => {
         setEditDate(parseISO(dateStr));
@@ -104,6 +107,11 @@ export default function ReportsPage() {
         setIsDailyLogEditOpen(true);
     };
 
+    const handleResetFilters = () => {
+        setSelectedClassId("all");
+        setManualSelection("");
+    };
+
     if (isLoading) {
         return (
             <div className="flex items-center justify-center p-12 min-h-[500px]">
@@ -113,75 +121,49 @@ export default function ReportsPage() {
         );
     }
 
-    if (isTeacher && teacherClasses.length === 0) {
-        return (
-            <div className="space-y-6">
-                <div>
-                    <h1 className="text-3xl font-bold text-slate-800">Relatórios de Desenvolvimento</h1>
-                    <p className="text-slate-500">Acompanhe o progresso e o dia a dia das crianças.</p>
-                </div>
-                <div className="bg-amber-50/60 border border-amber-200 rounded-2xl p-10 text-center max-w-lg mx-auto shadow-sm">
-                    <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 text-amber-700">
-                        <User className="w-7 h-7" />
-                    </div>
-                    <h3 className="text-lg font-bold text-amber-900 mb-2">Nenhuma turma vinculada ao seu perfil</h3>
-                    <p className="text-amber-700/90 text-sm leading-relaxed">
-                        Você está autenticado como professor(a), mas ainda não possui nenhuma turma atribuída. Peça à administração ou coordenação da escola para vincular sua turma no painel de Docentes / Turmas.
-                    </p>
-                </div>
-            </div>
-        );
-    }
-
-    if (!selectedStudent && visibleStudents.length === 0) {
-        return (
-            <div className="space-y-6">
-                <div>
-                    <h1 className="text-3xl font-bold text-slate-800">Relatórios de Desenvolvimento</h1>
-                    <p className="text-slate-500">Acompanhe o progresso e o dia a dia das crianças.</p>
-                </div>
-                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-10 text-center max-w-lg mx-auto shadow-sm">
-                    <div className="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-500">
-                        <User className="w-7 h-7" />
-                    </div>
-                    <h3 className="text-lg font-bold text-slate-800 mb-2">Nenhum aluno encontrado</h3>
-                    <p className="text-slate-500 text-sm leading-relaxed">
-                        {selectedClassId !== "all" 
-                            ? "Não há alunos cadastrados nesta turma selecionada."
-                            : "Não foram encontrados alunos disponíveis para o seu acesso."}
-                    </p>
-                </div>
-            </div>
-        );
-    }
-
     return (
         <div className="space-y-8">
+            {/* Top Header & Filter Toolbar (Always visible and interactive) */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-800">Relatórios de Desenvolvimento</h1>
                     <p className="text-slate-500">Acompanhe o progresso e o dia a dia das crianças.</p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-end sm:items-center gap-4">
+                <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3 flex-wrap">
                     {/* Class Filter - Hide for Guardians */}
                     {currentUser?.role !== "guardian" && (
-                        <Select value={selectedClassId} onValueChange={(val) => {
-                            setSelectedClassId(val);
-                            setManualSelection(""); // Reset student selection when class changes
-                        }}>
-                            <SelectTrigger className="w-[200px] bg-white">
-                                <SelectValue placeholder="Filtrar por turma" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Todas as {isTeacher ? "Minhas Turmas" : "Turmas"}</SelectItem>
-                                {availableClasses.map((c) => (
-                                    <SelectItem key={c.id} value={c.id}>
-                                        {c.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <div className="flex items-center gap-2">
+                            <Select value={selectedClassId} onValueChange={(val) => {
+                                setSelectedClassId(val);
+                                setManualSelection(""); // Reset student selection when class changes
+                            }}>
+                                <SelectTrigger className="w-[200px] bg-white border-slate-200">
+                                    <SelectValue placeholder="Filtrar por turma" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Todas as {isTeacher ? "Minhas Turmas" : "Turmas"}</SelectItem>
+                                    {availableClasses.map((c) => (
+                                        <SelectItem key={c.id} value={c.id}>
+                                            {c.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+
+                            {selectedClassId !== "all" && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleResetFilters}
+                                    className="h-10 text-xs font-semibold text-slate-600 bg-white border-slate-200 hover:bg-slate-50 gap-1.5"
+                                    title="Voltar para todas as turmas"
+                                >
+                                    <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+                                    Todas as Turmas
+                                </Button>
+                            )}
+                        </div>
                     )}
 
                     {/* Period Filter */}
@@ -190,7 +172,7 @@ export default function ReportsPage() {
                             if (val === "all") setSelectedPeriod("all");
                             else setSelectedPeriod(`${val} / ${selectedPeriod === "all" ? new Date().getFullYear() : selectedPeriod.split(" / ")[1] || new Date().getFullYear()}`);
                         }}>
-                            <SelectTrigger className="w-[150px] bg-white">
+                            <SelectTrigger className="w-[140px] bg-white border-slate-200">
                                 <SelectValue placeholder="Semestre" />
                             </SelectTrigger>
                             <SelectContent>
@@ -205,7 +187,7 @@ export default function ReportsPage() {
                             if (val === "all") setSelectedPeriod("all");
                             else setSelectedPeriod(`${selectedPeriod === "all" ? "1º Semestre" : selectedPeriod.split(" / ")[0] || "1º Semestre"} / ${val}`);
                         }}>
-                            <SelectTrigger className="w-[110px] bg-white">
+                            <SelectTrigger className="w-[110px] bg-white border-slate-200">
                                 <SelectValue placeholder="Ano" />
                             </SelectTrigger>
                             <SelectContent>
@@ -219,19 +201,19 @@ export default function ReportsPage() {
 
                     {/* Student Selector - Hide if only one student visible */}
                     {visibleStudents.length > 1 && (
-                        <div className="flex items-center gap-4 bg-white p-2 rounded-xl border shadow-sm">
+                        <div className="flex items-center gap-3 bg-white p-1.5 px-3 rounded-xl border border-slate-200 shadow-xs">
                             {selectedStudent ? (
-                                <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
+                                <Avatar className="h-8 w-8 border border-slate-200">
                                     <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedStudent.name}`} />
                                     <AvatarFallback>{selectedStudent.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                                 </Avatar>
                             ) : (
-                                <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-                                    <User className="h-5 w-5" />
+                                <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                                    <User className="h-4 w-4" />
                                 </div>
                             )}
                             <Select value={effectiveStudentId} onValueChange={setManualSelection}>
-                                <SelectTrigger className="w-[200px] border-none shadow-none focus:ring-0">
+                                <SelectTrigger className="w-[190px] border-none shadow-none focus:ring-0 h-8 p-0 text-sm font-semibold">
                                     <SelectValue placeholder="Selecione um aluno" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -247,119 +229,178 @@ export default function ReportsPage() {
 
                     {/* Simple badge if only one student visible */}
                     {visibleStudents.length === 1 && selectedStudent && (
-                        <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl border shadow-sm">
-                            <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
+                        <div className="flex items-center gap-2.5 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs">
+                            <Avatar className="h-8 w-8 border border-slate-200">
                                 <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedStudent.name}`} />
                                 <AvatarFallback>{selectedStudent.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                             </Avatar>
-                            <span className="font-semibold text-slate-700">{selectedStudent.name}</span>
+                            <span className="font-semibold text-sm text-slate-700">{selectedStudent.name}</span>
                         </div>
                     )}
                 </div>
             </div>
 
-            <Tabs defaultValue="milestones" className="w-full">
-                <TabsList className="flex w-full mb-8 bg-slate-100/50 p-1.5 rounded-xl border">
-                    <TabsTrigger value="milestones" className="flex-1 py-2.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-semibold">
-                        Relatório BNCC
-                    </TabsTrigger>
-                    <TabsTrigger value="ibira" className="flex-1 py-2.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-green-600 data-[state=active]:shadow-sm transition-all font-semibold">
-                        Relatório Ibirá
-                    </TabsTrigger>
-                    <TabsTrigger value="portfolio" className="flex-1 py-2.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-semibold">
-                        Galeria de Vivências
-                    </TabsTrigger>
-                    <TabsTrigger value="daily" className="flex-1 py-2.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-semibold">
-                        Diário de Bordo
-                    </TabsTrigger>
-                </TabsList>
-                <TabsContent value="milestones" className="animate-in fade-in-50 duration-500 slide-in-from-bottom-2">
-                    <div className="mb-4 space-y-16">
-                        {/* 1. Skill Chart - filtrado por BNCC */}
-                        <div>
-                            <h2 className="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2">
-                                <span className="w-1.5 h-6 bg-indigo-500 rounded-full" />
-                                Desenvolvimento de Habilidades e Competências (por Áreas BNCC)
-                            </h2>
-                            <p className="text-slate-500 mb-6">Comparativo entre o currículo proposto e o nível de consolidação da criança.</p>
-                            {selectedStudent ? (
-                                <SkillsChart student={selectedStudent} filter="bncc" period={selectedPeriod} />
-                            ) : (
-                                <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
-                            )}
-                        </div>
-
-                        {/* 2. Milestone Grid - filtrado por BNCC */}
-                        <div>
-                            <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                                <span className="w-1.5 h-6 bg-orange-500 rounded-full" />
-                                Trilha de Habilidades e Competências (BNCC)
-                            </h2>
-                            {selectedStudent ? (
-                                <MilestoneReport student={selectedStudent} filter="bncc" period={selectedPeriod} />
-                            ) : (
-                                <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
-                            )}
-                        </div>
+            {/* Teacher with No Assigned Classes State */}
+            {isTeacher && teacherClasses.length === 0 ? (
+                <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-10 text-center max-w-xl mx-auto shadow-sm space-y-4">
+                    <div className="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-amber-700">
+                        <User className="w-7 h-7" />
                     </div>
-                </TabsContent>
-
-                {/* ── ABA IBIRÁ ── */}
-                <TabsContent value="ibira" className="animate-in fade-in-50 duration-500 slide-in-from-bottom-2">
-                    <div className="mb-4 space-y-16">
-                        {/* Skill Chart - filtrado por Ibirá */}
-                        <div>
-                            <h2 className="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2">
-                                <span className="w-1.5 h-6 bg-green-500 rounded-full" />
-                                Desenvolvimento de Habilidades e Competências (por Áreas IBIRÁ)
-                            </h2>
-                            <p className="text-slate-500 mb-6">Comparativo entre as habilidades e competências Ibirá propostas e o nível de consolidação da criança.</p>
-                            {selectedStudent ? (
-                                <SkillsChart student={selectedStudent} filter="ibira" period={selectedPeriod} />
-                            ) : (
-                                <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
-                            )}
-                        </div>
-
-                        {/* Milestone Grid - filtrado por Ibirá */}
-                        <div>
-                            <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                                <span className="w-1.5 h-6 bg-green-500 rounded-full" />
-                                Trilha de Habilidades e Competências (IBIRÁ)
-                            </h2>
-                            {selectedStudent ? (
-                                <MilestoneReport student={selectedStudent} filter="ibira" period={selectedPeriod} />
-                            ) : (
-                                <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
-                            )}
-                        </div>
+                    <h3 className="text-xl font-bold text-amber-900">Nenhuma turma vinculada ao seu perfil</h3>
+                    <p className="text-amber-800 text-sm leading-relaxed max-w-md mx-auto">
+                        Você está autenticado como docente, mas ainda não possui turmas atribuídas. Peça à administração ou coordenação para vincular suas turmas.
+                    </p>
+                    <div className="pt-2 flex items-center justify-center gap-3">
+                        <Link href="/">
+                            <Button variant="outline" className="border-amber-300 text-amber-800 hover:bg-amber-100 gap-1.5">
+                                <Home className="w-4 h-4" />
+                                Voltar ao Início
+                            </Button>
+                        </Link>
                     </div>
-                </TabsContent>
+                </div>
+            ) : !selectedStudent || visibleStudents.length === 0 ? (
+                /* Empty Students State with Interactive Return / Reset Buttons */
+                <div className="bg-slate-50/80 border border-slate-200 rounded-2xl p-10 text-center max-w-xl mx-auto shadow-sm space-y-4">
+                    <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-400">
+                        <Users className="w-8 h-8" />
+                    </div>
+                    <div className="space-y-1.5">
+                        <h3 className="text-xl font-bold text-slate-800">
+                            {selectedClassId !== "all"
+                                ? `Nenhum aluno na turma ${selectedClassObj?.name ? `"${selectedClassObj.name}"` : "selecionada"}`
+                                : "Nenhum aluno encontrado"}
+                        </h3>
+                        <p className="text-slate-500 text-sm leading-relaxed max-w-md mx-auto">
+                            {selectedClassId !== "all"
+                                ? "Esta turma ainda não possui estudantes matriculados ou associados ao seu acesso. Você pode voltar para ver todas as turmas ou selecionar outra turma no filtro superior."
+                                : "Não foram encontrados alunos disponíveis para o seu nível de acesso."}
+                        </p>
+                    </div>
 
-                <TabsContent value="portfolio" className="animate-in fade-in-50 duration-500 slide-in-from-bottom-2">
-                    <div className="mb-4">
-                        <h2 className="text-xl font-bold text-slate-800 mb-2">Galeria de Vivências do Aluno</h2>
-                        <p className="text-slate-500 mb-6 font-medium">Registros fotográficos de atividades esporádicas que marcam o ano escolar.</p>
-                        {selectedStudent ? (
-                            <PortfolioReport studentId={effectiveStudentId} onEdit={currentUser?.role !== "guardian" ? handleEditPortfolio : undefined} />
-                        ) : (
-                            <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
+                    <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
+                        {selectedClassId !== "all" && (
+                            <Button
+                                onClick={handleResetFilters}
+                                className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold gap-2 shadow-xs"
+                            >
+                                <ArrowLeft className="w-4 h-4" />
+                                Voltar para Todas as Turmas
+                            </Button>
                         )}
+                        <Link href="/alunos" className="w-full sm:w-auto">
+                            <Button variant="outline" className="w-full sm:w-auto border-slate-300 text-slate-700 hover:bg-slate-100 gap-2">
+                                <Users className="w-4 h-4" />
+                                Gerenciar Turmas e Alunos
+                            </Button>
+                        </Link>
                     </div>
-                </TabsContent>
+                </div>
+            ) : (
+                /* Main Tabs & Reports Content */
+                <Tabs defaultValue="milestones" className="w-full">
+                    <TabsList className="flex w-full mb-8 bg-slate-100/50 p-1.5 rounded-xl border">
+                        <TabsTrigger value="milestones" className="flex-1 py-2.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-semibold">
+                            Relatório BNCC
+                        </TabsTrigger>
+                        <TabsTrigger value="ibira" className="flex-1 py-2.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-green-600 data-[state=active]:shadow-sm transition-all font-semibold">
+                            Relatório Ibirá
+                        </TabsTrigger>
+                        <TabsTrigger value="portfolio" className="flex-1 py-2.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-semibold">
+                            Galeria de Vivências
+                        </TabsTrigger>
+                        <TabsTrigger value="daily" className="flex-1 py-2.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-semibold">
+                            Diário de Bordo
+                        </TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="milestones" className="animate-in fade-in-50 duration-500 slide-in-from-bottom-2">
+                        <div className="mb-4 space-y-16">
+                            {/* 1. Skill Chart - filtrado por BNCC */}
+                            <div>
+                                <h2 className="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2">
+                                    <span className="w-1.5 h-6 bg-indigo-500 rounded-full" />
+                                    Desenvolvimento de Habilidades e Competências (por Áreas BNCC)
+                                </h2>
+                                <p className="text-slate-500 mb-6">Comparativo entre o currículo proposto e o nível de consolidação da criança.</p>
+                                {selectedStudent ? (
+                                    <SkillsChart student={selectedStudent} filter="bncc" period={selectedPeriod} />
+                                ) : (
+                                    <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
+                                )}
+                            </div>
 
-                <TabsContent value="daily" className="animate-in fade-in-50 duration-500 slide-in-from-bottom-2">
-                    <div className="mb-4">
-                        <h2 className="text-xl font-bold text-slate-800 mb-2">Diário de Bordo</h2>
-                        <p className="text-slate-500 mb-6">Acompanhe a rotina diária, alimentação, sono e humor do aluno.</p>
-                        {selectedStudent ? (
-                            <DailyLogReport studentId={effectiveStudentId} onEdit={currentUser?.role !== "guardian" ? handleEditDailyLog : undefined} />
-                        ) : (
-                            <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
-                        )}
-                    </div>
-                </TabsContent>
-            </Tabs>
+                            {/* 2. Milestone Grid - filtrado por BNCC */}
+                            <div>
+                                <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                                    <span className="w-1.5 h-6 bg-orange-500 rounded-full" />
+                                    Trilha de Habilidades e Competências (BNCC)
+                                </h2>
+                                {selectedStudent ? (
+                                    <MilestoneReport student={selectedStudent} filter="bncc" period={selectedPeriod} />
+                                ) : (
+                                    <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
+                                )}
+                            </div>
+                        </div>
+                    </TabsContent>
+
+                    {/* ── ABA IBIRÁ ── */}
+                    <TabsContent value="ibira" className="animate-in fade-in-50 duration-500 slide-in-from-bottom-2">
+                        <div className="mb-4 space-y-16">
+                            {/* Skill Chart - filtrado por Ibirá */}
+                            <div>
+                                <h2 className="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2">
+                                    <span className="w-1.5 h-6 bg-green-500 rounded-full" />
+                                    Desenvolvimento de Habilidades e Competências (por Áreas IBIRÁ)
+                                </h2>
+                                <p className="text-slate-500 mb-6">Comparativo entre as habilidades e competências Ibirá propostas e o nível de consolidação da criança.</p>
+                                {selectedStudent ? (
+                                    <SkillsChart student={selectedStudent} filter="ibira" period={selectedPeriod} />
+                                ) : (
+                                    <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
+                                )}
+                            </div>
+
+                            {/* Milestone Grid - filtrado por Ibirá */}
+                            <div>
+                                <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                                    <span className="w-1.5 h-6 bg-green-500 rounded-full" />
+                                    Trilha de Habilidades e Competências (IBIRÁ)
+                                </h2>
+                                {selectedStudent ? (
+                                    <MilestoneReport student={selectedStudent} filter="ibira" period={selectedPeriod} />
+                                ) : (
+                                    <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
+                                )}
+                            </div>
+                        </div>
+                    </TabsContent>
+
+                    <TabsContent value="portfolio" className="animate-in fade-in-50 duration-500 slide-in-from-bottom-2">
+                        <div className="mb-4">
+                            <h2 className="text-xl font-bold text-slate-800 mb-2">Galeria de Vivências do Aluno</h2>
+                            <p className="text-slate-500 mb-6 font-medium">Registros fotográficos de atividades esporádicas que marcam o ano escolar.</p>
+                            {selectedStudent ? (
+                                <PortfolioReport studentId={effectiveStudentId} onEdit={currentUser?.role !== "guardian" ? handleEditPortfolio : undefined} />
+                            ) : (
+                                <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
+                            )}
+                        </div>
+                    </TabsContent>
+
+                    <TabsContent value="daily" className="animate-in fade-in-50 duration-500 slide-in-from-bottom-2">
+                        <div className="mb-4">
+                            <h2 className="text-xl font-bold text-slate-800 mb-2">Diário de Bordo</h2>
+                            <p className="text-slate-500 mb-6">Acompanhe a rotina diária, alimentação, sono e humor do aluno.</p>
+                            {selectedStudent ? (
+                                <DailyLogReport studentId={effectiveStudentId} onEdit={currentUser?.role !== "guardian" ? handleEditDailyLog : undefined} />
+                            ) : (
+                                <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
+                            )}
+                        </div>
+                    </TabsContent>
+                </Tabs>
+            )}
 
             {selectedStudent && (
                 <>
