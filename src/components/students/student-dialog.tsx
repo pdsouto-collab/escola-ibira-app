@@ -214,7 +214,8 @@ export function StudentDialog({ open, onOpenChange, student, classes, onSave }: 
                     }
                     newStudent.classNameRaw = className;
                 }
-                newStudent.period = getValue(47).toLowerCase().includes('matutino') ? 'matutino' : 'integral';
+                const periodRaw = getValue(47).toLowerCase();
+                newStudent.period = periodRaw.includes('integral') ? 'integral' : periodRaw.includes('vespertino') ? 'vespertino' : 'matutino';
 
                 // 2. GUARDIAN 1
                 const g1Name = getValue(5);
