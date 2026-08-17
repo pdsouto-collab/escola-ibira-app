@@ -37,6 +37,7 @@ export default function UsersSettingsPage() {
         address: "",
         password: "",
         role: "teacher",
+        roles: ["teacher"] as string[],
         status: "active",
         linkedStudentIds: [] as string[]
     };
@@ -68,6 +69,9 @@ export default function UsersSettingsPage() {
     const handleOpenForm = (user?: UserType) => {
         if (user) {
             setEditId(user.id);
+            const userRoles = Array.isArray(user.roles) && user.roles.length > 0
+                ? (user.roles as string[])
+                : (user.role ? [user.role] : ["teacher"]);
             setFormData({
                 name: user.name || "",
                 email: user.email || "",
@@ -76,7 +80,8 @@ export default function UsersSettingsPage() {
                 birthDate: user.birthDate ? new Date(user.birthDate).toISOString().split('T')[0] : "",
                 address: user.address || "",
                 password: "", // In edit mode, leave blank to not change
-                role: user.role || "teacher",
+                role: userRoles[0] || user.role || "teacher",
+                roles: userRoles,
                 status: user.status || "active",
                 linkedStudentIds: user.linkedStudentIds || []
             });
@@ -89,9 +94,31 @@ export default function UsersSettingsPage() {
         setIsFormOpen(true);
     };
 
+    const toggleRole = (r: string) => {
+        setFormData(prev => {
+            const currentRoles = prev.roles && prev.roles.length > 0 ? prev.roles : [prev.role || "teacher"];
+            let newRoles: string[];
+            if (currentRoles.includes(r)) {
+                if (currentRoles.length === 1) {
+                    toast.error("O usuário deve possuir ao menos um perfil ativo.");
+                    return prev;
+                }
+                newRoles = currentRoles.filter(role => role !== r);
+            } else {
+                newRoles = [...currentRoles, r];
+            }
+            return {
+                ...prev,
+                roles: newRoles,
+                role: newRoles[0] || "teacher"
+            };
+        });
+    };
+
     const handleSave = async () => {
         setIsSubmitting(true);
         try {
+            const currentRoles = formData.roles && formData.roles.length > 0 ? formData.roles : [formData.role || "teacher"];
             const payload: any = {
                 name: formData.name,
                 email: formData.email,
@@ -99,7 +126,8 @@ export default function UsersSettingsPage() {
                 phone: formData.phone,
                 birthDate: formData.birthDate,
                 address: formData.address,
-                role: formData.role,
+                role: currentRoles[0],
+                roles: currentRoles,
                 status: formData.status,
             };
 
@@ -110,7 +138,7 @@ export default function UsersSettingsPage() {
                 payload.password = formData.password;
             }
 
-            if (payload.role === "guardian") {
+            if (currentRoles.includes("guardian")) {
                 payload.linkedStudentIds = formData.linkedStudentIds;
             } else {
                 payload.linkedStudentIds = [];
@@ -167,10 +195,11 @@ export default function UsersSettingsPage() {
     const getRoleBadge = (role: string) => {
         const roles: Record<string, { label: string; style: string }> = {
             admin: { label: "Admin", style: "bg-purple-100 text-purple-800" },
-            director: { label: "Diretor", style: "bg-indigo-100 text-indigo-800" },
-            teacher: { label: "Professor", style: "bg-blue-100 text-blue-800" },
+            director: { label: "Diretor(a)", style: "bg-indigo-100 text-indigo-800" },
+            teacher: { label: "Docente", style: "bg-blue-100 text-blue-800" },
             guardian: { label: "Responsável", style: "bg-amber-100 text-amber-800" },
             nutritionist: { label: "Nutricionista", style: "bg-emerald-100 text-emerald-800" },
+            assistant: { label: "Assistente", style: "bg-teal-100 text-teal-800" },
         };
         const rb = roles[role] || { label: role, style: "bg-slate-100 text-slate-800" };
         return <Badge variant="secondary" className={rb.style}>{rb.label}</Badge>;
@@ -218,7 +247,11 @@ export default function UsersSettingsPage() {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            users.map((user) => (
+                            users.map((user) => {
+                                const userRoles = Array.isArray(user.roles) && user.roles.length > 0 
+                                    ? (user.roles as string[]) 
+                                    : [user.role || 'teacher'];
+                                return (
                                 <TableRow key={user.id} className="hover:bg-slate-50">
                                     <TableCell>
                                         <div className="font-semibold text-slate-800">{user.name}</div>
@@ -229,7 +262,11 @@ export default function UsersSettingsPage() {
                                         {user.phone ? <div className="text-sm text-slate-600">{user.phone}</div> : <span className="text-slate-400 text-sm">-</span>}
                                     </TableCell>
                                     <TableCell>
-                                        {getRoleBadge(user.role || 'teacher')}
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {userRoles.map((r: string) => (
+                                                <span key={r}>{getRoleBadge(r)}</span>
+                                            ))}
+                                        </div>
                                     </TableCell>
                                     <TableCell>
                                         <Badge variant={user.status === 'active' ? "default" : "destructive"} className={user.status === 'active' ? "bg-emerald-500" : ""}>
@@ -245,7 +282,7 @@ export default function UsersSettingsPage() {
                                         </Button>
                                     </TableCell>
                                 </TableRow>
-                            ))
+                            )})
                         )}
                     </TableBody>
                 </Table>
@@ -268,8 +305,19 @@ export default function UsersSettingsPage() {
                                 <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="Nome da pessoa" />
                             </div>
                             <div className="space-y-1">
-                                <label className="text-xs font-semibold text-slate-600 uppercase ml-1">E-mail</label>
-                                <Input value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} placeholder="email@exemplo.com" type="email" />
+                                <div className="flex items-center justify-between">
+                                    <label className="text-xs font-semibold text-slate-600 uppercase ml-1">E-mail de Login</label>
+                                    {editId && <span className="text-[10px] text-amber-700 bg-amber-50 font-medium px-1.5 py-0.5 rounded border border-amber-200">Não alterável</span>}
+                                </div>
+                                <Input 
+                                    value={formData.email} 
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })} 
+                                    placeholder="email@exemplo.com" 
+                                    type="email" 
+                                    disabled={!!editId}
+                                    className={editId ? "bg-slate-100 text-slate-500 cursor-not-allowed border-slate-200" : ""}
+                                />
+                                {editId && <p className="text-[10px] text-slate-400">O e-mail de acesso não pode ser modificado.</p>}
                             </div>
                             
                             <div className="space-y-1">
@@ -312,31 +360,48 @@ export default function UsersSettingsPage() {
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 p-4 bg-slate-50 border border-slate-200 rounded-lg">
                             <div className="space-y-2">
-                                <label className="text-xs font-bold text-slate-700 ml-1">PERFIL</label>
+                                <div className="flex items-center justify-between">
+                                    <label className="text-xs font-bold text-slate-700 ml-1">PERFIS ATRIBUÍDOS</label>
+                                    <span className="text-[10px] text-slate-500">Pode selecionar múltiplos</span>
+                                </div>
                                 <div className="flex flex-wrap gap-2">
-                                    {['admin', 'director', 'teacher', 'nutritionist', 'guardian'].map(r => (
-                                        <button 
-                                            key={r} 
-                                            onClick={() => setFormData({ ...formData, role: r })} 
-                                            className={`px-3 py-1.5 text-xs rounded-md border font-medium transition-colors ${formData.role === r ? 'bg-[#2E798A] text-white border-[#2E798A]' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-100'}`}
-                                        >
-                                            {r}
-                                        </button>
-                                    ))}
+                                    {[
+                                        { id: 'admin', label: 'Admin' },
+                                        { id: 'director', label: 'Diretora' },
+                                        { id: 'teacher', label: 'Docente' },
+                                        { id: 'nutritionist', label: 'Nutricionista' },
+                                        { id: 'guardian', label: 'Responsável' },
+                                        { id: 'assistant', label: 'Assistente' }
+                                    ].map(r => {
+                                        const isSelected = formData.roles?.includes(r.id);
+                                        return (
+                                            <button 
+                                                key={r.id} 
+                                                type="button"
+                                                onClick={() => toggleRole(r.id)} 
+                                                className={`px-3 py-1.5 text-xs rounded-md border font-medium transition-all flex items-center gap-1.5 ${isSelected ? 'bg-[#2E798A] text-white border-[#2E798A] shadow-sm font-bold' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'}`}
+                                            >
+                                                {isSelected && <Check className="h-3.5 w-3.5" />}
+                                                {r.label}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-xs font-bold text-slate-700 ml-1">STATUS</label>
                                 <div className="flex gap-2">
                                     <button 
+                                        type="button"
                                         onClick={() => setFormData({ ...formData, status: 'active' })} 
-                                        className={`flex-1 py-1.5 rounded-md border font-medium text-xs transition-colors ${formData.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-100'}`}
+                                        className={`flex-1 py-1.5 rounded-md border font-medium text-xs transition-colors ${formData.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 font-bold' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-100'}`}
                                     >
                                         Ativo
                                     </button>
                                     <button 
+                                        type="button"
                                         onClick={() => setFormData({ ...formData, status: 'inactive' })} 
-                                        className={`flex-1 py-1.5 rounded-md border font-medium text-xs transition-colors ${formData.status === 'inactive' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-100'}`}
+                                        className={`flex-1 py-1.5 rounded-md border font-medium text-xs transition-colors ${formData.status === 'inactive' ? 'bg-rose-50 text-rose-700 border-rose-200 font-bold' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-100'}`}
                                     >
                                         Inativo
                                     </button>
@@ -344,10 +409,10 @@ export default function UsersSettingsPage() {
                             </div>
                         </div>
 
-                        {/* Associar alunos caso seja Guardian */}
-                        {formData.role === 'guardian' && (
+                        {/* Associar alunos caso o perfil contenha Guardian */}
+                        {formData.roles?.includes('guardian') && (
                             <div className="mt-6 p-4 border border-slate-200 rounded-xl bg-white shadow-sm">
-                                <h3 className="text-sm font-bold text-slate-800 mb-3">Turmas / Alunos Associados (Guardian)</h3>
+                                <h3 className="text-sm font-bold text-slate-800 mb-3">Turmas / Alunos Associados (Responsável)</h3>
                                 
                                 <div className="flex items-center bg-slate-50 border border-slate-200 px-3 rounded-lg mb-4">
                                     <Search className="h-4 w-4 text-slate-400" />

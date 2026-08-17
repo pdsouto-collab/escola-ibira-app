@@ -139,13 +139,17 @@ export default function SettingsPage() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-semibold text-slate-700">Email</label>
+                                <div className="flex items-center justify-between">
+                                    <label className="text-sm font-semibold text-slate-700">Email de Login</label>
+                                    <span className="text-[11px] text-slate-400 font-medium">Bloqueado</span>
+                                </div>
                                 <Input
                                     value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    disabled
                                     placeholder="email@escolaibira.com.br"
-                                    className="focus-visible:ring-[#2E798A]"
+                                    className="bg-slate-100 text-slate-500 cursor-not-allowed border-slate-200"
                                 />
+                                <p className="text-[11px] text-slate-400">O e-mail de login é permanente e não pode ser alterado.</p>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold text-slate-700">Telefone para Contato</label>
@@ -157,11 +161,25 @@ export default function SettingsPage() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-semibold text-slate-700">Cargo / Função</label>
+                                <label className="text-sm font-semibold text-slate-700">Perfil / Função</label>
                                 <Input
-                                    value={currentUser?.role === 'teacher' ? 'Docente' : currentUser?.role === 'guardian' ? 'Responsável' : 'Administrador'}
+                                    value={
+                                        Array.isArray(currentUser?.roles) && currentUser.roles.length > 0
+                                            ? currentUser.roles.map((r: string) => {
+                                                const labels: Record<string, string> = {
+                                                    admin: "Administrador",
+                                                    director: "Diretora",
+                                                    teacher: "Docente",
+                                                    guardian: "Responsável",
+                                                    nutritionist: "Nutricionista",
+                                                    assistant: "Assistente"
+                                                };
+                                                return labels[r] || r;
+                                            }).join(" • ")
+                                            : (currentUser?.role === 'teacher' ? 'Docente' : currentUser?.role === 'guardian' ? 'Responsável' : currentUser?.role === 'nutritionist' ? 'Nutricionista' : 'Administrador')
+                                    }
                                     disabled
-                                    className="bg-slate-50 text-slate-500 italic"
+                                    className="bg-slate-50 text-slate-600 font-semibold"
                                 />
                             </div>
                         </div>

@@ -93,9 +93,12 @@ export function Sidebar() {
             <div className="flex-1 overflow-y-auto py-4">
                 <nav className="space-y-1 px-3">
                     {navigation.map((item: any) => {
-                        // RBAC Check
-                        // @ts-ignore - roles property might not exist on all items in original type inference
-                        if (item.roles && (!currentUser || !item.roles.includes(currentUser.role))) {
+                        // RBAC Check: Suporta múltiplos perfis do usuário
+                        const userRoles: string[] = Array.isArray(currentUser?.roles) && currentUser.roles.length > 0
+                            ? currentUser.roles
+                            : (currentUser?.role ? [currentUser.role] : []);
+
+                        if (item.roles && !item.roles.some((r: string) => userRoles.includes(r))) {
                             return null;
                         }
 

@@ -40,6 +40,7 @@ export const authOptions: NextAuthOptions = {
                     email: user.email,
                     name: user.name,
                     role: user.role,
+                    roles: user.roles && user.roles.length > 0 ? user.roles : [user.role],
                     phone: user.phone || undefined,
                     linkedStudentIds: user.linkedStudentIds || []
                 };
@@ -53,6 +54,7 @@ export const authOptions: NextAuthOptions = {
         async jwt({ token, user, trigger, session }) {
             if (user) {
                 token.role = (user as any).role;
+                token.roles = (user as any).roles || ((user as any).role ? [(user as any).role] : []);
                 token.id = user.id;
                 token.phone = (user as any).phone;
                 token.linkedStudentIds = (user as any).linkedStudentIds;
@@ -69,6 +71,7 @@ export const authOptions: NextAuthOptions = {
                 const dbUser = await prisma.user.findUnique({ where: { id: token.id as string } });
                 
                 (session.user as any).role = token.role as string;
+                (session.user as any).roles = (token.roles as string[]) || (token.role ? [token.role as string] : []);
                 (session.user as any).id = token.id as string;
                 (session.user as any).phone = token.phone as string | undefined;
                 (session.user as any).linkedStudentIds = token.linkedStudentIds as string[] | undefined;
@@ -77,6 +80,8 @@ export const authOptions: NextAuthOptions = {
                     (session.user as any).avatar = dbUser.avatar;
                     (session.user as any).name = dbUser.name;
                     (session.user as any).email = dbUser.email;
+                    (session.user as any).role = dbUser.role;
+                    (session.user as any).roles = dbUser.roles && dbUser.roles.length > 0 ? dbUser.roles : [dbUser.role];
                 }
             }
             return session;

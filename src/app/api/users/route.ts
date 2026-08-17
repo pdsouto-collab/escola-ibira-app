@@ -43,10 +43,15 @@ export async function POST(req: Request) {
     const passwordToHash = password || "ibira123";
     const hashedPassword = await bcrypt.hash(passwordToHash, 10);
 
+    const rolesToSave = Array.isArray(body.roles) && body.roles.length > 0
+      ? body.roles
+      : [role];
+
     const user = await prisma.user.create({
       data: {
         name,
-        role,
+        role: rolesToSave[0] || role,
+        roles: rolesToSave,
         email,
         password: hashedPassword,
         avatar,

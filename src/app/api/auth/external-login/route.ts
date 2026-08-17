@@ -26,17 +26,21 @@ export async function POST(req: Request) {
       return new NextResponse("Credenciais invalidas", { status: 401 });
     }
 
+    const userRoles = user.roles && user.roles.length > 0 ? user.roles : [user.role];
+
     const tokenPayload = {
       id: user.id,
       email: user.email,
       name: user.name,
       role: user.role,
+      roles: userRoles,
       phone: user.phone || undefined,
     };
 
     const clientUserPayload = {
       ...tokenPayload,
       avatar: user.avatar || undefined,
+      roles: userRoles,
     };
 
     // Gera o token

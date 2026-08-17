@@ -4,6 +4,7 @@ export type User = {
     id: string;
     name: string;
     role: UserRole;
+    roles?: UserRole[] | string[];
     avatar?: string;
     email: string;
     password?: string;

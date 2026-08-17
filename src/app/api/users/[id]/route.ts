@@ -14,6 +14,15 @@ export async function PUT(
     }
 
     const updateData = { ...body };
+    // O e-mail de login é permanente e não pode ser alterado após a criação
+    delete updateData.email;
+
+    if (Array.isArray(updateData.roles) && updateData.roles.length > 0) {
+      updateData.role = updateData.roles[0];
+    } else if (updateData.role) {
+      updateData.roles = [updateData.role];
+    }
+
     const { currentPassword, password: newPassword } = body;
 
     // Se a senha estiver sendo atualizada, precisamos validar a antiga e fazer o hash da nova
