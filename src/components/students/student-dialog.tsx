@@ -192,7 +192,7 @@ export function StudentDialog({ open, onOpenChange, student, classes, onSave }: 
 
                 // 1. STUDENT
                 newStudent.name = getValue(1);
-                const dob = getValue(2);
+                const dob = getValue(3);
                 if (dob) {
                     if (dob.includes('/')) {
                         const [d, m, y] = dob.split('/');
@@ -201,9 +201,9 @@ export function StudentDialog({ open, onOpenChange, student, classes, onSave }: 
                         newStudent.dateOfBirth = dob;
                     }
                 }
-                newStudent.document = getValue(3);
+                newStudent.document = getValue(4);
 
-                const className = getValue(4);
+                const className = getValue(48);
                 if (className) {
                     const matchedClass = classes.find(c =>
                         className.toLowerCase().includes(c.name.toLowerCase()) ||
@@ -214,79 +214,78 @@ export function StudentDialog({ open, onOpenChange, student, classes, onSave }: 
                     }
                     newStudent.classNameRaw = className;
                 }
-                newStudent.period = getValue(5).toLowerCase().includes('matutino') ? 'matutino' : 'integral';
+                newStudent.period = getValue(47).toLowerCase().includes('matutino') ? 'matutino' : 'integral';
 
                 // 2. GUARDIAN 1
-                const g1Name = getValue(6);
+                const g1Name = getValue(5);
                 if (g1Name) {
                     g1.name = g1Name;
-                    g1.cpf = getValue(7);
-                    g1.kinship = getValue(8) || "Responsável";
-                    g1.phone = getValue(9);
-                    g1.address = getValue(10);
-                    g1.email = getValue(11);
+                    g1.cpf = getValue(6);
+                    g1.kinship = getValue(7) || "Responsável";
+                    g1.phone = getValue(8);
+                    g1.address = getValue(9);
+                    g1.email = getValue(10);
                 }
 
                 // 3. GUARDIAN 2
-                const g2Name = getValue(12);
+                const g2Name = getValue(11);
                 if (g2Name) {
                     g2.name = g2Name;
-                    g2.cpf = getValue(13);
-                    g2.kinship = getValue(14) || "Responsável";
-                    g2.phone = getValue(15);
-                    g2.address = getValue(16);
-                    g2.email = getValue(17);
+                    g2.cpf = getValue(12);
+                    g2.kinship = getValue(13) || "Responsável";
+                    g2.phone = getValue(14);
+                    g2.address = getValue(15);
+                    g2.email = getValue(16);
                 }
 
                 // 4. FINANCIAL
-                const finName = getValue(18);
+                const finName = getValue(17);
                 if (finName) {
                     fin.name = finName;
-                    fin.phone = getValue(19);
-                    fin.cpf = getValue(20);
-                    // Fix typo in header value assumption by setting it regardless
-                    fin.address = getValue(21);
-                    fin.email = getValue(22);
+                    fin.phone = getValue(18);
+                    fin.cpf = getValue(19);
+                    fin.address = getValue(20);
+                    fin.email = getValue(21);
                 }
 
                 // 5. HEALTH
-                newStudent.health.hasChronicIssue = getValue(23).toLowerCase().includes('sim');
-                newStudent.health.chronicIssueDetail = getValue(24);
+                newStudent.health.hasChronicIssue = getValue(22).toLowerCase().includes('sim');
+                newStudent.health.chronicIssueDetail = getValue(23);
 
-                newStudent.health.hasAllergy = getValue(25).toLowerCase().includes('sim');
-                newStudent.health.allergyDetail = getValue(26);
+                newStudent.health.hasAllergy = getValue(24).toLowerCase().includes('sim');
+                newStudent.health.allergyDetail = getValue(25);
 
-                newStudent.health.hasDietaryRestriction = getValue(27).toLowerCase().includes('sim');
-                newStudent.health.dietaryRestrictionDetail = getValue(28);
+                newStudent.health.hasDietaryRestriction = getValue(26).toLowerCase().includes('sim');
+                newStudent.health.dietaryRestrictionDetail = getValue(27);
 
-                newStudent.health.emergencyAction = getValue(29);
-                newStudent.health.feverProcedure = getValue(30);
-                newStudent.health.pediatricianName = getValue(31);
-                newStudent.health.pediatricianPhone = getValue(32);
+                newStudent.health.emergencyAction = getValue(28);
+                newStudent.health.feverProcedure = getValue(29);
+                newStudent.health.pediatricianName = getValue(30);
+                newStudent.health.pediatricianPhone = getValue(31);
 
-                newStudent.health.hasHealthInsurance = getValue(33).toLowerCase().includes('sim');
-                newStudent.health.healthInsuranceDetail = getValue(34);
-                newStudent.health.otherInfo = getValue(35);
+                newStudent.health.hasHealthInsurance = getValue(32).toLowerCase().includes('sim');
+                newStudent.health.healthInsuranceDetail = getValue(33);
+                newStudent.health.otherInfo = getValue(34);
 
                 // 6. EMERGENCY 1
-                const em1Name = getValue(36);
+                const em1Name = getValue(35);
                 if (em1Name) {
                     em1.name = em1Name;
-                    em1.kinship = getValue(37);
-                    em1.phone = getValue(38);
+                    em1.kinship = getValue(36);
+                    em1.phone = getValue(37);
                 }
 
                 // 7. EMERGENCY 2
-                const em2Name = getValue(39);
+                const em2Name = getValue(38);
                 if (em2Name) {
                     em2.name = em2Name;
-                    em2.kinship = getValue(40);
-                    em2.phone = getValue(41);
+                    em2.kinship = getValue(39);
+                    em2.phone = getValue(40);
                 }
 
                 // 8. HOSPITAL
-                newStudent.hospitalPreference = getValue(42);
-                newStudent.hospitalAddress = getValue(43);
+                newStudent.hospitalPreference = getValue(41);
+                newStudent.hospitalAddress = getValue(42);
 
                 // Post-processing
                 if (g1.name) newStudent.guardians.push(g1);
@@ -714,7 +713,7 @@ function parseCSVString(text: string): string[][] {
             } else {
                 insideQuotes = !insideQuotes;
             }
-        } else if (char === ',' && !insideQuotes) {
+        } else if ((char === ',' || char === ';') && !insideQuotes) {
             currentRow.push(currentField);
             currentField = '';
         } else if (char === '\n' && !insideQuotes) {
