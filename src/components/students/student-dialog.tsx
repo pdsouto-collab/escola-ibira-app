@@ -701,6 +701,10 @@ function parseCSVString(text: string): string[][] {
 
     // Normalize line endings
     const normalizedText = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    
+    // Detect delimiter
+    const firstLine = normalizedText.split('\n')[0] || '';
+    const delimiter = firstLine.includes(';') ? ';' : ',';
 
     for (let i = 0; i < normalizedText.length; i++) {
         const char = normalizedText[i];
@@ -713,7 +717,7 @@ function parseCSVString(text: string): string[][] {
             } else {
                 insideQuotes = !insideQuotes;
             }
-        } else if ((char === ',' || char === ';') && !insideQuotes) {
+        } else if (char === delimiter && !insideQuotes) {
             currentRow.push(currentField);
             currentField = '';
         } else if (char === '\n' && !insideQuotes) {
