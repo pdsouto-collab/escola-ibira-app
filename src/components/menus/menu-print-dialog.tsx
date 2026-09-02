@@ -175,7 +175,7 @@ export function MenuPrintDialog({
                     </DialogHeader>
 
                     {/* Scrollable Printable Document Container */}
-                    <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex justify-center">
+                    <div id="printable-cardapio-wrapper" className="flex-1 overflow-y-auto p-4 sm:p-6 flex justify-center">
                         <div id="printable-cardapio" className="w-full max-w-[1000px] space-y-8">
                             {viewMode === "undated" ? (
                                 <PrintableWeekPage
@@ -257,14 +257,20 @@ export function MenuPrintDialog({
                         visibility: hidden !important;
                     }
                     
-                    /* Reset the modal portal and content to be static block elements that flow naturally */
-                    [role="dialog"], [data-radix-portal], [data-radix-dialog-content] {
+                    /* Reset the modal portal, dialog content, and scroll wrapper to be static block elements that flow naturally */
+                    [data-radix-portal], [role="dialog"], #printable-cardapio-wrapper {
                         position: static !important;
                         display: block !important;
                         overflow: visible !important;
                         max-height: none !important;
                         height: auto !important;
                         transform: none !important;
+                        translate: none !important;
+                        scale: none !important;
+                        left: auto !important;
+                        top: auto !important;
+                        right: auto !important;
+                        bottom: auto !important;
                         border: none !important;
                         box-shadow: none !important;
                         background: transparent !important;
@@ -277,12 +283,15 @@ export function MenuPrintDialog({
                         display: none !important;
                     }
                     #printable-cardapio {
+                        position: static !important;
                         display: block !important;
                         width: 100% !important;
                         max-width: 100% !important;
-                        margin: 0 auto !important;
+                        margin: 0 !important;
                         padding: 0 !important;
                         box-shadow: none !important;
+                        transform: none !important;
+                        translate: none !important;
                     }
                     .print-page-break {
                         page-break-after: always !important;
