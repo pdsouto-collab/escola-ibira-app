@@ -251,8 +251,10 @@ export function MenuPrintDialog({
                     }
                     
                     /* Hide anything marked no-print, and hide the dark overlay */
-                    .no-print, [data-radix-dialog-overlay] {
+                    .no-print, [data-radix-portal] > div:not([role="dialog"]) {
                         display: none !important;
+                        opacity: 0 !important;
+                        visibility: hidden !important;
                     }
                     
                     /* Reset the modal portal and content to be static block elements that flow naturally */
