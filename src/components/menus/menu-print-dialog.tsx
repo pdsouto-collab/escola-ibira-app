@@ -269,7 +269,7 @@ export function MenuPrintDialog({
                     }
                     
                     /* Reset all scroll containers and fixed overlays for print so they don't clip */
-                    [role="dialog"], [data-radix-portal], [data-radix-dialog-content], div, main, section {
+                    [role="dialog"], [data-radix-portal], [data-radix-dialog-content] {
                         position: static !important;
                         overflow: visible !important;
                         max-height: none !important;
