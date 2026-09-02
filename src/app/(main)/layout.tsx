@@ -11,7 +11,7 @@ export default function MainLayout({
 }>) {
   return (
     <ChatNotificationProvider>
-      <div className="flex bg-slate-100/50 min-h-screen">
+      <div id="main-app-container" className="flex bg-slate-100/50 min-h-screen">
         {/* Sidebar Navigation */}
         <Sidebar />
 

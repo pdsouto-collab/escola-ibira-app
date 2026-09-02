@@ -243,8 +243,8 @@ export function MenuPrintDialog({
                         print-color-adjust: exact !important;
                         color-adjust: exact !important;
                     }
-                    /* Esconder todo o app em background, exceto o portal do modal */
-                    body > *:not([data-radix-portal]) {
+                    /* Esconder o conteudo do app em background de forma segura */
+                    #main-app-container {
                         display: none !important;
                     }
                     /* Hide anything marked no-print */
