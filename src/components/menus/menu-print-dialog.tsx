@@ -245,32 +245,20 @@ export function MenuPrintDialog({
                         color-adjust: exact !important;
                     }
                     
-                    /* Esconder todos os elementos por padrão */
-                    body * {
-                        visibility: hidden !important;
+                    /* HIDE the main app completely so it doesn't take up blank space and push the modal down */
+                    #main-app-container {
+                        display: none !important;
                     }
                     
-                    /* Tornar apenas o cardápio e seus filhos visíveis */
-                    #printable-cardapio, #printable-cardapio * {
-                        visibility: visible !important;
+                    /* Hide anything marked no-print, and hide the dark overlay */
+                    .no-print, [data-radix-dialog-overlay] {
+                        display: none !important;
                     }
                     
-                    /* Reposicionar o cardápio no topo da página impressa */
-                    #printable-cardapio {
-                        position: absolute !important;
-                        left: 0 !important;
-                        top: 0 !important;
-                        display: block !important;
-                        width: 100% !important;
-                        max-width: 100% !important;
-                        margin: 0 !important;
-                        padding: 0 !important;
-                        box-shadow: none !important;
-                    }
-                    
-                    /* Reset all scroll containers and fixed overlays for print so they don't clip */
+                    /* Reset the modal portal and content to be static block elements that flow naturally */
                     [role="dialog"], [data-radix-portal], [data-radix-dialog-content] {
                         position: static !important;
+                        display: block !important;
                         overflow: visible !important;
                         max-height: none !important;
                         height: auto !important;
@@ -278,6 +266,10 @@ export function MenuPrintDialog({
                         border: none !important;
                         box-shadow: none !important;
                         background: transparent !important;
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        padding: 0 !important;
+                        margin: 0 !important;
                     }
                     ::-webkit-scrollbar {
                         display: none !important;
