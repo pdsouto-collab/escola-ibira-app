@@ -51,7 +51,94 @@ export function MenuPrintDialog({
     const [selectedDate, setSelectedDate] = useState<Date>(initialDate);
 
     const handlePrint = () => {
-        window.print();
+        const printableEl = document.getElementById("printable-cardapio");
+        if (!printableEl) return;
+
+        // Clone the content so we get a clean snapshot
+        const content = printableEl.innerHTML;
+
+        // Collect all stylesheets from the current page (for Tailwind classes)
+        const styleSheets = Array.from(document.styleSheets);
+        let cssText = "";
+        styleSheets.forEach((sheet) => {
+            try {
+                const rules = Array.from(sheet.cssRules || []);
+                rules.forEach((rule) => {
+                    cssText += rule.cssText + "\n";
+                });
+            } catch {
+                // Cross-origin sheets can't be read, skip
+            }
+        });
+
+        const printWindow = window.open("", "_blank");
+        if (!printWindow) return;
+
+        printWindow.document.write(`<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cardápio - Escola Ibirá</title>
+    <style>
+        ${cssText}
+
+        /* Print-specific overrides for the standalone page */
+        @page {
+            size: A4 landscape;
+            margin: 6mm;
+        }
+        html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            color-scheme: light !important;
+            width: 100% !important;
+        }
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
+        }
+        body > div {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        .a4-print-sheet {
+            box-shadow: none !important;
+            border: 1.5px solid #10b981 !important;
+            border-radius: 12px !important;
+            padding: 14px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 0 16px 0 !important;
+            page-break-inside: avoid !important;
+            background: #ffffff !important;
+        }
+        .print-page-break {
+            page-break-after: always !important;
+            break-after: page !important;
+        }
+        @media screen {
+            body {
+                max-width: 1100px;
+                margin: 20px auto !important;
+                padding: 20px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div>${content}</div>
+    <script>
+        // Auto-print after a short delay to let styles apply
+        setTimeout(function() { window.print(); }, 400);
+    </script>
+</body>
+</html>`);
+        printWindow.document.close();
     };
 
     const getMenuForDate = (date: Date) => {
