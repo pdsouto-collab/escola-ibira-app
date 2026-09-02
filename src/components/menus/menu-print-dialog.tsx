@@ -237,39 +237,44 @@ export function MenuPrintDialog({
                         background: #ffffff !important;
                         margin: 0 !important;
                         padding: 0 !important;
-                        overflow: visible !important;
-                        height: auto !important;
                         -webkit-print-color-adjust: exact !important;
                         print-color-adjust: exact !important;
                         color-adjust: exact !important;
                     }
-                    /* Esconder o conteudo do app em background de forma segura */
-                    #main-app-container {
-                        display: none !important;
+                    
+                    /* Esconder todos os elementos por padrão */
+                    body * {
+                        visibility: hidden !important;
                     }
-                    /* Hide anything marked no-print */
-                    .no-print, [data-radix-dialog-overlay] {
-                        display: none !important;
+                    
+                    /* Tornar apenas o cardápio e seus filhos visíveis */
+                    #printable-cardapio, #printable-cardapio * {
+                        visibility: visible !important;
                     }
-                    /* Reset all scroll containers and fixed overlays for print */
-                    [role="dialog"], [data-radix-portal], [data-radix-dialog-content] {
-                        position: static !important;
+                    
+                    /* Reposicionar o cardápio no topo da página impressa */
+                    #printable-cardapio {
+                        position: absolute !important;
+                        left: 0 !important;
+                        top: 0 !important;
                         display: block !important;
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        box-shadow: none !important;
+                    }
+                    
+                    /* Reset all scroll containers and fixed overlays for print so they don't clip */
+                    [role="dialog"], [data-radix-portal], [data-radix-dialog-content], div, main, section {
+                        position: static !important;
                         overflow: visible !important;
                         max-height: none !important;
                         height: auto !important;
-                        width: 100% !important;
-                        max-width: 100% !important;
-                        padding: 0 !important;
-                        margin: 0 !important;
-                        background: #ffffff !important;
+                        transform: none !important;
                         border: none !important;
                         box-shadow: none !important;
-                        transform: none !important;
-                    }
-                    div, main, section {
-                        overflow: visible !important;
-                        max-height: none !important;
+                        background: transparent !important;
                     }
                     ::-webkit-scrollbar {
                         display: none !important;
