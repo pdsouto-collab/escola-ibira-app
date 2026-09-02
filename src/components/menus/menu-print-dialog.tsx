@@ -233,10 +233,13 @@ export function MenuPrintDialog({
                         size: A4 landscape;
                         margin: 6mm;
                     }
-                    html, body {
-                        background: #ffffff !important;
+                    :root, html, body {
+                        color-scheme: light !important;
+                        background-color: #ffffff !important;
                         margin: 0 !important;
                         padding: 0 !important;
+                    }
+                    * {
                         -webkit-print-color-adjust: exact !important;
                         print-color-adjust: exact !important;
                         color-adjust: exact !important;
