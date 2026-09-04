@@ -132,8 +132,8 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
             level: "macro",
             name: "",
             description: "",
-            classId: selectedClassId === "all" ? undefined : selectedClassId, // Assign to the currently selected class view
-            period: selectedPeriod === "all" ? undefined : selectedPeriod,
+            classId: selectedClassId === "all" ? null : selectedClassId, // Assign to the currently selected class view
+            period: selectedPeriod === "all" ? null : selectedPeriod,
             children: []
         });
         setParentLevel(null);
@@ -615,7 +615,7 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
                                         <Label>Turma Associada</Label>
                                         <Select
                                             value={currentNode.classId || "all"}
-                                            onValueChange={(val) => setCurrentNode(prev => ({ ...prev, classId: val === "all" ? undefined : val }))}
+                                            onValueChange={(val) => setCurrentNode(prev => ({ ...prev, classId: val === "all" ? null : val }))}
                                         >
                                             <SelectTrigger className="w-full bg-white">
                                                 <SelectValue placeholder="Selecione a Turma" />
@@ -634,7 +634,7 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
                                             <Select
                                                 value={!currentNode.period ? "all" : currentNode.period.split(" / ")[0]}
                                                 onValueChange={(val) => {
-                                                    if (val === "all") setCurrentNode(prev => prev ? { ...prev, period: undefined } : null);
+                                                    if (val === "all") setCurrentNode(prev => prev ? { ...prev, period: null } : null);
                                                     else setCurrentNode(prev => prev ? { ...prev, period: `${val} / ${!prev.period ? new Date().getFullYear() : prev.period.split(" / ")[1] || new Date().getFullYear()}` } : null);
                                                 }}
                                             >

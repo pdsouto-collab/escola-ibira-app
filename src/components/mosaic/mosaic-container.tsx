@@ -90,7 +90,7 @@ export function MosaicContainer() {
             }
         }
 
-        const periodMatch = matchesPeriod(node.period, null, selectedSemester, selectedYear);
+        const periodMatch = !node.period || node.period === "all" || matchesPeriod(node.period, null, selectedSemester, selectedYear);
         return (activeClassId === "all" || !node.classId || node.classId === "all" || node.classId === activeClassId) && periodMatch;
     });
 
