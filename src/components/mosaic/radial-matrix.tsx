@@ -129,7 +129,7 @@ function getNodeData(
             const studentMatch = studentId && studentId !== "all"
                 ? (pStudents.includes(studentId) || (classId && classId !== "all" && pClasses.includes(classId)))
                 : true;
-            const classMatch = classId && classId !== "all" ? (pClasses.includes(classId) || pClasses.length === 0) : true;
+            const classMatch = classId && classId !== "all" ? pClasses.includes(classId) : true;
 
             if (!studentMatch && !classMatch) return false;
 
@@ -139,17 +139,13 @@ function getNodeData(
 
             if (isMatch) return true;
 
-            // Name-based fallback for BNCC Fields (Education Infantil)
-            const projectBnccSkills = pBnccSkills.map(sid => (libraryItems || []).find(li => li?.id === sid)).filter(Boolean);
-            const nameMatch = projectBnccSkills.some(skill =>
-                skill?.name && n?.name && skill.name.trim().toLowerCase() === n.name.trim().toLowerCase()
-            );
-
-            return nameMatch;
+            return false;
         });
 
         if (inThisNode) return true;
-        if (n.children && Array.isArray(n.children)) {
+        // Only recurse into children for non-micro nodes.
+        // Micro (level 3) should only match on itself, not inherit from atomico children.
+        if (n.level !== "micro" && n.children && Array.isArray(n.children)) {
             return n.children.some(child => checkInProject(child));
         }
         return false;
