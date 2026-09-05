@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { TreeRatingPicker } from "@/components/assessment/tree-rating-picker";
 import { getClasses } from "@/services/school-class.service";
 import { SchoolClass } from "@/types/school-class";
@@ -77,6 +78,7 @@ export function AssessmentDrawer({
     const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
 
     const [activeAssessmentId, setActiveAssessmentId] = useState<string | undefined>(assessmentId);
+    const [isPublished, setIsPublished] = useState(true);
 
     // Context State
     const [contextType, setContextType] = useState<"project" | "routine">(propRoutineId ? "routine" : "project");
@@ -186,13 +188,14 @@ export function AssessmentDrawer({
         setRating(undefined);
         setObservations("");
         setAttachments([]);
+        setIsPublished(true);
         if (!propProjectId) setSelectedProjectId("");
         if (!propSessionId) setSelectedSessionId("");
         if (!propRoutineId) setSelectedRoutineId("");
         onOpenChange(false);
     };
 
-    const handleSave = async () => {
+    const handleSave = async (publish: boolean) => {
         setIsSaving(true);
         try {
             if (activeAssessmentId) {
@@ -200,6 +203,7 @@ export function AssessmentDrawer({
                     rating,
                     observations,
                     attachments,
+                    isPublished: publish,
                 });
             } else {
                 const assessment: Partial<Assessment> = {
@@ -213,6 +217,7 @@ export function AssessmentDrawer({
                     rating,
                     observations,
                     attachments,
+                    isPublished: publish,
                 };
                 await AssessmentService.create(assessment);
             }
@@ -361,6 +366,7 @@ export function AssessmentDrawer({
             setRating(found.rating);
             setObservations(found.observations || "");
             setAttachments(found.attachments || []);
+            setIsPublished(found.isPublished ?? true);
         } else {
             setActiveAssessmentId(undefined);
             setRating(undefined);
@@ -632,28 +638,54 @@ export function AssessmentDrawer({
                     )}
                 </div>
 
-                <div className="px-6 py-4 border-t bg-white flex gap-3">
-                    {activeAssessmentId && (
-                        <Button
-                            variant="outline"
-                            className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 hover:border-red-300"
-                            onClick={handleDelete}
-                            title="Zerar Avaliação"
-                        >
-                            <Trash2 className="w-5 h-5" />
-                        </Button>
-                    )}
-                    <Button variant="outline" className="flex-1" onClick={handleClose} disabled={isSaving}>
+                <div className="px-6 py-4 border-t bg-white flex justify-between gap-3">
+                    <Button variant="outline" onClick={handleClose} disabled={isSaving}>
                         Cancelar
                     </Button>
-                    <Button
-                        className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                        disabled={!canSave || isSaving}
-                        onClick={handleSave}
-                    >
-                        {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Salvar {activeAssessmentId ? "Alterações" : "Avaliação"}
-                    </Button>
+                    <div className="flex gap-2 flex-1 justify-end">
+                        <Button 
+                            variant="secondary"
+                            onClick={() => handleSave(false)} 
+                            disabled={!canSave || isSaving}
+                        >
+                            Salvar (Rascunho)
+                        </Button>
+                        
+                        {activeAssessmentId && isPublished ? (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        className="bg-indigo-600 hover:bg-indigo-700 text-white min-w-[120px]"
+                                        disabled={!canSave || isSaving}
+                                    >
+                                        {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                        Editar
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleSave(true)}>
+                                        Salvar Alterações
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleSave(false)}>
+                                        Despublicar (Salvar como Rascunho)
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem className="text-red-600" onClick={handleDelete}>
+                                        <Trash2 className="w-4 h-4 mr-2" />
+                                        Apagar Avaliação
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        ) : (
+                            <Button
+                                className="bg-green-600 hover:bg-green-700 text-white min-w-[120px]"
+                                disabled={!canSave || isSaving}
+                                onClick={() => handleSave(true)}
+                            >
+                                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                Publicar
+                            </Button>
+                        )}
+                    </div>
                 </div>
             </DialogContent>
 

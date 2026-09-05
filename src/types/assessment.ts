@@ -19,5 +19,6 @@ export interface Assessment {
     // Content
     rating?: 1 | 2 | 3 | 4 | 5;
     observations: string;
+    isPublished?: boolean;
     attachments: AssessmentAttachment[];
 }

@@ -18,6 +18,11 @@ export async function GET(request: Request) {
         if (studentId) filter.studentId = studentId;
         if (projectId) filter.projectId = projectId;
 
+        // Se o usuário não for professor nem admin (ex: pai, aluno), ele só vê avaliações publicadas
+        if (session.user.role !== 'teacher' && session.user.role !== 'admin' && session.user.role !== 'coordinator') {
+            filter.isPublished = true;
+        }
+
         const assessments = await prisma.assessment.findMany({
             where: filter,
             include: {
@@ -53,6 +58,7 @@ export async function POST(request: Request) {
         const createdAssessment = await prisma.assessment.create({
             data: {
                 ...assessmentData,
+                isPublished: assessmentData.isPublished !== undefined ? assessmentData.isPublished : true,
                 attachments: attachments ? {
                     create: attachments.map(att => ({
                         type: att.type,
