@@ -347,15 +347,20 @@ export function AssessmentDrawer({
 
         const found = assessments.find(a => {
             const matchScope = a.scope === scope;
-            const matchClass = scope === "class" ? a.classId === classId && !a.studentId : a.studentId === studentId;
-            const matchNode = propKnowledgeNodeId ? a.knowledgeNodeId === propKnowledgeNodeId : !a.knowledgeNodeId;
+            const matchClass = scope === "class" 
+                ? (a.classId || undefined) === (classId || undefined) && !a.studentId 
+                : (a.studentId || undefined) === (studentId || undefined);
+            
+            const matchNode = propKnowledgeNodeId 
+                ? (a.knowledgeNodeId || undefined) === (propKnowledgeNodeId || undefined) 
+                : !a.knowledgeNodeId;
 
             let matchContext = true;
             if (contextType === "project") {
-                matchContext = a.projectId === (selectedProjectId || undefined) &&
-                    a.sessionId === (selectedSessionId || undefined);
+                matchContext = (a.projectId || undefined) === (selectedProjectId || undefined) &&
+                    (a.sessionId || undefined) === (selectedSessionId || undefined);
             } else {
-                matchContext = a.routineId === (selectedRoutineId || undefined);
+                matchContext = (a.routineId || undefined) === (selectedRoutineId || undefined);
             }
 
             return matchScope && matchClass && matchNode && matchContext;
@@ -363,7 +368,7 @@ export function AssessmentDrawer({
 
         if (found) {
             setActiveAssessmentId(found.id);
-            setRating(found.rating);
+            setRating(found.rating || undefined);
             setObservations(found.observations || "");
             setAttachments(found.attachments || []);
             setIsPublished(found.isPublished ?? true);
