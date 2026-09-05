@@ -379,7 +379,7 @@ export function AssessmentDrawer({
             setAttachments([]);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [open, assessmentId, scope, classId, studentId, propKnowledgeNodeId, contextType, selectedProjectId, selectedSessionId, selectedRoutineId]);
+    }, [open, assessmentId, scope, classId, studentId, propKnowledgeNodeId, contextType, selectedProjectId, selectedSessionId, selectedRoutineId, assessments]);
 
     useEffect(() => {
         if (!isFixedContext && contextType === "routine" && routines.length > 0 && !selectedRoutineId) {
