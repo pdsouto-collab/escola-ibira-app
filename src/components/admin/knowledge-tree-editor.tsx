@@ -243,6 +243,10 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
 
     const [libSearchQuery, setLibSearchQuery] = useState("");
     const isLevel3 = currentNode?.level === "micro";
+    const isLevel3AndAdding = editMode === "add" && isLevel3;
+    const isSaveDisabled = isLevel3AndAdding 
+        ? selectedLibraryItems.length === 0 
+        : !currentNode?.name;
 
     // Helper to normalize strings for accent-insensitive search
     const normalizeString = (str: string) => {
@@ -786,7 +790,7 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
 
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
-                        <Button onClick={handleSave} disabled={!currentNode?.name}>Salvar</Button>
+                        <Button onClick={handleSave} disabled={isSaveDisabled}>Salvar</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
