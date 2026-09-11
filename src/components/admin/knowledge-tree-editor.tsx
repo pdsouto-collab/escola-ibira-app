@@ -20,7 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getListBncc } from "@/services/bncc.service";
 import { LibraryItem } from "@/types/library-item";
@@ -89,6 +89,7 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
     const [parentLevel, setParentLevel] = useState<KnowledgeLevel | null>(null); // To determine new node's level if adding
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
     const [confirmDuplicateId, setConfirmDuplicateId] = useState<string | null>(null);
+    const [selectedLibraryItems, setSelectedLibraryItems] = useState<any[]>([]);
     const [confirmDuplicateChildrenCount, setConfirmDuplicateChildrenCount] = useState<number>(0);
 
     async function fetchClasses() {
@@ -138,6 +139,7 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
         });
         setParentLevel(null);
         setIsDialogOpen(true);
+        setSelectedLibraryItems([]);
     };
 
     const handleAddChild = (parentNode: KnowledgeNode) => {
@@ -158,12 +160,14 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
         // @ts-ignore
         setCurrentNode(prev => ({ ...prev, _parentId: parentNode.id }));
         setIsDialogOpen(true);
+        setSelectedLibraryItems([]);
     };
 
     const handleEdit = (node: KnowledgeNode) => {
         setEditMode("edit");
         setCurrentNode(node);
         setIsDialogOpen(true);
+        setSelectedLibraryItems([]);
     };
 
     const handleDelete = (id: string) => {
@@ -199,13 +203,29 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
     };
 
     const handleSave = async () => {
-        if (!currentNode || !currentNode.name) return;
+        const isLevel3AndAdding = editMode === "add" && currentNode?.level === "micro";
+        if (!currentNode) return;
+        if (!isLevel3AndAdding && !currentNode.name) return;
+        if (isLevel3AndAdding && selectedLibraryItems.length === 0) return;
 
         const loadingToast = toast.loading("Salvando...");
         try {
             if (editMode === "add") {
                 const parentId = (currentNode as any)._parentId || null;
-                await addKnowledgeNode(parentId, currentNode as KnowledgeNode);
+                if (isLevel3AndAdding) {
+                    for (const item of selectedLibraryItems) {
+                        const newNode = {
+                            ...currentNode,
+                            libraryItemId: item.code || item.id,
+                            name: item.name,
+                            description: item.isBNCC ? `BNCC: ${item.subGroup}` : item.description,
+                            id: `node-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+                        };
+                        await addKnowledgeNode(parentId, newNode as KnowledgeNode);
+                    }
+                } else {
+                    await addKnowledgeNode(parentId, currentNode as KnowledgeNode);
+                }
             } else if (editMode === "edit") {
                 await updateKnowledgeNode(currentNode.id!, currentNode);
             }
@@ -217,6 +237,7 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
 
         setIsDialogOpen(false);
         setCurrentNode(null);
+        setSelectedLibraryItems([]);
     };
 
     const [libSearchQuery, setLibSearchQuery] = useState("");
@@ -515,8 +536,33 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
                                         </div>
                                     </div>
 
-                                    {/* Selected item summary */}
-                                    {currentNode.libraryItemId && (() => {
+                                    {/* Selected items summary */}
+                                    {editMode === "add" && selectedLibraryItems.length > 0 && (
+                                        <div className="flex flex-col gap-2">
+                                            <Label className="text-xs text-slate-500">{selectedLibraryItems.length} item(ns) selecionado(s)</Label>
+                                            <div className="flex flex-col gap-2 max-h-[120px] overflow-y-auto pr-2">
+                                                {selectedLibraryItems.map(selectedItem => (
+                                                    <div key={selectedItem.code || selectedItem.id} className="flex items-start gap-3 p-2 rounded-lg bg-primary/5 border border-primary/20">
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-2 flex-wrap mb-1">
+                                                                {selectedItem.code && <Badge variant="outline" className="text-[10px] font-mono border-primary/30 text-primary">{selectedItem.code}</Badge>}
+                                                                <span className="text-xs font-semibold text-primary">{selectedItem.subGroup}</span>
+                                                            </div>
+                                                            <p className="text-sm font-semibold text-slate-800 leading-snug">{selectedItem.name}</p>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => setSelectedLibraryItems(prev => prev.filter(i => (i.code || i.id) !== (selectedItem.code || selectedItem.id)))}
+                                                            className="text-slate-400 hover:text-red-500 transition-colors flex-shrink-0"
+                                                            title="Remover seleção"
+                                                        >
+                                                            <X className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {editMode === "edit" && currentNode.libraryItemId && (() => {
                                         const selectedItem = libraryItems.find(i => (i.code || i.id) === currentNode.libraryItemId);
                                         return selectedItem ? (
                                             <div className="flex items-start gap-3 p-3 rounded-lg bg-primary/5 border border-primary/20">
@@ -550,30 +596,54 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
                                             ) : (
                                                 availableLibraryItems.map(item => {
                                                     const itemKey = item.code || item.id;
-                                                    const isSelected = currentNode.libraryItemId === itemKey;
+                                                    const isSelected = editMode === "add" 
+                                                        ? selectedLibraryItems.some(i => (i.code || i.id) === itemKey)
+                                                        : currentNode.libraryItemId === itemKey;
                                                     return (
                                                         <button
                                                             key={item.id}
                                                             type="button"
                                                             className={`w-full text-left px-4 py-3 transition-colors ${isSelected ? "bg-primary/10 border-l-4 border-l-primary" : "hover:bg-slate-50 border-l-4 border-l-transparent"}`}
                                                             onClick={() => {
-                                                                setCurrentNode(prev => ({
-                                                                    ...prev,
-                                                                    libraryItemId: itemKey,
-                                                                    name: item.name,
-                                                                    description: item.isBNCC ? `BNCC: ${item.subGroup}` : item.description
-                                                                }));
+                                                                if (editMode === "add") {
+                                                                    setSelectedLibraryItems(prev => {
+                                                                        const exists = prev.some(i => (i.code || i.id) === itemKey);
+                                                                        if (exists) {
+                                                                            return prev.filter(i => (i.code || i.id) !== itemKey);
+                                                                        } else {
+                                                                            return [...prev, item];
+                                                                        }
+                                                                    });
+                                                                } else {
+                                                                    setCurrentNode(prev => ({
+                                                                        ...prev,
+                                                                        libraryItemId: itemKey,
+                                                                        name: item.name,
+                                                                        description: item.isBNCC ? `BNCC: ${item.subGroup}` : item.description
+                                                                    }));
+                                                                }
                                                             }}
                                                         >
-                                                            <div className="flex items-center gap-2 flex-wrap mb-1">
-                                                                {item.code && <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">{item.code}</span>}
-                                                                <span className="text-[11px] font-semibold text-slate-500">{item.subGroup}</span>
-                                                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{item.grade === 'all' ? 'Geral' : item.grade}</span>
+                                                            <div className="flex items-center gap-3">
+                                                                {editMode === "add" && (
+                                                                    <Checkbox 
+                                                                        checked={isSelected}
+                                                                        onCheckedChange={() => {}}
+                                                                        className="flex-shrink-0"
+                                                                    />
+                                                                )}
+                                                                <div className="flex-1 min-w-0">
+                                                                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                                                                        {item.code && <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">{item.code}</span>}
+                                                                        <span className="text-[11px] font-semibold text-slate-500">{item.subGroup}</span>
+                                                                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{item.grade === 'all' ? 'Geral' : item.grade}</span>
+                                                                    </div>
+                                                                    <p className="text-sm font-medium text-slate-800 leading-snug">{item.name}</p>
+                                                                    {item.description && (
+                                                                        <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">{item.description}</p>
+                                                                    )}
+                                                                </div>
                                                             </div>
-                                                            <p className="text-sm font-medium text-slate-800 leading-snug">{item.name}</p>
-                                                            {item.description && (
-                                                                <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">{item.description}</p>
-                                                            )}
                                                         </button>
                                                     );
                                                 })
