@@ -101,7 +101,7 @@ export function generateFramedImage(
                         baseCropW = baseCropH * targetRatio;
                     } else {
                         baseCropW = img.width / zoom;
-                        baseCropH = baseCropW * targetRatio;
+                        baseCropH = baseCropW / targetRatio;
                     }
 
                     const maxOffsetX = Math.max(0, img.width - baseCropW);

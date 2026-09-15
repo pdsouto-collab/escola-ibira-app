@@ -280,15 +280,15 @@ export function PegadaNewPost({ onSuccess }: PegadaNewPostProps = {}) {
                                                     <div className="absolute top-2 right-2 flex items-center gap-1.5 z-10">
                                                         <Button
                                                             type="button"
-                                                            size="icon"
-                                                            className="h-8 w-8 rounded-full bg-black/70 hover:bg-indigo-600 text-white shadow-md transition-all"
+                                                            size="sm"
+                                                            className="h-8 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-md transition-all gap-1 px-3"
                                                             onClick={() => {
                                                                 setImageToFrame({ src: url, index: i });
                                                                 setFramingModalOpen(true);
                                                             }}
                                                             title="Ajustar Enquadramento / Recorte"
                                                         >
-                                                            <Crop className="h-4 w-4" />
+                                                            <Crop className="h-4 w-4" /> <span className="text-xs">Enquadrar</span>
                                                         </Button>
                                                         <Button
                                                             variant="destructive"
