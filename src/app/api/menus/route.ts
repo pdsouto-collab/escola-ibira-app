@@ -40,6 +40,8 @@ export async function POST(req: NextRequest) {
         items: {
           create: items?.map((item: any) => ({
             time: item.time,
+            timeInfantil: item.timeInfantil,
+            timeFundamental: item.timeFundamental,
             title: item.title,
             description: item.description,
           })) || [],

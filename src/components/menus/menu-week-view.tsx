@@ -94,9 +94,9 @@ export function MenuWeekView() {
                 id: `menu-${Date.now()}`,
                 date: format(date, "yyyy-MM-dd"),
                 items: [
-                    { time: "09:30", title: "Lanche da Manhã", description: "" },
-                    { time: "11:30", title: "Almoço", description: "" },
-                    { time: "15:00", title: "Lanche da Tarde", description: "" }
+                    { time: "09:30", timeInfantil: "09:00", timeFundamental: "09:30", title: "Lanche da Manhã", description: "" },
+                    { time: "11:30", timeInfantil: "11:00", timeFundamental: "12:00", title: "Almoço", description: "" },
+                    { time: "15:00", timeInfantil: "15:00", timeFundamental: "15:30", title: "Lanche da Tarde", description: "" }
                 ]
             };
         }
@@ -306,7 +306,7 @@ export function MenuWeekView() {
                                         {menu.items.map((item, i) => (
                                             <div key={i} className="text-sm">
                                                 <Badge variant="outline" className="mb-1 text-[10px] font-bold tracking-wider text-slate-400 border-slate-200">
-                                                    {item.time} - {item.title}
+                                                    {item.timeInfantil || item.time} (Inf) • {item.timeFundamental || item.time} (Fund) - {item.title}
                                                 </Badge>
                                                 <p className="text-slate-700 leading-relaxed whitespace-pre-line break-words">{item.description}</p>
                                             </div>
@@ -365,18 +365,36 @@ export function MenuWeekView() {
                                                 className="bg-white font-medium"
                                             />
                                         </div>
-                                        <div className="w-32">
-                                            <Label className="text-xs font-bold text-slate-500 uppercase">Horário</Label>
-                                            <Input
-                                                type="time"
-                                                value={item.time}
-                                                onChange={e => {
-                                                    const newItems = [...editingMenu.items];
-                                                    newItems[index].time = e.target.value;
-                                                    setEditingMenu({ ...editingMenu, items: newItems });
-                                                }}
-                                                className="bg-white"
-                                            />
+                                        <div className="w-48 space-y-2">
+                                            <div>
+                                                <Label className="text-[10px] font-bold text-slate-500 uppercase">Horário Infantil</Label>
+                                                <Input
+                                                    type="time"
+                                                    value={item.timeInfantil || item.time || ""}
+                                                    onChange={e => {
+                                                        const newItems = [...editingMenu.items];
+                                                        newItems[index].timeInfantil = e.target.value;
+                                                        // Fallback logic
+                                                        if (!newItems[index].time) newItems[index].time = e.target.value;
+                                                        setEditingMenu({ ...editingMenu, items: newItems });
+                                                    }}
+                                                    className="bg-white h-8"
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label className="text-[10px] font-bold text-slate-500 uppercase">Horário Fundamental</Label>
+                                                <Input
+                                                    type="time"
+                                                    value={item.timeFundamental || item.time || ""}
+                                                    onChange={e => {
+                                                        const newItems = [...editingMenu.items];
+                                                        newItems[index].timeFundamental = e.target.value;
+                                                        if (!newItems[index].time) newItems[index].time = e.target.value;
+                                                        setEditingMenu({ ...editingMenu, items: newItems });
+                                                    }}
+                                                    className="bg-white h-8"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                     <div>

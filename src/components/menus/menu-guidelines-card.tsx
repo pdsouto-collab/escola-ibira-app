@@ -99,7 +99,7 @@ export function MenuGuidelinesCard({
                             <div className="space-y-2 text-xs text-slate-700">
                                 <div className="flex items-start gap-2 bg-amber-50/70 border border-amber-200/50 rounded-lg p-2.5 text-amber-900">
                                     <Info className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
-                                    <span className="whitespace-pre-line break-words">{guidelines.glutenNote}</span>
+                                    <span className="whitespace-pre-wrap break-words">{guidelines.generalNote}</span>
                                 </div>
 
                                 <div className="flex items-start gap-2 bg-emerald-50/70 border border-emerald-200/50 rounded-lg p-2.5 text-emerald-900">
@@ -113,6 +113,15 @@ export function MenuGuidelinesCard({
                                         <div>
                                             <span className="font-bold text-rose-900 block text-[11px] uppercase mb-0.5">Aniversariantes do Mês</span>
                                             <span className="whitespace-pre-line break-words text-rose-800 text-xs">{guidelines.birthdayNote}</span>
+                                        </div>
+                                    </div>
+                                )}
+                                {guidelines.receitaDoMes && (
+                                    <div className="flex items-start gap-2 bg-emerald-50/70 border border-emerald-200/50 rounded-lg p-2.5 text-emerald-900">
+                                        <Sprout className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                                        <div>
+                                            <span className="font-bold text-emerald-900 block text-[11px] uppercase mb-0.5">Receita do Mês</span>
+                                            <span className="whitespace-pre-wrap break-words text-emerald-800 text-xs">{guidelines.receitaDoMes}</span>
                                         </div>
                                     </div>
                                 )}
@@ -162,10 +171,10 @@ export function MenuGuidelinesCard({
                         </div>
 
                         <div className="space-y-1.5">
-                            <Label className="text-xs font-bold text-slate-600">Observação sobre Glúten</Label>
+                            <Label className="text-xs font-bold text-slate-600">Observações Gerais</Label>
                             <Textarea
-                                value={formData.glutenNote}
-                                onChange={e => setFormData({ ...formData, glutenNote: e.target.value })}
+                                value={formData.generalNote}
+                                onChange={e => setFormData({ ...formData, generalNote: e.target.value })}
                                 rows={2}
                                 className="text-xs"
                             />
@@ -191,6 +200,19 @@ export function MenuGuidelinesCard({
                                 rows={3}
                                 placeholder="Descreva os aniversariantes do mês e comemorações com bolo..."
                                 className="text-xs border-rose-200 focus:border-rose-400"
+                            />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <Label className="text-xs font-bold text-emerald-800 flex items-center gap-1.5">
+                                <Sprout className="h-3.5 w-3.5" /> Receita do Mês
+                            </Label>
+                            <Textarea
+                                value={formData.receitaDoMes || ""}
+                                onChange={e => setFormData({ ...formData, receitaDoMes: e.target.value })}
+                                rows={4}
+                                placeholder="Descreva a receita do mês..."
+                                className="text-xs border-emerald-200 focus:border-emerald-400"
                             />
                         </div>
 

@@ -12,9 +12,10 @@ import { SchoolLogo } from "@/components/ui/school-logo";
 export interface MenuGuidelinesData {
     intro: string;
     points: string[];
-    glutenNote: string;
+    generalNote: string;
     farmNote: string;
     birthdayNote?: string;
+    receitaDoMes?: string;
     footerNote: string;
 }
 
@@ -26,9 +27,10 @@ export const DEFAULT_GUIDELINES: MenuGuidelinesData = {
         "Nossas preparações são assadas, grelhadas ou cozidas;",
         "Priorizamos ingredientes da época;"
     ],
-    glutenNote: "Obs: o glúten será utilizado pontualmente na preparação dos pães pelas crianças.",
+    generalNote: "Obs: o glúten será utilizado pontualmente na preparação dos pães pelas crianças.",
     farmNote: "Os itens marcados com o símbolo (•) são cultivados na escola.",
     birthdayNote: "No dia da comemoração do aniversariante, oferecemos um bolo sem glúten e açúcar, preparado em nossa cozinha.",
+    receitaDoMes: "",
     footerNote: "O cardápio está sujeito a alterações devido à disponibilidade e perecibilidade dos alimentos, sempre mantendo a qualidade nutricional."
 };
 
@@ -564,10 +566,10 @@ function PrintableWeekPage({
                         {/* Right: Notes */}
                         <div className="space-y-3 flex flex-col justify-between">
                             <div className="space-y-2.5 text-[11px]">
-                                {guidelines.glutenNote && (
-                                    <div className="flex items-start gap-2 bg-amber-50/90 border border-amber-200/70 rounded-lg p-3 text-amber-900">
-                                        <Info className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
-                                        <span className="whitespace-pre-line break-words leading-relaxed">{guidelines.glutenNote}</span>
+                                {guidelines.generalNote && (
+                                    <div className="flex items-start gap-1.5 bg-amber-50/70 border border-amber-200/50 rounded-md p-2 text-amber-900">
+                                        <Info className="h-3 w-3 text-amber-600 shrink-0 mt-0.5" />
+                                        <span className="whitespace-pre-wrap break-words leading-relaxed">{guidelines.generalNote}</span>
                                     </div>
                                 )}
 
@@ -579,11 +581,21 @@ function PrintableWeekPage({
                                 )}
 
                                 {guidelines.birthdayNote && (
-                                    <div className="flex items-start gap-2 bg-rose-50/90 border border-rose-200/80 rounded-lg p-3 text-rose-900">
-                                        <Cake className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
-                                        <div className="flex-1">
-                                            <span className="font-bold text-rose-900 block text-[10px] uppercase mb-0.5">Aniversariantes do Mês</span>
+                                    <div className="flex items-start gap-1.5 bg-rose-50/70 border border-rose-200/60 rounded-md p-2 text-rose-900">
+                                        <Cake className="h-3 w-3 text-rose-600 shrink-0 mt-0.5" />
+                                        <div>
+                                            <span className="font-bold text-rose-900 block text-[9px] uppercase mb-0.5">Aniversariantes do Mês</span>
                                             <span className="whitespace-pre-line break-words text-rose-800 text-[11px] leading-relaxed">{guidelines.birthdayNote}</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {guidelines.receitaDoMes && (
+                                    <div className="flex items-start gap-1.5 bg-emerald-50/70 border border-emerald-200/50 rounded-md p-2 text-emerald-900">
+                                        <Sprout className="h-3 w-3 text-emerald-600 shrink-0 mt-0.5" />
+                                        <div>
+                                            <span className="font-bold text-emerald-900 block text-[9px] uppercase mb-0.5">Receita do Mês</span>
+                                            <span className="whitespace-pre-wrap break-words text-emerald-800 text-[11px] leading-relaxed">{guidelines.receitaDoMes}</span>
                                         </div>
                                     </div>
                                 )}

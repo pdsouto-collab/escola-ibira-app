@@ -424,11 +424,13 @@ model Menu {
 }
 
 model MenuItem {
-  id          String   @id @default(cuid())
-  time        String
-  title       String
-  description String   @db.Text
-  menuId      String
+  id              String   @id @default(cuid())
+  time            String?
+  timeInfantil    String?
+  timeFundamental String?
+  title           String
+  description     String   @db.Text
+  menuId          String
   menu        Menu     @relation(fields: [menuId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
