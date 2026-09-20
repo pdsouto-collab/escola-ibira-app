@@ -205,8 +205,10 @@ export default function MuralPage() {
         const finalDate = newEvent.date || format(new Date(), "yyyy-MM-dd");
         const finalTime = newEvent.time || "09:00";
         
-        // Convert to proper ISO string with timezone offset from local browser
-        const dateObj = new Date(`${finalDate}T${finalTime}:00`);
+        // Convert to proper ISO string with timezone offset from local browser securely
+        const [year, month, day] = finalDate.split('-').map(Number);
+        const [hour, minute] = finalTime.split(':').map(Number);
+        const dateObj = new Date(year, month - 1, day, hour, minute);
         const eventDate = dateObj.toISOString();
 
         const authorName = currentUser?.name || session?.user?.name || "Administração";
