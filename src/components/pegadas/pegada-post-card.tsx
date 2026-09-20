@@ -326,7 +326,7 @@ export function PegadaPostCard({ post, onUpdated, onDeleted }: PegadaPostCardPro
                                                     <button
                                                         type="button"
                                                         onClick={() => handleRemoveEditPhoto(index)}
-                                                        className="absolute top-1 right-1 bg-black/70 hover:bg-black/90 text-white rounded-full p-1 shadow-md transition-all"
+                                                        className="bg-black/70 hover:bg-black/90 text-white rounded-full p-1 shadow-md transition-all"
                                                         title="Remover foto"
                                                     >
                                                         <X className="w-3.5 h-3.5" />
