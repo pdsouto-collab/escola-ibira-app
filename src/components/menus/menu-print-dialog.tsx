@@ -499,9 +499,11 @@ function PrintableWeekPage({
                                                     <span className="font-extrabold text-[10px] text-emerald-800 uppercase tracking-tight">
                                                         {mealType}
                                                     </span>
-                                                    {item?.time && (
-                                                        <span className="text-[9px] font-semibold text-slate-400">
-                                                            {item.time}
+                                                    {(item?.timeInfantil || item?.timeFundamental || item?.time) && (
+                                                        <span className="text-[8.5px] font-bold text-slate-400 text-right leading-none max-w-[65px]">
+                                                            {(item.timeInfantil || item.timeFundamental) 
+                                                                ? `${item.timeInfantil || item.time} (I) • ${item.timeFundamental || item.time} (F)`
+                                                                : item.time}
                                                         </span>
                                                     )}
                                                 </div>
