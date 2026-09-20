@@ -478,7 +478,7 @@ export default function MuralPage() {
                                         <img src={newEvent.image} alt="" className="absolute inset-0 w-full h-full object-cover blur-sm opacity-40" />
                                         {/* Sharp image */}
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img src={newEvent.image} alt="Preview" className="relative h-full w-full object-cover" />
+                                        <img src={newEvent.image} alt="Preview" className="relative h-full w-full object-contain" />
                                         
                                         <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover/image:opacity-100 transition-opacity">
                                             <button
@@ -623,7 +623,7 @@ export default function MuralPage() {
                                     <img src={event.image} alt="" className="absolute inset-0 w-full h-full object-cover blur-md opacity-35 scale-105" />
                                     {/* Crisp main image */}
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img src={event.image} alt={event.title} className="relative w-full h-full object-cover transition-transform duration-300 group-hover/cardimg:scale-[1.02]" />
+                                    <img src={event.image} alt={event.title} className="relative w-full h-full object-contain transition-transform duration-300 group-hover/cardimg:scale-[1.02]" />
                                     
                                     <div className="absolute inset-0 bg-black/0 group-hover/cardimg:bg-black/20 transition-colors flex items-center justify-center pointer-events-none">
                                         <span className="opacity-0 group-hover/cardimg:opacity-100 bg-black/75 text-white text-xs font-semibold px-3 py-1.5 rounded-full backdrop-blur-xs transition-opacity flex items-center gap-1.5 shadow-lg">
