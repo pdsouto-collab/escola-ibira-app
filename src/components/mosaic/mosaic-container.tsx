@@ -58,8 +58,34 @@ export function MosaicContainer() {
     // Derived state for display
     const currentData = activeTab === "skill" ? skillsTree : contentsTree;
 
-    // Active projects only
-    const filteredProjects = projects.filter(p => p.status === 'active');
+    // Active and completed projects only, and apply class/year filters
+    const filteredProjects = projects.filter(p => {
+        if (p.status !== 'active' && p.status !== 'completed') return false;
+
+        let activeClassId = selectedClassId;
+        if (selectedStudentId !== "all") {
+            const student = students.find(s => s.id === selectedStudentId);
+            if (student) {
+                activeClassId = student.classId;
+            }
+        }
+        
+        if (activeClassId !== "all") {
+            if (p.classes && p.classes.length > 0) {
+                if (!p.classes.includes(activeClassId)) {
+                    return false;
+                }
+            }
+        }
+
+        if (selectedYear !== "all" && p.period) {
+            if (!matchesPeriod(p.period, null, selectedYear)) {
+                return false;
+            }
+        }
+
+        return true;
+    });
 
     const [students, setStudents] = useState<Student[]>([]);
     const [isLoadingStudents, setIsLoadingStudents] = useState(true);
@@ -222,6 +248,7 @@ export function MosaicContainer() {
                         onValueChange={(v) => {
                             setSelectedClassId(v);
                             setSelectedStudentId("all");
+                            setSelectedProjectId("all");
                             setDrilledNode(null);
                             setSelectedNode(null);
                         }}
@@ -255,6 +282,7 @@ export function MosaicContainer() {
                         value={selectedStudentId}
                         onValueChange={(v) => {
                             setSelectedStudentId(v);
+                            setSelectedProjectId("all");
                             setDrilledNode(null);
                             setSelectedNode(null);
                             // Sincroniza a turma se um aluno for selecionado
@@ -279,7 +307,7 @@ export function MosaicContainer() {
 
                     {/* Filter: Período (Ano) */}
                     <div className="flex gap-2">
-                        <Select value={selectedYear} onValueChange={setSelectedYear}>
+                        <Select value={selectedYear} onValueChange={(v) => { setSelectedYear(v); setSelectedProjectId("all"); setDrilledNode(null); setSelectedNode(null); }}>
                             <SelectTrigger className="h-9 text-xs bg-white border-slate-200 w-28">
                                 <SelectValue placeholder="Ano" />
                             </SelectTrigger>
