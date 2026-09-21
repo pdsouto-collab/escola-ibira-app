@@ -89,7 +89,20 @@ export function MosaicContainer() {
         }
 
         const periodMatch = !node.period || node.period === "all" || matchesPeriod(node.period, null, selectedYear);
-        return (activeClassId === "all" || !node.classId || node.classId === "all" || node.classId === activeClassId) && periodMatch;
+        
+        if (!periodMatch) return false;
+
+        if (activeClassId === "all") {
+            return true;
+        }
+
+        const hasSpecificNodes = currentData.some(n => n.classId === activeClassId);
+
+        if (hasSpecificNodes) {
+            return node.classId === activeClassId;
+        } else {
+            return !node.classId || node.classId === "all";
+        }
     });
 
     // If drilled down, we only render the drilled node as the root.
