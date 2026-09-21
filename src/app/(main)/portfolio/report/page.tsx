@@ -278,20 +278,19 @@ function ReportCard({
         return studentMatch || classMatch;
     });
 
-    const effSemester = period && period !== "all" && period.includes("Semestre") ? period.split(" / ")[0] : "all";
     const effYear = period && period !== "all" && /\d{4}/.test(period) ? (period.split(" / ")[1] || period) : "all";
 
     if (projectId && projectId !== "all") {
         studentProjects = studentProjects.filter(p => p.id === projectId);
     }
     if (period && period !== "all") {
-        studentProjects = studentProjects.filter(p => matchesPeriod(p.period, p.startDate, effSemester, effYear));
+        studentProjects = studentProjects.filter(p => matchesPeriod(p.period, p.startDate, effYear));
     }
 
     // Get relevant assessments
     const relevantAssessments = assessments.filter(a => {
         const isStudent = a.studentId === studentId || (a.scope === "class" && a.classId === student.classId);
-        const isPeriod = matchesPeriod(a.period, a.createdAt, effSemester, effYear);
+        const isPeriod = matchesPeriod(a.period, a.createdAt, effYear);
         return isStudent && isPeriod;
     });
 

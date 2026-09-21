@@ -4,7 +4,6 @@
  */
 
 export interface PeriodFilterOptions {
-    semester?: string; // "all" | "1º Semestre" | "2º Semestre"
     year?: string;     // "all" | "2024" | "2025" | "2026" | "2027" | etc.
 }
 
@@ -14,31 +13,18 @@ export interface PeriodFilterOptions {
 export function matchesPeriod(
     itemPeriod?: string | null,
     itemDate?: string | Date | null,
-    semester: string = "all",
     year: string = "all"
 ): boolean {
-    const isSemAll = !semester || semester === "all";
     const isYearAll = !year || year === "all";
 
-    // If both filters are "all", everything passes
-    if (isSemAll && isYearAll) return true;
+    // If filter is "all", everything passes
+    if (isYearAll) return true;
 
-    let periodMatchesSemester = isSemAll;
     let periodMatchesYear = isYearAll;
-
-    let dateMatchesSemester = isSemAll;
     let dateMatchesYear = isYearAll;
 
-    // 1. Check against explicit itemPeriod string (e.g. "1º Semestre / 2026", "1º Semestre", "2026")
+    // 1. Check against explicit itemPeriod string (e.g. "2026")
     if (itemPeriod && typeof itemPeriod === "string") {
-        const lower = itemPeriod.toLowerCase();
-        if (!isSemAll) {
-            if (semester.includes("1") && (lower.includes("1º") || lower.includes("1o") || lower.includes("primeiro"))) {
-                periodMatchesSemester = true;
-            } else if (semester.includes("2") && (lower.includes("2º") || lower.includes("2o") || lower.includes("segundo"))) {
-                periodMatchesSemester = true;
-            }
-        }
         if (!isYearAll) {
             if (itemPeriod.includes(year)) {
                 periodMatchesYear = true;
@@ -57,13 +43,6 @@ export function matchesPeriod(
                 if (!isYearAll) {
                     dateMatchesYear = itemYearStr === year;
                 }
-                if (!isSemAll) {
-                    if (semester.includes("1") && itemMonth <= 6) {
-                        dateMatchesSemester = true;
-                    } else if (semester.includes("2") && itemMonth > 6) {
-                        dateMatchesSemester = true;
-                    }
-                }
             }
         } catch {
             // Ignore date parse errors
@@ -71,8 +50,8 @@ export function matchesPeriod(
     }
 
     // If item has both or either, return true if either representation matched both criteria
-    const matchedByPeriod = Boolean(itemPeriod) && periodMatchesSemester && periodMatchesYear;
-    const matchedByDate = Boolean(itemDate) && dateMatchesSemester && dateMatchesYear;
+    const matchedByPeriod = Boolean(itemPeriod) && periodMatchesYear;
+    const matchedByDate = Boolean(itemDate) && dateMatchesYear;
 
     if (itemPeriod && itemDate) {
         return matchedByPeriod || matchedByDate;

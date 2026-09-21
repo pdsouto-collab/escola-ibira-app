@@ -2,7 +2,6 @@
 
 import React, { useState, useMemo, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { SEMESTERS } from "@/constants/semesters";
 import { YEARS } from "@/constants/years";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -892,7 +891,6 @@ function PortfolioContent() {
 
     const [view, setView] = useState<"project" | "student">(initialClassId ? "student" : "project");
     const [projectFilter, setProjectFilter] = useState("all");
-    const [semesterFilter, setSemesterFilter] = useState("all");
     const [yearFilter, setYearFilter] = useState("all");
     const [classFilter, setClassFilter] = useState(initialClassId || "all");
     const [studentFilter, setStudentFilter] = useState("all");
@@ -985,12 +983,12 @@ function PortfolioContent() {
     };
 
     const filteredProjects = useMemo(() => {
-        return allProjects.filter(p => matchesPeriod(p.period, p.startDate, semesterFilter, yearFilter));
-    }, [allProjects, semesterFilter, yearFilter]);
+        return allProjects.filter(p => matchesPeriod(p.period, p.startDate, yearFilter));
+    }, [allProjects, yearFilter]);
 
     const filteredAssessments = useMemo(() => {
-        return assessments.filter(a => matchesPeriod(a.period, a.createdAt, semesterFilter, yearFilter));
-    }, [assessments, semesterFilter, yearFilter]);
+        return assessments.filter(a => matchesPeriod(a.period, a.createdAt, yearFilter));
+    }, [assessments, yearFilter]);
 
     if (isLoadingClasses || isLoadingStudents || isLoadingSchedules || isLoadingAssessments) {
         return (
@@ -1030,13 +1028,6 @@ function PortfolioContent() {
             </div>
 
             <div className="bg-white border-b px-8 py-3 flex items-center gap-3">
-                <Select value={semesterFilter} onValueChange={setSemesterFilter}>
-                    <SelectTrigger className="w-32 h-8 text-sm"><SelectValue placeholder="Semestre" /></SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">Todo Sem.</SelectItem>
-                        {SEMESTERS.map(sem => <SelectItem key={sem} value={sem}>{sem}</SelectItem>)}
-                    </SelectContent>
-                </Select>
                 <Select value={yearFilter} onValueChange={setYearFilter}>
                     <SelectTrigger className="w-28 h-8 text-sm"><SelectValue placeholder="Ano" /></SelectTrigger>
                     <SelectContent>

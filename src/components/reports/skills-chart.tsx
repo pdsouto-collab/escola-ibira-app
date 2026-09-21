@@ -82,17 +82,14 @@ export function SkillsChart({
     student,
     filter = "all",
     period = "all",
-    semester = "all",
     year = "all"
 }: {
     student: Student | undefined;
     filter?: "bncc" | "ibira" | "all";
     period?: string;
-    semester?: string;
     year?: string;
 }) {
-    // Resolve effective semester & year from explicit props or legacy period string
-    const effSemester = semester !== "all" ? semester : (period !== "all" && period.includes("Semestre") ? period.split(" / ")[0] : "all");
+    // Resolve effective year from explicit props or legacy period string
     const effYear = year !== "all" ? year : (period !== "all" && /\d{4}/.test(period) ? (period.split(" / ")[1] || period) : "all");
 
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
@@ -145,7 +142,7 @@ export function SkillsChart({
 
     const studentAssessments = assessments.filter(a => 
         (a.studentId === studentId || (a.scope === "class" && a.classId === student.classId)) &&
-        matchesPeriod(a.period, a.createdAt, effSemester, effYear)
+        matchesPeriod(a.period, a.createdAt, effYear)
     );
 
     // 1. Identify which Library Items belong to the "Trilha Base" for the student's class
@@ -160,7 +157,7 @@ export function SkillsChart({
     const allTrees = [...skillsTree, ...contentsTree];
     const classRoots = allTrees.filter(node => 
         node.classId === student.classId && 
-        matchesPeriod(node.period, null, effSemester, effYear)
+        matchesPeriod(node.period, null, effYear)
     );
     collectBaseIds(classRoots);
 

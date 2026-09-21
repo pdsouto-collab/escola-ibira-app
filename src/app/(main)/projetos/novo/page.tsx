@@ -15,7 +15,6 @@ import { useSession } from "next-auth/react";
 import { BulkSessionDialog } from "@/components/projetos/bulk-session-dialog";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { SEMESTERS } from "@/constants/semesters";
 import { YEARS } from "@/constants/years";
 import { KnowledgeNode } from "@/lib/data";
 import { ScheduleItem } from "@/types/schedule";
@@ -536,26 +535,11 @@ function NewProjectWizardContent() {
                                         </Select>
                                     </div>
                                     <div>
-                                        <Label className="font-semibold text-slate-700">Semestre/Ano</Label>
+                                        <Label className="font-semibold text-slate-700">Ano</Label>
                                         <div className="flex gap-2 mt-2">
-                                            <Select value={(!formData.period || formData.period === "all") ? "all" : formData.period.split(" / ")[0]} onValueChange={v => {
+                                            <Select value={(!formData.period || formData.period === "all") ? "all" : formData.period} onValueChange={v => {
                                                 if (v === "all") setFormData({ ...formData, period: "" });
-                                                else setFormData({ ...formData, period: `${v} / ${(!formData.period || formData.period === "all") ? new Date().getFullYear() : formData.period.split(" / ")[1] || new Date().getFullYear()}` });
-                                            }}>
-                                                <SelectTrigger className="text-slate-700">
-                                                    <SelectValue placeholder="Semestre" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="all">Nenhum</SelectItem>
-                                                    {SEMESTERS.map(sem => (
-                                                        <SelectItem key={sem} value={sem}>{sem}</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-
-                                            <Select value={(!formData.period || formData.period === "all") ? "all" : formData.period.split(" / ")[1]} onValueChange={v => {
-                                                if (v === "all") setFormData({ ...formData, period: "" });
-                                                else setFormData({ ...formData, period: `${(!formData.period || formData.period === "all") ? "1º Semestre" : formData.period.split(" / ")[0] || "1º Semestre"} / ${v}` });
+                                                else setFormData({ ...formData, period: v });
                                             }}>
                                                 <SelectTrigger className="text-slate-700">
                                                     <SelectValue placeholder="Ano" />

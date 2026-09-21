@@ -15,7 +15,6 @@ interface Props {
     studentId: string;
     onEdit?: (date: string) => void;
     period?: string;
-    semester?: string;
     year?: string;
 }
 
@@ -23,10 +22,8 @@ export function PortfolioReport({
     studentId,
     onEdit,
     period = "all",
-    semester = "all",
     year = "all"
 }: Props) {
-    const effSemester = semester !== "all" ? semester : (period !== "all" && period.includes("Semestre") ? period.split(" / ")[0] : "all");
     const effYear = year !== "all" ? year : (period !== "all" && /\d{4}/.test(period) ? (period.split(" / ")[1] || period) : "all");
 
     const [entries, setEntries] = useState<PortfolioEntry[]>([]);
@@ -42,7 +39,7 @@ export function PortfolioReport({
     }, [studentId]);
 
     const filteredEntries = entries.filter(e =>
-        matchesPeriod(e.period, e.date || e.createdAt, effSemester, effYear)
+        matchesPeriod(e.period, e.date || e.createdAt, effYear)
     );
 
     if (isLoading) {

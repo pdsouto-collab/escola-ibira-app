@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { KnowledgeLevel } from "@/types/knowledge-level";
 import { KnowledgeNode } from "@/types/knowledge-node";
-import { SEMESTERS } from "@/constants/semesters";
 import { YEARS } from "@/constants/years";
 import { ChevronRight, ChevronDown, Plus, Edit2, Trash2, Link as LinkIcon, BookOpen, Search, X, Copy, Filter, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -407,23 +406,9 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
                     </div>
                     <div className="flex items-center gap-2">
                         <Label className="text-slate-500 text-xs font-semibold uppercase tracking-wider">Período:</Label>
-                        <Select value={selectedPeriod === "all" ? "all" : selectedPeriod.split(" / ")[0]} onValueChange={(val) => {
+                        <Select value={selectedPeriod === "all" ? "all" : selectedPeriod} onValueChange={(val) => {
                             if (val === "all") setSelectedPeriod("all");
-                            else setSelectedPeriod(`${val} / ${selectedPeriod === "all" ? new Date().getFullYear() : selectedPeriod.split(" / ")[1] || new Date().getFullYear()}`);
-                        }}>
-                            <SelectTrigger className="w-[120px] h-9 bg-white">
-                                <SelectValue placeholder="Semestre" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Semestre</SelectItem>
-                                {SEMESTERS.map(sem => (
-                                    <SelectItem key={sem} value={sem}>{sem}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <Select value={selectedPeriod === "all" ? "all" : selectedPeriod.split(" / ")[1]} onValueChange={(val) => {
-                            if (val === "all") setSelectedPeriod("all");
-                            else setSelectedPeriod(`${selectedPeriod === "all" ? "1º Semestre" : selectedPeriod.split(" / ")[0] || "1º Semestre"} / ${val}`);
+                            else setSelectedPeriod(val);
                         }}>
                             <SelectTrigger className="w-[90px] h-9 bg-white">
                                 <SelectValue placeholder="Ano" />
@@ -704,31 +689,13 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
                                         </Select>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Semestre/Ano</Label>
+                                        <Label>Ano</Label>
                                         <div className="flex items-center gap-2">
                                             <Select
-                                                value={!currentNode.period ? "all" : currentNode.period.split(" / ")[0]}
-                                                onValueChange={(val) => {
-                                                    if (val === "all") setCurrentNode(prev => prev ? { ...prev, period: null } : null);
-                                                    else setCurrentNode(prev => prev ? { ...prev, period: `${val} / ${!prev.period ? new Date().getFullYear() : prev.period.split(" / ")[1] || new Date().getFullYear()}` } : null);
-                                                }}
-                                            >
-                                                <SelectTrigger className="w-[140px] bg-white">
-                                                    <SelectValue placeholder="Semestre" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="all">Semestre</SelectItem>
-                                                    {SEMESTERS.map(sem => (
-                                                        <SelectItem key={sem} value={sem}>{sem}</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-
-                                            <Select
-                                                value={!currentNode.period ? "all" : currentNode.period.split(" / ")[1]}
+                                                value={!currentNode.period ? "all" : currentNode.period}
                                                 onValueChange={(val) => {
                                                     if (val === "all") setCurrentNode(prev => prev ? { ...prev, period: undefined } : null);
-                                                    else setCurrentNode(prev => prev ? { ...prev, period: `${!prev.period ? "1º Semestre" : prev.period.split(" / ")[0] || "1º Semestre"} / ${val}` } : null);
+                                                    else setCurrentNode(prev => prev ? { ...prev, period: val } : null);
                                                 }}
                                             >
                                                 <SelectTrigger className="w-[110px] bg-white">

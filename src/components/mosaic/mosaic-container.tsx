@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SEMESTERS } from "@/constants/semesters";
 import { YEARS } from "@/constants/years";
 import { KnowledgeNode } from "@/types/knowledge-node";
 import { getKnowledgeTrees } from "@/services/knowledge.service";
@@ -51,7 +50,6 @@ export function MosaicContainer() {
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
     const [selectedProjectId, setSelectedProjectId] = useState<string>("all");
     const [selectedStudentId, setSelectedStudentId] = useState<string>("all");
-    const [selectedSemester, setSelectedSemester] = useState<string>("all");
     const [selectedYear, setSelectedYear] = useState<string>("all");
 
     // Assessment Drawer State
@@ -90,7 +88,7 @@ export function MosaicContainer() {
             }
         }
 
-        const periodMatch = !node.period || node.period === "all" || matchesPeriod(node.period, null, selectedSemester, selectedYear);
+        const periodMatch = !node.period || node.period === "all" || matchesPeriod(node.period, null, selectedYear);
         return (activeClassId === "all" || !node.classId || node.classId === "all" || node.classId === activeClassId) && periodMatch;
     });
 
@@ -265,19 +263,8 @@ export function MosaicContainer() {
                         </SelectContent>
                     </Select>
 
-                    {/* Filter: Período (Semestre e Ano) */}
+                    {/* Filter: Período (Ano) */}
                     <div className="flex gap-2">
-                        <Select value={selectedSemester} onValueChange={setSelectedSemester}>
-                            <SelectTrigger className="h-9 text-xs bg-white border-slate-200 w-32">
-                                <SelectValue placeholder="Semestre" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Todo Semestre</SelectItem>
-                                {SEMESTERS.map(sem => (
-                                    <SelectItem key={sem} value={sem}>{sem}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
                         <Select value={selectedYear} onValueChange={setSelectedYear}>
                             <SelectTrigger className="h-9 text-xs bg-white border-slate-200 w-28">
                                 <SelectValue placeholder="Ano" />

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { getStudents } from "@/services/student.service";
 import { Student } from "@/types/student";
-import { SEMESTERS } from "@/constants/semesters";
+
 import { YEARS } from "@/constants/years";
 import { MilestoneReport } from "@/components/reports/milestone-report";
 import { DailyLogReport } from "@/components/reports/daily-log-report";
@@ -38,7 +38,6 @@ export default function ReportsPage() {
 
     // Filter States
     const [selectedClassId, setSelectedClassId] = useState<string>("all");
-    const [selectedSemester, setSelectedSemester] = useState<string>("all");
     const [selectedYear, setSelectedYear] = useState<string>("all");
     const [manualSelection, setManualSelection] = useState<string>("");
 
@@ -110,7 +109,6 @@ export default function ReportsPage() {
 
     const handleResetFilters = () => {
         setSelectedClassId("all");
-        setSelectedSemester("all");
         setSelectedYear("all");
         setManualSelection("");
     };
@@ -154,7 +152,7 @@ export default function ReportsPage() {
                                 </SelectContent>
                             </Select>
 
-                            {(selectedClassId !== "all" || selectedSemester !== "all" || selectedYear !== "all") && (
+                            {(selectedClassId !== "all" || selectedYear !== "all") && (
                                 <Button
                                     variant="outline"
                                     size="sm"
@@ -169,19 +167,8 @@ export default function ReportsPage() {
                         </div>
                     )}
 
-                    {/* Period Filter: Semester & Year */}
+                    {/* Period Filter: Year */}
                     <div className="flex items-center gap-2">
-                        <Select value={selectedSemester} onValueChange={setSelectedSemester}>
-                            <SelectTrigger className="w-[140px] bg-white border-slate-200">
-                                <SelectValue placeholder="Semestre" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Qualquer Sem.</SelectItem>
-                                {SEMESTERS.map(sem => (
-                                    <SelectItem key={sem} value={sem}>{sem}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
 
                         <Select value={selectedYear} onValueChange={setSelectedYear}>
                             <SelectTrigger className="w-[110px] bg-white border-slate-200">
@@ -320,7 +307,7 @@ export default function ReportsPage() {
                                 </h2>
                                 <p className="text-slate-500 mb-6">Comparativo entre o currículo proposto e o nível de consolidação da criança.</p>
                                 {selectedStudent ? (
-                                    <SkillsChart student={selectedStudent} filter="bncc" semester={selectedSemester} year={selectedYear} />
+                                    <SkillsChart student={selectedStudent} filter="bncc" year={selectedYear} />
                                 ) : (
                                     <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
                                 )}
@@ -333,7 +320,7 @@ export default function ReportsPage() {
                                     Trilha de Habilidades e Competências (BNCC)
                                 </h2>
                                 {selectedStudent ? (
-                                    <MilestoneReport student={selectedStudent} filter="bncc" semester={selectedSemester} year={selectedYear} />
+                                    <MilestoneReport student={selectedStudent} filter="bncc" year={selectedYear} />
                                 ) : (
                                     <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
                                 )}
@@ -352,7 +339,7 @@ export default function ReportsPage() {
                                 </h2>
                                 <p className="text-slate-500 mb-6">Comparativo entre as habilidades e competências Ibirá propostas e o nível de consolidação da criança.</p>
                                 {selectedStudent ? (
-                                    <SkillsChart student={selectedStudent} filter="ibira" semester={selectedSemester} year={selectedYear} />
+                                    <SkillsChart student={selectedStudent} filter="ibira" year={selectedYear} />
                                 ) : (
                                     <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
                                 )}
@@ -365,7 +352,7 @@ export default function ReportsPage() {
                                     Trilha de Habilidades e Competências (IBIRÁ)
                                 </h2>
                                 {selectedStudent ? (
-                                    <MilestoneReport student={selectedStudent} filter="ibira" semester={selectedSemester} year={selectedYear} />
+                                    <MilestoneReport student={selectedStudent} filter="ibira" year={selectedYear} />
                                 ) : (
                                     <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
                                 )}
@@ -378,7 +365,7 @@ export default function ReportsPage() {
                             <h2 className="text-xl font-bold text-slate-800 mb-2">Galeria de Vivências do Aluno</h2>
                             <p className="text-slate-500 mb-6 font-medium">Registros fotográficos de atividades esporádicas que marcam o ano escolar.</p>
                             {selectedStudent ? (
-                                <PortfolioReport studentId={effectiveStudentId} onEdit={currentUser?.role !== "guardian" ? handleEditPortfolio : undefined} semester={selectedSemester} year={selectedYear} />
+                                <PortfolioReport studentId={effectiveStudentId} onEdit={currentUser?.role !== "guardian" ? handleEditPortfolio : undefined} year={selectedYear} />
                             ) : (
                                 <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
                             )}
@@ -390,7 +377,7 @@ export default function ReportsPage() {
                             <h2 className="text-xl font-bold text-slate-800 mb-2">Diário de Bordo</h2>
                             <p className="text-slate-500 mb-6">Acompanhe a rotina diária, alimentação, sono e humor do aluno.</p>
                             {selectedStudent ? (
-                                <DailyLogReport studentId={effectiveStudentId} onEdit={currentUser?.role !== "guardian" ? handleEditDailyLog : undefined} semester={selectedSemester} year={selectedYear} />
+                                <DailyLogReport studentId={effectiveStudentId} onEdit={currentUser?.role !== "guardian" ? handleEditDailyLog : undefined} year={selectedYear} />
                             ) : (
                                 <div className="text-center py-12 text-slate-400">Selecione um aluno para visualizar</div>
                             )}

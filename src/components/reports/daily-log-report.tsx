@@ -15,7 +15,6 @@ interface DailyLogReportProps {
     studentId: string;
     onEdit?: (date: string) => void;
     period?: string;
-    semester?: string;
     year?: string;
 }
 
@@ -23,10 +22,8 @@ export function DailyLogReport({
     studentId,
     onEdit,
     period = "all",
-    semester = "all",
     year = "all"
 }: DailyLogReportProps) {
-    const effSemester = semester !== "all" ? semester : (period !== "all" && period.includes("Semestre") ? period.split(" / ")[0] : "all");
     const effYear = year !== "all" ? year : (period !== "all" && /\d{4}/.test(period) ? (period.split(" / ")[1] || period) : "all");
 
     const [menus, setMenus] = useState<Menu[]>([]);
@@ -45,7 +42,7 @@ export function DailyLogReport({
     }, [studentId]);
 
     const filteredLogs = logs.filter(l =>
-        matchesPeriod(null, l.date, effSemester, effYear)
+        matchesPeriod(null, l.date, effYear)
     );
 
     if (isLoading) {

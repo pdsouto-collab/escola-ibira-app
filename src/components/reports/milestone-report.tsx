@@ -92,7 +92,6 @@ interface MilestoneReportProps {
     student: Student | undefined;
     filter?: "bncc" | "ibira" | "all";
     period?: string;
-    semester?: string;
     year?: string;
 }
 
@@ -100,10 +99,8 @@ export function MilestoneReport({
     student,
     filter = "all",
     period = "all",
-    semester = "all",
     year = "all"
 }: MilestoneReportProps) {
-    const effSemester = semester !== "all" ? semester : (period !== "all" && period.includes("Semestre") ? period.split(" / ")[0] : "all");
     const effYear = year !== "all" ? year : (period !== "all" && /\d{4}/.test(period) ? (period.split(" / ")[1] || period) : "all");
 
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
@@ -141,7 +138,7 @@ export function MilestoneReport({
 
     const studentAssessments = assessments.filter(a => 
         (a.studentId === studentId || (a.scope === "class" && a.classId === student.classId)) &&
-        matchesPeriod(a.period, a.createdAt, effSemester, effYear)
+        matchesPeriod(a.period, a.createdAt, effYear)
     );
 
     // 1. Identify which Library Items belong to the "Trilha Base" for the student's class
@@ -156,7 +153,7 @@ export function MilestoneReport({
     const allTrees = [...skillsTree, ...contentsTree];
     const classRoots = allTrees.filter(node => 
         node.classId === student.classId && 
-        matchesPeriod(node.period, null, effSemester, effYear)
+        matchesPeriod(node.period, null, effYear)
     );
     collectBaseIds(classRoots);
 
