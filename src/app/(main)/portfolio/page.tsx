@@ -18,6 +18,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { ProgressChart, ProgressChartData } from "@/components/assessment/progress-chart";
+import { useSession } from "next-auth/react";
 import { LibraryItem } from "@/types/library-item";
 import { getListBncc } from "@/services/bncc.service";
 import { getClasses } from "@/services/school-class.service";
@@ -254,9 +255,10 @@ function ProjectView({
     classes: SchoolClass[];
     skillsTree: any[];
     contentsTree: any[];
-    libraryItems: LibraryItem[]
+    libraryItems: LibraryItem[];
     onAvaliacao: (ctx: Partial<Assessment> & { contextLabel: string }) => void;
     onEdit: (assessment: Assessment) => void;
+    canEvaluate?: (itemClassIds?: string | string[]) => boolean;
 }) {
     const projects = projectFilter === "all" ? allProjects : allProjects.filter(p => p.id === projectFilter);
 
@@ -323,18 +325,20 @@ function ProjectView({
                                                         ) : (
                                                             <span className="text-xs text-slate-400 italic">Sem avaliação</span>
                                                         )}
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            className="h-7 px-2 text-xs text-green-600 border-green-200 hover:bg-green-50"
-                                                            onClick={() => onAvaliacao({
-                                                                sessionId: session.id,
-                                                                projectId: project.id,
-                                                                contextLabel: `${session.title} · ${dateStr}`
-                                                            })}
-                                                        >
-                                                            <ClipboardList className="w-3 h-3 mr-1" />Avaliar
-                                                        </Button>
+                                                        {(!canEvaluate || canEvaluate(session.classId || project.classes)) && (
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                className="h-7 px-2 text-xs text-green-600 border-green-200 hover:bg-green-50"
+                                                                onClick={() => onAvaliacao({
+                                                                    sessionId: session.id,
+                                                                    projectId: project.id,
+                                                                    contextLabel: `${session.title} · ${dateStr}`
+                                                                })}
+                                                            >
+                                                                <ClipboardList className="w-3 h-3 mr-1" />Avaliar
+                                                            </Button>
+                                                        )}
                                                     </div>
                                                 </div>
                                             );
@@ -365,18 +369,20 @@ function ProjectView({
                                                                     </Badge>
                                                                     <p className="text-sm text-slate-700 truncate font-semibold">{node.name}</p>
                                                                 </div>
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="ghost"
-                                                                    className="h-7 px-2 text-[10px] text-indigo-700 opacity-0 group-hover:opacity-100 hover:bg-indigo-100/50"
-                                                                    onClick={() => onAvaliacao({
-                                                                        knowledgeNodeId: node.id,
-                                                                        projectId: project.id,
-                                                                        contextLabel: node.name
-                                                                    })}
-                                                                >
-                                                                    <ClipboardList className="w-3 h-3 mr-1" />Avaliar
-                                                                </Button>
+                                                                {(!canEvaluate || canEvaluate(project.classes)) && (
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="ghost"
+                                                                        className="h-7 px-2 text-[10px] text-indigo-700 opacity-0 group-hover:opacity-100 hover:bg-indigo-100/50"
+                                                                        onClick={() => onAvaliacao({
+                                                                            knowledgeNodeId: node.id,
+                                                                            projectId: project.id,
+                                                                            contextLabel: node.name
+                                                                        })}
+                                                                    >
+                                                                        <ClipboardList className="w-3 h-3 mr-1" />Avaliar
+                                                                    </Button>
+                                                                )}
                                                             </div>
                                                             {node.description && (
                                                                 <div className="px-4 pb-2 pt-0">
@@ -406,18 +412,20 @@ function ProjectView({
                                                                     </Badge>
                                                                     <p className="text-sm text-slate-700 truncate font-semibold">{node.name}</p>
                                                                 </div>
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="ghost"
-                                                                    className="h-7 px-2 text-[10px] text-amber-700 opacity-0 group-hover:opacity-100 hover:bg-amber-100/50"
-                                                                    onClick={() => onAvaliacao({
-                                                                        knowledgeNodeId: node.id,
-                                                                        projectId: project.id,
-                                                                        contextLabel: node.name
-                                                                    })}
-                                                                >
-                                                                    <ClipboardList className="w-3 h-3 mr-1" />Avaliar
-                                                                </Button>
+                                                                {(!canEvaluate || canEvaluate(project.classes)) && (
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="ghost"
+                                                                        className="h-7 px-2 text-[10px] text-amber-700 opacity-0 group-hover:opacity-100 hover:bg-amber-100/50"
+                                                                        onClick={() => onAvaliacao({
+                                                                            knowledgeNodeId: node.id,
+                                                                            projectId: project.id,
+                                                                            contextLabel: node.name
+                                                                        })}
+                                                                    >
+                                                                        <ClipboardList className="w-3 h-3 mr-1" />Avaliar
+                                                                    </Button>
+                                                                )}
                                                             </div>
                                                             {node.description && (
                                                                 <div className="px-4 pb-2 pt-0">
@@ -467,7 +475,7 @@ function ProjectView({
 // View: By Student
 // ────────────────────────────────────────────
 function StudentView({
-    assessments, students, classes, projects, schedule, skillsTree, contentsTree, libraryItems, studentFilter, classFilter, projectFilter, setProjectFilter, onAvaliacao, onEdit
+    assessments, students, classes, projects, schedule, skillsTree, contentsTree, libraryItems, studentFilter, classFilter, projectFilter, setProjectFilter, onAvaliacao, onEdit, canEvaluate
 }: {
     assessments: Assessment[];
     students: Student[];
@@ -476,13 +484,14 @@ function StudentView({
     schedule: ScheduleItem[];
     skillsTree: any[];
     contentsTree: any[];
-    libraryItems: LibraryItem[]
+    libraryItems: LibraryItem[];
     studentFilter: string;
     classFilter: string;
     projectFilter: string;
     setProjectFilter: (v: string) => void;
     onAvaliacao: (ctx: Partial<Assessment> & { contextLabel: string }) => void;
     onEdit: (assessment: Assessment) => void;
+    canEvaluate?: (itemClassIds?: string | string[]) => boolean;
 }) {
 
     useEffect(() => {
@@ -656,19 +665,21 @@ function StudentView({
                                                                                         ) : (
                                                                                             <span className="text-[10px] text-slate-400 italic">Sem avaliação</span>
                                                                                         )}
-                                                                                        <Button
-                                                                                            size="sm"
-                                                                                            variant="outline"
-                                                                                            className="h-7 px-2 text-[10px] text-green-600 border-green-200 hover:bg-green-50"
-                                                                                            onClick={() => onAvaliacao({
-                                                                                                sessionId: session.id,
-                                                                                                projectId: project.id,
-                                                                                                studentId: student.id,
-                                                                                                contextLabel: `${student.name.split(" ")[0]}: ${session.title}`
-                                                                                            })}
-                                                                                        >
-                                                                                            <ClipboardList className="w-3 h-3 mr-1" />Avaliar
-                                                                                        </Button>
+                                                                                        {(!canEvaluate || canEvaluate(student.classId)) && (
+                                                                                            <Button
+                                                                                                size="sm"
+                                                                                                variant="outline"
+                                                                                                className="h-7 px-2 text-[10px] text-green-600 border-green-200 hover:bg-green-50"
+                                                                                                onClick={() => onAvaliacao({
+                                                                                                    sessionId: session.id,
+                                                                                                    projectId: project.id,
+                                                                                                    studentId: student.id,
+                                                                                                    contextLabel: `${student.name.split(" ")[0]}: ${session.title}`
+                                                                                                })}
+                                                                                            >
+                                                                                                <ClipboardList className="w-3 h-3 mr-1" />Avaliar
+                                                                                            </Button>
+                                                                                        )}
                                                                                     </div>
                                                                                 </div>
                                                                             );
@@ -700,19 +711,21 @@ function StudentView({
                                                                                             ) : (
                                                                                                 <span className="text-[10px] text-slate-400 italic">Sem avaliação</span>
                                                                                             )}
-                                                                                            <Button
-                                                                                                size="sm"
-                                                                                                variant="outline"
-                                                                                                className="h-7 px-2 text-[10px] text-indigo-600 border-indigo-200 hover:bg-indigo-50"
-                                                                                                onClick={() => onAvaliacao({
-                                                                                                    knowledgeNodeId: node.id,
-                                                                                                    projectId: project.id,
-                                                                                                    studentId: student.id,
-                                                                                                    contextLabel: `${student.name.split(" ")[0]}: ${node.name}`
-                                                                                                })}
-                                                                                            >
-                                                                                                <ClipboardList className="w-3 h-3 mr-1" />Avaliar
-                                                                                            </Button>
+                                                                                            {(!canEvaluate || canEvaluate(student.classId)) && (
+                                                                                                <Button
+                                                                                                    size="sm"
+                                                                                                    variant="outline"
+                                                                                                    className="h-7 px-2 text-[10px] text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+                                                                                                    onClick={() => onAvaliacao({
+                                                                                                        knowledgeNodeId: node.id,
+                                                                                                        projectId: project.id,
+                                                                                                        studentId: student.id,
+                                                                                                        contextLabel: `${student.name.split(" ")[0]}: ${node.name}`
+                                                                                                    })}
+                                                                                                >
+                                                                                                    <ClipboardList className="w-3 h-3 mr-1" />Avaliar
+                                                                                                </Button>
+                                                                                            )}
                                                                                         </div>
                                                                                     </div>
                                                                                     {node.description && (
@@ -752,19 +765,21 @@ function StudentView({
                                                                                             ) : (
                                                                                                 <span className="text-[10px] text-slate-400 italic">Sem avaliação</span>
                                                                                             )}
-                                                                                            <Button
-                                                                                                size="sm"
-                                                                                                variant="outline"
-                                                                                                className="h-7 px-2 text-[10px] text-amber-700 border-amber-200 hover:bg-amber-50"
-                                                                                                onClick={() => onAvaliacao({
-                                                                                                    knowledgeNodeId: node.id,
-                                                                                                    projectId: project.id,
-                                                                                                    studentId: student.id,
-                                                                                                    contextLabel: `${student.name.split(" ")[0]}: ${node.name}`
-                                                                                                })}
-                                                                                            >
-                                                                                                <ClipboardList className="w-3 h-3 mr-1" />Avaliar
-                                                                                            </Button>
+                                                                                            {(!canEvaluate || canEvaluate(student.classId)) && (
+                                                                                                <Button
+                                                                                                    size="sm"
+                                                                                                    variant="outline"
+                                                                                                    className="h-7 px-2 text-[10px] text-amber-700 border-amber-200 hover:bg-amber-50"
+                                                                                                    onClick={() => onAvaliacao({
+                                                                                                        knowledgeNodeId: node.id,
+                                                                                                        projectId: project.id,
+                                                                                                        studentId: student.id,
+                                                                                                        contextLabel: `${student.name.split(" ")[0]}: ${node.name}`
+                                                                                                    })}
+                                                                                                >
+                                                                                                    <ClipboardList className="w-3 h-3 mr-1" />Avaliar
+                                                                                                </Button>
+                                                                                            )}
                                                                                         </div>
                                                                                     </div>
                                                                                     {node.description && (
@@ -898,6 +913,23 @@ function PortfolioContent() {
     const [editingAssessment, setEditingAssessment] = useState<Assessment | null>(null);
 
     const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
+    
+    const { data: session } = useSession();
+    const currentUser = session?.user as any;
+
+    const canEvaluate = (itemClassIds?: string | string[]) => {
+        if (!currentUser) return false;
+        if (currentUser.role === 'admin' || currentUser.role === 'director') return true;
+        if (currentUser.role === 'teacher') {
+            if (!itemClassIds || itemClassIds.length === 0) return true; // General/All classes
+            const ids = Array.isArray(itemClassIds) ? itemClassIds : [itemClassIds];
+            return classes.some(c => 
+                ids.includes(c.id) && 
+                (c.teacherId === currentUser.id || c.assistantId === currentUser.id || currentUser.assignedClassIds?.includes(c.id))
+            );
+        }
+        return false;
+    };
 
     async function fetchClasses() {
         try {
