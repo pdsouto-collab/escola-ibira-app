@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { CalendarDays, Users, FolderKanban } from "lucide-react";
+import { CalendarDays, Users, FolderKanban, ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { startOfWeek, addDays, format, isSameDay } from "date-fns";
+import { startOfWeek, addDays, subDays, format, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { getClasses } from "@/services/school-class.service";
 import { SchoolClass } from "@/types/school-class";
@@ -13,6 +14,7 @@ export function WeeklyView() {
     const [classes, setClasses] = useState<SchoolClass[]>([]);
     const [selectedClassId, setSelectedClassId] = useState<string>("");
     const [isLoading, setIsLoading] = useState(true);
+    const [currentDate, setCurrentDate] = useState<Date>(new Date());
 
     async function fetchClassesAndSchedules() {
         try {
@@ -36,9 +38,9 @@ export function WeeklyView() {
         fetchClassesAndSchedules();
     }, [selectedClassId]);
 
-    // Generate days for the current week (Mon-Fri)
+    // Generate days for the selected week (Mon-Fri)
     const today = new Date();
-    const weekStart = startOfWeek(today, { weekStartsOn: 1 }); // Monday
+    const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 }); // Monday
     const weekDays = Array.from({ length: 5 }).map((_, i) => {
         const date = addDays(weekStart, i);
         return {
@@ -82,9 +84,19 @@ export function WeeklyView() {
     return (
         <section className="space-y-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-2">
-                    <CalendarDays className="w-5 h-5 text-slate-600" />
-                    <h2 className="text-xl font-bold text-slate-800">Rotina Semanal</h2>
+                <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                        <CalendarDays className="w-5 h-5 text-slate-600" />
+                        <h2 className="text-xl font-bold text-slate-800">Rotina Semanal</h2>
+                    </div>
+                    <div className="flex items-center gap-1">
+                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentDate(prev => subDays(prev, 7))}>
+                            <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentDate(prev => addDays(prev, 7))}>
+                            <ChevronRight className="h-4 w-4" />
+                        </Button>
+                    </div>
                 </div>
 
                 <div className="flex items-center gap-2 w-full sm:w-auto">
