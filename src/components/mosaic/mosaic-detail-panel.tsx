@@ -172,9 +172,9 @@ export function MosaicDetailPanel({ node, treeType, onAvaliacao, libraryItems = 
                                                     <p className="text-sm font-medium text-slate-800 leading-snug">
                                                         {child.name}
                                                     </p>
-                                                    {(libraryItems.find(lib => lib.id === child.libraryItemId)?.description || child.description) && (
+                                                    {(libraryItems.find(lib => lib.id === child.libraryItemId || (lib.code && lib.code === child.libraryItemId))?.description || child.description) && (
                                                         <p className="text-xs text-slate-500 mt-1 line-clamp-3 leading-relaxed">
-                                                            {libraryItems.find(lib => lib.id === child.libraryItemId)?.description || child.description}
+                                                            {libraryItems.find(lib => lib.id === child.libraryItemId || (lib.code && lib.code === child.libraryItemId))?.description || child.description}
                                                         </p>
                                                     )}
                                                     {(child.libraryItemId || (child.linkedNodeIds && child.linkedNodeIds.length > 0)) && (
