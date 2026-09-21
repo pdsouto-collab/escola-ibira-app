@@ -168,8 +168,13 @@ export function MosaicDetailPanel({ node, treeType, onAvaliacao }: MosaicDetailP
                                             <div className="flex justify-between items-start gap-2">
                                                 <div className="flex-1">
                                                     <p className="text-sm font-medium text-slate-800 leading-snug">
-                                                        {child.name.length > 80 ? child.name.slice(0, 80) + '...' : child.name}
+                                                        {child.name}
                                                     </p>
+                                                    {child.description && (
+                                                        <p className="text-xs text-slate-500 mt-1 line-clamp-3 leading-relaxed">
+                                                            {child.description}
+                                                        </p>
+                                                    )}
                                                     {(child.libraryItemId || (child.linkedNodeIds && child.linkedNodeIds.length > 0)) && (
                                                         <div className="flex gap-2 mt-2">
                                                             {child.libraryItemId && (
