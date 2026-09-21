@@ -103,7 +103,6 @@ function getNodeData(
     classId: string = "all",
     selectedProjectId: string = "all",
     libraryItems: LibraryItem[] = [],
-    selectedSemester = "all",
     selectedYear = "all"
 ): { points: number; maxPoints: number; sat: number; isTrabalhado: boolean } {
     const relevantProjects = (projects || []).filter(p => {
@@ -155,7 +154,7 @@ function getNodeData(
 
     // 2. Get direct assessment for this student and this node filtered by semester and year
     const filteredAssessments = assessments.filter(a =>
-        matchesPeriod(a.period, a.createdAt, selectedSemester, selectedYear)
+        matchesPeriod(a.period, a.createdAt, selectedYear)
     );
 
     const studentAssessments = filteredAssessments.filter(a =>
@@ -178,7 +177,7 @@ function getNodeData(
 
     if (node.children && node.children.length > 0) {
         node.children.forEach(child => {
-            const cData = getNodeData(child, assessments, projects, studentId, classId, selectedProjectId, libraryItems, selectedSemester, selectedYear);
+            const cData = getNodeData(child, assessments, projects, studentId, classId, selectedProjectId, libraryItems, selectedYear);
             childPoints += cData.points;
             childMaxPoints += cData.maxPoints;
             if (cData.sat > 0) childSats.push(cData.sat);
@@ -210,7 +209,6 @@ export function RadialMatrix({
     selectedStudentId,
     selectedClassId,
     selectedProjectId = "all",
-    selectedSemester = "all",
     selectedYear = "all",
     drilledNodeId,
     libraryItems,
@@ -319,7 +317,7 @@ export function RadialMatrix({
             const isViewingEvaluation = (studentId && studentId !== "all") || (classId && classId !== "all") || (projectId && projectId !== "all");
 
             const nodeData = isViewingEvaluation
-                ? getNodeData(node, assessments, projects, studentId || "all", classId || "all", projectId || "all", libraryItems || [], selectedSemester, selectedYear)
+                ? getNodeData(node, assessments, projects, studentId || "all", classId || "all", projectId || "all", libraryItems || [], selectedYear)
                 : { points: 0, maxPoints: 0, sat: 0, isTrabalhado: false };
             const satLevel = nodeData.sat;
             const isTrabalhado = nodeData.isTrabalhado;

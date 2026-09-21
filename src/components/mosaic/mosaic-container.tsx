@@ -350,7 +350,6 @@ export function MosaicContainer() {
                             selectedStudentId={selectedStudentId}
                             selectedClassId={selectedClassId}
                             selectedProjectId={selectedProjectId}
-                            selectedSemester={selectedSemester}
                             selectedYear={selectedYear}
                             drilledNodeId={drilledNode?.id}
                             onNodeDoubleClick={(node: KnowledgeNode) => {
