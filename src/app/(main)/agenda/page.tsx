@@ -379,8 +379,13 @@ export default function AgendaPage() {
                         <div className="flex gap-2">
                             <Button
                                 variant="default"
-                                disabled={selectedClassId === "all"}
-                                onClick={() => setIsDailyLogOpen(true)}
+                                onClick={() => {
+                                    if (selectedClassId === "all") {
+                                        toast.warning("Selecione uma turma específica no filtro acima para preencher o diário da turma.");
+                                    } else {
+                                        setIsDailyLogOpen(true);
+                                    }
+                                }}
                                 title={selectedClassId === "all" ? "Selecione uma turma específica para preencher o diário" : "Preencher Diário da Turma"}
                             >
                                 📝 Preencher Diário de Bordo
