@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { KnowledgeTreeEditor } from "@/components/admin/knowledge-tree-editor";
 import { FinalProductsEditor } from "@/components/admin/final-products-editor";
 import { BibliotecaEditor } from "@/components/admin/biblioteca-editor";
+import { ProjectTypesEditor } from "@/components/admin/project-types-editor";
 import { BookOpen, Layers, PackagePlus, Library } from "lucide-react";
 
 export default function AdminPanelPage() {
@@ -50,6 +51,10 @@ export default function AdminPanelPage() {
                                 <div className="h-8 w-px bg-slate-200 mx-1" />
 
                                 <TabsList className="bg-slate-200/50 p-1 flex-wrap h-auto">
+                                    <TabsTrigger value="project_types" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 flex items-center gap-2 transition-all">
+                                        <Layers className="w-4 h-4" />
+                                        Tipos
+                                    </TabsTrigger>
                                     <TabsTrigger value="products" className="data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md px-4 py-2 flex items-center gap-2 transition-all">
                                         <PackagePlus className="w-4 h-4" />
                                         Produtos Finais
@@ -75,6 +80,10 @@ export default function AdminPanelPage() {
                                     <h2 className="text-indigo-900 font-bold tracking-wider uppercase text-sm">VISÃO COMPORTAMENTAL / COGNITIVA (competências bncc / ibirá)</h2>
                                 </div>
                                 <KnowledgeTreeEditor treeType="content" />
+                            </TabsContent>
+
+                            <TabsContent value="project_types" className="m-0 border-none outline-none focus-visible:ring-0">
+                                <ProjectTypesEditor />
                             </TabsContent>
 
                             <TabsContent value="products" className="m-0 border-none outline-none focus-visible:ring-0">

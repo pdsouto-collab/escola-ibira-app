@@ -33,6 +33,8 @@ import { LibraryItem } from "@/types/library-item";
 import { getListBncc } from "@/services/bncc.service";
 import { FinalProductType } from "@/types/final-product-type";
 import { getFinalProductTypes } from "@/services/final-product-type.service";
+import { ProjectType } from "@/types/project-type";
+import { getProjectTypes } from "@/services/project-type.service";
 import { getKnowledgeTrees } from "@/services/knowledge.service";
 import { ImageFramingDialog } from "@/components/ui/image-framing-dialog";
 import { compressImage } from "@/lib/image-compressor";
@@ -52,6 +54,7 @@ function NewProjectWizardContent() {
             }, []);
 
     const [finalProductTypes, setFinalProductTypes] = useState<FinalProductType[]>([]);
+    const [projectTypes, setProjectTypes] = useState<ProjectType[]>([]);
 
     const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
 
@@ -64,16 +67,18 @@ function NewProjectWizardContent() {
 
     async function fetchClassesAndStudents() {
         try {
-            const [classesData, studentsData, schedulesData, finalProductsData] = await Promise.all([
+            const [classesData, studentsData, schedulesData, finalProductsData, projectTypesData] = await Promise.all([
                 getClasses(),
                 getStudents(),
                 getSchedules(),
-                getFinalProductTypes()
+                getFinalProductTypes(),
+                getProjectTypes()
             ]);
             setClasses(classesData);
             setStudents(studentsData);
             setSchedule(schedulesData);
             setFinalProductTypes(finalProductsData);
+            setProjectTypes(projectTypesData);
         } catch (error) {
             console.error("Erro ao buscar dados:", error);
         } finally {
@@ -515,8 +520,19 @@ function NewProjectWizardContent() {
                                     <div>
                                         <Label className="font-semibold text-slate-700">Tipo *</Label>
                                         <Select value={formData.type} onValueChange={v => setFormData({ ...formData, type: v })}>
-                                            <SelectTrigger className="mt-2 text-slate-700"><SelectValue /></SelectTrigger>
-                                            <SelectContent><SelectItem value="Project">Projeto</SelectItem><SelectItem value="Workshop">Oficina</SelectItem></SelectContent>
+                                            <SelectTrigger className="mt-2 text-slate-700"><SelectValue placeholder="Selecione o tipo..." /></SelectTrigger>
+                                            <SelectContent>
+                                                {projectTypes.length > 0 ? (
+                                                    projectTypes.map(pt => (
+                                                        <SelectItem key={pt.id} value={pt.name}>{pt.name}</SelectItem>
+                                                    ))
+                                                ) : (
+                                                    <>
+                                                        <SelectItem value="Projeto">Projeto</SelectItem>
+                                                        <SelectItem value="Oficina">Oficina</SelectItem>
+                                                    </>
+                                                )}
+                                            </SelectContent>
                                         </Select>
                                     </div>
                                     <div>
