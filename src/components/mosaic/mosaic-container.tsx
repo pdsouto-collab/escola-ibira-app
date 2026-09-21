@@ -208,6 +208,7 @@ export function MosaicContainer() {
                     node={selectedNode}
                     treeType={activeTab}
                     onAvaliacao={handleAvaliacao}
+                    libraryItems={libraryItems}
                 />
             </div>
 

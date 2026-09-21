@@ -9,11 +9,13 @@ import { ScrollArea } from "../ui/scroll-area";
 import { useEffect, useState } from "react";
 import { BnccProgressData } from "@/types/bncc-progress";
 import { getBnccProgress } from "@/services/bncc-progress.service";
+import { LibraryItem } from "@/types/library-item";
 
 interface MosaicDetailPanelProps {
     node: KnowledgeNode | null;
     treeType: "skill" | "content";
     onAvaliacao?: (node: KnowledgeNode) => void;
+    libraryItems?: LibraryItem[];
 }
 
 const LEVEL_LABELS = {
@@ -56,7 +58,7 @@ function getLeavesUnderNode(node: KnowledgeNode, targetLevel: KnowledgeLevel): K
     return results;
 }
 
-export function MosaicDetailPanel({ node, treeType, onAvaliacao }: MosaicDetailPanelProps) {
+export function MosaicDetailPanel({ node, treeType, onAvaliacao, libraryItems = [] }: MosaicDetailPanelProps) {
     const [bnccProgress, setBnccProgress] = useState<BnccProgressData>({});
 
     useEffect(() => {
@@ -170,9 +172,9 @@ export function MosaicDetailPanel({ node, treeType, onAvaliacao }: MosaicDetailP
                                                     <p className="text-sm font-medium text-slate-800 leading-snug">
                                                         {child.name}
                                                     </p>
-                                                    {child.description && (
+                                                    {(libraryItems.find(lib => lib.id === child.libraryItemId)?.description || child.description) && (
                                                         <p className="text-xs text-slate-500 mt-1 line-clamp-3 leading-relaxed">
-                                                            {child.description}
+                                                            {libraryItems.find(lib => lib.id === child.libraryItemId)?.description || child.description}
                                                         </p>
                                                     )}
                                                     {(child.libraryItemId || (child.linkedNodeIds && child.linkedNodeIds.length > 0)) && (
