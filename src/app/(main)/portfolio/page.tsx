@@ -230,9 +230,9 @@ function AssessmentCard({ assessment, onEdit, students, classes }: {
                     &ldquo;{assessment.observations}&rdquo;
                 </p>
             )}
-            {assessment.attachments.length > 0 && (
+            {(assessment.attachments || []).length > 0 && (
                 <div className="flex gap-1 flex-wrap">
-                    {assessment.attachments.map(att => (
+                    {(assessment.attachments || []).map(att => (
                         <AttachmentThumb key={att.id} att={att} />
                     ))}
                 </div>
@@ -498,7 +498,7 @@ function StudentView({
                     ...assessments.filter(a => a.scope === "class" && a.classId === student.classId),
                 ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-                const photos = studentAssessments.flatMap(a => a.attachments.filter(att => att.type === "photo"));
+                const photos = studentAssessments.flatMap(a => (a.attachments || []).filter(att => att.type === "photo"));
                 const avgRating = studentAssessments.filter(a => a.rating).reduce((acc, a, _, arr) => acc + (a.rating ?? 0) / arr.length, 0);
                 const cls = classes.find(c => c.id === student.classId);
 
@@ -507,10 +507,10 @@ function StudentView({
                         <div className="bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-4 flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-lg">
-                                    {student.name.charAt(0)}
+                                    {(student.name || "A").charAt(0)}
                                 </div>
                                 <div>
-                                    <h2 className="text-white font-bold text-lg">{student.name}</h2>
+                                    <h2 className="text-white font-bold text-lg">{student.name || "Aluno"}</h2>
                                     <p className="text-emerald-100 text-sm">{cls?.name} &bull; {studentAssessments.length} avaliações</p>
                                 </div>
                             </div>
@@ -914,7 +914,7 @@ function PortfolioContent() {
     async function fetchClasses() {
         try {
             const data = await getClasses();
-            setClasses(data);
+            setClasses(data || []);
         } catch (error) {
             console.error("Erro ao buscar turmas:", error);
         } finally {
@@ -934,7 +934,7 @@ function PortfolioContent() {
     async function fetchStudents() {
         try {
             const data = await getStudents();
-            setStudents(data);
+            setStudents(data || []);
         } catch (error) {
             console.error("Erro ao buscar alunos:", error);
         } finally {
@@ -945,7 +945,7 @@ function PortfolioContent() {
     async function fetchSchedules() {
         try {
             const data = await getSchedules();
-            setSchedule(data);
+            setSchedule(data || []);
         } catch (error) {
             console.error("Erro ao buscar agenda:", error);
         } finally {
@@ -974,7 +974,13 @@ function PortfolioContent() {
     }
 
     async function getListaBNCC() {
-        await getListBncc().then(setLibraryItems);
+        try {
+            const data = await getListBncc();
+            setLibraryItems(data || []);
+        } catch (error) {
+            console.error("Erro ao buscar BNCC:", error);
+            setLibraryItems([]);
+        }
     }
 
     // Sync class filter if search param changes
