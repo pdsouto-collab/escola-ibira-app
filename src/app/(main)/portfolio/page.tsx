@@ -1177,10 +1177,44 @@ function PortfolioContent() {
     );
 }
 
+class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: Error | null, info: any}> {
+    constructor(props: {children: React.ReactNode}) {
+        super(props);
+        this.state = { hasError: false, error: null, info: null };
+    }
+    static getDerivedStateFromError(error: Error) {
+        return { hasError: true, error };
+    }
+    componentDidCatch(error: Error, info: any) {
+        this.setState({ info });
+    }
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div className="p-8 text-left bg-red-50 border border-red-200 rounded-xl m-8 space-y-4">
+                    <h2 className="text-red-700 font-bold text-xl">Erro Detalhado Capturado (Por Favor Envie Print):</h2>
+                    <p className="text-red-600 font-mono text-sm break-all">{this.state.error?.toString()}</p>
+                    <pre className="text-xs text-red-500 overflow-auto bg-white p-4 rounded border border-red-100 max-h-96">
+                        {this.state.error?.stack}
+                    </pre>
+                    {this.state.info && (
+                        <pre className="text-xs text-slate-500 overflow-auto bg-white p-4 rounded border max-h-96">
+                            {this.state.info.componentStack}
+                        </pre>
+                    )}
+                </div>
+            );
+        }
+        return this.props.children;
+    }
+}
+
 export default function PortfolioPage() {
     return (
-        <Suspense fallback={<div className="p-8 text-center">Carregando portfólio...</div>}>
-            <PortfolioContent />
-        </Suspense>
+        <ErrorBoundary>
+            <Suspense fallback={<div className="p-8 text-center">Carregando portfólio...</div>}>
+                <PortfolioContent />
+            </Suspense>
+        </ErrorBoundary>
     );
 }
