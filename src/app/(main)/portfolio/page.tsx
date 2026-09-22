@@ -46,6 +46,7 @@ const resolveNodeInfo = (id: string, skillsTree: any[], contentsTree: any[], lib
 
     // 1. Search in Knowledge Trees (Skills and Contents)
     const searchTrees = (nodes: any[]): any | null => {
+        if (!nodes || !Array.isArray(nodes)) return null;
         for (const node of nodes) {
             if (validIds.has(node.id) || (node.libraryItemId && validIds.has(node.libraryItemId))) {
                 return {
@@ -64,7 +65,9 @@ const resolveNodeInfo = (id: string, skillsTree: any[], contentsTree: any[], lib
         return null;
     };
 
-    const treeNode = searchTrees([...skillsTree, ...contentsTree]);
+    const safeSkills = Array.isArray(skillsTree) ? skillsTree : [];
+    const safeContents = Array.isArray(contentsTree) ? contentsTree : [];
+    const treeNode = searchTrees([...safeSkills, ...safeContents]);
     if (treeNode) return treeNode;
 
     // 2. Fallback to Library Item
@@ -116,7 +119,9 @@ const getProjectNodes = (project: any, skillsTree: any[], contentsTree: any[], l
         }
     });
 
-    const recursiveNodes = findEvaluatableNodes([...skillsTree, ...contentsTree], Array.from(targetSet));
+    const safeSkills = Array.isArray(skillsTree) ? skillsTree : [];
+    const safeContents = Array.isArray(contentsTree) ? contentsTree : [];
+    const recursiveNodes = findEvaluatableNodes([...safeSkills, ...safeContents], Array.from(targetSet));
 
     const displayedNodeIds = new Set<string>();
     const displayedKeys = new Set<string>(); // to prevent duplicates with same BNCC code
@@ -534,14 +539,15 @@ function StudentView({
                                 // Find projects linked to this student
                                 const studentProjects = projects.filter(p => {
                                     const stuClass = classes.find(c => String(c.id) === String(student.classId));
-                                    const classNameSlug = stuClass ? stuClass.name.toLowerCase().replace(/\s+/g, '-').replace(/ii/g, 'ii').replace(/i/g, 'i') : ""; // basic normalization
+                                    const stuClassName = stuClass?.name || "";
+                                    const classNameSlug = stuClassName ? stuClassName.toLowerCase().replace(/\s+/g, '-').replace(/ii/g, 'ii').replace(/i/g, 'i') : ""; // basic normalization
 
                                     const studentMatch = (p.students || []).some(id => String(id) === String(student.id));
                                     const classMatch = (p.classes || []).some(id => {
                                         const strId = String(id);
                                         return strId === String(student.classId) || 
                                                strId.toLowerCase() === classNameSlug ||
-                                               (stuClass && strId.toLowerCase().includes(stuClass.name.split(" ")[0].toLowerCase()));
+                                               (stuClassName && strId.toLowerCase().includes(stuClassName.split(" ")[0].toLowerCase()));
                                     });
 
                                     // Fallback if no specific assignment

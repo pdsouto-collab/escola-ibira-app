@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { TreeDeciduous, Image as ImageIcon, Send, Shapes, Megaphone, GraduationCap, Crop } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { ImageFramingDialog } from "@/components/ui/image-framing-dialog";
