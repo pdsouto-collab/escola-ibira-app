@@ -250,7 +250,7 @@ function AssessmentCard({ assessment, onEdit, students, classes }: {
 // View: By Project
 // ────────────────────────────────────────────
 function ProjectView({
-    projectFilter, allProjects, assessments, schedule, students, classes, skillsTree, contentsTree, libraryItems, onAvaliacao, onEdit
+    projectFilter, allProjects, assessments, schedule, students, classes, skillsTree, contentsTree, libraryItems, onAvaliacao, onEdit, canEvaluate
 }: {
     projectFilter: string;
     allProjects: Project[];
