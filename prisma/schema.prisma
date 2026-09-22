@@ -28,14 +28,12 @@ model Bncc {
 
 /// Tabela de Usuários do Sistema
 model User {
-  id               String    @id @default(cuid())
+  id               String        @id @default(cuid())
   name             String
   role             String
-  roles            String[]  @default([])
   avatar           String?
-  email            String    @unique
+  email            String        @unique
   cpf              String?
-  rg               String?
   phone            String?
   birthDate        String?
   address          String?
@@ -43,16 +41,18 @@ model User {
   education        String?
   specialization   String[]
   bio              String?
-  status           String    @default("active")
+  status           String        @default("active")
   assignedClassIds String[]
   linkedStudentIds String[]
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
   password         String
+  rg               String?
+  roles            String[]      @default([])
   accounts         Account[]
-  sessions         Session[]
-  sentMessages     ChatMessage[] @relation("SentMessages")
   receivedMessages ChatMessage[] @relation("ReceivedMessages")
+  sentMessages     ChatMessage[] @relation("SentMessages")
+  sessions         Session[]
   chatGroups       ChatGroup[]   @relation("GroupParticipants")
 
   @@index([email])
@@ -129,9 +129,9 @@ model Student {
   hospitalAddress      String?
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt
-  schoolClass          SchoolClass      @relation(fields: [classId], references: [id])
-  portfolioEntries     PortfolioEntry[]
   dailyLogs            DailyLog[]
+  portfolioEntries     PortfolioEntry[]
+  schoolClass          SchoolClass      @relation(fields: [classId], references: [id])
 
   @@index([classId])
   @@index([status])
@@ -141,15 +141,15 @@ model Student {
 model PortfolioEntry {
   id          String   @id @default(cuid())
   studentId   String
-  student     Student  @relation(fields: [studentId], references: [id])
   date        String
   title       String
-  description String   @db.Text
+  description String
   imageUrl    String?
   images      String[]
   tags        String[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  student     Student  @relation(fields: [studentId], references: [id])
 
   @@index([studentId])
 }
@@ -165,10 +165,10 @@ model MuralEvent {
   location    String?
   image       String?
   classId     String?
-  isArchived  Boolean        @default(false)
   likes       Int            @default(0)
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
+  isArchived  Boolean        @default(false)
   comments    MuralComment[]
 
   @@index([classId])
@@ -197,11 +197,11 @@ model PegadaPost {
   mediaUrl     String?
   mediaUrls    String[]
   tags         String[]
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
   classId      String?             @default("all")
   classIds     String[]            @default([])
   studentIds   String[]            @default([])
-  createdAt    DateTime            @default(now())
-  updatedAt    DateTime            @updatedAt
   interactions PegadaInteraction[]
 }
 
@@ -223,18 +223,17 @@ model PegadaInteraction {
 model Project {
   id              String    @id @default(cuid())
   title           String
-  description     String    @db.Text
+  description     String
   status          String    @default("draft")
   startDate       DateTime
   endDate         DateTime?
   period          String?
   type            String?
-  summary         String?   @db.Text
-  objectives      String?   @db.Text
+  summary         String?
+  objectives      String?
   finalProduct    String?
-  guidingQuestion String?   @db.Text
+  guidingQuestion String?
   imageUrl        String?
-  photos          String[]  @default([])
   tags            String[]
   bnccSkillIds    String[]
   contentIds      String[]
@@ -242,6 +241,7 @@ model Project {
   classes         String[]
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+  photos          String[]  @default([])
 }
 
 /// Rotina Escolar e Agenda
@@ -251,7 +251,7 @@ model ScheduleItem {
   endTime     String?
   title       String
   type        String
-  description String?  @db.Text
+  description String?
   date        String?
   classId     String?
   projectId   String?
@@ -314,17 +314,16 @@ model Invoice {
 model DailyLog {
   id           String   @id @default(cuid())
   studentId    String
-  date         String // YYYY-MM-DD
+  date         String
   mood         String
-  meals        Json // { breakfast, lunch, snack }
-  nap          Json // { start, end, didNotNap }
+  meals        Json
+  nap          Json
   activities   String[]
-  notes        String   @db.Text
-  missingItems String?  @db.Text
+  notes        String
+  missingItems String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-
-  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@index([studentId])
   @@index([date])
@@ -346,27 +345,22 @@ model ProjectType {
   updatedAt DateTime @updatedAt
 }
 
-
 /// Avaliações (Assessments)
 model Assessment {
-  id              String   @id @default(cuid())
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+  id              String                 @id @default(cuid())
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
   projectId       String?
   sessionId       String?
   routineId       String?
   knowledgeNodeId String?
   period          String?
-  
   scope           String
   classId         String?
   studentId       String?
-  
   rating          Int?
-  observations    String   @db.Text
-  isPublished     Boolean  @default(true)
-
+  observations    String
+  isPublished     Boolean                @default(true)
   attachments     AssessmentAttachment[]
 
   @@index([studentId])
@@ -378,10 +372,9 @@ model AssessmentAttachment {
   id           String     @id @default(cuid())
   assessmentId String
   type         String
-  url          String     @db.Text
+  url          String
   name         String?
   capturedAt   String
-  
   assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
 
   @@index([assessmentId])
@@ -389,7 +382,7 @@ model AssessmentAttachment {
 
 /// Tronco da Turma (Class Board)
 model ClassBoardPost {
-  id              String   @id @default(cuid())
+  id              String                      @id @default(cuid())
   classId         String
   authorId        String
   authorName      String
@@ -397,28 +390,26 @@ model ClassBoardPost {
   categoryType    String
   linkedProjectId String?
   title           String
-  content         String   @db.Text
-  extraMaterials  String?  @db.Text
+  content         String
+  extraMaterials  String?
   photos          String[]
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  interactions ClassBoardPostInteraction[]
+  createdAt       DateTime                    @default(now())
+  updatedAt       DateTime                    @updatedAt
+  interactions    ClassBoardPostInteraction[]
 
   @@index([classId])
 }
 
 model ClassBoardPostInteraction {
-  id        String   @id @default(cuid())
+  id        String         @id @default(cuid())
   postId    String
   userId    String
   userName  String
   userRole  String?
   type      String
-  content   String?  @db.Text
-  createdAt DateTime @default(now())
-
-  post ClassBoardPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  content   String?
+  createdAt DateTime       @default(now())
+  post      ClassBoardPost @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@index([postId])
 }
@@ -427,53 +418,51 @@ model ClassBoardPostInteraction {
 model Menu {
   id        String     @id @default(cuid())
   date      String
-  items     MenuItem[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+  items     MenuItem[]
 }
 
 model MenuItem {
   id              String   @id @default(cuid())
   time            String?
-  timeInfantil    String?
-  timeFundamental String?
   title           String
-  description     String   @db.Text
+  description     String
   menuId          String
-  menu        Menu     @relation(fields: [menuId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  timeFundamental String?
+  timeInfantil    String?
+  menu            Menu     @relation(fields: [menuId], references: [id], onDelete: Cascade)
 
   @@index([menuId])
 }
 
 /// Grupos de Chat
 model ChatGroup {
-  id           String   @id @default(cuid())
+  id           String        @id @default(cuid())
   name         String
   avatar       String?
-  createdAt    DateTime @default(now())
-
-  participants User[]   @relation("GroupParticipants")
+  createdAt    DateTime      @default(now())
   messages     ChatMessage[]
+  participants User[]        @relation("GroupParticipants")
 
   @@index([createdAt])
 }
 
 /// Chat Individual/Grupo
 model ChatMessage {
-  id         String   @id @default(cuid())
+  id         String     @id @default(cuid())
   senderId   String
   receiverId String?
   groupId    String?
-  content    String   @db.Text
-  read       Boolean  @default(false)
-  readBy     String[] @default([])
-  createdAt  DateTime @default(now())
-
-  sender     User       @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
-  receiver   User?      @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  content    String
+  read       Boolean    @default(false)
+  createdAt  DateTime   @default(now())
+  readBy     String[]   @default([])
   group      ChatGroup? @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  receiver   User?      @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender     User       @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
 
   @@index([senderId])
   @@index([receiverId])
@@ -483,21 +472,19 @@ model ChatMessage {
 
 /// Sistema de Árvores do Conhecimento (Base Habilidades/Conteúdos)
 model KnowledgeNode {
-  id            String   @id @default(cuid())
-  level         String   // "macro", "mesclado", "micro", "atomico"
-  type          String   // "skill", "content"
+  id            String          @id @default(cuid())
+  level         String
+  type          String
   name          String
-  description   String?  @db.Text
+  description   String?
   libraryItemId String?
   classId       String?
   period        String?
-
   parentId      String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
   parent        KnowledgeNode?  @relation("NodeToNode", fields: [parentId], references: [id], onDelete: Cascade)
   children      KnowledgeNode[] @relation("NodeToNode")
-
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
 
   @@index([type])
   @@index([classId])
@@ -506,18 +493,16 @@ model KnowledgeNode {
 
 /// Sistema de Mosaico (Estrutura de exibição visual)
 model MosaicNode {
-  id            String   @id @default(cuid())
-  label         String
-  type          String   // "area", "component", "unit", "skill", "trunk", "root"
-  color         String?
-  weight        Int?
-
-  parentId      String?
-  parent        MosaicNode?  @relation("MosaicToMosaic", fields: [parentId], references: [id], onDelete: Cascade)
-  children      MosaicNode[] @relation("MosaicToMosaic")
-
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id        String       @id @default(cuid())
+  label     String
+  type      String
+  color     String?
+  weight    Int?
+  parentId  String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  parent    MosaicNode?  @relation("MosaicToMosaic", fields: [parentId], references: [id], onDelete: Cascade)
+  children  MosaicNode[] @relation("MosaicToMosaic")
 
   @@index([parentId])
 }
@@ -525,9 +510,9 @@ model MosaicNode {
 /// Registro do Progresso das Habilidades BNCC (Global ou por Aluno futuramente)
 model BnccProgress {
   id            String   @id @default(cuid())
-  skillCode     String   @unique  // Identificador único (ex: "EF01MA01") usado na UI
-  status        String   @default("not-started") // "not-started" | "in-progress" | "achieved"
+  skillCode     String   @unique
+  status        String   @default("not-started")
   evidenceCount Int      @default(0)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-}
+}

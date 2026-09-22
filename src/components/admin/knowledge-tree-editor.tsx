@@ -300,7 +300,7 @@ export function KnowledgeTreeEditor({ treeType }: Props) {
                     {node.level === "macro" && (
                         <div className="absolute -top-2.5 left-3 px-2 py-0.5 bg-slate-600 text-white text-[9px] font-bold rounded uppercase tracking-wider shadow-sm z-20 pointer-events-none flex gap-2">
                             <span>TURMA: {classes.find(c => c.id === node.classId)?.name || "GERAL/BASE"}</span>
-                            {node.period && <span className="border-l border-white/30 pl-2">PERÍODO: {node.period}</span>}
+                            {node.period && <span className="border-l border-white/30 pl-2">PERÍODO: {node.period.replace(/^[12]º\s+semestre\s*\/\s*/i, "").trim()}</span>}
                         </div>
                     )}
 
