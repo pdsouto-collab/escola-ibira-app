@@ -38,7 +38,7 @@ import { useChatNotifications } from "@/components/chat/chat-notification-provid
 
 const navigation = [
     { name: "Início", href: "/", icon: LayoutDashboard },
-    { name: "Trilha Ibirá", href: "/mosaico", icon: Aperture, roles: ["director", "admin", "teacher"] },
+    { name: "Trilha Ibirá", href: "/mosaico", icon: Aperture, roles: ["director", "admin", "teacher", "guardian"] },
     { name: "Tronco de Recados", href: "/tronco", icon: TreeDeciduous },
     { name: "Pegadas dos Ibiritos", href: "/pegadas", icon: Footprints },
     { name: "Mural de Eventos", href: "/mural", icon: PartyPopper },

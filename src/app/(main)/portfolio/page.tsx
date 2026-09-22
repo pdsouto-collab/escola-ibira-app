@@ -262,16 +262,6 @@ function ProjectView({
 }) {
     const projects = projectFilter === "all" ? allProjects : allProjects.filter(p => p.id === projectFilter);
 
-    useEffect(() => {
-        getListaBNCC();
-    }, [])
-
-    async function getListaBNCC() {
-        await getListBncc().then((data) => {
-            libraryItems = data;
-        });
-    }
-
     return (
         <div className="space-y-8">
             {projects.map(project => {
@@ -493,16 +483,6 @@ function StudentView({
     onEdit: (assessment: Assessment) => void;
     canEvaluate?: (itemClassIds?: string | string[]) => boolean;
 }) {
-
-    useEffect(() => {
-        getListaBNCC();
-    }, [])
-
-    async function getListaBNCC() {
-        await getListBncc().then((data) => {
-            libraryItems = data;
-        });
-    }
 
     const filteredStudents = students.filter(s => {
         if (classFilter !== "all" && s.classId !== classFilter) return false;

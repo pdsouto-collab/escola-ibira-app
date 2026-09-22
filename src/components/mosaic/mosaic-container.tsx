@@ -233,7 +233,7 @@ export function MosaicContainer() {
                 <MosaicDetailPanel
                     node={selectedNode}
                     treeType={activeTab}
-                    onAvaliacao={handleAvaliacao}
+                    onAvaliacao={currentUser?.role !== "guardian" && !currentUser?.roles?.includes("guardian") ? handleAvaliacao : undefined}
                     libraryItems={libraryItems}
                 />
             </div>
