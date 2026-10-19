@@ -21,10 +21,19 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-        const session = await getServerSessionOrJwt();
-        if (!session || !session.user || !session.user.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+  const session = await getServerSessionOrJwt();
+  if (!session || !session.user || !session.user.id) {
+    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  }
+
+  const sessionUserRoles: string[] = (session.user as any).roles || [(session.user as any).role];
+  const isAdminOrDirector = sessionUserRoles.includes("admin") || sessionUserRoles.includes("director");
+  if (!isAdminOrDirector) {
+    return NextResponse.json(
+      { error: "Acesso proibido. Apenas administradores e diretores podem cadastrar novos usuários." },
+      { status: 403 }
+    );
+  }
 
   try {
     const body = await req.json();

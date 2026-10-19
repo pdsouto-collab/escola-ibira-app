@@ -64,6 +64,7 @@ export async function getServerSessionOrJwt() {
         email: decodedToken.email,
         name: decodedToken.name,
         role: decodedToken.role,
+        roles: decodedToken.roles || (decodedToken.role ? [decodedToken.role] : []),
         phone: decodedToken.phone,
         avatar: decodedToken.avatar,
       }
